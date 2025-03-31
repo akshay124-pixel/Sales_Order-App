@@ -32,7 +32,7 @@ const Production = () => {
     setError(null);
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/production-orders",
+        "https://sales-order-server.onrender.com/api/production-orders",
         {
           headers: {
             role: localStorage.getItem("role"),
@@ -88,7 +88,7 @@ const Production = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/edit/${editOrder._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${editOrder._id}`,
         formData,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },

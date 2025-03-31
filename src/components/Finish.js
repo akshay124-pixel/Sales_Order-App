@@ -18,7 +18,7 @@ function Finish() {
     const fetchFinishedGoods = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/finished-goods",
+          "https://sales-order-server.onrender.com/api/finished-goods",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,

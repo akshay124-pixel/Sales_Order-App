@@ -172,7 +172,7 @@ function AddEntry({ onSubmit, onClose }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/orders",
+        "https://sales-order-server.onrender.com/api/orders",
         newEntry,
         {
           headers: { "Content-Type": "application/json" },

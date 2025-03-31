@@ -37,7 +37,9 @@ const Sales = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/get-orders");
+      const response = await fetch(
+        "https://sales-order-server.onrender.com/api/get-orders"
+      );
       const data = await response.json();
       console.log("Fetched orders:", JSON.stringify(data, null, 2));
       setOrders(data);
@@ -230,7 +232,7 @@ const Sales = () => {
         }
 
         const response = await axios.post(
-          "http://localhost:5000/api/bulk-orders",
+          "https://sales-order-server.onrender.com/api/bulk-orders",
           validEntries,
           {
             headers: { "Content-Type": "application/json" },
@@ -253,9 +255,12 @@ const Sales = () => {
 
   const handleExport = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/export", {
-        responseType: "arraybuffer",
-      });
+      const response = await axios.get(
+        "https://sales-order-server.onrender.com/api/export",
+        {
+          responseType: "arraybuffer",
+        }
+      );
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
