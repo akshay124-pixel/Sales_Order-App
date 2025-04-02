@@ -658,6 +658,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     "West Bengal": [
       "Kolkata",
+      "Garia",
       "Darjeeling",
       "Siliguri",
       "Howrah",
