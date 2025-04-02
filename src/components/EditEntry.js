@@ -86,8 +86,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       total: "",
       paymentTerms: "",
       amount2: "",
-      freight: "",
-      freightmode: "",
+      freightcs: "",
       installation: "",
       salesPerson: "",
       company: "",
@@ -169,10 +168,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentTerms: entryToEdit.paymentTerms || "",
         amount2:
           entryToEdit.amount2 !== undefined ? String(entryToEdit.amount2) : "",
-        freight:
-          entryToEdit.freight !== undefined ? String(entryToEdit.freight) : "",
-        freightmode: entryToEdit.freightmode || "",
-        freightmodes: entryToEdit.freightmodes || "",
+
+        freightcs: entryToEdit.freightcs || "",
+
         installation: entryToEdit.installation || "",
         salesPerson: entryToEdit.salesPerson || "",
         company: entryToEdit.company || "",
@@ -209,14 +207,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         [name]:
           name === "contactNo"
             ? value.replace(/\D/g, "").slice(0, 10)
-            : [
-                "qty",
-                "unitPrice",
-                "gst",
-                "total",
-                "amount2",
-                "freight",
-              ].includes(name)
+            : ["qty", "unitPrice", "gst", "total", "amount2"].includes(name)
             ? value === ""
               ? ""
               : Number(value)
@@ -263,8 +254,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         total: data.total === "" ? undefined : Number(data.total),
         paymentTerms: data.paymentTerms || undefined,
         amount2: data.amount2 === "" ? undefined : Number(data.amount2),
-        freight: data.freight === "" ? undefined : Number(data.freight),
-        freightmode: data.freightmode || undefined,
+        freightcs: data.freightcs || undefined,
         installation: data.installation || undefined,
         salesPerson: data.salesPerson || undefined,
         company: data.company || undefined,
@@ -944,60 +934,20 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="freight">
-          <Form.Label>🚚 Freight</Form.Label>
+        <Form.Group controlId="freightcs">
+          <Form.Label>🚚 Freight Charges & Status</Form.Label>
           <Form.Control
-            type="number"
-            step="0.01"
-            {...register("freight", {
-              min: { value: 0, message: "Freight cannot be negative" },
-            })}
+            {...register("freightcs")}
             onChange={(e) =>
-              debouncedHandleInputChange("freight", e.target.value)
+              debouncedHandleInputChange("freightcs", e.target.value)
             }
-            isInvalid={!!errors.freight}
+            isInvalid={!!errors.freightcs}
           />
           <Form.Control.Feedback type="invalid">
-            {errors.freight?.message}
+            {errors.freightcs?.message}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="freightMode">
-          <Form.Label>🚚 Freight Status</Form.Label>
-          <Form.Select
-            {...register("freightmode")}
-            onChange={(e) =>
-              debouncedHandleInputChange("freightmode", e.target.value)
-            }
-            isInvalid={!!errors.freightmode}
-            aria-label="Freight Mode"
-          >
-            <option value="">Select Freight Mode</option>
-            <option value="To Pay">To Pay</option>
-            <option value="Include">Include</option>
-            <option value="Extra As Per Actual">Extra As Per Actual</option>
-          </Form.Select>
-          <Form.Control.Feedback type="invalid">
-            {errors.freightmode?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="freightmodes">
-          <Form.Label>📦 Freight Mode</Form.Label>
-          <Form.Select
-            {...register("freightmodes")}
-            onChange={(e) =>
-              debouncedHandleInputChange("freightmodes", e.target.value)
-            }
-            isInvalid={!!errors.freightmode}
-          >
-            <option value="">Select Freight Mode</option>
-            <option value="Others">Others</option>
-            <option value="BlueDart">BlueDart</option>
-            <option value="Om Logistics">Om Logistics</option>
-          </Form.Select>
-          <Form.Control.Feedback type="invalid">
-            {errors.freightmodes?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
+
         <Form.Group controlId="installation">
           <Form.Label>🛠️ Installation Charges</Form.Label>
           <Form.Select

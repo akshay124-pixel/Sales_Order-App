@@ -28,9 +28,8 @@ function AddEntry({ onSubmit, onClose }) {
     total: "",
     paymentTerms: "",
     amount2: "",
-    freight: "",
-    freightmode: "",
-    freightmodes: "",
+    freightcs: "",
+
     installation: "",
     salesPerson: "",
     company: "",
@@ -432,24 +431,11 @@ function AddEntry({ onSubmit, onClose }) {
                 })),
             },
             {
-              label: "Freight Charges",
-              name: "freight",
-              type: "number",
-              inputMode: "decimal",
-              onChange: (e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [e.target.name]: e.target.value
-                    .replace(/[^0-9.]/g, "")
-                    .replace(/(\..*)\./g, "$1"),
-                })),
+              label: "Freight Charges & Status",
+              name: "freightcs",
+              type: "text",
             },
-            {
-              label: "Freight Status",
-              name: "freightmode",
-              type: "select",
-              options: ["To Pay", "Include", " Extra or As Per Actual"],
-            },
+            ,
             {
               label: "Freight Mode",
               name: "freightmodes",

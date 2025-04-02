@@ -45,7 +45,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Total: $${entry.total?.toFixed(2) || "0.00"}
       Payment Terms: ${entry.paymentTerms || "N/A"}
       Amount2: $${entry.amount2?.toFixed(2) || "0.00"}
-      Freight: $${entry.freight?.toFixed(2) || "0.00"}
+      Freight Charges & Status: $${entry.freightcs || "N/A"}
       Installation: ${entry.installation || "N/A"}
       Sales Person: ${entry.salesPerson || "N/A"}
       Company: ${entry.company || "N/A"}
@@ -364,15 +364,12 @@ function ViewEntry({ isOpen, onClose, entry }) {
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Amount2:</strong> ${entry.amount2?.toFixed(2) || "0.00"}
             </span>
+
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Freight:</strong> ${entry.freight?.toFixed(2) || "0.00"}
+              <strong>Freight Charges & Status:</strong>{" "}
+              {entry.freightcs || "N/A"}
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Freight Status:</strong> {entry.freightmode || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Freight Mode:</strong> {entry.freightmodes || "N/A"}
-            </span>
+
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Invoice No:</strong> {entry.invoiceNo || "N/A"}
             </span>

@@ -199,9 +199,9 @@ const Sales = () => {
             total: Number(entry.total) || 0,
             paymentTerms: String(entry.paymentterms || "").trim(),
             amount2: Number(entry.amount2) || 0,
-            freight: Number(entry.freight) || 0,
-            freightmode: String(entry.freightmode || "").trim(),
-            freightmodes: String(entry.freightmodes || "").trim(),
+
+            freightcs: String(entry.freightcs || "").trim(),
+
             installation: String(entry.installation || "").trim(),
             salesPerson: String(entry.salesperson || "").trim(),
             shippingAddress: String(entry.shippingAddress || "").trim(),
@@ -774,9 +774,8 @@ const Sales = () => {
                     "Total",
                     "Payment Terms",
                     "Amount2",
-                    "Freight Charges",
-                    "Freight Status",
-                    "Freight Mode",
+                    "Freight Charges & Status",
+
                     "Installation",
                     "Sales Person",
                     "Company",
@@ -909,29 +908,9 @@ const Sales = () => {
                         <td style={{ padding: "10px" }}>
                           ${order.amount2?.toFixed(2) || "0.00"}
                         </td>
-                        <td style={{ padding: "10px" }}>
-                          ${Number(order.freight || 0).toFixed(2)}
-                        </td>
 
-                        <td style={{ padding: "10px", listStyle: "none" }}>
-                          <Badge
-                            bg={
-                              order.freightmode === "To Pay"
-                                ? "warning"
-                                : order.freightmode === "Include"
-                                ? "success"
-                                : order.freightmode === "Extra"
-                                ? "primary"
-                                : order.freightmode === "As Per Actual"
-                                ? "secondary"
-                                : "light"
-                            }
-                          >
-                            {order.freightmode || "-"}
-                          </Badge>
-                        </td>
                         <td style={{ padding: "10px" }}>
-                          {order.freightmodes || "-"}
+                          {order.freightcs || "-"}
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.installation ? "Yes" : "No"}
