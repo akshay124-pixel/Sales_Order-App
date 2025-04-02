@@ -435,13 +435,7 @@ function AddEntry({ onSubmit, onClose }) {
               name: "freightcs",
               type: "text",
             },
-            ,
-            {
-              label: "Freight Mode",
-              name: "freightmodes",
-              type: "select",
-              options: ["Others", "BlueDart", "Om Logistics"],
-            },
+
             {
               label: "Installation Charges",
               name: "installation",
