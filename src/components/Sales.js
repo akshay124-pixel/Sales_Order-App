@@ -146,6 +146,8 @@ const Sales = () => {
 
         const parseDate = (dateValue) => {
           if (!dateValue) return null;
+
+          // Handle Excel serial numbers
           if (!isNaN(dateValue) && typeof dateValue === "number") {
             const date = XLSX.SSF.parse_date_code(dateValue);
             return moment({
@@ -154,15 +156,18 @@ const Sales = () => {
               day: date.d,
             }).format("YYYY-MM-DD");
           }
-          const parsed = moment(dateValue, "DD/M/YYYY", true);
+
+          // Handle various string formats
+          const formats = [
+            "YYYY-MM-DD",
+            "DD/MM/YYYY",
+            "MM/DD/YYYY",
+            "DD/M/YYYY",
+            "M/D/YYYY",
+          ];
+          const parsed = moment(dateValue, formats, true);
           if (parsed.isValid()) return parsed.format("YYYY-MM-DD");
-          const fallbackParsed = moment(
-            dateValue,
-            ["YYYY-MM-DD", "DD/MM/YYYY", "MM/DD/YYYY"],
-            true
-          );
-          if (fallbackParsed.isValid())
-            return fallbackParsed.format("YYYY-MM-DD");
+
           console.warn("Unparseable date:", dateValue);
           return null;
         };
@@ -223,7 +228,7 @@ const Sales = () => {
         const validEntries = newEntries.filter(
           (entry) => entry.soDate && !isNaN(entry.qty)
         );
-
+        console.log("Valid Entries:", validEntries);
         if (validEntries.length === 0) {
           toast.error(
             "No valid entries found with required fields (soDate, qty)."
