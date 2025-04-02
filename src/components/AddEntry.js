@@ -1186,14 +1186,14 @@ function AddEntry({ onSubmit, onClose }) {
               label: "Shipping Address *",
               name: "shippingAddress",
               type: "text",
-              required: true,
+
               onChange: handleChange,
             },
             {
               label: "Billing Address *",
               name: "billingAddress",
               type: "text",
-              required: true,
+
               onChange: handleChange,
               disabled: formData.sameAddress,
             },
