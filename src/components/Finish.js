@@ -208,7 +208,7 @@ function Finish() {
                       "Order ID",
                       "Product Name",
                       "Quantity",
-                      "Fulfillment Date",
+                      "Production Date",
                       "Customer Name",
                       "Delivery Address",
                       "Actions",

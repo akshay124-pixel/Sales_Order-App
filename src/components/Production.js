@@ -799,7 +799,7 @@ const Production = () => {
                     }}
                   >
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Fulfilling Status:</strong>{" "}
+                      <strong>Production Status:</strong>{" "}
                       {viewOrder.fulfillingStatus || "Pending"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>

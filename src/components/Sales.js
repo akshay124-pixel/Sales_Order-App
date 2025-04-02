@@ -894,19 +894,19 @@ const Sales = () => {
                           {order.qty !== undefined ? order.qty : "-"}
                         </td>
                         <td style={{ padding: "10px" }}>
-                          ${order.unitPrice?.toFixed(2) || "0.00"}
+                          ₹{order.unitPrice?.toFixed(2) || "0.00"}
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.gst ? `${order.gst}%` : "-"}
                         </td>
                         <td style={{ padding: "10px" }}>
-                          ${order.total?.toFixed(2) || "0.00"}
+                          ₹{order.total?.toFixed(2) || "0.00"}
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.paymentTerms || "-"}
                         </td>
                         <td style={{ padding: "10px" }}>
-                          ${order.amount2?.toFixed(2) || "0.00"}
+                          ₹{order.amount2?.toFixed(2) || "0.00"}
                         </td>
 
                         <td style={{ padding: "10px" }}>

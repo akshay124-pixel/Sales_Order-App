@@ -349,20 +349,20 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Unit Price:</strong> $
+              <strong>Unit Price:</strong> ₹
               {entry.unitPrice?.toFixed(2) || "0.00"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>GST:</strong> {entry.gst ? `${entry.gst}%` : "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Total:</strong> ${entry.total?.toFixed(2) || "0.00"}
+              <strong>Total:</strong> ₹{entry.total?.toFixed(2) || "0.00"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Payment Terms:</strong> {entry.paymentTerms || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Amount2:</strong> ${entry.amount2?.toFixed(2) || "0.00"}
+              <strong>Amount2:</strong> ₹{entry.amount2?.toFixed(2) || "0.00"}
             </span>
 
             <span style={{ fontSize: "1rem", color: "#555" }}>
