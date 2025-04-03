@@ -918,7 +918,7 @@ const Sales = () => {
                           {order.freightcs || "-"}
                         </td>
                         <td style={{ padding: "10px" }}>
-                          {order.installation ? "Yes" : "No"}
+                          {order.installation || "-"}
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.salesPerson || "-"}
