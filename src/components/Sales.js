@@ -738,7 +738,7 @@ const Sales = () => {
           >
             <table
               className="sales-table"
-              style={{ width: "100%", borderCollapse: "collapse" }}
+              style={{ width: "90%", borderCollapse: "collapse" }}
             >
               <thead
                 style={{
