@@ -951,9 +951,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           <Form.Control
             as="textarea"
             rows={2}
-            {...register("shippingAddress", {
-              required: "Shipping address is required",
-            })}
+            {...register("shippingAddress", {})}
             onChange={(e) =>
               debouncedHandleInputChange("shippingAddress", e.target.value)
             }
@@ -969,9 +967,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           <Form.Control
             as="textarea"
             rows={2}
-            {...register("billingAddress", {
-              required: "Billing address is required",
-            })}
+            {...register("billingAddress", {})}
             onChange={(e) =>
               debouncedHandleInputChange("billingAddress", e.target.value)
             }
