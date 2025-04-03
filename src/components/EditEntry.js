@@ -1204,22 +1204,13 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
         <Form.Group controlId="installation">
           <Form.Label>🛠️ Installation Charges</Form.Label>
-          <Form.Select
+          <Form.Control
             {...register("installation")}
             onChange={(e) =>
               debouncedHandleInputChange("installation", e.target.value)
             }
-            onFocus={(e) =>
-              (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
-            }
-            onBlur={(e) => (e.target.style.boxShadow = "none")}
             isInvalid={!!errors.installation}
-          >
-            <option value="">Select Installation Charges</option>
-            <option value="N/A">N/A</option>
-            <option value="Include">Include</option>
-            <option value="Others">Others</option>
-          </Form.Select>
+          />
           <Form.Control.Feedback type="invalid">
             {errors.installation?.message}
           </Form.Control.Feedback>
