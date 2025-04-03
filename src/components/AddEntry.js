@@ -1172,8 +1172,7 @@ function AddEntry({ onSubmit, onClose }) {
             {
               label: "Installation Charges",
               name: "installation",
-              type: "select",
-              options: ["N/A", "Include", "Others"],
+              type: "text",
             },
             { label: "Sales Person", name: "salesPerson", type: "text" },
             {
