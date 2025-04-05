@@ -348,6 +348,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     Maharashtra: [
       "Mumbai",
+      "Gadchiroli",
       "Pune",
       "Nagpur",
       "Nashik",
