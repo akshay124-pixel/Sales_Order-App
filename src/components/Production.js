@@ -378,6 +378,8 @@ const Production = () => {
                                 ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                 : order.fulfillingStatus === "Pending"
                                 ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                : order.fulfillingStatus === "Partial Dispatch"
+                                ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue gradient
                                 : order.fulfillingStatus === "Fulfilled"
                                 ? "linear-gradient(135deg, #28a745, #4cd964)"
                                 : "linear-gradient(135deg, #6c757d, #a9a9a9)",
@@ -390,6 +392,7 @@ const Production = () => {
                           {order.fulfillingStatus || "Pending"}
                         </Badge>
                       </td>
+
                       <td style={{ padding: "15px", textAlign: "center" }}>
                         {order.qty}
                       </td>
