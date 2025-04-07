@@ -756,11 +756,12 @@ const Sales = () => {
                   {[
                     "Seq No",
                     "Contact Person Name",
-                    "Party & Address",
+
                     "Product Details",
                     "Unit Price",
                     "Qty",
                     "Freight Charges & Status",
+                    "Party & Address",
                     "Order ID",
                     "SO Date",
                     "Committed Date",
@@ -821,9 +822,7 @@ const Sales = () => {
                       >
                         <td style={{ padding: "10px" }}>{index + 1}</td>
                         <td style={{ padding: "10px" }}>{order.name || "-"}</td>
-                        <td style={{ padding: "10px" }}>
-                          {order.partyAndAddress || "-"}
-                        </td>
+
                         <td style={{ padding: "10px" }}>
                           {order.productDetails || "-"}
                         </td>
@@ -835,6 +834,9 @@ const Sales = () => {
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.freightcs || "-"}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          {order.partyAndAddress || "-"}
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.orderId || "-"}
