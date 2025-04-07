@@ -13,9 +13,6 @@ function Installation() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
   const [formData, setFormData] = useState({
-    contactPerson: "",
-    contactNo: "",
-    installationDetails: "",
     installationStatus: "Pending",
     remarksByInstallation: "",
   });
@@ -80,9 +77,6 @@ function Installation() {
   const handleEdit = (order) => {
     setEditOrder(order);
     setFormData({
-      contactPerson: order.contactPerson || "",
-      contactNo: order.contactNo || "",
-      installationDetails: order.installationDetails || "",
       installationStatus: order.installationStatus || "Pending",
       remarksByInstallation: order.remarksByInstallation || "",
     });
@@ -92,12 +86,7 @@ function Installation() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.contactPerson || formData.contactPerson.trim() === "") {
-      newErrors.contactPerson = "Contact Person is required";
-    }
-    if (!formData.contactNo || formData.contactNo.trim() === "") {
-      newErrors.contactNo = "Contact Number is required";
-    }
+
     if (
       !formData.remarksByInstallation ||
       formData.remarksByInstallation.trim() === ""
