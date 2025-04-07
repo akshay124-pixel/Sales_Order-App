@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, Badge } from "react-bootstrap"; // Added Badge import
 import { FaEye } from "react-icons/fa";
 import { toast } from "react-toastify";
 import OutFinishedGoodModal from "./OutFinishedGoodModal";
@@ -25,10 +25,18 @@ function Finish() {
             },
           }
         );
-        setOrders(response.data.data); // This will now include "Partial Dispatch" orders
-        setLoading(false);
+        if (response.data.success) {
+          setOrders(response.data.data); // Includes "Partial Dispatch" and "Complete" orders
+        } else {
+          throw new Error("Failed to fetch finished goods data");
+        }
       } catch (error) {
         console.error("Error fetching finished goods:", error);
+        toast.error(
+          error.response?.data?.message || "Failed to fetch finished goods",
+          { position: "top-right", autoClose: 5000 }
+        );
+      } finally {
         setLoading(false);
       }
     };
@@ -57,6 +65,10 @@ function Finish() {
       )
     );
     setIsModalOpen(false);
+    toast.success("Order updated successfully!", {
+      position: "top-right",
+      autoClose: 3000,
+    });
   };
 
   const handleView = (order) => {
@@ -66,22 +78,36 @@ function Finish() {
   };
 
   const handleCopy = () => {
+    if (!viewOrder) return;
     const orderText = `
-      Order ID: ${viewOrder.orderId}
-      Serial No ID: ${viewOrder.serialno}
-      Model No: ${viewOrder.modelNo}
+      Order ID: ${viewOrder.orderId || "N/A"}
+      Serial No: ${viewOrder.serialno || "N/A"}
+      Model No: ${viewOrder.modelNo || "N/A"}
       Product: ${viewOrder.productDetails || "N/A"}
-      Quantity: ${viewOrder.qty}
+      Quantity: ${viewOrder.qty || "N/A"}
       Fulfillment Date: ${
         viewOrder.fulfillmentDate
           ? new Date(viewOrder.fulfillmentDate).toLocaleDateString()
           : "N/A"
       }
-      Customer: ${viewOrder.partyAndAddress || "N/A"}
-      Address: ${viewOrder.city}, ${viewOrder.state}
-    `;
+      Customer: ${viewOrder.name || viewOrder.partyAndAddress || "N/A"}
+      Address: ${
+        viewOrder.shippingAddress ||
+        `${viewOrder.city || ""}, ${viewOrder.state || ""}` ||
+        "N/A"
+      }
+      Status: ${
+        viewOrder.fulfillingStatus === "Partial Dispatch"
+          ? "Partial Dispatch"
+          : "Complete"
+      }
+    `.trim();
     navigator.clipboard.writeText(orderText);
     setCopied(true);
+    toast.success("Details copied to clipboard!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -142,7 +168,6 @@ function Finish() {
             textAlign: "center",
             background: "linear-gradient(135deg, #2575fc, #6a11cb)",
             color: "#fff",
-
             boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
           }}
         >
@@ -211,7 +236,7 @@ function Finish() {
                       "Production Date",
                       "Customer Name",
                       "Delivery Address",
-                      "Status", // New column
+                      "Status",
                       "Actions",
                     ].map((header, index) => (
                       <th
@@ -255,7 +280,7 @@ function Finish() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.orderId}
+                        {order.orderId || "N/A"}
                       </td>
                       <td
                         style={{
@@ -277,7 +302,7 @@ function Finish() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.qty}
+                        {order.qty || "N/A"}
                       </td>
                       <td
                         style={{
@@ -312,15 +337,23 @@ function Finish() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.shippingAddress}
+                        {order.shippingAddress || "N/A"}
                       </td>
-                      <td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          textAlign: "center",
+                          color: "#2c3e50",
+                          fontSize: "1rem",
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
                         <Badge
                           style={{
                             background:
                               order.fulfillingStatus === "Partial Dispatch"
-                                ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue gradient for Partial Dispatch
-                                : "linear-gradient(135deg, #28a745, #4cd964)", // Green for Complete
+                                ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                                : "linear-gradient(135deg, #28a745, #4cd964)",
                             color: "#fff",
                             padding: "5px 10px",
                             borderRadius: "12px",
@@ -463,13 +496,13 @@ function Finish() {
                   }}
                 >
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Order ID:</strong> {viewOrder.orderId}
+                    <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Serial No:</strong> {viewOrder.serialno}
+                    <strong>Serial No:</strong> {viewOrder.serialno || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Model No:</strong> {viewOrder.modelNo}
+                    <strong>Model No:</strong> {viewOrder.modelNo || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Product:</strong>{" "}
@@ -488,7 +521,14 @@ function Finish() {
                     <strong>Customer:</strong> {viewOrder.name || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Address:</strong> {viewOrder.shippingAddress}
+                    <strong>Address:</strong>{" "}
+                    {viewOrder.shippingAddress || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Status:</strong>{" "}
+                    {viewOrder.fulfillingStatus === "Partial Dispatch"
+                      ? "Partial Dispatch"
+                      : "Complete"}
                   </span>
                 </div>
               </div>
