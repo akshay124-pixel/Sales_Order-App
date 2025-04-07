@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
-import { FaEye, FaTrash } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 function Accounts() {
@@ -15,11 +15,7 @@ function Accounts() {
   const [formData, setFormData] = useState({
     billNumber: "",
     dispatchDate: "",
-    partyAndAddress: "",
-    email: "",
-    mobile: "",
-    total: "",
-    gst: "",
+
     paymentReceived: "Not Received",
     remarksByAccounts: "",
     invoiceNumber: "",
@@ -76,8 +72,8 @@ function Accounts() {
       Bill Number: ${viewOrder.billNumber || "N/A"}
       Date: ${viewOrder.dispatchDate || "N/A"}
       Party & Address: ${viewOrder.partyAndAddress || "N/A"}
-      Email: ${viewOrder.email || "N/A"}
-      Mobile: ${viewOrder.mobile || "N/A"}
+      Email: ${viewOrder.customerEmail || "N/A"}
+      Mobile: ${viewOrder.contactNo || "N/A"}
       Total: ${viewOrder.total || "N/A"}
       GST: ${viewOrder.gst || "N/A"}
       Payment Received: ${viewOrder.paymentReceived || "Not Received"}
@@ -101,11 +97,7 @@ function Accounts() {
       dispatchDate: order.dispatchDate
         ? new Date(order.dispatchDate).toISOString().split("T")[0]
         : "",
-      partyAndAddress: order.partyAndAddress || "",
-      email: order.email || "",
-      mobile: order.mobile || "",
-      total: order.total || "",
-      gst: order.gst || "",
+
       paymentReceived: order.paymentReceived || "Not Received",
       remarksByAccounts: order.remarksByAccounts || "",
       invoiceNumber: order.invoiceNumber || "",
@@ -115,36 +107,6 @@ function Accounts() {
     });
     setErrors({});
     setShowEditModal(true);
-  };
-
-  const handleDelete = async (orderId) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
-    try {
-      const response = await axios.delete(
-        `https://sales-order-server.onrender.com/api/delete/${orderId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (response.data.success) {
-        setOrders((prevOrders) =>
-          prevOrders.filter((order) => order._id !== orderId)
-        );
-        toast.success("Order deleted successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } else {
-        throw new Error(response.data.message || "Failed to delete order");
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete order", {
-        position: "top-right",
-        autoClose: 5000,
-      });
-    }
   };
 
   const validateForm = () => {
@@ -422,7 +384,7 @@ function Accounts() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.email || "N/A"}
+                        {order.customerEmail || "N/A"}
                       </td>
                       <td
                         style={{
@@ -433,7 +395,7 @@ function Accounts() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.mobile || "N/A"}
+                        {order.contactNo || "N/A"}
                       </td>
                       <td
                         style={{
@@ -519,19 +481,6 @@ function Accounts() {
                             <svg height="1em" viewBox="0 0 512 512" fill="#fff">
                               <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                             </svg>
-                          </Button>
-                          <Button
-                            variant="danger"
-                            onClick={() => handleDelete(order._id)}
-                            style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "22px",
-                              padding: "0",
-                            }}
-                            aria-label="Delete order"
-                          >
-                            <FaTrash style={{ marginBottom: "3px" }} />
                           </Button>
                         </div>
                       </td>
@@ -637,10 +586,10 @@ function Accounts() {
                     {viewOrder.partyAndAddress || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Email:</strong> {viewOrder.email || "N/A"}
+                    <strong>Email:</strong> {viewOrder.customerEmail || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Mobile:</strong> {viewOrder.mobile || "N/A"}
+                    <strong>Mobile:</strong> {viewOrder.contactNo || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Total:</strong> {viewOrder.total || "N/A"}
@@ -762,148 +711,6 @@ function Accounts() {
 
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Date <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Control
-                type="date"
-                value={formData.dispatchDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, dispatchDate: e.target.value })
-                }
-                style={{
-                  borderRadius: "10px",
-                  border: errors.dispatchDate
-                    ? "1px solid red"
-                    : "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                }}
-                required
-              />
-              {errors.dispatchDate && (
-                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.dispatchDate}
-                </Form.Text>
-              )}
-            </Form.Group>
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Party & Address <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={2}
-                value={formData.partyAndAddress}
-                onChange={(e) =>
-                  setFormData({ ...formData, partyAndAddress: e.target.value })
-                }
-                placeholder="Enter party and address"
-                style={{
-                  borderRadius: "10px",
-                  border: errors.partyAndAddress
-                    ? "1px solid red"
-                    : "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                }}
-                required
-              />
-              {errors.partyAndAddress && (
-                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.partyAndAddress}
-                </Form.Text>
-              )}
-            </Form.Group>
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Email
-              </Form.Label>
-              <Form.Control
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                placeholder="Enter email"
-                style={{
-                  borderRadius: "10px",
-                  border: "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                }}
-              />
-            </Form.Group>
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Mobile
-              </Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.mobile}
-                onChange={(e) =>
-                  setFormData({ ...formData, mobile: e.target.value })
-                }
-                placeholder="Enter mobile number"
-                style={{
-                  borderRadius: "10px",
-                  border: "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                }}
-              />
-            </Form.Group>
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Total <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Control
-                type="number"
-                value={formData.total}
-                onChange={(e) =>
-                  setFormData({ ...formData, total: e.target.value })
-                }
-                placeholder="Enter total amount"
-                style={{
-                  borderRadius: "10px",
-                  border: errors.total ? "1px solid red" : "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                }}
-                required
-              />
-              {errors.total && (
-                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.total}
-                </Form.Text>
-              )}
-            </Form.Group>
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                GST
-              </Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.gst}
-                onChange={(e) =>
-                  setFormData({ ...formData, gst: e.target.value })
-                }
-                placeholder="Enter GST"
-                style={{
-                  borderRadius: "10px",
-                  border: "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                }}
-              />
-            </Form.Group>
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                 Payment Received
               </Form.Label>
               <Form.Select
@@ -921,38 +728,6 @@ function Accounts() {
                 <option value="Not Received">Not Received</option>
                 <option value="Received">Received</option>
               </Form.Select>
-            </Form.Group>
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Remarks by Accounts <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={formData.remarksByAccounts}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    remarksByAccounts: e.target.value,
-                  })
-                }
-                placeholder="Enter remarks"
-                style={{
-                  borderRadius: "10px",
-                  border: errors.remarksByAccounts
-                    ? "1px solid red"
-                    : "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                }}
-                required
-              />
-              {errors.remarksByAccounts && (
-                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.remarksByAccounts}
-                </Form.Text>
-              )}
             </Form.Group>
 
             <Form.Group style={{ marginBottom: "20px" }}>
@@ -992,6 +767,37 @@ function Accounts() {
                   fontSize: "1rem",
                 }}
               />
+            </Form.Group>
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Remarks by Accounts <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData.remarksByAccounts}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    remarksByAccounts: e.target.value,
+                  })
+                }
+                placeholder="Enter remarks"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.remarksByAccounts
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.remarksByAccounts && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.remarksByAccounts}
+                </Form.Text>
+              )}
             </Form.Group>
 
             <div
