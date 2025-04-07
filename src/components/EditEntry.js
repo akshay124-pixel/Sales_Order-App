@@ -104,8 +104,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     () => ({
       sostatus: "Pending for Approval",
       remarks: "",
-      invoiceNo: "",
-      invoiceDate: "",
     }),
     []
   );
@@ -186,10 +184,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       const newUpdateData = {
         sostatus: entryToEdit.sostatus || "Pending for Approval",
         remarks: entryToEdit.remarks || "",
-        invoiceNo: entryToEdit.invoiceNo || "",
-        invoiceDate: entryToEdit.invoiceDate
-          ? new Date(entryToEdit.invoiceDate).toISOString().split("T")[0]
-          : "",
       };
       setFormData(newFormData);
       setUpdateData(newUpdateData);
@@ -308,8 +302,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       const submissionData = {
         sostatus: updateData.sostatus || "Pending for Approval",
         remarks: updateData.remarks || undefined,
-        invoiceNo: updateData.invoiceNo || undefined,
-        invoiceDate: updateData.invoiceDate || undefined,
       };
 
       const response = await axios.put(
@@ -1822,27 +1814,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Pending for Approval">Pending for Approval</option>
             <option value="Approved">Approved</option>
           </Form.Select>
-        </Form.Group>
-
-        <Form.Group controlId="invoiceNo">
-          <Form.Label>📄 Invoice No</Form.Label>
-          <Form.Control
-            type="text"
-            value={updateData.invoiceNo}
-            onChange={handleUpdateInputChange}
-            name="invoiceNo"
-            placeholder="Enter invoice number"
-          />
-        </Form.Group>
-
-        <Form.Group controlId="invoiceDate">
-          <Form.Label>📅 Invoice Date</Form.Label>
-          <Form.Control
-            type="date"
-            value={updateData.invoiceDate}
-            onChange={handleUpdateInputChange}
-            name="invoiceDate"
-          />
         </Form.Group>
 
         <Form.Group controlId="remarks">

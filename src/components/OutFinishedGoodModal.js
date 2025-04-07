@@ -31,7 +31,9 @@ const OutFinishedGoodModal = ({
       setFormData({
         dispatchFrom: initialData.dispatchFrom || "",
         transporter: initialData.transporter || "",
+
         transporterDetails: initialData.transporterDetails || "",
+        billNumber: initialData.billNumber || "",
         dispatchDate: initialData.dispatchDate
           ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
@@ -82,6 +84,7 @@ const OutFinishedGoodModal = ({
         dispatchFrom: formData.dispatchFrom,
         transporter: formData.transporter,
         transporterDetails: formData.transporterDetails || undefined,
+        billNumber: formData.billNumber || undefined,
         dispatchDate: new Date(formData.dispatchDate).toISOString(),
         docketNo: formData.docketNo || undefined,
         receiptDate: formData.receiptDate
@@ -161,6 +164,7 @@ const OutFinishedGoodModal = ({
         )}
         {[
           { key: "dispatchFrom", label: "Dispatch From", type: "text" },
+          { key: "billNumber", label: "Bill No", type: "text" },
           {
             key: "transporterDetails",
             label: "Transporter Details",

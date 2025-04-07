@@ -54,6 +54,7 @@ function Finish() {
     setEditData({
       dispatchFrom: order.dispatchFrom || "",
       transporter: order.transporter || "",
+      billNumber: order.billNumber || "",
       transporterDetails: order.transporterDetails || "",
       dispatchDate: order.fulfillmentDate
         ? new Date(order.fulfillmentDate).toISOString().split("T")[0]
@@ -90,6 +91,7 @@ function Finish() {
       Order ID: ${viewOrder.orderId || "N/A"}
       Serial No: ${viewOrder.serialno || "N/A"}
       Model No: ${viewOrder.modelNo || "N/A"}
+        Bill No: ${viewOrder.billNumber || "N/A"}
       Product: ${viewOrder.productDetails || "N/A"}
       Quantity: ${viewOrder.qty || "N/A"}
       Fulfillment Date: ${
