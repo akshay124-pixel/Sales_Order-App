@@ -755,16 +755,22 @@ const Sales = () => {
                 <tr>
                   {[
                     "Seq No",
+                    "Contact Person Name",
+                    "Party & Address",
+                    "Product Details",
+                    "Unit Price",
+                    "Qty",
+                    "Freight Charges & Status",
                     "Order ID",
                     "SO Date",
                     "Committed Date",
                     "Status",
                     "Approvel Status",
-                    "Party & Address",
+
                     "City",
                     "State",
                     "Pin Code",
-                    "Contact Person Name",
+
                     "Contact No",
                     "Customer Email",
                     "Model No",
@@ -772,14 +778,11 @@ const Sales = () => {
                     "Product Type",
                     "Size",
                     "Spec",
-                    "Product Details",
-                    "Qty",
-                    "Unit Price",
+
                     "GST",
                     "Total",
                     "Payment Terms",
                     "Amount2",
-                    "Freight Charges & Status",
 
                     "Installation",
                     "Sales Person",
@@ -817,6 +820,22 @@ const Sales = () => {
                         }}
                       >
                         <td style={{ padding: "10px" }}>{index + 1}</td>
+                        <td style={{ padding: "10px" }}>{order.name || "-"}</td>
+                        <td style={{ padding: "10px" }}>
+                          {order.partyAndAddress || "-"}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          {order.productDetails || "-"}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          ₹{order.unitPrice?.toFixed(2) || "0.00"}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          {order.qty !== undefined ? order.qty : "-"}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          {order.freightcs || "-"}
+                        </td>
                         <td style={{ padding: "10px" }}>
                           {order.orderId || "-"}
                         </td>
@@ -864,9 +883,7 @@ const Sales = () => {
                             {order.sostatus || "-"}
                           </Badge>
                         </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.partyAndAddress || "-"}
-                        </td>
+
                         <td style={{ padding: "10px" }}>{order.city || "-"}</td>
                         <td style={{ padding: "10px" }}>
                           {order.state || "-"}
@@ -874,7 +891,7 @@ const Sales = () => {
                         <td style={{ padding: "10px" }}>
                           {order.pinCode || "-"}
                         </td>
-                        <td style={{ padding: "10px" }}>{order.name || "-"}</td>
+
                         <td style={{ padding: "10px" }}>
                           {order.contactNo || "-"}
                         </td>
@@ -892,15 +909,7 @@ const Sales = () => {
                         </td>
                         <td style={{ padding: "10px" }}>{order.size || "-"}</td>
                         <td style={{ padding: "10px" }}>{order.spec || "-"}</td>
-                        <td style={{ padding: "10px" }}>
-                          {order.productDetails || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.qty !== undefined ? order.qty : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          ₹{order.unitPrice?.toFixed(2) || "0.00"}
-                        </td>
+
                         <td style={{ padding: "10px" }}>
                           {order.gst ? `${order.gst}%` : "-"}
                         </td>
@@ -914,9 +923,6 @@ const Sales = () => {
                           ₹{order.amount2?.toFixed(2) || "0.00"}
                         </td>
 
-                        <td style={{ padding: "10px" }}>
-                          {order.freightcs || "-"}
-                        </td>
                         <td style={{ padding: "10px" }}>
                           {order.installation || "-"}
                         </td>
