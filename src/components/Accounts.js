@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye } from "react-icons/fa";
 import { toast } from "react-toastify";
 
-function Installation() {
+function Accounts() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -13,40 +13,49 @@ function Installation() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
   const [formData, setFormData] = useState({
-    installationStatus: "Pending",
-    remarksByInstallation: "",
+    billNumber: "",
+    date: "",
+    partyAndAddress: "",
+    email: "",
+    mobile: "",
+    total: "",
+    gst: "",
+    paymentReceived: "Not Received",
+    remarksByAccounts: "",
+    invoiceNumber: "",
+    invoiceDate: "",
   });
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    const fetchInstallationOrders = async () => {
-      try {
-        const response = await axios.get(
-          "https://sales-order-server.onrender.com/api/installation-orders",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        if (response.data.success) {
-          setOrders(response.data.data);
-        } else {
-          throw new Error("Failed to fetch installation orders");
+  const fetchAccountsOrders = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "https://sales-order-server.onrender.com/api/accounts-orders",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      } catch (error) {
-        console.error("Error fetching installation orders:", error);
-        toast.error(
-          error.response?.data?.message ||
-            "Failed to fetch installation orders",
-          { position: "top-right", autoClose: 5000 }
-        );
-      } finally {
-        setLoading(false);
+      );
+      if (response.data.success) {
+        setOrders(response.data.data);
+      } else {
+        throw new Error("Failed to fetch accounts orders");
       }
-    };
-    fetchInstallationOrders();
+    } catch (error) {
+      console.error("Error fetching accounts orders:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to fetch accounts orders",
+        { position: "top-right", autoClose: 5000 }
+      );
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAccountsOrders();
+  }, [fetchAccountsOrders]);
 
   const handleView = (order) => {
     setViewOrder(order);
@@ -57,13 +66,17 @@ function Installation() {
   const handleCopy = () => {
     if (!viewOrder) return;
     const orderText = `
-      Order ID: ${viewOrder.orderId || "N/A"}
-      Contact Person: ${viewOrder.contactPerson || "N/A"}
-      Contact No: ${viewOrder.contactNo || "N/A"}
-      Shipping Address: ${viewOrder.shippingAddress || "N/A"}
-      Installation Details: ${viewOrder.installationDetails || "N/A"}
-      Installation Status: ${viewOrder.installationStatus || "Pending"}
-      Remarks: ${viewOrder.remarksByInstallation || "N/A"}
+      Bill Number: ${viewOrder.billNumber || "N/A"}
+      Date: ${viewOrder.date || "N/A"}
+      Party & Address: ${viewOrder.partyAndAddress || "N/A"}
+      Email: ${viewOrder.email || "N/A"}
+      Mobile: ${viewOrder.mobile || "N/A"}
+      Total: ${viewOrder.total || "N/A"}
+      GST: ${viewOrder.gst || "N/A"}
+      Payment Received: ${viewOrder.paymentReceived || "Not Received"}
+      Remarks: ${viewOrder.remarksByAccounts || "N/A"}
+      Invoice Number: ${viewOrder.invoiceNumber || "N/A"}
+      Invoice Date: ${viewOrder.invoiceDate || "N/A"}
     `.trim();
     navigator.clipboard.writeText(orderText);
     setCopied(true);
@@ -77,8 +90,19 @@ function Installation() {
   const handleEdit = (order) => {
     setEditOrder(order);
     setFormData({
-      installationStatus: order.installationStatus || "Pending",
-      remarksByInstallation: order.remarksByInstallation || "",
+      billNumber: order.billNumber || "",
+      date: order.date ? new Date(order.date).toISOString().split("T")[0] : "",
+      partyAndAddress: order.partyAndAddress || "",
+      email: order.email || "",
+      mobile: order.mobile || "",
+      total: order.total || "",
+      gst: order.gst || "",
+      paymentReceived: order.paymentReceived || "Not Received",
+      remarksByAccounts: order.remarksByAccounts || "",
+      invoiceNumber: order.invoiceNumber || "",
+      invoiceDate: order.invoiceDate
+        ? new Date(order.invoiceDate).toISOString().split("T")[0]
+        : "",
     });
     setErrors({});
     setShowEditModal(true);
@@ -86,12 +110,23 @@ function Installation() {
 
   const validateForm = () => {
     const newErrors = {};
-
+    if (!formData.billNumber || formData.billNumber.trim() === "") {
+      newErrors.billNumber = "Bill Number is required";
+    }
+    if (!formData.date || formData.date.trim() === "") {
+      newErrors.date = "Date is required";
+    }
+    if (!formData.partyAndAddress || formData.partyAndAddress.trim() === "") {
+      newErrors.partyAndAddress = "Party & Address is required";
+    }
+    if (!formData.total || formData.total.trim() === "") {
+      newErrors.total = "Total is required";
+    }
     if (
-      !formData.remarksByInstallation ||
-      formData.remarksByInstallation.trim() === ""
+      !formData.remarksByAccounts ||
+      formData.remarksByAccounts.trim() === ""
     ) {
-      newErrors.remarksByInstallation = "Remarks are required";
+      newErrors.remarksByAccounts = "Remarks are required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -102,9 +137,17 @@ function Installation() {
     if (!validateForm()) return;
 
     try {
+      const submissionData = {
+        ...formData,
+        date: new Date(formData.date).toISOString(),
+        invoiceDate: formData.invoiceDate
+          ? new Date(formData.invoiceDate).toISOString()
+          : undefined,
+      };
+
       const response = await axios.put(
         `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
-        formData,
+        submissionData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -119,14 +162,14 @@ function Installation() {
               .map((order) =>
                 order._id === editOrder._id ? updatedOrder : order
               )
-              .filter((order) => order.installationStatus !== "Completed") // Remove completed locally
+              .filter((order) => order.paymentReceived !== "Received") // Remove if payment received
         );
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
-        fetchInstallationOrders(); // Refresh the list
+        fetchAccountsOrders(); // Refresh the list
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
@@ -167,7 +210,7 @@ function Installation() {
             textShadow: "1px 1px 2px rgba(0, 0, 0, 0.1)",
           }}
         >
-          Loading Installation Orders...
+          Loading Accounts Orders...
         </p>
       </div>
     );
@@ -205,7 +248,7 @@ function Installation() {
               textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
             }}
           >
-            Installation Dashboard
+            Accounts Dashboard
           </h1>
         </header>
 
@@ -223,7 +266,7 @@ function Installation() {
                 fontWeight: "500",
               }}
             >
-              No installation orders available at this time.
+              No accounts orders available at this time.
             </div>
           ) : (
             <div
@@ -255,12 +298,14 @@ function Installation() {
                 >
                   <tr>
                     {[
-                      "Order ID",
-                      "Contact Person",
-                      "Contact No",
-                      "Shipping Address",
-                      "Installation Details",
-                      "Installation Status",
+                      "Bill Number",
+                      "Date",
+                      "Party & Address",
+                      "Email",
+                      "Mobile",
+                      "Total",
+                      "GST",
+                      "Payment Received",
                       "Actions",
                     ].map((header, index) => (
                       <th
@@ -304,7 +349,7 @@ function Installation() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.orderId || "N/A"}
+                        {order.billNumber || "N/A"}
                       </td>
                       <td
                         style={{
@@ -315,7 +360,9 @@ function Installation() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.name || "N/A"}
+                        {order.date
+                          ? new Date(order.date).toLocaleDateString()
+                          : "N/A"}
                       </td>
                       <td
                         style={{
@@ -326,7 +373,7 @@ function Installation() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.contactNo || "N/A"}
+                        {order.partyAndAddress || "N/A"}
                       </td>
                       <td
                         style={{
@@ -337,7 +384,7 @@ function Installation() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.shippingAddress || "N/A"}
+                        {order.email || "N/A"}
                       </td>
                       <td
                         style={{
@@ -348,7 +395,29 @@ function Installation() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.installation || "N/A"}
+                        {order.mobile || "N/A"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          textAlign: "center",
+                          color: "#2c3e50",
+                          fontSize: "1rem",
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
+                        {order.total || "N/A"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          textAlign: "center",
+                          color: "#2c3e50",
+                          fontSize: "1rem",
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
+                        {order.gst || "N/A"}
                       </td>
                       <td
                         style={{
@@ -362,19 +431,15 @@ function Installation() {
                         <Badge
                           style={{
                             background:
-                              order.installationStatus === "Pending"
-                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                : order.installationStatus === "In Progress"
-                                ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                                : order.installationStatus === "Completed"
+                              order.paymentReceived === "Received"
                                 ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                : "linear-gradient(135deg, #6c757d, #5a6268)",
+                                : "linear-gradient(135deg, #ff6b6b, #ff8787)",
                             color: "#fff",
                             padding: "5px 10px",
                             borderRadius: "12px",
                           }}
                         >
-                          {order.installationStatus || "Pending"}
+                          {order.paymentReceived || "Not Received"}
                         </Badge>
                       </td>
                       <td style={{ padding: "12px", textAlign: "center" }}>
@@ -398,21 +463,23 @@ function Installation() {
                           >
                             <FaEye style={{ marginBottom: "3px" }} />
                           </Button>
-
-                          <button
-                            className="editBtn"
+                          <Button
                             variant="secondary"
                             onClick={() => handleEdit(order)}
                             style={{
-                              minWidth: "40px",
                               width: "40px",
+                              height: "40px",
+                              borderRadius: "22px",
                               padding: "0",
+                              background:
+                                "linear-gradient(135deg, #6c757d, #5a6268)",
+                              border: "none",
                             }}
                           >
-                            <svg height="1em" viewBox="0 0 512 512">
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                            <svg height="1em" viewBox="0 0 512 512" fill="#fff">
+                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -460,7 +527,7 @@ function Installation() {
             }}
           >
             <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>📋</span>
-            Installation Order Details
+            Accounts Order Details
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -493,7 +560,7 @@ function Installation() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Installation Info
+                  Accounts Info
                 </h3>
                 <div
                   style={{
@@ -503,29 +570,48 @@ function Installation() {
                   }}
                 >
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
+                    <strong>Bill Number:</strong>{" "}
+                    {viewOrder.billNumber || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Contact Person:</strong> {viewOrder.name || "N/A"}
+                    <strong>Date:</strong>{" "}
+                    {viewOrder.date
+                      ? new Date(viewOrder.date).toLocaleDateString()
+                      : "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
+                    <strong>Party & Address:</strong>{" "}
+                    {viewOrder.partyAndAddress || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Shipping Address:</strong>{" "}
-                    {viewOrder.shippingAddress || "N/A"}
+                    <strong>Email:</strong> {viewOrder.email || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Installation Charges & Status:</strong>{" "}
-                    {viewOrder.installation || "N/A"}
+                    <strong>Mobile:</strong> {viewOrder.mobile || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Installation Status:</strong>{" "}
-                    {viewOrder.installationStatus || "Pending"}
+                    <strong>Total:</strong> {viewOrder.total || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>GST:</strong> {viewOrder.gst || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Payment Received:</strong>{" "}
+                    {viewOrder.paymentReceived || "Not Received"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Remarks:</strong>{" "}
-                    {viewOrder.remarksByInstallation || "N/A"}
+                    {viewOrder.remarksByAccounts || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Invoice Number:</strong>{" "}
+                    {viewOrder.invoiceNumber || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Invoice Date:</strong>{" "}
+                    {viewOrder.invoiceDate
+                      ? new Date(viewOrder.invoiceDate).toLocaleDateString()
+                      : "N/A"}
                   </span>
                 </div>
               </div>
@@ -581,7 +667,7 @@ function Installation() {
               letterSpacing: "1px",
             }}
           >
-            Edit Installation Order
+            Edit Accounts Order
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -595,15 +681,180 @@ function Installation() {
           <Form onSubmit={handleEditSubmit}>
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Installation Status
+                Bill Number <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.billNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, billNumber: e.target.value })
+                }
+                placeholder="Enter bill number"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.billNumber
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.billNumber && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.billNumber}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Date <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                type="date"
+                value={formData.date}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
+                style={{
+                  borderRadius: "10px",
+                  border: errors.date ? "1px solid red" : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.date && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.date}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Party & Address <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                value={formData.partyAndAddress}
+                onChange={(e) =>
+                  setFormData({ ...formData, partyAndAddress: e.target.value })
+                }
+                placeholder="Enter party and address"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.partyAndAddress
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.partyAndAddress && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.partyAndAddress}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Email
+              </Form.Label>
+              <Form.Control
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                placeholder="Enter email"
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Mobile
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.mobile}
+                onChange={(e) =>
+                  setFormData({ ...formData, mobile: e.target.value })
+                }
+                placeholder="Enter mobile number"
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Total <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                type="number"
+                value={formData.total}
+                onChange={(e) =>
+                  setFormData({ ...formData, total: e.target.value })
+                }
+                placeholder="Enter total amount"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.total ? "1px solid red" : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.total && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.total}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                GST
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.gst}
+                onChange={(e) =>
+                  setFormData({ ...formData, gst: e.target.value })
+                }
+                placeholder="Enter GST"
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Payment Received
               </Form.Label>
               <Form.Select
-                value={formData.installationStatus}
+                value={formData.paymentReceived}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    installationStatus: e.target.value,
-                  })
+                  setFormData({ ...formData, paymentReceived: e.target.value })
                 }
                 style={{
                   borderRadius: "10px",
@@ -612,31 +863,29 @@ function Installation() {
                   fontSize: "1rem",
                 }}
               >
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-                <option value="Failed">Failed</option>
+                <option value="Not Received">Not Received</option>
+                <option value="Received">Received</option>
               </Form.Select>
             </Form.Group>
 
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Remarks by Installation <span style={{ color: "red" }}>*</span>
+                Remarks by Accounts <span style={{ color: "red" }}>*</span>
               </Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
-                value={formData.remarksByInstallation}
+                value={formData.remarksByAccounts}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    remarksByInstallation: e.target.value,
+                    remarksByAccounts: e.target.value,
                   })
                 }
                 placeholder="Enter remarks"
                 style={{
                   borderRadius: "10px",
-                  border: errors.remarksByInstallation
+                  border: errors.remarksByAccounts
                     ? "1px solid red"
                     : "1px solid #ced4da",
                   padding: "12px",
@@ -644,11 +893,50 @@ function Installation() {
                 }}
                 required
               />
-              {errors.remarksByInstallation && (
+              {errors.remarksByAccounts && (
                 <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.remarksByInstallation}
+                  {errors.remarksByAccounts}
                 </Form.Text>
               )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Invoice Number
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.invoiceNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, invoiceNumber: e.target.value })
+                }
+                placeholder="Enter invoice number"
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Invoice Date
+              </Form.Label>
+              <Form.Control
+                type="date"
+                value={formData.invoiceDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, invoiceDate: e.target.value })
+                }
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
             </Form.Group>
 
             <div
@@ -701,4 +989,4 @@ const keyframes = `
 
 document.head.insertAdjacentHTML("beforeend", `<style>${keyframes}</style>`);
 
-export default Installation;
+export default Accounts;

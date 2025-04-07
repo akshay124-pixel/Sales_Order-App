@@ -9,12 +9,12 @@ import {
 import { useState, useEffect } from "react";
 import Sales from "./components/Sales";
 import Production from "./components/Production";
-
 import Finish from "./components/Finish";
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
 import Navbar from "./components/Navbar";
-import Installation from "./components/installation";
+import Installation from "./components/installation"; // Adjusted case to match convention
+import Accounts from "./components/Accounts";
 
 const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
   const location = useLocation();
@@ -70,6 +70,8 @@ const AppContent = () => {
         navigate("/finish");
       } else if (role === "Installation") {
         navigate("/installation");
+      } else if (role === "Accounts") {
+        navigate("/accounts");
       } else {
         navigate("/sales");
       }
@@ -105,7 +107,6 @@ const AppContent = () => {
             />
           }
         />
-
         <Route
           path="/finish"
           element={
@@ -127,6 +128,16 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/accounts"
+          element={
+            <PrivateRoute
+              element={<Accounts />}
+              isAuthenticated={isAuthenticated}
+              requiredRole="Accounts"
+            />
+          }
+        />
+        <Route
           path="/"
           element={
             isAuthenticated ? (
@@ -138,6 +149,8 @@ const AppContent = () => {
                     ? "/finish"
                     : localStorage.getItem("role") === "Installation"
                     ? "/installation"
+                    : localStorage.getItem("role") === "Accounts"
+                    ? "/accounts"
                     : "/sales"
                 }
                 replace

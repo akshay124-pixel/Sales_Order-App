@@ -159,6 +159,7 @@ function Signup() {
               <option value="Production">Production</option>
               <option value="Finish">Finish</option>
               <option value="Installation">Installation</option>
+              <option value="Accounts">Accounts</option>
             </select>
           </div>
           <button
