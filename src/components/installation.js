@@ -512,8 +512,7 @@ function Installation() {
                     <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Contact Person:</strong>{" "}
-                    {viewOrder.contactPerson || "N/A"}
+                    <strong>Contact Person:</strong> {viewOrder.name || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
