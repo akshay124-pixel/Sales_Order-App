@@ -9,11 +9,12 @@ import {
 import { useState, useEffect } from "react";
 import Sales from "./components/Sales";
 import Production from "./components/Production";
-import Installer from "./components/Installer";
+
 import Finish from "./components/Finish";
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
 import Navbar from "./components/Navbar";
+import Installation from "./components/installation";
 
 const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
   const location = useLocation();
@@ -67,6 +68,8 @@ const AppContent = () => {
         navigate("/production");
       } else if (role === "Finish") {
         navigate("/finish");
+      } else if (role === "Installation") {
+        navigate("/installation");
       } else {
         navigate("/sales");
       }
@@ -102,15 +105,7 @@ const AppContent = () => {
             />
           }
         />
-        <Route
-          path="/install"
-          element={
-            <PrivateRoute
-              element={<Installer />}
-              isAuthenticated={isAuthenticated}
-            />
-          }
-        />
+
         <Route
           path="/finish"
           element={
@@ -118,7 +113,16 @@ const AppContent = () => {
               element={<Finish />}
               isAuthenticated={isAuthenticated}
               requiredRole="Finish"
-              e
+            />
+          }
+        />
+        <Route
+          path="/installation"
+          element={
+            <PrivateRoute
+              element={<Installation />}
+              isAuthenticated={isAuthenticated}
+              requiredRole="Installation"
             />
           }
         />
@@ -132,6 +136,8 @@ const AppContent = () => {
                     ? "/production"
                     : localStorage.getItem("role") === "Finish"
                     ? "/finish"
+                    : localStorage.getItem("role") === "Installation"
+                    ? "/installation"
                     : "/sales"
                 }
                 replace
