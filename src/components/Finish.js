@@ -25,7 +25,7 @@ function Finish() {
             },
           }
         );
-        setOrders(response.data.data);
+        setOrders(response.data.data); // This will now include "Partial Dispatch" orders
         setLoading(false);
       } catch (error) {
         console.error("Error fetching finished goods:", error);
@@ -211,6 +211,7 @@ function Finish() {
                       "Production Date",
                       "Customer Name",
                       "Delivery Address",
+                      "Status", // New column
                       "Actions",
                     ].map((header, index) => (
                       <th
@@ -312,6 +313,23 @@ function Finish() {
                         }}
                       >
                         {order.shippingAddress}
+                      </td>
+                      <td>
+                        <Badge
+                          style={{
+                            background:
+                              order.fulfillingStatus === "Partial Dispatch"
+                                ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue gradient for Partial Dispatch
+                                : "linear-gradient(135deg, #28a745, #4cd964)", // Green for Complete
+                            color: "#fff",
+                            padding: "5px 10px",
+                            borderRadius: "12px",
+                          }}
+                        >
+                          {order.fulfillingStatus === "Partial Dispatch"
+                            ? "Partial Dispatch"
+                            : "Complete"}
+                        </Badge>
                       </td>
                       <td style={{ padding: "12px", textAlign: "center" }}>
                         <div
