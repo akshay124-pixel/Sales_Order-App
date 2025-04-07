@@ -761,6 +761,9 @@ const Sales = () => {
                     "Unit Price",
                     "Qty",
                     "Freight Charges & Status",
+
+                    "GST",
+                    "Total",
                     "Party & Address",
                     "Order ID",
                     "SO Date",
@@ -780,8 +783,6 @@ const Sales = () => {
                     "Size",
                     "Spec",
 
-                    "GST",
-                    "Total",
                     "Payment Terms",
                     "Amount2",
 
@@ -834,6 +835,12 @@ const Sales = () => {
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.freightcs || "-"}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          {order.gst ? `${order.gst}%` : "-"}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          ₹{order.total?.toFixed(2) || "0.00"}
                         </td>
                         <td style={{ padding: "10px" }}>
                           {order.partyAndAddress || "-"}
@@ -912,12 +919,6 @@ const Sales = () => {
                         <td style={{ padding: "10px" }}>{order.size || "-"}</td>
                         <td style={{ padding: "10px" }}>{order.spec || "-"}</td>
 
-                        <td style={{ padding: "10px" }}>
-                          {order.gst ? `${order.gst}%` : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          ₹{order.total?.toFixed(2) || "0.00"}
-                        </td>
                         <td style={{ padding: "10px" }}>
                           {order.paymentTerms || "-"}
                         </td>
