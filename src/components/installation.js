@@ -321,7 +321,7 @@ function Installation() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.contactPerson || "N/A"}
+                        {order.name || "N/A"}
                       </td>
                       <td
                         style={{
