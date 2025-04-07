@@ -117,12 +117,7 @@ function Accounts() {
     if (!formData.dispatchDate || formData.dispatchDate.trim() === "") {
       newErrors.dispatchDate = "Date is required";
     }
-    if (!formData.partyAndAddress || formData.partyAndAddress.trim() === "") {
-      newErrors.partyAndAddress = "Party & Address is required";
-    }
-    if (!formData.total || formData.total === "" || isNaN(formData.total)) {
-      newErrors.total = "Valid Total is required";
-    }
+
     if (
       !formData.remarksByAccounts ||
       formData.remarksByAccounts.trim() === ""
