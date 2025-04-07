@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 function Installation() {
@@ -18,35 +18,42 @@ function Installation() {
   });
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    const fetchInstallationOrders = async () => {
-      try {
-        const response = await axios.get(
-          "https://sales-order-server.onrender.com/api/installation-orders",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        if (response.data.success) {
-          setOrders(response.data.data);
-        } else {
-          throw new Error("Failed to fetch installation orders");
+  const fetchInstallationOrders = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "https://sales-order-server.onrender.com/api/installation-orders",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      } catch (error) {
-        console.error("Error fetching installation orders:", error);
-        toast.error(
-          error.response?.data?.message ||
-            "Failed to fetch installation orders",
-          { position: "top-right", autoClose: 5000 }
-        );
-      } finally {
-        setLoading(false);
+      );
+      if (response.data.success) {
+        setOrders(response.data.data);
+      } else {
+        throw new Error("Failed to fetch installation orders");
       }
-    };
-    fetchInstallationOrders();
+    } catch (error) {
+      console.error("Error fetching installation orders:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to fetch installation orders",
+        { position: "top-right", autoClose: 5000 }
+      );
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    fetchInstallationOrders().then(() => {
+      if (!isMounted) setLoading(false); // Prevent state update if unmounted
+    });
+    return () => {
+      isMounted = false; // Cleanup to prevent memory leak
+    };
+  }, [fetchInstallationOrders]);
 
   const handleView = (order) => {
     setViewOrder(order);
@@ -58,10 +65,10 @@ function Installation() {
     if (!viewOrder) return;
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
-      Contact Person: ${viewOrder.contactPerson || "N/A"}
+      Contact Person: ${viewOrder.name || "N/A"}
       Contact No: ${viewOrder.contactNo || "N/A"}
       Shipping Address: ${viewOrder.shippingAddress || "N/A"}
-      Installation Details: ${viewOrder.installationDetails || "N/A"}
+      Installation Details: ${viewOrder.installation || "N/A"}
       Installation Status: ${viewOrder.installationStatus || "Pending"}
       Remarks: ${viewOrder.remarksByInstallation || "N/A"}
     `.trim();
@@ -84,14 +91,50 @@ function Installation() {
     setShowEditModal(true);
   };
 
+  const handleDelete = async (orderId) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+    try {
+      const response = await axios.delete(
+        `https://sales-order-server.onrender.com/api/delete/${orderId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order._id !== orderId)
+        );
+        toast.success("Order deleted successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to delete order");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete order", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
-
     if (
       !formData.remarksByInstallation ||
       formData.remarksByInstallation.trim() === ""
     ) {
       newErrors.remarksByInstallation = "Remarks are required";
+    }
+    if (
+      !["Pending", "In Progress", "Completed", "Failed"].includes(
+        formData.installationStatus
+      )
+    ) {
+      newErrors.installationStatus = "Invalid installation status";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -113,20 +156,19 @@ function Installation() {
       );
       if (response.data.success) {
         const updatedOrder = response.data.data;
-        setOrders(
-          (prevOrders) =>
-            prevOrders
-              .map((order) =>
-                order._id === editOrder._id ? updatedOrder : order
-              )
-              .filter((order) => order.installationStatus !== "Completed") // Remove completed locally
+        setOrders((prevOrders) =>
+          prevOrders
+            .map((order) =>
+              order._id === editOrder._id ? updatedOrder : order
+            )
+            .filter((order) => order.installationStatus !== "Completed")
         );
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
-        fetchInstallationOrders(); // Refresh the list
+        await fetchInstallationOrders(); // Refresh the list
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
@@ -395,24 +437,41 @@ function Installation() {
                               borderRadius: "22px",
                               padding: "0",
                             }}
+                            aria-label="View order details"
                           >
                             <FaEye style={{ marginBottom: "3px" }} />
                           </Button>
-
-                          <button
-                            className="editBtn"
+                          <Button
                             variant="secondary"
                             onClick={() => handleEdit(order)}
                             style={{
-                              minWidth: "40px",
                               width: "40px",
+                              height: "40px",
+                              borderRadius: "22px",
+                              padding: "0",
+                              background:
+                                "linear-gradient(135deg, #6c757d, #5a6268)",
+                              border: "none",
+                            }}
+                            aria-label="Edit order"
+                          >
+                            <svg height="1em" viewBox="0 0 512 512" fill="#fff">
+                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+                            </svg>
+                          </Button>
+                          <Button
+                            variant="danger"
+                            onClick={() => handleDelete(order._id)}
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "22px",
                               padding: "0",
                             }}
+                            aria-label="Delete order"
                           >
-                            <svg height="1em" viewBox="0 0 512 512">
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
-                            </svg>
-                          </button>
+                            <FaTrash style={{ marginBottom: "3px" }} />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -516,7 +575,7 @@ function Installation() {
                     {viewOrder.shippingAddress || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Installation Charges & Status:</strong>{" "}
+                    <strong>Installation Details:</strong>{" "}
                     {viewOrder.installation || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -607,7 +666,9 @@ function Installation() {
                 }
                 style={{
                   borderRadius: "10px",
-                  border: "1px solid #ced4da",
+                  border: errors.installationStatus
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
                 }}
@@ -617,6 +678,11 @@ function Installation() {
                 <option value="Completed">Completed</option>
                 <option value="Failed">Failed</option>
               </Form.Select>
+              {errors.installationStatus && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.installationStatus}
+                </Form.Text>
+              )}
             </Form.Group>
 
             <Form.Group style={{ marginBottom: "20px" }}>
