@@ -530,6 +530,10 @@ function Finish() {
                       ? "Partial Dispatch"
                       : "Complete"}
                   </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Remarks By Production:</strong>{" "}
+                    {viewOrder.remarksByProduction || "N/A"}
+                  </span>
                 </div>
               </div>
               <Button
