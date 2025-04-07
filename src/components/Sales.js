@@ -204,9 +204,7 @@ const Sales = () => {
             total: Number(entry.total) || 0,
             paymentTerms: String(entry.paymentterms || "").trim(),
             amount2: Number(entry.amount2) || 0,
-
             freightcs: String(entry.freightcs || "").trim(),
-
             installation: String(entry.installation || "").trim(),
             salesPerson: String(entry.salesperson || "").trim(),
             shippingAddress: String(entry.shippingAddress || "").trim(),
@@ -217,11 +215,17 @@ const Sales = () => {
             docketNo: String(entry.docketno || "").trim(),
             receiptDate: parseDate(entry.receiptdate),
             sostatus: String(entry.sostatus || "Pending for Approval").trim(),
-            invoiceNo: Number(entry.invoiceNo) || 0,
+            invoiceNo: Number(entry.invoiceno || 0),
             invoiceDate: parseDate(entry.invoicedate),
             remarks: String(entry.remarks || "").trim(),
             fulfillingStatus: String(entry.fulfillingstatus || "").trim(),
             remarksByProduction: String(entry.remarksbyproduction || "").trim(),
+            // New fields from updated schema
+            billNumber: String(entry.billnumber || "").trim(),
+            completionStatus: String(entry.completionstatus || "").trim(),
+            fulfillmentDate: parseDate(entry.fulfillmentdate),
+            remarksByAccounts: String(entry.remarksbyaccounts || "").trim(),
+            paymentReceived: String(entry.paymentreceived || "").trim(),
           };
         });
 
