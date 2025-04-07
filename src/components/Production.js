@@ -84,19 +84,22 @@ const Production = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return; // Stop if validation fails
+    if (!validateForm()) return;
 
     try {
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${editOrder._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
         formData,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
+
       if (response.data.success) {
-        setOrders(
-          orders.map((order) =>
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
             order._id === editOrder._id ? response.data.data : order
           )
         );
@@ -105,7 +108,7 @@ const Production = () => {
           position: "top-right",
           autoClose: 3000,
         });
-        await fetchOrders(); // Re-fetch to ensure consistency
+        await fetchOrders();
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
@@ -435,6 +438,7 @@ const Production = () => {
         </div>
 
         {/* Edit Modal */}
+
         <Modal
           show={showEditModal}
           onHide={() => setShowEditModal(false)}
@@ -461,6 +465,7 @@ const Production = () => {
               Edit Production Order
             </Modal.Title>
           </Modal.Header>
+
           <Modal.Body
             style={{
               padding: "30px",
@@ -470,18 +475,13 @@ const Production = () => {
             }}
           >
             <Form onSubmit={handleEditSubmit}>
+              {/* Production Status */}
               <Form.Group style={{ marginBottom: "20px" }}>
-                <Form.Label
-                  style={{
-                    fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "8px",
-                  }}
-                >
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                   Production Status
                 </Form.Label>
                 <Form.Select
-                  value={formData.fulfillingStatus}
+                  value={formData.fulfillingStatus || ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -503,27 +503,21 @@ const Production = () => {
                 >
                   <option value="Under Process">Under Process</option>
                   <option value="Pending">Pending</option>
+                  <option value="Partial Dispatch">Partial Dispatch</option>
                   <option value="Fulfilled">Completed</option>
                 </Form.Select>
               </Form.Group>
+
+              {/* Model No */}
               <Form.Group style={{ marginBottom: "20px" }} controlId="modelNo">
-                <Form.Label
-                  style={{
-                    fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "8px",
-                  }}
-                >
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                   Model No
                 </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.modelNo || ""}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      modelNo: e.target.value,
-                    })
+                    setFormData({ ...formData, modelNo: e.target.value })
                   }
                   placeholder="Enter model number"
                   style={{
@@ -540,24 +534,17 @@ const Production = () => {
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 />
               </Form.Group>
+
+              {/* Serial Number */}
               <Form.Group style={{ marginBottom: "20px" }} controlId="serialno">
-                <Form.Label
-                  style={{
-                    fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "8px",
-                  }}
-                >
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                   Serial Number
                 </Form.Label>
                 <Form.Control
                   type="text"
                   value={formData.serialno || ""}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      serialno: e.target.value,
-                    })
+                    setFormData({ ...formData, serialno: e.target.value })
                   }
                   placeholder="Enter serial number"
                   style={{
@@ -574,14 +561,10 @@ const Production = () => {
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 />
               </Form.Group>
+
+              {/* Remarks by Production */}
               <Form.Group style={{ marginBottom: "20px" }}>
-                <Form.Label
-                  style={{
-                    fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "8px",
-                  }}
-                >
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                   Remarks by Production <span style={{ color: "red" }}>*</span>
                 </Form.Label>
                 <Form.Control
@@ -617,6 +600,8 @@ const Production = () => {
                   </Form.Text>
                 )}
               </Form.Group>
+
+              {/* Action Buttons */}
               <div
                 style={{
                   display: "flex",
@@ -644,6 +629,7 @@ const Production = () => {
                 >
                   Cancel
                 </Button>
+
                 <Button
                   type="submit"
                   style={{
