@@ -181,6 +181,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
                     ? "warning"
                     : entry.status === "Completed"
                     ? "success"
+                    : entry.status === "Dispatched"
+                    ? "info"
                     : "secondary"
                 }
               >
