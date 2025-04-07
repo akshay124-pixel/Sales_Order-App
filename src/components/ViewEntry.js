@@ -413,15 +413,24 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Fulfilling Status:</strong>{" "}
+              <strong>Production Status:</strong>{" "}
               <Badge
-                bg={
-                  entry.fulfillingStatus === "Pending"
-                    ? "danger" // Red
-                    : entry.fulfillingStatus === "Fulfilled"
-                    ? "success" // Green
-                    : "secondary" // Gray for unknown
-                }
+                style={{
+                  background:
+                    entry.fulfillingStatus === "Under Process"
+                      ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                      : entry.fulfillingStatus === "Pending"
+                      ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                      : entry.fulfillingStatus === "Partial Dispatch"
+                      ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue gradient
+                      : entry.fulfillingStatus === "Fulfilled"
+                      ? "linear-gradient(135deg, #28a745, #4cd964)"
+                      : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                  color: "#fff",
+                  padding: "5px 10px",
+                  borderRadius: "12px",
+                  fontWeight: "500",
+                }}
               >
                 {entry.fulfillingStatus || "Pending"}
               </Badge>
