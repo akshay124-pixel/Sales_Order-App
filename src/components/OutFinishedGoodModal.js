@@ -19,6 +19,7 @@ const OutFinishedGoodModal = ({
     dispatchDate: new Date().toISOString().split("T")[0], // Default to current date
     docketNo: "",
     receiptDate: "",
+    dispatchStatus: "Not Dispatched", // Default dispatch status
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,6 +39,7 @@ const OutFinishedGoodModal = ({
         receiptDate: initialData.receiptDate
           ? new Date(initialData.receiptDate).toISOString().split("T")[0]
           : "",
+        dispatchStatus: initialData.dispatchStatus || "Not Dispatched",
       });
     }
   }, [initialData, entryToEdit]);
@@ -49,6 +51,10 @@ const OutFinishedGoodModal = ({
 
   const handleTransporterChange = (value) => {
     setFormData((prev) => ({ ...prev, transporter: value }));
+  };
+
+  const handleDispatchStatusChange = (value) => {
+    setFormData((prev) => ({ ...prev, dispatchStatus: value }));
   };
 
   const handleSubmit = async () => {
@@ -81,6 +87,7 @@ const OutFinishedGoodModal = ({
         receiptDate: formData.receiptDate
           ? new Date(formData.receiptDate).toISOString()
           : undefined,
+        dispatchStatus: formData.dispatchStatus || "Not Dispatched",
       };
 
       const response = await axios.put(
@@ -94,9 +101,16 @@ const OutFinishedGoodModal = ({
         }
       );
 
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to update dispatch");
+      }
+
       const updatedEntry = response.data.data;
-      toast.success("Dispatch updated successfully!");
-      onSubmit(updatedEntry);
+      toast.success(
+        `Dispatch updated successfully! Status: ${updatedEntry.dispatchStatus}`,
+        { position: "top-right", autoClose: 3000 }
+      );
+      onSubmit(updatedEntry); // Pass updated entry to parent (Finish component)
       onClose();
     } catch (err) {
       console.error("Dispatch submission error:", err);
@@ -108,7 +122,7 @@ const OutFinishedGoodModal = ({
       setError(
         errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
       );
-      toast.error(errorMessage);
+      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
     } finally {
       setLoading(false);
       setShowConfirm(false);
@@ -201,10 +215,36 @@ const OutFinishedGoodModal = ({
             style={{ width: "100%", borderRadius: "8px" }}
             disabled={loading}
           >
-            <Option value="">Select Transporter </Option>
+            <Option value="">Select Transporter</Option>
             <Option value="BlueDart">BlueDart</Option>
             <Option value="Om Logistics">Om Logistics</Option>
             <Option value="Others">Others</Option>
+          </Select>
+        </div>
+        <div>
+          <label
+            style={{
+              fontSize: "1rem",
+              fontWeight: "600",
+              color: "#333",
+              marginBottom: "5px",
+              display: "block",
+            }}
+          >
+            Dispatch Status
+          </label>
+          <Select
+            value={formData.dispatchStatus || "Not Dispatched"}
+            onChange={handleDispatchStatusChange}
+            style={{
+              width: "100%",
+              borderRadius: "8px",
+            }}
+            disabled={loading}
+          >
+            <Option value="Not Dispatched">Not Dispatched</Option>
+            <Option value="Dispatched">Dispatched</Option>
+            <Option value="Delivered">Delivered</Option>
           </Select>
         </div>
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>

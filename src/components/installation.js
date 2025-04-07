@@ -1,24 +1,31 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Modal, Badge } from "react-bootstrap"; // Added Badge import
-import { FaEye } from "react-icons/fa";
+import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
+import { FaEye, FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
-import OutFinishedGoodModal from "./OutFinishedGoodModal";
 
-function Finish() {
+function Installation() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewOrder, setViewOrder] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editOrder, setEditOrder] = useState(null);
+  const [formData, setFormData] = useState({
+    contactPerson: "",
+    contactNo: "",
+    installationDetails: "",
+    installationStatus: "Pending",
+    remarksByInstallation: "",
+  });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    const fetchFinishedGoods = async () => {
+    const fetchInstallationOrders = async () => {
       try {
         const response = await axios.get(
-          "https://sales-order-server.onrender.com/api/finished-goods",
+          "https://sales-order-server.onrender.com/api/installation-orders",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -26,57 +33,23 @@ function Finish() {
           }
         );
         if (response.data.success) {
-          setOrders(response.data.data); // Includes "Partial Dispatch" and "Complete" orders, excludes "Dispatched"
+          setOrders(response.data.data);
         } else {
-          throw new Error(
-            response.data.message || "Failed to fetch finished goods data"
-          );
+          throw new Error("Failed to fetch installation orders");
         }
       } catch (error) {
-        console.error("Error fetching finished goods:", error);
+        console.error("Error fetching installation orders:", error);
         toast.error(
           error.response?.data?.message ||
-            error.message ||
-            "Failed to fetch finished goods",
-          {
-            position: "top-right",
-            autoClose: 5000,
-          }
+            "Failed to fetch installation orders",
+          { position: "top-right", autoClose: 5000 }
         );
       } finally {
         setLoading(false);
       }
     };
-    fetchFinishedGoods();
+    fetchInstallationOrders();
   }, []);
-
-  const handleEditClick = (order) => {
-    setEditData({
-      dispatchFrom: order.dispatchFrom || "",
-      transporter: order.transporter || "",
-      transporterDetails: order.transporterDetails || "",
-      dispatchDate: order.fulfillmentDate
-        ? new Date(order.fulfillmentDate).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0],
-      docketNo: order.docketNo || "",
-      receiptDate: order.receiptDate || "",
-      _id: order._id,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleModalSubmit = (updatedEntry) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order._id === updatedEntry._id ? updatedEntry : order
-      )
-    );
-    setIsModalOpen(false);
-    toast.success("Order updated successfully!", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-  };
 
   const handleView = (order) => {
     setViewOrder(order);
@@ -88,26 +61,12 @@ function Finish() {
     if (!viewOrder) return;
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
-      Serial No: ${viewOrder.serialno || "N/A"}
-      Model No: ${viewOrder.modelNo || "N/A"}
-      Product: ${viewOrder.productDetails || "N/A"}
-      Quantity: ${viewOrder.qty || "N/A"}
-      Fulfillment Date: ${
-        viewOrder.fulfillmentDate
-          ? new Date(viewOrder.fulfillmentDate).toLocaleDateString()
-          : "N/A"
-      }
-      Customer: ${viewOrder.name || viewOrder.partyAndAddress || "N/A"}
-      Address: ${
-        viewOrder.shippingAddress ||
-        `${viewOrder.city || ""}, ${viewOrder.state || ""}` ||
-        "N/A"
-      }
-      Status: ${
-        viewOrder.fulfillingStatus === "Partial Dispatch"
-          ? "Partial Dispatch"
-          : "Complete"
-      }
+      Contact Person: ${viewOrder.contactPerson || "N/A"}
+      Contact No: ${viewOrder.contactNo || "N/A"}
+      Shipping Address: ${viewOrder.shippingAddress || "N/A"}
+      Installation Details: ${viewOrder.installationDetails || "N/A"}
+      Installation Status: ${viewOrder.installationStatus || "Pending"}
+      Remarks: ${viewOrder.remarksByInstallation || "N/A"}
     `.trim();
     navigator.clipboard.writeText(orderText);
     setCopied(true);
@@ -116,6 +75,103 @@ function Finish() {
       autoClose: 2000,
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleEdit = (order) => {
+    setEditOrder(order);
+    setFormData({
+      contactPerson: order.contactPerson || "",
+      contactNo: order.contactNo || "",
+      installationDetails: order.installationDetails || "",
+      installationStatus: order.installationStatus || "Pending",
+      remarksByInstallation: order.remarksByInstallation || "",
+    });
+    setErrors({});
+    setShowEditModal(true);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.contactPerson || formData.contactPerson.trim() === "") {
+      newErrors.contactPerson = "Contact Person is required";
+    }
+    if (!formData.contactNo || formData.contactNo.trim() === "") {
+      newErrors.contactNo = "Contact Number is required";
+    }
+    if (
+      !formData.remarksByInstallation ||
+      formData.remarksByInstallation.trim() === ""
+    ) {
+      newErrors.remarksByInstallation = "Remarks are required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    try {
+      const response = await axios.put(
+        `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === editOrder._id ? response.data.data : order
+          )
+        );
+        setShowEditModal(false);
+        toast.success("Order updated successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to update order");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update order", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }
+  };
+
+  const handleDelete = async (orderId) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+    try {
+      const response = await axios.delete(
+        `https://sales-order-server.onrender.com/api/delete/${orderId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data.success) {
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order._id !== orderId)
+        );
+        toast.success("Order deleted successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to delete order");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete order", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }
   };
 
   if (loading) {
@@ -130,14 +186,12 @@ function Finish() {
           background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         }}
       >
-        <div
+        <Spinner
+          animation="border"
           style={{
             width: "50px",
             height: "50px",
-            border: "5px solid #2575fc",
-            borderTop: "5px solid transparent",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
+            color: "#2575fc",
             marginBottom: "15px",
           }}
         />
@@ -149,7 +203,7 @@ function Finish() {
             textShadow: "1px 1px 2px rgba(0, 0, 0, 0.1)",
           }}
         >
-          Loading Finished Goods...
+          Loading Installation Orders...
         </p>
       </div>
     );
@@ -187,7 +241,7 @@ function Finish() {
               textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
             }}
           >
-            Finished Goods Dashboard
+            Installation Dashboard
           </h1>
         </header>
 
@@ -205,7 +259,7 @@ function Finish() {
                 fontWeight: "500",
               }}
             >
-              No finished goods available at this time.
+              No installation orders available at this time.
             </div>
           ) : (
             <div
@@ -238,12 +292,11 @@ function Finish() {
                   <tr>
                     {[
                       "Order ID",
-                      "Product Name",
-                      "Quantity",
-                      "Production Date",
-                      "Customer Name",
-                      "Delivery Address",
-                      "Status",
+                      "Contact Person",
+                      "Contact No",
+                      "Shipping Address",
+                      "Installation Details",
+                      "Installation Status",
                       "Actions",
                     ].map((header, index) => (
                       <th
@@ -298,7 +351,7 @@ function Finish() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.productDetails || "N/A"}
+                        {order.contactPerson || "N/A"}
                       </td>
                       <td
                         style={{
@@ -309,31 +362,7 @@ function Finish() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.qty || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.fulfillmentDate
-                          ? new Date(order.fulfillmentDate).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.name || "N/A"}
+                        {order.contactNo || "N/A"}
                       </td>
                       <td
                         style={{
@@ -355,20 +384,33 @@ function Finish() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
+                        {order.installationDetails || "N/A"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          textAlign: "center",
+                          color: "#2c3e50",
+                          fontSize: "1rem",
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
                         <Badge
                           style={{
                             background:
-                              order.fulfillingStatus === "Partial Dispatch"
-                                ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                : "linear-gradient(135deg, #28a745, #4cd964)",
+                              order.installationStatus === "Pending"
+                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                : order.installationStatus === "In Progress"
+                                ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                                : order.installationStatus === "Completed"
+                                ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                : "linear-gradient(135deg, #6c757d, #5a6268)",
                             color: "#fff",
                             padding: "5px 10px",
                             borderRadius: "12px",
                           }}
                         >
-                          {order.fulfillingStatus === "Partial Dispatch"
-                            ? "Partial Dispatch"
-                            : "Complete"}
+                          {order.installationStatus || "Pending"}
                         </Badge>
                       </td>
                       <td style={{ padding: "12px", textAlign: "center" }}>
@@ -392,28 +434,35 @@ function Finish() {
                           >
                             <FaEye style={{ marginBottom: "3px" }} />
                           </Button>
-                          <button
-                            className="editBtn"
-                            onClick={() => handleEditClick(order)}
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleEdit(order)}
                             style={{
-                              minWidth: "40px",
                               width: "40px",
                               height: "40px",
+                              borderRadius: "22px",
                               padding: "0",
-                              border: "none",
                               background:
                                 "linear-gradient(135deg, #6c757d, #5a6268)",
-                              borderRadius: "22px",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
+                              border: "none",
                             }}
                           >
                             <svg height="1em" viewBox="0 0 512 512" fill="#fff">
                               <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                             </svg>
-                          </button>
+                          </Button>
+                          <Button
+                            variant="danger"
+                            onClick={() => handleDelete(order._id)}
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "22px",
+                              padding: "0",
+                            }}
+                          >
+                            <FaTrash style={{ marginBottom: "3px" }} />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -431,6 +480,7 @@ function Finish() {
         </p>
       </footer>
 
+      {/* View Modal */}
       <Modal
         show={showViewModal}
         onHide={() => setShowViewModal(false)}
@@ -460,7 +510,7 @@ function Finish() {
             }}
           >
             <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>📋</span>
-            Order Details
+            Installation Order Details
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -493,7 +543,7 @@ function Finish() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Product Info
+                  Installation Info
                 </h3>
                 <div
                   style={{
@@ -506,40 +556,27 @@ function Finish() {
                     <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Serial No:</strong> {viewOrder.serialno || "N/A"}
+                    <strong>Contact Person:</strong>{" "}
+                    {viewOrder.contactPerson || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Model No:</strong> {viewOrder.modelNo || "N/A"}
+                    <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Product:</strong>{" "}
-                    {viewOrder.productDetails || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Quantity:</strong> {viewOrder.qty || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Production Date:</strong>{" "}
-                    {viewOrder.fulfillmentDate
-                      ? new Date(viewOrder.fulfillmentDate).toLocaleDateString()
-                      : "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Customer:</strong> {viewOrder.name || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Address:</strong>{" "}
+                    <strong>Shipping Address:</strong>{" "}
                     {viewOrder.shippingAddress || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Status:</strong>{" "}
-                    {viewOrder.fulfillingStatus === "Partial Dispatch"
-                      ? "Partial Dispatch"
-                      : "Complete"}
+                    <strong>Installation Details:</strong>{" "}
+                    {viewOrder.installationDetails || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Remarks By Production:</strong>{" "}
-                    {viewOrder.remarksByProduction || "N/A"}
+                    <strong>Installation Status:</strong>{" "}
+                    {viewOrder.installationStatus || "Pending"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Remarks:</strong>{" "}
+                    {viewOrder.remarksByInstallation || "N/A"}
                   </span>
                 </div>
               </div>
@@ -571,13 +608,217 @@ function Finish() {
         </Modal.Body>
       </Modal>
 
-      <OutFinishedGoodModal
-        visible={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleModalSubmit}
-        initialData={editData}
-        entryToEdit={editData}
-      />
+      {/* Edit Modal */}
+      <Modal
+        show={showEditModal}
+        onHide={() => setShowEditModal(false)}
+        centered
+        backdrop="static"
+      >
+        <Modal.Header
+          closeButton
+          style={{
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            color: "#fff",
+            borderBottom: "none",
+            padding: "20px",
+          }}
+        >
+          <Modal.Title
+            style={{
+              fontWeight: "700",
+              fontSize: "1.5rem",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
+            Edit Installation Order
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body
+          style={{
+            padding: "30px",
+            background: "#fff",
+            borderRadius: "0 0 15px 15px",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <Form onSubmit={handleEditSubmit}>
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Contact Person <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.contactPerson}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactPerson: e.target.value })
+                }
+                placeholder="Enter contact person"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.contactPerson
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.contactPerson && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.contactPerson}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Contact No <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.contactNo}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactNo: e.target.value })
+                }
+                placeholder="Enter contact number"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.contactNo
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.contactNo && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.contactNo}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Installation Details
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData.installationDetails}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    installationDetails: e.target.value,
+                  })
+                }
+                placeholder="Enter installation details"
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Installation Status
+              </Form.Label>
+              <Form.Select
+                value={formData.installationStatus}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    installationStatus: e.target.value,
+                  })
+                }
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              >
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Failed">Failed</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Remarks by Installation <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData.remarksByInstallation}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    remarksByInstallation: e.target.value,
+                  })
+                }
+                placeholder="Enter remarks"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.remarksByInstallation
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.remarksByInstallation && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.remarksByInstallation}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "15px",
+              }}
+            >
+              <Button
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  background: "linear-gradient(135deg, #6c757d, #5a6268)",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "20px",
+                  color: "#fff",
+                  fontWeight: "600",
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                style={{
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "20px",
+                  color: "#fff",
+                  fontWeight: "600",
+                }}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </>
   );
 }
@@ -591,4 +832,4 @@ const keyframes = `
 
 document.head.insertAdjacentHTML("beforeend", `<style>${keyframes}</style>`);
 
-export default Finish;
+export default Installation;
