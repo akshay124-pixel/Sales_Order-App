@@ -107,6 +107,13 @@ const Sales = () => {
     setIsDeleteModalOpen(true);
   };
 
+  const handleDelete = (deletedIds) => {
+    setOrders((prevOrders) =>
+      prevOrders.filter((order) => !deletedIds.includes(order._id))
+    );
+    setIsDeleteModalOpen(false);
+    toast.success("Order deleted successfully!");
+  };
   const handleEntryUpdated = async (updatedEntry) => {
     try {
       const response = await axios.put(
