@@ -116,23 +116,31 @@ const Sales = () => {
   };
   const handleEntryUpdated = async (updatedEntry) => {
     try {
+      // Send the updated order to the server via PUT request
       const response = await axios.put(
         `https://sales-order-server.onrender.com/api/edit/${updatedEntry._id}`,
         updatedEntry
       );
+      const updatedOrder = response.data; // Get the updated order from the server response
+
+      // Update the orders state with the new data, replacing the old order
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
-          order._id === updatedEntry._id ? response.data : order
+          order._id === updatedOrder._id ? updatedOrder : order
         )
       );
+
+      // Close the edit modal
       setIsEditModalOpen(false);
       toast.success("Order updated successfully!");
+
+      // Note: The useEffect hook watching 'orders' will trigger filterOrders(),
+      // ensuring the filteredOrders state reflects the updated order immediately
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Failed to update order!");
     }
   };
-
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
