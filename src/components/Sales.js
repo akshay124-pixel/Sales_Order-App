@@ -86,19 +86,10 @@ const Sales = () => {
     toast.info("Filters reset!");
   };
 
-  const handleAddEntry = async (newEntry) => {
-    try {
-      const response = await axios.post(
-        "https://sales-order-server.onrender.com/api/add-order",
-        newEntry
-      );
-      setOrders((prevOrders) => [...prevOrders, response.data]);
-      setIsAddModalOpen(false);
-      toast.success("Order added successfully!");
-    } catch (error) {
-      console.error("Error adding order:", error);
-      toast.error("Failed to add order!");
-    }
+  const handleAddEntry = (newEntry) => {
+    setOrders((prevOrders) => [...prevOrders, newEntry]);
+    setIsAddModalOpen(false);
+    toast.success("New order added!");
   };
 
   const handleViewClick = (order) => {
@@ -119,7 +110,7 @@ const Sales = () => {
   const handleEntryUpdated = async (updatedEntry) => {
     try {
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/update-order/${updatedEntry._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${updatedEntry._id}`,
         updatedEntry
       );
       setOrders((prevOrders) =>
@@ -132,25 +123,6 @@ const Sales = () => {
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Failed to update order!");
-    }
-  };
-
-  const handleDelete = async (deletedIds) => {
-    try {
-      await axios.delete(
-        "https://sales-order-server.onrender.com/api/delete-orders",
-        {
-          data: { ids: deletedIds },
-        }
-      );
-      setOrders((prevOrders) =>
-        prevOrders.filter((order) => !deletedIds.includes(order._id))
-      );
-      setIsDeleteModalOpen(false);
-      toast.success("Order deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting order:", error);
-      toast.error("Failed to delete order!");
     }
   };
 
