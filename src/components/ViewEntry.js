@@ -448,6 +448,10 @@ function ViewEntry({ isOpen, onClose, entry }) {
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Bill Number:</strong> {entry.billNumber || "N/A"}
             </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Remarks (Accounts):</strong>{" "}
+              {entry.remarksByAccounts || "N/A"}
+            </span>
           </div>
         </div>
 
@@ -508,10 +512,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
               <strong>Remarks (Production):</strong>{" "}
               {entry.remarksByProduction || "N/A"}
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Remarks (Accounts):</strong>{" "}
-              {entry.remarksByAccounts || "N/A"}
-            </span>
+
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Fulfillment Date:</strong>{" "}
               {entry.fulfillmentDate
