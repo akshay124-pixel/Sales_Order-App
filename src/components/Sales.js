@@ -659,7 +659,7 @@ const Sales = () => {
               color: "white",
               position: "sticky",
               top: 0,
-              zIndex: 1,
+              zIndex: 2,
               boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
             }}
           >
@@ -926,6 +926,7 @@ const Sales = () => {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            zIndex: "1",
                           }}
                         >
                           <svg
