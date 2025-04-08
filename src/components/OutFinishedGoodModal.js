@@ -16,6 +16,7 @@ const OutFinishedGoodModal = ({
     dispatchFrom: "",
     transporter: "",
     transporterDetails: "",
+    billNumber: "",
     dispatchDate: new Date().toISOString().split("T")[0], // Default to current date
     docketNo: "",
     receiptDate: "",
@@ -31,7 +32,6 @@ const OutFinishedGoodModal = ({
       setFormData({
         dispatchFrom: initialData.dispatchFrom || "",
         transporter: initialData.transporter || "",
-
         transporterDetails: initialData.transporterDetails || "",
         billNumber: initialData.billNumber || "",
         dispatchDate: initialData.dispatchDate

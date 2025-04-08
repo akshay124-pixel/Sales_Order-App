@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { Button, Modal, Badge } from "react-bootstrap"; // Added Badge import
+import { Button, Modal, Badge } from "react-bootstrap";
 import { FaEye } from "react-icons/fa";
 import { toast } from "react-toastify";
 import OutFinishedGoodModal from "./OutFinishedGoodModal";
@@ -14,41 +14,47 @@ function Finish() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  useEffect(() => {
-    const fetchFinishedGoods = async () => {
-      try {
-        const response = await axios.get(
-          "https://sales-order-server.onrender.com/api/finished-goods",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        if (response.data.success) {
-          setOrders(response.data.data); // Includes "Partial Dispatch" and "Complete" orders, excludes "Dispatched"
-        } else {
-          throw new Error(
-            response.data.message || "Failed to fetch finished goods data"
-          );
+  const fetchFinishedGoods = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "https://sales-order-server.onrender.com/api/finished-goods",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      } catch (error) {
-        console.error("Error fetching finished goods:", error);
-        toast.error(
-          error.response?.data?.message ||
-            error.message ||
-            "Failed to fetch finished goods",
-          {
-            position: "top-right",
-            autoClose: 5000,
-          }
+      );
+      if (response.data.success) {
+        // Filter out "Dispatched" orders from the initial fetch
+        setOrders(
+          response.data.data.filter(
+            (order) => order.dispatchStatus !== "Dispatched"
+          )
         );
-      } finally {
-        setLoading(false);
+      } else {
+        throw new Error(
+          response.data.message || "Failed to fetch finished goods data"
+        );
       }
-    };
-    fetchFinishedGoods();
+    } catch (error) {
+      console.error("Error fetching finished goods:", error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch finished goods",
+        {
+          position: "top-right",
+          autoClose: 5000,
+        }
+      );
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchFinishedGoods();
+  }, [fetchFinishedGoods]);
 
   const handleEditClick = (order) => {
     setEditData({
@@ -56,27 +62,36 @@ function Finish() {
       transporter: order.transporter || "",
       billNumber: order.billNumber || "",
       transporterDetails: order.transporterDetails || "",
-      dispatchDate: order.fulfillmentDate
-        ? new Date(order.fulfillmentDate).toISOString().split("T")[0]
+      dispatchDate: order.dispatchDate
+        ? new Date(order.dispatchDate).toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0],
       docketNo: order.docketNo || "",
-      receiptDate: order.receiptDate || "",
+      receiptDate: order.receiptDate
+        ? new Date(order.receiptDate).toISOString().split("T")[0]
+        : "",
+      dispatchStatus: order.dispatchStatus || "Not Dispatched",
       _id: order._id,
     });
     setIsModalOpen(true);
   };
 
   const handleModalSubmit = (updatedEntry) => {
+    // Update the orders list and filter out if dispatchStatus is "Dispatched"
     setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order._id === updatedEntry._id ? updatedEntry : order
-      )
+      prevOrders
+        .map((order) => (order._id === updatedEntry._id ? updatedEntry : order))
+        .filter((order) => order.dispatchStatus !== "Dispatched")
     );
     setIsModalOpen(false);
-    toast.success("Order updated successfully!", {
-      position: "top-right",
-      autoClose: 3000,
-    });
+    toast.success(
+      `Order updated successfully! Status: ${updatedEntry.dispatchStatus}`,
+      {
+        position: "top-right",
+        autoClose: 3000,
+      }
+    );
+    // Optional: Refresh from server to ensure consistency
+    fetchFinishedGoods();
   };
 
   const handleView = (order) => {
@@ -91,12 +106,12 @@ function Finish() {
       Order ID: ${viewOrder.orderId || "N/A"}
       Serial No: ${viewOrder.serialno || "N/A"}
       Model No: ${viewOrder.modelNo || "N/A"}
-        Bill No: ${viewOrder.billNumber || "N/A"}
+      Bill No: ${viewOrder.billNumber || "N/A"}
       Product: ${viewOrder.productDetails || "N/A"}
       Quantity: ${viewOrder.qty || "N/A"}
-      Fulfillment Date: ${
-        viewOrder.fulfillmentDate
-          ? new Date(viewOrder.fulfillmentDate).toLocaleDateString()
+      Dispatch Date: ${
+        viewOrder.dispatchDate
+          ? new Date(viewOrder.dispatchDate).toLocaleDateString()
           : "N/A"
       }
       Customer: ${viewOrder.name || viewOrder.partyAndAddress || "N/A"}
@@ -105,11 +120,7 @@ function Finish() {
         `${viewOrder.city || ""}, ${viewOrder.state || ""}` ||
         "N/A"
       }
-      Status: ${
-        viewOrder.fulfillingStatus === "Partial Dispatch"
-          ? "Partial Dispatch"
-          : "Complete"
-      }
+      Dispatch Status: ${viewOrder.dispatchStatus || "Not Dispatched"}
     `.trim();
     navigator.clipboard.writeText(orderText);
     setCopied(true);
@@ -242,10 +253,10 @@ function Finish() {
                       "Order ID",
                       "Product Name",
                       "Quantity",
-                      "Production Date",
+                      "Dispatch Date",
                       "Customer Name",
                       "Delivery Address",
-                      "Status",
+                      "Dispatch Status",
                       "Actions",
                     ].map((header, index) => (
                       <th
@@ -322,8 +333,8 @@ function Finish() {
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        {order.fulfillmentDate
-                          ? new Date(order.fulfillmentDate).toLocaleDateString()
+                        {order.dispatchDate
+                          ? new Date(order.dispatchDate).toLocaleDateString()
                           : "N/A"}
                       </td>
                       <td
@@ -360,7 +371,9 @@ function Finish() {
                         <Badge
                           style={{
                             background:
-                              order.fulfillingStatus === "Partial Dispatch"
+                              order.dispatchStatus === "Not Dispatched"
+                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                : order.dispatchStatus === "Dispatched"
                                 ? "linear-gradient(135deg, #00c6ff, #0072ff)"
                                 : "linear-gradient(135deg, #28a745, #4cd964)",
                             color: "#fff",
@@ -368,9 +381,7 @@ function Finish() {
                             borderRadius: "12px",
                           }}
                         >
-                          {order.fulfillingStatus === "Partial Dispatch"
-                            ? "Partial Dispatch"
-                            : "Complete"}
+                          {order.dispatchStatus || "Not Dispatched"}
                         </Badge>
                       </td>
                       <td style={{ padding: "12px", textAlign: "center" }}>
@@ -514,6 +525,9 @@ function Finish() {
                     <strong>Model No:</strong> {viewOrder.modelNo || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Bill No:</strong> {viewOrder.billNumber || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Product:</strong>{" "}
                     {viewOrder.productDetails || "N/A"}
                   </span>
@@ -521,9 +535,9 @@ function Finish() {
                     <strong>Quantity:</strong> {viewOrder.qty || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Production Date:</strong>{" "}
-                    {viewOrder.fulfillmentDate
-                      ? new Date(viewOrder.fulfillmentDate).toLocaleDateString()
+                    <strong>Dispatch Date:</strong>{" "}
+                    {viewOrder.dispatchDate
+                      ? new Date(viewOrder.dispatchDate).toLocaleDateString()
                       : "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -534,14 +548,15 @@ function Finish() {
                     {viewOrder.shippingAddress || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Status:</strong>{" "}
-                    {viewOrder.fulfillingStatus === "Partial Dispatch"
-                      ? "Partial Dispatch"
-                      : "Complete"}
+                    <strong>Dispatch Status:</strong>{" "}
+                    {viewOrder.dispatchStatus || "Not Dispatched"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Remarks By Production:</strong>{" "}
-                    {viewOrder.remarksByProduction || "N/A"}
+                    <strong>Transporter:</strong>{" "}
+                    {viewOrder.transporter || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
                   </span>
                 </div>
               </div>
