@@ -528,7 +528,7 @@ function Installation() {
                     {viewOrder.shippingAddress || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Installation Details:</strong>{" "}
+                    <strong>Installation Charges:</strong>{" "}
                     {viewOrder.installation || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -539,6 +539,61 @@ function Installation() {
                     <strong>Remarks:</strong>{" "}
                     {viewOrder.remarksByInstallation || "N/A"}
                   </span>
+                </div>
+                {/* Product Info Section */}
+                <div
+                  style={{
+                    background: "#fafafa",
+                    borderRadius: "10px",
+                    padding: "1.2rem",
+                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.8rem",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "1.3rem",
+                      fontWeight: "600",
+                      color: "#333",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Product Info
+                  </h3>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "1.5rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Model No:</strong> {viewOrder.modelNo || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Serial No:</strong> {viewOrder.serialno || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Product Type:</strong>{" "}
+                      {viewOrder.productType || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Size:</strong> {viewOrder.size || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Spec:</strong> {viewOrder.spec || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Details:</strong>{" "}
+                      {viewOrder.productDetails || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Qty:</strong> {viewOrder.qty || "N/A"}
+                    </span>
+                  </div>
                 </div>
               </div>
               <Button
