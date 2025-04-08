@@ -904,7 +904,7 @@ function AddEntry({ onSubmit, onClose }) {
     const total =
       Number(formData.qty) * Number(formData.unitPrice) +
       (Number(formData.gst || 0) / 100) * Number(formData.unitPrice) +
-      Number(formData.freight || 0) +
+      Number(formData.freightcs || 0) +
       Number(formData.amount2 || 0);
 
     const newEntry = {
