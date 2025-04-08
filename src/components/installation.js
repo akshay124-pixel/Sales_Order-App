@@ -268,6 +268,7 @@ function Installation() {
                   <tr>
                     {[
                       "Order ID",
+                      "Product Details",
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
@@ -317,6 +318,17 @@ function Installation() {
                         }}
                       >
                         {order.orderId || "N/A"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          textAlign: "center",
+                          color: "#2c3e50",
+                          fontSize: "1rem",
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
+                        {order.productDetails || "N/A"}
                       </td>
                       <td
                         style={{
