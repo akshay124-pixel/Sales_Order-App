@@ -552,7 +552,23 @@ function Installation() {
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Installation Status:</strong>{" "}
-                    {viewOrder.installationStatus || "Pending"}
+                    <Badge
+                      style={{
+                        background:
+                          viewOrder.installationStatus === "Pending"
+                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                            : viewOrder.installationStatus === "In Progress"
+                            ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                            : viewOrder.installationStatus === "Completed"
+                            ? "linear-gradient(135deg, #28a745, #4cd964)"
+                            : "linear-gradient(135deg, #6c757d, #5a6268)",
+                        color: "#fff",
+                        padding: "5px 10px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      {viewOrder.installationStatus || "Pending"}
+                    </Badge>
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Remarks:</strong>{" "}
