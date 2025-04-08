@@ -486,7 +486,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Fulfilling Status:</strong>{" "}
+              <strong>Production Status:</strong>{" "}
               <Badge
                 style={{
                   background:
@@ -508,16 +508,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 {entry.fulfillingStatus || "Pending"}
               </Badge>
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Remarks (Production):</strong>{" "}
-              {entry.remarksByProduction || "N/A"}
-            </span>
 
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Fulfillment Date:</strong>{" "}
+              <strong>Production Date:</strong>{" "}
               {entry.fulfillmentDate
                 ? new Date(entry.fulfillmentDate).toLocaleDateString()
                 : "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Remarks (Production):</strong>{" "}
+              {entry.remarksByProduction || "N/A"}
             </span>
           </div>
         </div>
