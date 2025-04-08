@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { Modal, Button, Badge } from "react-bootstrap"; // Add Badge to imports
+import { Modal, Button, Badge } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
 
@@ -13,7 +13,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       SO Date: ${
         entry.soDate ? new Date(entry.soDate).toLocaleDateString() : "N/A"
       }
-        Order ID:${entry.oderId || "N/A"}
+      Order ID: ${entry.orderId || "N/A"}
       Committed Date: ${
         entry.committedDate
           ? new Date(entry.committedDate).toLocaleDateString()
@@ -30,11 +30,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
       City: ${entry.city || "N/A"}
       State: ${entry.state || "N/A"}
       Pin Code: ${entry.pinCode || "N/A"}
-       Contact Person Name: ${entry.name || "N/A"}
+      Contact Person Name: ${entry.name || "N/A"}
       Contact Person No: ${entry.contactNo || "N/A"}
       Customer Email: ${entry.customerEmail || "N/A"}
       Model No: ${entry.modelNo || "N/A"}
-       Serial No: ${entry.modelNo || "N/A"}
+      Serial No: ${entry.serialno || "N/A"}
       Product Type: ${entry.productType || "N/A"}
       Size: ${entry.size || "N/A"}
       Spec: ${entry.spec || "N/A"}
@@ -45,8 +45,10 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Total: $${entry.total?.toFixed(2) || "0.00"}
       Payment Terms: ${entry.paymentTerms || "N/A"}
       Amount2: $${entry.amount2?.toFixed(2) || "0.00"}
-      Freight Charges & Status: $${entry.freightcs || "N/A"}
+      Freight Charges & Status: ${entry.freightcs || "N/A"}
       Installation: ${entry.installation || "N/A"}
+      Installation Status: ${entry.installationStatus || "N/A"}
+      Dispatch Status: ${entry.dispatchStatus || "N/A"}
       Sales Person: ${entry.salesPerson || "N/A"}
       Company: ${entry.company || "N/A"}
       Transporter: ${entry.transporter || "N/A"}
@@ -59,6 +61,22 @@ function ViewEntry({ isOpen, onClose, entry }) {
       }
       Approval Status: ${entry.sostatus || "N/A"}
       Fulfilling Status: ${entry.fulfillingStatus || "Pending"}
+      Shipping Address: ${entry.shippingAddress || "N/A"}
+      Billing Address: ${entry.billingAddress || "N/A"}
+      Invoice No: ${entry.invoiceNo || "N/A"}
+      Invoice Date: ${
+        entry.invoiceDate
+          ? new Date(entry.invoiceDate).toLocaleDateString()
+          : "N/A"
+      }
+      Payment Received: ${entry.paymentReceived || "N/A"}
+      Bill Number: ${entry.billNumber || "N/A"}
+      Completion Status: ${entry.completionStatus || "N/A"}
+      Fulfillment Date: ${
+        entry.fulfillmentDate
+          ? new Date(entry.fulfillmentDate).toLocaleDateString()
+          : "N/A"
+      }
     `.trim();
 
     navigator.clipboard
@@ -179,14 +197,32 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 bg={
                   entry.status === "Pending"
                     ? "warning"
-                    : entry.status === "Completed"
+                    : entry.status === "Delivered"
                     ? "success"
                     : entry.status === "Dispatched"
                     ? "info"
+                    : entry.status === "In Transit"
+                    ? "primary"
                     : "secondary"
                 }
               >
                 {entry.status || "N/A"}
+              </Badge>
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Dispatch Status:</strong>{" "}
+              <Badge
+                bg={
+                  entry.dispatchStatus === "Not Dispatched"
+                    ? "warning"
+                    : entry.dispatchStatus === "Dispatched"
+                    ? "info"
+                    : entry.dispatchStatus === "Delivered"
+                    ? "success"
+                    : "secondary"
+                }
+              >
+                {entry.dispatchStatus || "N/A"}
               </Badge>
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -207,6 +243,20 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 }
               >
                 {entry.sostatus || "N/A"}
+              </Badge>
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Completion Status:</strong>{" "}
+              <Badge
+                bg={
+                  entry.completionStatus === "In Progress"
+                    ? "warning"
+                    : entry.completionStatus === "Complete"
+                    ? "success"
+                    : "secondary"
+                }
+              >
+                {entry.completionStatus || "N/A"}
               </Badge>
             </span>
           </div>
@@ -255,13 +305,20 @@ function ViewEntry({ isOpen, onClose, entry }) {
               <strong>Pin Code:</strong> {entry.pinCode || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Contact Person Name:</strong> {entry.name || "N/A"}
+              <strong>Contact Person:</strong> {entry.name || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Contact Person No:</strong> {entry.contactNo || "N/A"}
+              <strong>Contact No:</strong> {entry.contactNo || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Email:</strong> {entry.customerEmail || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Shipping Address:</strong>{" "}
+              {entry.shippingAddress || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Billing Address:</strong> {entry.billingAddress || "N/A"}
             </span>
           </div>
         </div>
@@ -366,12 +423,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Amount2:</strong> ₹{entry.amount2?.toFixed(2) || "0.00"}
             </span>
-
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Freight Charges & Status:</strong>{" "}
-              {entry.freightcs || "N/A"}
+              <strong>Freight Charges:</strong> {entry.freightcs || "N/A"}
             </span>
-
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Invoice No:</strong> {entry.invoiceNo || "N/A"}
             </span>
@@ -380,6 +434,19 @@ function ViewEntry({ isOpen, onClose, entry }) {
               {entry.invoiceDate
                 ? new Date(entry.invoiceDate).toLocaleDateString()
                 : "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Payment Status:</strong>{" "}
+              <Badge
+                bg={
+                  entry.paymentReceived === "Received" ? "success" : "warning"
+                }
+              >
+                {entry.paymentReceived || "N/A"}
+              </Badge>
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Bill Number:</strong> {entry.billNumber || "N/A"}
             </span>
           </div>
         </div>
@@ -415,7 +482,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Production Status:</strong>{" "}
+              <strong>Fulfilling Status:</strong>{" "}
               <Badge
                 style={{
                   background:
@@ -424,7 +491,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
                       : entry.fulfillingStatus === "Pending"
                       ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
                       : entry.fulfillingStatus === "Partial Dispatch"
-                      ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue gradient
+                      ? "linear-gradient(135deg, #00c6ff, #0072ff)"
                       : entry.fulfillingStatus === "Fulfilled"
                       ? "linear-gradient(135deg, #28a745, #4cd964)"
                       : "linear-gradient(135deg, #6c757d, #a9a9a9)",
@@ -438,13 +505,23 @@ function ViewEntry({ isOpen, onClose, entry }) {
               </Badge>
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Remarks by Production:</strong>{" "}
+              <strong>Remarks (Production):</strong>{" "}
               {entry.remarksByProduction || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Remarks (Accounts):</strong>{" "}
+              {entry.remarksByAccounts || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Fulfillment Date:</strong>{" "}
+              {entry.fulfillmentDate
+                ? new Date(entry.fulfillmentDate).toLocaleDateString()
+                : "N/A"}
             </span>
           </div>
         </div>
 
-        {/* Logistics Info Section */}
+        {/* Logistics & Installation Info Section */}
         <div
           style={{
             background: "#fafafa",
@@ -464,7 +541,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
               marginBottom: "0.5rem",
             }}
           >
-            Logistics Info
+            Logistics & Installation Info
           </h3>
           <div
             style={{
@@ -476,6 +553,28 @@ function ViewEntry({ isOpen, onClose, entry }) {
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Installation:</strong> {entry.installation || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Installation Status:</strong>{" "}
+              <Badge
+                bg={
+                  entry.installationStatus === "Pending"
+                    ? "warning"
+                    : entry.installationStatus === "In Progress"
+                    ? "info"
+                    : entry.installationStatus === "Completed"
+                    ? "success"
+                    : entry.installationStatus === "Failed"
+                    ? "danger"
+                    : "secondary"
+                }
+              >
+                {entry.installationStatus || "N/A"}
+              </Badge>
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Installation Remarks:</strong>{" "}
+              {entry.remarksByInstallation || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Sales Person:</strong> {entry.salesPerson || "N/A"}
@@ -492,14 +591,6 @@ function ViewEntry({ isOpen, onClose, entry }) {
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Docket No:</strong> {entry.docketNo || "N/A"}
-            </span>
-
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Shipping Address:</strong>{" "}
-              {entry.shippingAddress || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Billing Address:</strong> {entry.billingAddress || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Receipt Date:</strong>{" "}
@@ -539,24 +630,3 @@ function ViewEntry({ isOpen, onClose, entry }) {
 }
 
 export default ViewEntry;
-
-// Add this CSS to your global stylesheet (e.g., index.css)
-const customStyles = `
-  .compact-modal {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    max-width: 900px !important;
-    width: 85% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .compact-modal .modal-content {
-    border: none !important;
-    border-radius: 15px !important;
-    overflow: hidden !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
-  }
-`;
