@@ -256,6 +256,7 @@ function Finish() {
                       "Dispatch Date",
                       "Customer Name",
                       "Delivery Address",
+                      "Prdoduct Status",
                       "Dispatch Status",
                       "Actions",
                     ].map((header, index) => (
@@ -358,6 +359,31 @@ function Finish() {
                         }}
                       >
                         {order.shippingAddress || "N/A"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          textAlign: "center",
+                          color: "#2c3e50",
+                          fontSize: "1rem",
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
+                        <Badge
+                          style={{
+                            background:
+                              order.fulfillingStatus === "Partial Dispatch"
+                                ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                                : "linear-gradient(135deg, #28a745, #4cd964)",
+                            color: "#fff",
+                            padding: "5px 10px",
+                            borderRadius: "12px",
+                          }}
+                        >
+                          {order.fulfillingStatus === "Partial Dispatch"
+                            ? "Partial Dispatch"
+                            : "Complete"}
+                        </Badge>
                       </td>
                       <td
                         style={{
