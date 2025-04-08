@@ -37,11 +37,11 @@ const Sales = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         "https://sales-order-server.onrender.com/api/get-orders"
       );
-      const data = await response.json();
-      setOrders(data);
+      setOrders(response.data);
+      toast.success("Orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders!");
@@ -77,15 +77,28 @@ const Sales = () => {
     setFilteredOrders(filtered);
   };
 
-  const handlereset = () => {
+  const handleReset = () => {
     setStatusFilter("All");
     setApprovalFilter("All");
     setSearchTerm("");
+    setStartDate(null);
+    setEndDate(null);
+    toast.info("Filters reset!");
   };
 
-  const handleAddEntry = (newEntry) => {
-    setOrders((prevOrders) => [...prevOrders, newEntry]);
-    setIsAddModalOpen(false);
+  const handleAddEntry = async (newEntry) => {
+    try {
+      const response = await axios.post(
+        "https://sales-order-server.onrender.com/api/add-order",
+        newEntry
+      );
+      setOrders((prevOrders) => [...prevOrders, response.data]);
+      setIsAddModalOpen(false);
+      toast.success("Order added successfully!");
+    } catch (error) {
+      console.error("Error adding order:", error);
+      toast.error("Failed to add order!");
+    }
   };
 
   const handleViewClick = (order) => {
@@ -103,20 +116,42 @@ const Sales = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleEntryUpdated = (updatedEntry) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order._id === updatedEntry._id ? updatedEntry : order
-      )
-    );
-    setIsEditModalOpen(false);
+  const handleEntryUpdated = async (updatedEntry) => {
+    try {
+      const response = await axios.put(
+        `https://sales-order-server.onrender.com/api/update-order/${updatedEntry._id}`,
+        updatedEntry
+      );
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === updatedEntry._id ? response.data : order
+        )
+      );
+      setIsEditModalOpen(false);
+      toast.success("Order updated successfully!");
+    } catch (error) {
+      console.error("Error updating order:", error);
+      toast.error("Failed to update order!");
+    }
   };
 
-  const handleDelete = (deletedIds) => {
-    setOrders((prevOrders) =>
-      prevOrders.filter((order) => !deletedIds.includes(order._id))
-    );
-    setIsDeleteModalOpen(false);
+  const handleDelete = async (deletedIds) => {
+    try {
+      await axios.delete(
+        "https://sales-order-server.onrender.com/api/delete-orders",
+        {
+          data: { ids: deletedIds },
+        }
+      );
+      setOrders((prevOrders) =>
+        prevOrders.filter((order) => !deletedIds.includes(order._id))
+      );
+      setIsDeleteModalOpen(false);
+      toast.success("Order deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error("Failed to delete order!");
+    }
   };
 
   const handleFileUpload = async (e) => {
@@ -171,7 +206,7 @@ const Sales = () => {
             serialno: String(entry.serialno || "").trim(),
             committedDate: parseDate(entry.committeddate),
             dispatchFrom: String(entry.dispatchfrom || "").trim(),
-            status: String(entry.status || "").trim() || "Pending",
+            status: String(entry.status || "Pending").trim(),
             dispatchDate: parseDate(entry.dispatchdate),
             partyAndAddress: String(entry.partyandaddress || "").trim(),
             city: String(entry.city || "").trim(),
@@ -194,15 +229,15 @@ const Sales = () => {
             freightcs: String(entry.freightcs || "").trim(),
             installation: String(entry.installation || "").trim(),
             salesPerson: String(entry.salesperson || "").trim(),
-            shippingAddress: String(entry.shippingAddress || "").trim(),
-            billingAddress: String(entry.billingAddress || "").trim(),
+            shippingAddress: String(entry.shippingaddress || "").trim(),
+            billingAddress: String(entry.billingaddress || "").trim(),
             company: String(entry.company || "").trim(),
             transporter: String(entry.transporter || "").trim(),
             transporterDetails: String(entry.transporterdetails || "").trim(),
             docketNo: String(entry.docketno || "").trim(),
             receiptDate: parseDate(entry.receiptdate),
             sostatus: String(entry.sostatus || "Pending for Approval").trim(),
-            invoiceNo: Number(entry.invoiceno || 0),
+            invoiceNo: String(entry.invoiceno || ""),
             invoiceDate: parseDate(entry.invoicedate),
             remarks: String(entry.remarks || "").trim(),
             fulfillingStatus: String(entry.fulfillingstatus || "").trim(),
@@ -232,7 +267,7 @@ const Sales = () => {
         );
 
         setOrders((prevOrders) => [...prevOrders, ...response.data.data]);
-        toast.success("Orders uploaded successfully!");
+        toast.success("Bulk orders uploaded successfully!");
       } catch (error) {
         console.error("Error uploading entries:", error);
         toast.error(
@@ -258,8 +293,10 @@ const Sales = () => {
       });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "orders.xlsx";
+      link.download = `orders_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
       toast.success("Orders exported successfully!");
     } catch (error) {
@@ -269,10 +306,11 @@ const Sales = () => {
   };
 
   const isOrderComplete = (order) => {
-    const allFields = Object.keys(order).filter((key) => key !== "_id");
+    const allFields = Object.keys(order).filter(
+      (key) => key !== "_id" && key !== "__v"
+    );
     return allFields.every((field) => {
       const value = order[field];
-
       return (
         value !== undefined &&
         value !== null &&
@@ -441,7 +479,7 @@ const Sales = () => {
           </Dropdown>
 
           <Button
-            onClick={handlereset}
+            onClick={handleReset}
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               border: "none",
@@ -474,56 +512,94 @@ const Sales = () => {
           flexWrap: "wrap",
         }}
       >
-        {[
-          {
-            label: "Bulk Upload",
-            icon: "⬅",
-            onClick: null,
-            input: (
-              <input
-                type="file"
-                accept=".xlsx, .xls"
-                onChange={handleFileUpload}
-                style={{ display: "none" }}
-              />
-            ),
-          },
-          {
-            label: "Add Entry",
-            icon: "+",
-            onClick: () => setIsAddModalOpen(true),
-          },
-          { label: "Export Orders", icon: "➔", onClick: handleExport },
-        ].map((btn, idx) => (
-          <label
-            key={idx}
-            style={{
-              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-              color: "white",
-              padding: "15px 30px",
-              borderRadius: "35px",
-              fontWeight: "600",
-              fontSize: "1.1rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
-              transition: "all 0.4s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
-            }}
-          >
-            <span style={{ fontSize: "1.3rem" }}>{btn.icon}</span> {btn.label}
-            {btn.input}
-          </label>
-        ))}
+        <label
+          style={{
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            color: "white",
+            padding: "15px 30px",
+            borderRadius: "35px",
+            fontWeight: "600",
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+            transition: "all 0.4s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "scale(1.05)";
+            e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+          }}
+        >
+          <span style={{ fontSize: "1.3rem" }}>⬅</span> Bulk Upload
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={handleFileUpload}
+            style={{ display: "none" }}
+          />
+        </label>
+
+        <Button
+          onClick={() => setIsAddModalOpen(true)}
+          style={{
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            border: "none",
+            padding: "15px 30px",
+            borderRadius: "35px",
+            color: "white",
+            fontWeight: "600",
+            fontSize: "1.1rem",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            transition: "all 0.4s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "scale(1.05)";
+            e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+          }}
+        >
+          <span style={{ fontSize: "1.3rem" }}>+</span> Add Entry
+        </Button>
+
+        <Button
+          onClick={handleExport}
+          style={{
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            border: "none",
+            padding: "15px 30px",
+            borderRadius: "35px",
+            color: "white",
+            fontWeight: "600",
+            fontSize: "1.1rem",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            transition: "all 0.4s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "scale(1.05)";
+            e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+          }}
+        >
+          <span style={{ fontSize: "1.3rem" }}>➔</span> Export Orders
+        </Button>
       </div>
 
       {/* Modals */}
