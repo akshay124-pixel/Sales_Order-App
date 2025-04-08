@@ -64,14 +64,21 @@ function Installation() {
   const handleCopy = () => {
     if (!viewOrder) return;
     const orderText = `
-      Order ID: ${viewOrder.orderId || "N/A"}
-      Contact Person: ${viewOrder.name || "N/A"}
-      Contact No: ${viewOrder.contactNo || "N/A"}
-      Shipping Address: ${viewOrder.shippingAddress || "N/A"}
-      Installation Details: ${viewOrder.installation || "N/A"}
-      Installation Status: ${viewOrder.installationStatus || "Pending"}
-      Remarks: ${viewOrder.remarksByInstallation || "N/A"}
-    `.trim();
+    Order ID: ${viewOrder.orderId || "N/A"}
+    Contact Person: ${viewOrder.name || "N/A"}
+    Contact No: ${viewOrder.contactNo || "N/A"}
+    Shipping Address: ${viewOrder.shippingAddress || "N/A"}
+    Installation Details: ${viewOrder.installation || "N/A"}
+    Installation Status: ${viewOrder.installationStatus || "Pending"}
+    Remarks: ${viewOrder.remarksByInstallation || "N/A"}
+    Model No: ${viewOrder.modelNo || "N/A"}
+    Serial No: ${viewOrder.serialno || "N/A"}
+    Product Type: ${viewOrder.productType || "N/A"}
+    Size: ${viewOrder.size || "N/A"}
+    Spec: ${viewOrder.spec || "N/A"}
+    Product Details: ${viewOrder.productDetails || "N/A"}
+    Quantity: ${viewOrder.qty || "N/A"}
+  `.trim();
     navigator.clipboard.writeText(orderText);
     setCopied(true);
     toast.success("Details copied to clipboard!", {
