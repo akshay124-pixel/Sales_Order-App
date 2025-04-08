@@ -540,6 +540,7 @@ function Installation() {
                     {viewOrder.remarksByInstallation || "N/A"}
                   </span>
                 </div>
+                <hr />
                 {/* Product Info Section */}
                 <div
                   style={{
