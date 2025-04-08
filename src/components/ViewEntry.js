@@ -553,7 +553,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Installation:</strong> {entry.installation || "N/A"}
+              <strong>Installation Charges & Status:</strong>{" "}
+              {entry.installation || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Installation Status:</strong>{" "}
