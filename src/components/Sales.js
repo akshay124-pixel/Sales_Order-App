@@ -41,7 +41,6 @@ const Sales = () => {
         "https://sales-order-server.onrender.com/api/get-orders"
       );
       const data = await response.json();
-      console.log("Fetched orders:", JSON.stringify(data, null, 2));
       setOrders(data);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -51,7 +50,6 @@ const Sales = () => {
 
   const filterOrders = () => {
     let filtered = [...orders];
-
     if (searchTerm) {
       filtered = filtered.filter((order) =>
         Object.values(order).some(
@@ -61,15 +59,12 @@ const Sales = () => {
         )
       );
     }
-
     if (approvalFilter !== "All") {
       filtered = filtered.filter((order) => order.sostatus === approvalFilter);
     }
-
     if (statusFilter !== "All") {
       filtered = filtered.filter((order) => order.status === statusFilter);
     }
-
     if (startDate || endDate) {
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.soDate);
@@ -79,7 +74,6 @@ const Sales = () => {
         );
       });
     }
-
     setFilteredOrders(filtered);
   };
 
@@ -88,6 +82,7 @@ const Sales = () => {
     setApprovalFilter("All");
     setSearchTerm("");
   };
+
   const handleAddEntry = (newEntry) => {
     setOrders((prevOrders) => [...prevOrders, newEntry]);
     setIsAddModalOpen(false);
@@ -129,7 +124,6 @@ const Sales = () => {
     if (!file) return;
 
     const reader = new FileReader();
-
     reader.onload = async (event) => {
       try {
         const data = new Uint8Array(event.target.result);
@@ -146,8 +140,6 @@ const Sales = () => {
 
         const parseDate = (dateValue) => {
           if (!dateValue) return null;
-
-          // Handle Excel serial numbers
           if (!isNaN(dateValue) && typeof dateValue === "number") {
             const date = XLSX.SSF.parse_date_code(dateValue);
             return moment({
@@ -156,8 +148,6 @@ const Sales = () => {
               day: date.d,
             }).format("YYYY-MM-DD");
           }
-
-          // Handle various string formats
           const formats = [
             "YYYY-MM-DD",
             "DD/MM/YYYY",
@@ -166,10 +156,7 @@ const Sales = () => {
             "M/D/YYYY",
           ];
           const parsed = moment(dateValue, formats, true);
-          if (parsed.isValid()) return parsed.format("YYYY-MM-DD");
-
-          console.warn("Unparseable date:", dateValue);
-          return null;
+          return parsed.isValid() ? parsed.format("YYYY-MM-DD") : null;
         };
 
         const newEntries = rows.map((row) => {
@@ -220,7 +207,6 @@ const Sales = () => {
             remarks: String(entry.remarks || "").trim(),
             fulfillingStatus: String(entry.fulfillingstatus || "").trim(),
             remarksByProduction: String(entry.remarksbyproduction || "").trim(),
-            // New fields from updated schema
             billNumber: String(entry.billnumber || "").trim(),
             completionStatus: String(entry.completionstatus || "").trim(),
             fulfillmentDate: parseDate(entry.fulfillmentdate),
@@ -232,7 +218,6 @@ const Sales = () => {
         const validEntries = newEntries.filter(
           (entry) => entry.soDate && !isNaN(entry.qty)
         );
-        console.log("Valid Entries:", validEntries);
         if (validEntries.length === 0) {
           toast.error(
             "No valid entries found with required fields (soDate, qty)."
@@ -243,22 +228,20 @@ const Sales = () => {
         const response = await axios.post(
           "https://sales-order-server.onrender.com/api/bulk-orders",
           validEntries,
-          {
-            headers: { "Content-Type": "application/json" },
-          }
+          { headers: { "Content-Type": "application/json" } }
         );
 
         setOrders((prevOrders) => [...prevOrders, ...response.data.data]);
         toast.success("Orders uploaded successfully!");
       } catch (error) {
         console.error("Error uploading entries:", error);
-        const errorMessage =
-          error.response?.data?.message || "Failed to upload entries";
-        const errorDetails = error.response?.data?.error || error.message;
-        toast.error(`${errorMessage}: ${errorDetails}`);
+        toast.error(
+          `${error.response?.data?.message || "Failed to upload entries"}: ${
+            error.response?.data?.error || error.message
+          }`
+        );
       }
     };
-
     reader.readAsArrayBuffer(file);
   };
 
@@ -286,225 +269,120 @@ const Sales = () => {
   };
 
   const isOrderComplete = (order) => {
-    console.log("Checking order:", JSON.stringify(order, null, 2));
     const allFields = Object.keys(order).filter((key) => key !== "_id");
-    const isComplete = allFields.every((field) => {
+    return allFields.every((field) => {
       const value = order[field];
-      const isFilled =
+      return (
         value !== undefined &&
         value !== null &&
-        (value !== "" || value === 0 || value === "-");
-      console.log(`Field: ${field}, Value: ${value}, Filled: ${isFilled}`);
-      return isFilled;
+        (value !== "" || value === 0 || value === "-")
+      );
     });
-    console.log("Order complete:", isComplete);
-    return isComplete;
   };
 
   return (
-    <>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)",
+        padding: "20px",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      }}
+    >
+      {/* Header Section */}
       <div
         style={{
-          width: "100%",
-          margin: "0",
-          padding: "20px",
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-          borderRadius: "0",
-          boxShadow: "none",
-          minHeight: "100vh",
-          height: "100%",
+          background: "linear-gradient(135deg, #2b2d42 0%, #8d5524 100%)",
+          padding: "20px 40px",
+          borderRadius: "15px",
+          marginBottom: "30px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "20px",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        <div
+        <Form.Control
+          type="text"
+          placeholder="Search Orders..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           style={{
-            width: "100vw",
-            position: "relative",
-            left: "50%",
-            right: "50%",
-            marginLeft: "-50vw",
-            marginTop: "-1.6%",
-            marginRight: "-50vw",
-            padding: "25px 40px",
-            marginBottom: "25px",
-            background: " linear-gradient(135deg, #2575fc, #6a11cb)",
-            display: "flex",
-            flexWrap: "wrap",
-
-            alignItems: "center",
-            justifyContent: "space-evenly",
-            minHeight: "80px",
-            zIndex: 1,
+            maxWidth: "400px",
+            padding: "12px 20px",
+            borderRadius: "25px",
+            border: "none",
+            background: "rgba(255,255,255,0.95)",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+            transition: "all 0.3s ease",
           }}
-        >
-          <Form.Control
-            type="text"
-            placeholder="Search Orders..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "550px",
-              padding: "12px 20px",
-              border: "none",
-              borderRadius: "30px",
-              backgroundColor: "rgba(255, 255, 255, 0.98)",
-              boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
-              fontSize: "1.1rem",
-              fontWeight: "500",
-              color: "#333",
-              transition: "all 0.3s ease-in-out",
-            }}
-            onFocus={(e) => {
-              e.target.style.boxShadow = "0 0 12px rgba(255, 255, 255, 0.9)";
-              e.target.style.transform = "scale(1.02)";
-            }}
-            onBlur={(e) => {
-              e.target.style.boxShadow = "0 3px 10px rgba(0, 0, 0, 0.15)";
-              e.target.style.transform = "scale(1)";
-            }}
-          />
+          onFocus={(e) =>
+            (e.target.style.boxShadow = "0 0 15px rgba(255,255,255,0.7)")
+          }
+          onBlur={(e) =>
+            (e.target.style.boxShadow = "0 4px 15px rgba(0,0,0,0.1)")
+          }
+        />
 
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
           <Dropdown>
             <Dropdown.Toggle
-              variant="outline-dark"
               style={{
-                padding: "12px 25px",
-                borderRadius: "30px",
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                background: "linear-gradient(135deg, #6b7280, #4b5563)",
                 border: "none",
+                padding: "10px 20px",
+                borderRadius: "25px",
                 color: "white",
                 fontWeight: "600",
-                fontSize: "1.1rem",
-                boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
-                transition: "all 0.3s ease-in-out",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = "#ffffff";
-                e.target.style.transform = "scale(1.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = "rgba(255, 255, 255, 0.98)";
-                e.target.style.transform = "scale(1)";
+                transition: "all 0.3s ease",
               }}
             >
               {approvalFilter === "All" ? "Approval Status" : approvalFilter}
             </Dropdown.Toggle>
             <Dropdown.Menu
               style={{
-                borderRadius: "12px",
-                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.2)",
-                backgroundColor: "#ffffff",
-                border: "none",
-                padding: "10px 0",
+                borderRadius: "10px",
+                boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+                background: "#fff",
               }}
             >
-              <Dropdown.Item
-                onClick={() => setApprovalFilter("All")}
-                style={{
-                  padding: "10px 25px",
-                  color: "#2c3e50",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.backgroundColor = "#f0f2f5")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.backgroundColor = "transparent")
-                }
-              >
-                All
-              </Dropdown.Item>
-              <Dropdown.Item
-                onClick={() => setApprovalFilter("Approved")}
-                style={{
-                  padding: "10px 25px",
-                  color: "#2c3e50",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.backgroundColor = "#f0f2f5")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.backgroundColor = "transparent")
-                }
-              >
-                Approved
-              </Dropdown.Item>
-              <Dropdown.Item
-                onClick={() => setApprovalFilter("Pending for Approval")}
-                style={{
-                  padding: "10px 25px",
-                  color: "#2c3e50",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.backgroundColor = "#f0f2f5")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.backgroundColor = "transparent")
-                }
-              >
-                Not Approved
-              </Dropdown.Item>
+              {["All", "Approved", "Pending for Approval"].map((option) => (
+                <Dropdown.Item
+                  key={option}
+                  onClick={() => setApprovalFilter(option)}
+                  style={{ padding: "8px 20px", color: "#374151" }}
+                >
+                  {option}
+                </Dropdown.Item>
+              ))}
             </Dropdown.Menu>
           </Dropdown>
 
           <Dropdown>
             <Dropdown.Toggle
-              variant="outline-dark"
               style={{
-                padding: "12px 25px",
-                borderRadius: "30px",
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                background: "linear-gradient(135deg, #6b7280, #4b5563)",
                 border: "none",
+                padding: "10px 20px",
+                borderRadius: "25px",
                 color: "white",
-                border: "none",
-
                 fontWeight: "600",
-                fontSize: "1.1rem",
-                boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
-                transition: "all 0.3s ease-in-out",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = "#ffffff";
-                e.target.style.transform = "scale(1.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = "rgba(255, 255, 255, 0.98)";
-                e.target.style.transform = "scale(1)";
+                transition: "all 0.3s ease",
               }}
             >
               {statusFilter === "All" ? "Order Status" : statusFilter}
             </Dropdown.Toggle>
             <Dropdown.Menu
               style={{
-                borderRadius: "12px",
-                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.2)",
-                backgroundColor: "#ffffff",
-                border: "none",
-                padding: "10px 0",
+                borderRadius: "10px",
+                boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+                background: "#fff",
               }}
             >
-              <Dropdown.Item
-                onClick={() => setStatusFilter("All")}
-                style={{
-                  padding: "10px 25px",
-                  color: "#2c3e50",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.backgroundColor = "#f0f2f5")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.backgroundColor = "transparent")
-                }
-              >
-                All
-              </Dropdown.Item>
               {[
+                "All",
                 "Pending",
                 "Delivered",
                 "Hold",
@@ -515,591 +393,452 @@ const Sales = () => {
                 <Dropdown.Item
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  style={{
-                    padding: "10px 25px",
-                    color: "#2c3e50",
-                    fontWeight: "500",
-                    transition: "background-color 0.2s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.backgroundColor = "#f0f2f5")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.backgroundColor = "transparent")
-                  }
+                  style={{ padding: "8px 20px", color: "#374151" }}
                 >
                   {status}
                 </Dropdown.Item>
               ))}
             </Dropdown.Menu>
           </Dropdown>
+
           <Button
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full transition-all transform hover:scale-105 hover:shadow-lg"
-            style={{
-              borderRadius: "50px",
-              background: "linear-gradient(135deg, #ff4e50, #fc913a)", // Redish gradient
-              transition: "all 0.3s ease-in-out",
-              fontWeight: "bold",
-            }}
             onClick={handlereset}
+            style={{
+              background: "linear-gradient(135deg, #ef4444, #dc2626)",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "25px",
+              color: "white",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              transition: "all 0.3s ease",
+            }}
           >
             Reset <ArrowRight size={16} />
           </Button>
-
-          {/* <DatePicker
-            selected={startDate} // Using startDate as the single date state
-            onChange={(date) => setStartDate(date)} // Updates the single date
-            placeholderText="Select Date" // Generic placeholder
-            className="form-control"
-            wrapperClassName="date-picker-wrapper"
-            style={{
-              width: "220px",
-              padding: "12px 20px",
-              border: "none",
-              borderRadius: "30px",
-              backgroundColor: "rgba(255, 255, 255, 0.98)",
-              boxShadow: "0 3px 10px rgba(0, 0, 0, 0.15)",
-              fontSize: "1.1rem",
-              fontWeight: "500",
-              color: "#333",
-              transition: "all 0.3s ease-in-out",
-            }}
-            onFocus={(e) => {
-              e.target.style.boxShadow = "0 0 12px rgba(255, 255, 255, 0.9)";
-              e.target.style.transform = "scale(1.02)";
-            }}
-            onBlur={(e) => {
-              e.target.style.boxShadow = "0 3px 10px rgba(0, 0, 0, 0.15)";
-              e.target.style.transform = "scale(1)";
-            }}
-          /> */}
-        </div>
-        <div className="container">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              marginLeft: "215px",
-            }}
-          >
-            <div
-              className="my-5"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "12px",
-                justifyContent: "center",
-                marginTop: "10px",
-              }}
-            >
-              <label
-                style={{
-                  background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-                  color: "#fff",
-                  padding: "12px 24px",
-                  border: "none",
-                  borderRadius: "30px",
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-                  transition: "all 0.3s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  minWidth: "150px",
-                  justifyContent: "center",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = "translateY(-3px)";
-                  e.target.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.25)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = "translateY(0)";
-                  e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.2)";
-                }}
-              >
-                <span style={{ fontSize: "1.2rem" }}>⬅</span> Bulk Upload
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  onChange={handleFileUpload}
-                  style={{ display: "none" }}
-                />
-              </label>
-
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                style={{
-                  background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-                  color: "#fff",
-                  padding: "12px 24px",
-                  border: "none",
-                  borderRadius: "30px",
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-                  transition: "all 0.3s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  minWidth: "150px",
-                  justifyContent: "center",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = "translateY(-3px)";
-                  e.target.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.25)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = "translateY(0)";
-                  e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.2)";
-                }}
-              >
-                <span style={{ fontSize: "1.2rem" }}>+</span> Add Entry
-              </button>
-
-              <button
-                onClick={handleExport}
-                style={{
-                  background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-                  color: "#fff",
-                  padding: "12px 24px",
-                  border: "none",
-                  borderRadius: "30px",
-                  fontSize: "0.8rem",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-                  transition: "all 0.3s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  minWidth: "150px",
-                  justifyContent: "center",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = "translateY(-3px)";
-                  e.target.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.25)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = "translateY(0)";
-                  e.target.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.2)";
-                }}
-              >
-                <span style={{ fontSize: "1.2rem" }}>Export Orders</span> ➔
-              </button>
-            </div>
-          </div>
-
-          {isAddModalOpen && (
-            <AddEntry
-              onSubmit={handleAddEntry}
-              onClose={() => setIsAddModalOpen(false)}
-            />
-          )}
-
-          {isViewModalOpen && (
-            <ViewEntry
-              isOpen={isViewModalOpen}
-              onClose={() => setIsViewModalOpen(false)}
-              entry={selectedOrder}
-            />
-          )}
-
-          {isDeleteModalOpen && (
-            <DeleteModal
-              isOpen={isDeleteModalOpen}
-              onClose={() => setIsDeleteModalOpen(false)}
-              onDelete={handleDelete}
-              itemId={selectedOrder?._id}
-            />
-          )}
-
-          {isEditModalOpen && (
-            <EditEntry
-              isOpen={isEditModalOpen}
-              onClose={() => setIsEditModalOpen(false)}
-              onEntryUpdated={handleEntryUpdated}
-              entryToEdit={selectedOrder}
-            />
-          )}
-
-          <div
-            className="table-wrapper"
-            style={{
-              overflowX: "auto",
-              marginLeft: "-100px",
-              marginRight: "-100px",
-            }}
-          >
-            <table
-              className="sales-table"
-              style={{ width: "90%", borderCollapse: "collapse" }}
-            >
-              <thead
-                style={{
-                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                  color: "white",
-                  fontSize: "1.1rem",
-                  padding: "15px 20px",
-                  textAlign: "center",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 2,
-                }}
-              >
-                <tr>
-                  {[
-                    "Seq No",
-                    "Contact Person Name",
-
-                    "Product Details",
-                    "Unit Price",
-                    "Qty",
-                    "Freight Charges & Status",
-
-                    "GST",
-                    "Total",
-                    "Party & Address",
-                    "Order ID",
-                    "SO Date",
-                    "Committed Date",
-                    "Status",
-                    "Approvel Status",
-
-                    "City",
-                    "State",
-                    "Pin Code",
-
-                    "Contact No",
-                    "Customer Email",
-                    "Model No",
-                    "Serial No",
-                    "Product Type",
-                    "Size",
-                    "Spec",
-
-                    "Payment Terms",
-                    "Amount2",
-
-                    "Installation",
-                    "Sales Person",
-                    "Company",
-                    "Transporter",
-                    "Transporter Details",
-                    "Shipping Address",
-                    "Billing Address",
-                    "Docket No",
-                    "Dispatch From",
-                    "Dispatch Date",
-                    "Receipt Date",
-                    "Invoice No",
-                    "Invoice Date",
-                    "Remarks",
-                    "Actions",
-                  ].map((header) => (
-                    <th key={header} style={{ padding: "15px" }}>
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order, index) => {
-                    const complete = isOrderComplete(order);
-                    return (
-                      <tr
-                        key={order._id || index}
-                        style={{
-                          backgroundColor: complete ? "#ffffff" : "#fff3cd",
-                          transition: "background-color 0.3s ease",
-                          borderBottom: "1px solid #dee2e6",
-                        }}
-                      >
-                        <td style={{ padding: "10px" }}>{index + 1}</td>
-                        <td style={{ padding: "10px" }}>{order.name || "-"}</td>
-
-                        <td style={{ padding: "10px" }}>
-                          {order.productDetails || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          ₹{order.unitPrice?.toFixed(2) || "0.00"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.qty !== undefined ? order.qty : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.freightcs || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.gst ? `${order.gst}%` : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          ₹{order.total?.toFixed(2) || "0.00"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.partyAndAddress || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.orderId || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.soDate
-                            ? new Date(order.soDate).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.committedDate
-                            ? new Date(order.committedDate).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td style={{ padding: "10px", listStyle: "none" }}>
-                          <Badge
-                            bg={
-                              order.status === "Pending"
-                                ? "warning"
-                                : order.status === "Delivered"
-                                ? "success"
-                                : order.status === "Hold"
-                                ? "dark"
-                                : order.status === "Order Canceled"
-                                ? "danger"
-                                : order.status === "Dispatched"
-                                ? "primary"
-                                : order.status === "In Transit"
-                                ? "info"
-                                : "secondary"
-                            }
-                          >
-                            {order.status || "-"}
-                          </Badge>
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          <Badge
-                            bg={
-                              order.sostatus === "Pending for Approval"
-                                ? "warning"
-                                : order.sostatus === "Approved"
-                                ? "success"
-                                : "secondary"
-                            }
-                          >
-                            {order.sostatus || "-"}
-                          </Badge>
-                        </td>
-
-                        <td style={{ padding: "10px" }}>{order.city || "-"}</td>
-                        <td style={{ padding: "10px" }}>
-                          {order.state || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.pinCode || "-"}
-                        </td>
-
-                        <td style={{ padding: "10px" }}>
-                          {order.contactNo || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.customerEmail || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.modelNo || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.serialno || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.productType || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>{order.size || "-"}</td>
-                        <td style={{ padding: "10px" }}>{order.spec || "-"}</td>
-
-                        <td style={{ padding: "10px" }}>
-                          {order.paymentTerms || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          ₹{order.amount2?.toFixed(2) || "0.00"}
-                        </td>
-
-                        <td style={{ padding: "10px" }}>
-                          {order.installation || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.salesPerson || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.company || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.transporter || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.transporterDetails || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.shippingAddress || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.billingAddress || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.docketNo || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.dispatchFrom || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.dispatchDate
-                            ? new Date(order.dispatchDate).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.receiptDate
-                            ? new Date(order.receiptDate).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.invoiceNo || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.invoiceDate
-                            ? new Date(order.invoiceDate).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          {order.remarks || "-"}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "8px",
-                              justifyContent: "center",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Button
-                              variant="primary"
-                              onClick={() => handleViewClick(order)}
-                              style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "22px",
-                                padding: "0",
-                              }}
-                            >
-                              <FaEye style={{ marginBottom: "3px" }} />
-                            </Button>
-                            <button
-                              className="editBtn"
-                              variant="secondary"
-                              onClick={() => handleEditClick(order)}
-                              style={{
-                                minWidth: "40px",
-                                width: "40px",
-                                padding: "0",
-                              }}
-                            >
-                              <svg height="1em" viewBox="0 0 512 512">
-                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
-                              </svg>
-                            </button>
-                            <button
-                              className="bin-button"
-                              variant="danger"
-                              onClick={() => handleDeleteClick(order)}
-                              style={{
-                                minWidth: "40 -px",
-                                width: "40px",
-                                padding: "0",
-                              }}
-                            >
-                              <svg
-                                className="bin-top"
-                                viewBox="0 0 39 7"
-                                fill="none"
-                              >
-                                <line
-                                  y1="5"
-                                  x2="39"
-                                  y2="5"
-                                  stroke="white"
-                                  strokeWidth="4"
-                                ></line>
-                                <line
-                                  x1="12"
-                                  y1="1.5"
-                                  x2="26.0357"
-                                  y2="1.5"
-                                  stroke="white"
-                                  strokeWidth="3"
-                                ></line>
-                              </svg>
-                              <svg
-                                className="bin-bottom"
-                                viewBox="0 0 33 39"
-                                fill="none"
-                              >
-                                <mask id="path-1-inside-1_8_19" fill="white">
-                                  <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
-                                </mask>
-                                <path
-                                  d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                                  fill="white"
-                                  mask="url(#path-1-inside-1_8_19)"
-                                ></path>
-                                <path
-                                  d="M12 6L12 29"
-                                  stroke="white"
-                                  strokeWidth="4"
-                                ></path>
-                                <path
-                                  d="M21 6V29"
-                                  stroke="white"
-                                  strokeWidth="4"
-                                ></path>
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="43"
-                      style={{
-                        textAlign: "left",
-                        paddingLeft: "15%",
-                        padding: "20px",
-                        height: "460px",
-                      }}
-                    >
-                      No Data Available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
-      <footer className="footer-container">
-        <p style={{ marginTop: "10px", color: "white", height: "20px" }}>
-          © 2025 DataManagement. All rights reserved.
-        </p>
+
+      {/* Action Buttons */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+          marginBottom: "30px",
+          flexWrap: "wrap",
+        }}
+      >
+        {[
+          {
+            label: "Bulk Upload",
+            icon: "⬅",
+            onClick: null,
+            input: (
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileUpload}
+                style={{ display: "none" }}
+              />
+            ),
+          },
+          {
+            label: "Add Entry",
+            icon: "+",
+            onClick: () => setIsAddModalOpen(true),
+          },
+          { label: "Export Orders", icon: "➔", onClick: handleExport },
+        ].map((btn, idx) => (
+          <label
+            key={idx}
+            style={{
+              background: "linear-gradient(135deg, #3b82f6, #1e3a8a)",
+              color: "white",
+              padding: "12px 25px",
+              borderRadius: "25px",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+          >
+            <span>{btn.icon}</span> {btn.label}
+            {btn.input}
+          </label>
+        ))}
+      </div>
+
+      {/* Modals */}
+      {isAddModalOpen && (
+        <AddEntry
+          onSubmit={handleAddEntry}
+          onClose={() => setIsAddModalOpen(false)}
+        />
+      )}
+      {isViewModalOpen && (
+        <ViewEntry
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          entry={selectedOrder}
+        />
+      )}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleDelete}
+          itemId={selectedOrder?._id}
+        />
+      )}
+      {isEditModalOpen && (
+        <EditEntry
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onEntryUpdated={handleEntryUpdated}
+          entryToEdit={selectedOrder}
+        />
+      )}
+
+      {/* Table */}
+      <div
+        style={{
+          overflowX: "auto",
+          background: "#fff",
+          borderRadius: "15px",
+          boxShadow: "0 5px 20px rgba(0,0,0,0.1)",
+        }}
+      >
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "separate",
+            borderSpacing: "0",
+          }}
+        >
+          <thead
+            style={{
+              background: "linear-gradient(135deg, #1e3a8a, #3b82f6)",
+              color: "white",
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+            }}
+          >
+            <tr>
+              {[
+                "Seq No",
+                "Contact Person Name",
+                "Product Details",
+                "Unit Price",
+                "Qty",
+                "Freight Charges & Status",
+                "GST",
+                "Total",
+                "Party & Address",
+                "Order ID",
+                "SO Date",
+                "Committed Date",
+                "Status",
+                "Approvel Status",
+                "City",
+                "State",
+                "Pin Code",
+                "Contact No",
+                "Customer Email",
+                "Model No",
+                "Serial No",
+                "Product Type",
+                "Size",
+                "Spec",
+                "Payment Terms",
+                "Amount2",
+                "Installation",
+                "Sales Person",
+                "Company",
+                "Transporter",
+                "Transporter Details",
+                "Shipping Address",
+                "Billing Address",
+                "Docket No",
+                "Dispatch From",
+                "Dispatch Date",
+                "Receipt Date",
+                "Invoice No",
+                "Invoice Date",
+                "Remarks",
+                "Actions",
+              ].map((header) => (
+                <th
+                  key={header}
+                  style={{
+                    padding: "15px",
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    textTransform: "uppercase",
+                    borderBottom: "2px solid rgba(255,255,255,0.2)",
+                  }}
+                >
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredOrders.length > 0 ? (
+              filteredOrders.map((order, index) => {
+                const complete = isOrderComplete(order);
+                return (
+                  <tr
+                    key={order._id || index}
+                    style={{
+                      backgroundColor: complete ? "#ffffff" : "#fef3c7",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = complete
+                        ? "#f9fafb"
+                        : "#fef9c3")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = complete
+                        ? "#ffffff"
+                        : "#fef3c7")
+                    }
+                  >
+                    <td style={{ padding: "12px", textAlign: "center" }}>
+                      {index + 1}
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.name || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      {order.productDetails || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      ₹{order.unitPrice?.toFixed(2) || "0.00"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.qty !== undefined ? order.qty : "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.freightcs || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.gst ? `${order.gst}%` : "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      ₹{order.total?.toFixed(2) || "0.00"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.partyAndAddress || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.orderId || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      {order.soDate
+                        ? new Date(order.soDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.committedDate
+                        ? new Date(order.committedDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      <Badge
+                        bg={
+                          order.status === "Pending"
+                            ? "warning"
+                            : order.status === "Delivered"
+                            ? "success"
+                            : order.status === "Hold"
+                            ? "dark"
+                            : order.status === "Order Canceled"
+                            ? "danger"
+                            : order.status === "Dispatched"
+                            ? "primary"
+                            : order.status === "In Transit"
+                            ? "info"
+                            : "secondary"
+                        }
+                      >
+                        {order.status || "-"}
+                      </Badge>
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      <Badge
+                        bg={
+                          order.sostatus === "Pending for Approval"
+                            ? "warning"
+                            : order.sostatus === "Approved"
+                            ? "success"
+                            : "secondary"
+                        }
+                      >
+                        {order.sostatus || "-"}
+                      </Badge>
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.city || "-"}</td>
+                    <td style={{ padding: "12px" }}>{order.state || "-"}</td>
+                    <td style={{ padding: "12px" }}>{order.pinCode || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      {order.contactNo || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.customerEmail || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.modelNo || "-"}</td>
+                    <td style={{ padding: "12px" }}>{order.serialno || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      {order.productType || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.size || "-"}</td>
+                    <td style={{ padding: "12px" }}>{order.spec || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      {order.paymentTerms || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      ₹{order.amount2?.toFixed(2) || "0.00"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.installation || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.salesPerson || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.company || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      {order.transporter || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.transporterDetails || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.shippingAddress || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.billingAddress || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.docketNo || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      {order.dispatchFrom || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.dispatchDate
+                        ? new Date(order.dispatchDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.receiptDate
+                        ? new Date(order.receiptDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.invoiceNo || "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {order.invoiceDate
+                        ? new Date(order.invoiceDate).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td style={{ padding: "12px" }}>{order.remarks || "-"}</td>
+                    <td style={{ padding: "12px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Button
+                          variant="primary"
+                          onClick={() => handleViewClick(order)}
+                          style={{
+                            padding: "8px",
+                            borderRadius: "50%",
+                            width: "36px",
+                            height: "36px",
+                          }}
+                        >
+                          <FaEye />
+                        </Button>
+                        <Button
+                          variant="warning"
+                          onClick={() => handleEditClick(order)}
+                          style={{
+                            padding: "8px",
+                            borderRadius: "50%",
+                            width: "36px",
+                            height: "36px",
+                          }}
+                        >
+                          <svg height="1em" viewBox="0 0 512 512">
+                            <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                          </svg>
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onClick={() => handleDeleteClick(order)}
+                          style={{
+                            padding: "8px",
+                            borderRadius: "50%",
+                            width: "36px",
+                            height: "36px",
+                          }}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="16"
+                            height="16"
+                            fill="white"
+                          >
+                            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m-10 5v10a2 2 0 002 2h8a2 2 0 002-2V11M10 11v6M14 11v6" />
+                          </svg>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td
+                  colSpan="43"
+                  style={{
+                    padding: "40px",
+                    textAlign: "center",
+                    color: "#6b7280",
+                    fontSize: "1.2rem",
+                  }}
+                >
+                  No Data Available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer */}
+      <footer
+        style={{
+          marginTop: "30px",
+          textAlign: "center",
+          color: "#6b7280",
+          padding: "20px",
+          background: "#fff",
+          borderRadius: "15px",
+          boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+        }}
+      >
+        © 2025 DataManagement. All rights reserved.
       </footer>
-    </>
+    </div>
   );
 };
 
