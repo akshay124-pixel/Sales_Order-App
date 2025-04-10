@@ -393,7 +393,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Unit Price:</strong>{" "}
                   {product.unitPrice !== undefined
-                    ? `$${product.unitPrice.toFixed(2)}`
+                    ? `₹${product.unitPrice.toFixed(2)}`
                     : "N/A"}
                 </span>
               </div>
