@@ -338,7 +338,17 @@ function ViewEntry({ isOpen, onClose, entry }) {
         </div>
 
         {/* Product Info Section */}
-        <div>
+        <div
+          style={{
+            background: "#fafafa",
+            borderRadius: "10px",
+            padding: "1.2rem",
+            boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.8rem",
+          }}
+        >
           <h3
             style={{
               fontSize: "1.3rem",
