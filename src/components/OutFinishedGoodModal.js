@@ -17,16 +17,15 @@ const OutFinishedGoodModal = ({
     transporter: "",
     transporterDetails: "",
     billNumber: "",
-    dispatchDate: new Date().toISOString().split("T")[0], // Default to current date
+    dispatchDate: new Date().toISOString().split("T")[0],
     docketNo: "",
     receiptDate: "",
-    dispatchStatus: "Not Dispatched", // Default dispatch status
+    dispatchStatus: "Not Dispatched",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Update formData when initialData changes
   useEffect(() => {
     if (initialData && entryToEdit) {
       setFormData({
@@ -51,6 +50,10 @@ const OutFinishedGoodModal = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleDispatchFromChange = (value) => {
+    setFormData((prev) => ({ ...prev, dispatchFrom: value }));
+  };
+
   const handleTransporterChange = (value) => {
     setFormData((prev) => ({ ...prev, transporter: value }));
   };
@@ -72,12 +75,23 @@ const OutFinishedGoodModal = ({
         toast.error("Missing required fields!");
         return;
       }
+      // Additional validation for "Delivered" status
+      if (
+        formData.dispatchStatus === "Delivered" &&
+        (!formData.receiptDate || !formData.docketNo)
+      ) {
+        setError(
+          "Receipt Date and Docket Number are required when setting status to Delivered!"
+        );
+        toast.error("Missing required fields for Delivered status!");
+        return;
+      }
       setShowConfirm(true);
       return;
     }
 
     setLoading(true);
-    setError(null); // Clear previous errors
+    setError(null);
 
     try {
       const submissionData = {
@@ -90,7 +104,7 @@ const OutFinishedGoodModal = ({
         receiptDate: formData.receiptDate
           ? new Date(formData.receiptDate).toISOString()
           : undefined,
-        dispatchStatus: formData.dispatchStatus || "Not Dispatched",
+        dispatchStatus: formData.dispatchStatus,
       };
 
       const response = await axios.put(
@@ -113,7 +127,7 @@ const OutFinishedGoodModal = ({
         `Dispatch updated successfully! Status: ${updatedEntry.dispatchStatus}`,
         { position: "top-right", autoClose: 3000 }
       );
-      onSubmit(updatedEntry); // Pass updated entry to parent (Finish component)
+      onSubmit(updatedEntry);
       onClose();
     } catch (err) {
       console.error("Dispatch submission error:", err);
@@ -138,7 +152,7 @@ const OutFinishedGoodModal = ({
         <h2
           style={{ textAlign: "center", fontWeight: "bold", color: "#2575fc" }}
         >
-          Edit Finished Good Dispatch
+          Edit Dispatch
         </h2>
       }
       open={visible}
@@ -162,8 +176,35 @@ const OutFinishedGoodModal = ({
         {error && (
           <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
         )}
+        <div>
+          <label
+            style={{
+              fontSize: "1rem",
+              fontWeight: "600",
+              color: "#333",
+              marginBottom: "5px",
+              display: "block",
+            }}
+          >
+            Dispatch From *
+          </label>
+          <Select
+            value={formData.dispatchFrom || undefined}
+            onChange={handleDispatchFromChange}
+            placeholder="Select dispatch location"
+            style={{ width: "100%", borderRadius: "8px" }}
+            disabled={loading}
+          >
+            <Option value="">Select Dispatch From</Option>
+            <Option value="Patna">Patna</Option>
+            <Option value="Bareilly">Bareilly</Option>
+            <Option value="Ranchi">Ranchi</Option>
+            <Option value="Morinda">Morinda</Option>
+            <Option value="Lucknow">Lucknow</Option>
+            <Option value="Delhi">Delhi</Option>
+          </Select>
+        </div>
         {[
-          { key: "dispatchFrom", label: "Dispatch From", type: "text" },
           { key: "billNumber", label: "Bill No", type: "text" },
           {
             key: "transporterDetails",
@@ -185,6 +226,12 @@ const OutFinishedGoodModal = ({
               }}
             >
               {field.label}{" "}
+              {field.key === "receiptDate" &&
+                formData.dispatchStatus === "Delivered" &&
+                "*"}
+              {field.key === "docketNo" &&
+                formData.dispatchStatus === "Delivered" &&
+                "*"}
               {["dispatchFrom", "transporter", "dispatchDate"].includes(
                 field.key
               ) && "*"}
@@ -222,6 +269,11 @@ const OutFinishedGoodModal = ({
             <Option value="">Select Transporter</Option>
             <Option value="BlueDart">BlueDart</Option>
             <Option value="Om Logistics">Om Logistics</Option>
+            <Option value="Rivigo">Rivigo</Option>
+            <Option value="Safex">Safex</Option>
+            <Option value="Delhivery">Delhivery</Option>
+            <Option value="Maruti">Maruti</Option>
+            <Option value="Self-Pickup">Self-Pickup</Option>
             <Option value="Others">Others</Option>
           </Select>
         </div>
@@ -240,13 +292,13 @@ const OutFinishedGoodModal = ({
           <Select
             value={formData.dispatchStatus || "Not Dispatched"}
             onChange={handleDispatchStatusChange}
-            style={{
-              width: "100%",
-              borderRadius: "8px",
-            }}
+            style={{ width: "100%", borderRadius: "8px" }}
             disabled={loading}
           >
             <Option value="Not Dispatched">Not Dispatched</Option>
+            <Option value="Docket Awaited Dispatched">
+              Docket-Awaited-Dispatched
+            </Option>
             <Option value="Dispatched">Dispatched</Option>
             <Option value="Delivered">Delivered</Option>
           </Select>
@@ -302,14 +354,14 @@ const OutFinishedGoodModal = ({
                   transition: "box-shadow 0.2s ease-in-out",
                   boxShadow: "0 4px 8px rgba(37, 117, 252, 0.2)",
                 }}
-                onMouseEnter={(e) => {
-                  e.target.style.boxShadow =
-                    "0 6px 12px rgba(37, 117, 252, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.boxShadow =
-                    "0 4px 8px rgba(37, 117, 252, 0.2)";
-                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 6px 12px rgba(37, 117, 252, 0.3)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 4px 8px rgba(37, 117, 252, 0.2)")
+                }
               >
                 {loading ? "Saving..." : "Confirm"}
               </Button>
@@ -331,12 +383,13 @@ const OutFinishedGoodModal = ({
                 transition: "box-shadow 0.2s ease-in-out",
                 boxShadow: "0 4px 8px rgba(37, 117, 252, 0.2)",
               }}
-              onMouseEnter={(e) => {
-                e.target.style.boxShadow = "0 6px 12px rgba(37, 117, 252, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.boxShadow = "0 4px 8px rgba(37, 117, 252, 0.2)";
-              }}
+              onMouseEnter={(e) =>
+                (e.target.style.boxShadow =
+                  "0 6px 12px rgba(37, 117, 252, 0.3)")
+              }
+              onMouseLeave={(e) =>
+                (e.target.style.boxShadow = "0 4px 8px rgba(37, 117, 252, 0.2)")
+              }
             >
               {loading ? "Submitting..." : "Save Changes"}
             </Button>

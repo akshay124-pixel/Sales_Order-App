@@ -28,7 +28,7 @@ function Finish() {
         // Filter out "Dispatched" orders from the initial fetch
         setOrders(
           response.data.data.filter(
-            (order) => order.dispatchStatus !== "Dispatched"
+            (order) => order.dispatchStatus !== "Delivered"
           )
         );
       } else {
@@ -80,7 +80,7 @@ function Finish() {
     setOrders((prevOrders) =>
       prevOrders
         .map((order) => (order._id === updatedEntry._id ? updatedEntry : order))
-        .filter((order) => order.dispatchStatus !== "Dispatched")
+        .filter((order) => order.dispatchStatus !== "Delivered")
     );
     setIsModalOpen(false);
     toast.success(
@@ -102,13 +102,24 @@ function Finish() {
 
   const handleCopy = () => {
     if (!viewOrder) return;
+    const productsText = viewOrder.products
+      ? viewOrder.products
+          .map(
+            (p, i) =>
+              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
+                p.qty || "N/A"
+              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
+                p.modelNos?.join(", ") || "N/A"
+              })`
+          )
+          .join("\n")
+      : "N/A";
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
-      Serial No: ${viewOrder.serialno || "N/A"}
-      Model No: ${viewOrder.modelNo || "N/A"}
+      Serial Nos: ${viewOrder.serialNos?.join(", ") || "N/A"}
+      Model Nos: ${viewOrder.modelNos?.join(", ") || "N/A"}
       Bill No: ${viewOrder.billNumber || "N/A"}
-      Product: ${viewOrder.productDetails || "N/A"}
-      Quantity: ${viewOrder.qty || "N/A"}
+      Products:\n${productsText}
       Dispatch Date: ${
         viewOrder.dispatchDate
           ? new Date(viewOrder.dispatchDate).toLocaleDateString()
@@ -200,7 +211,7 @@ function Finish() {
               textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
             }}
           >
-            Finished Goods Dashboard
+            Dispatch Dashboard
           </h1>
         </header>
 
@@ -218,7 +229,7 @@ function Finish() {
                 fontWeight: "500",
               }}
             >
-              No finished goods available at this time.
+              No Dispatch available at this time.
             </div>
           ) : (
             <div
@@ -256,7 +267,7 @@ function Finish() {
                       "Dispatch Date",
                       "Customer Name",
                       "Delivery Address",
-                      "Prdoduct Status",
+                      "Product Status",
                       "Dispatch Status",
                       "Actions",
                     ].map((header, index) => (
@@ -277,186 +288,201 @@ function Finish() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order, index) => (
-                    <tr
-                      key={order._id}
-                      style={{
-                        background: index % 2 === 0 ? "#f8f9fa" : "#fff",
-                        transition: "all 0.3s ease",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.background = "#e9ecef")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.background =
-                          index % 2 === 0 ? "#f8f9fa" : "#fff")
-                      }
-                    >
-                      <td
+                  {orders.map((order, index) => {
+                    const productDetails = order.products
+                      ? order.products
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
+                      : "N/A";
+                    const totalQty = order.products
+                      ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+                      : "N/A";
+
+                    return (
+                      <tr
+                        key={order._id}
                         style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
+                          background: index % 2 === 0 ? "#f8f9fa" : "#fff",
+                          transition: "all 0.3s ease",
                         }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = "#e9ecef")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background =
+                            index % 2 === 0 ? "#f8f9fa" : "#fff")
+                        }
                       >
-                        {order.orderId || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.productDetails || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.qty || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.dispatchDate
-                          ? new Date(order.dispatchDate).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.name || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.shippingAddress || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        <Badge
+                        <td
                           style={{
-                            background:
-                              order.fulfillingStatus === "Partial Dispatch"
-                                ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                : "linear-gradient(135deg, #28a745, #4cd964)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
                           }}
                         >
-                          {order.fulfillingStatus === "Partial Dispatch"
-                            ? "Partial Dispatch"
-                            : "Complete"}
-                        </Badge>
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        <Badge
+                          {order.orderId || "N/A"}
+                        </td>
+                        <td
                           style={{
-                            background:
-                              order.dispatchStatus === "Not Dispatched"
-                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                : order.dispatchStatus === "Dispatched"
-                                ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                : "linear-gradient(135deg, #28a745, #4cd964)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
                           }}
                         >
-                          {order.dispatchStatus || "Not Dispatched"}
-                        </Badge>
-                      </td>
-                      <td style={{ padding: "12px", textAlign: "center" }}>
-                        <div
+                          {productDetails}
+                        </td>
+                        <td
                           style={{
-                            display: "flex",
-                            gap: "10px",
-                            justifyContent: "center",
-                            alignItems: "center",
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
                           }}
                         >
-                          <Button
-                            variant="primary"
-                            onClick={() => handleView(order)}
+                          {totalQty}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.dispatchDate
+                            ? new Date(order.dispatchDate).toLocaleDateString()
+                            : "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.name || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.shippingAddress || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          <Badge
                             style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "22px",
-                              padding: "0",
-                            }}
-                          >
-                            <FaEye style={{ marginBottom: "3px" }} />
-                          </Button>
-                          <button
-                            className="editBtn"
-                            onClick={() => handleEditClick(order)}
-                            style={{
-                              minWidth: "40px",
-                              width: "40px",
-                              height: "40px",
-                              padding: "0",
-                              border: "none",
                               background:
-                                "linear-gradient(135deg, #6c757d, #5a6268)",
-                              borderRadius: "22px",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
+                                order.fulfillingStatus === "Partial Dispatch"
+                                  ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                                  : "linear-gradient(135deg, #28a745, #4cd964)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
                             }}
                           >
-                            <svg height="1em" viewBox="0 0 512 512" fill="#fff">
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {order.fulfillingStatus === "Partial Dispatch"
+                              ? "Partial Dispatch"
+                              : "Complete"}
+                          </Badge>
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          <Badge
+                            style={{
+                              background:
+                                order.dispatchStatus === "Not Dispatched"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  : order.dispatchStatus === "Dispatched"
+                                  ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                                  : "linear-gradient(135deg, #28a745, #4cd964)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
+                            }}
+                          >
+                            {order.dispatchStatus || "Not Dispatched"}
+                          </Badge>
+                        </td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Button
+                              variant="primary"
+                              onClick={() => handleView(order)}
+                              style={{
+                                width: "40px",
+                                height: "40px",
+                                borderRadius: "22px",
+                                padding: "0",
+                              }}
+                            >
+                              <FaEye style={{ marginBottom: "3px" }} />
+                            </Button>
+                            <button
+                              className="editBtn"
+                              onClick={() => handleEditClick(order)}
+                              style={{
+                                minWidth: "40px",
+                                width: "40px",
+                                height: "40px",
+                                padding: "0",
+                                border: "none",
+                                background:
+                                  "linear-gradient(135deg, #6c757d, #5a6268)",
+                                borderRadius: "22px",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <svg
+                                height="1em"
+                                viewBox="0 0 512 512"
+                                fill="#fff"
+                              >
+                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -534,57 +560,94 @@ function Finish() {
                 >
                   Product Info
                 </h3>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                    gap: "15px",
-                  }}
-                >
+                {viewOrder.products && viewOrder.products.length > 0 ? (
+                  viewOrder.products.map((product, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1.5rem",
+                        flexWrap: "wrap",
+                        padding: "0.5rem 0",
+                        borderBottom:
+                          index < viewOrder.products.length - 1
+                            ? "1px solid #eee"
+                            : "none",
+                      }}
+                    >
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Product {index + 1}:</strong>{" "}
+                        {product.productType || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Qty:</strong> {product.qty || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Size:</strong> {product.size || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Spec:</strong> {product.spec || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Serial Nos:</strong>{" "}
+                        {product.serialNos?.join(", ") || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Model Nos:</strong>{" "}
+                        {product.modelNos?.join(", ") || "N/A"}
+                      </span>
+                    </div>
+                  ))
+                ) : (
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
+                    <strong>Products:</strong> N/A
                   </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Serial No:</strong> {viewOrder.serialno || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Model No:</strong> {viewOrder.modelNo || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Bill No:</strong> {viewOrder.billNumber || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Product:</strong>{" "}
-                    {viewOrder.productDetails || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Quantity:</strong> {viewOrder.qty || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Dispatch Date:</strong>{" "}
-                    {viewOrder.dispatchDate
-                      ? new Date(viewOrder.dispatchDate).toLocaleDateString()
-                      : "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Customer:</strong> {viewOrder.name || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Address:</strong>{" "}
-                    {viewOrder.shippingAddress || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Dispatch Status:</strong>{" "}
-                    {viewOrder.dispatchStatus || "Not Dispatched"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Transporter:</strong>{" "}
-                    {viewOrder.transporter || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
-                  </span>
-                </div>
+                )}
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: "15px",
+                }}
+              >
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Serial Nos:</strong>{" "}
+                  {viewOrder.serialNos?.join(", ") || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Model Nos:</strong>{" "}
+                  {viewOrder.modelNos?.join(", ") || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Bill No:</strong> {viewOrder.billNumber || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Dispatch Date:</strong>{" "}
+                  {viewOrder.dispatchDate
+                    ? new Date(viewOrder.dispatchDate).toLocaleDateString()
+                    : "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Customer:</strong> {viewOrder.name || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Address:</strong> {viewOrder.shippingAddress || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Dispatch Status:</strong>{" "}
+                  {viewOrder.dispatchStatus || "Not Dispatched"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Transporter:</strong> {viewOrder.transporter || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
+                </span>
               </div>
               <Button
                 onClick={handleCopy}

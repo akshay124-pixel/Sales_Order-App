@@ -63,6 +63,20 @@ function Installation() {
 
   const handleCopy = () => {
     if (!viewOrder) return;
+    const productsText = viewOrder.products
+      ? viewOrder.products
+          .map(
+            (p, i) =>
+              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
+                p.qty || "N/A"
+              }, Size: ${p.size || "N/A"}, Spec: ${
+                p.spec || "N/A"
+              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
+                p.modelNos?.join(", ") || "N/A"
+              })`
+          )
+          .join("\n")
+      : "N/A";
     const orderText = `
     Order ID: ${viewOrder.orderId || "N/A"}
     Contact Person: ${viewOrder.name || "N/A"}
@@ -71,13 +85,9 @@ function Installation() {
     Installation Details: ${viewOrder.installation || "N/A"}
     Installation Status: ${viewOrder.installationStatus || "Pending"}
     Remarks: ${viewOrder.remarksByInstallation || "N/A"}
-    Model No: ${viewOrder.modelNo || "N/A"}
-    Serial No: ${viewOrder.serialno || "N/A"}
-    Product Type: ${viewOrder.productType || "N/A"}
-    Size: ${viewOrder.size || "N/A"}
-    Spec: ${viewOrder.spec || "N/A"}
-    Product Details: ${viewOrder.productDetails || "N/A"}
-    Quantity: ${viewOrder.qty || "N/A"}
+    Model Nos: ${viewOrder.modelNos?.join(", ") || "N/A"}
+    Serial Nos: ${viewOrder.serialNos?.join(", ") || "N/A"}
+    Products:\n${productsText}
   `.trim();
     navigator.clipboard.writeText(orderText);
     setCopied(true);
@@ -300,154 +310,162 @@ function Installation() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order, index) => (
-                    <tr
-                      key={order._id}
-                      style={{
-                        background: index % 2 === 0 ? "#f8f9fa" : "#fff",
-                        transition: "all 0.3s ease",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.background = "#e9ecef")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.background =
-                          index % 2 === 0 ? "#f8f9fa" : "#fff")
-                      }
-                    >
-                      <td
+                  {orders.map((order, index) => {
+                    const productDetails = order.products
+                      ? order.products
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
+                      : "N/A";
+
+                    return (
+                      <tr
+                        key={order._id}
                         style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
+                          background: index % 2 === 0 ? "#f8f9fa" : "#fff",
+                          transition: "all 0.3s ease",
                         }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = "#e9ecef")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background =
+                            index % 2 === 0 ? "#f8f9fa" : "#fff")
+                        }
                       >
-                        {order.orderId || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.productDetails || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.name || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.contactNo || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.shippingAddress || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.installation || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        <Badge
+                        <td
                           style={{
-                            background:
-                              order.installationStatus === "Pending"
-                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                : order.installationStatus === "In Progress"
-                                ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                                : order.installationStatus === "Completed"
-                                ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                : "linear-gradient(135deg, #6c757d, #5a6268)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
                           }}
                         >
-                          {order.installationStatus || "Pending"}
-                        </Badge>
-                      </td>
-                      <td style={{ padding: "12px", textAlign: "center" }}>
-                        <div
+                          {order.orderId || "N/A"}
+                        </td>
+                        <td
                           style={{
-                            display: "flex",
-                            gap: "10px",
-                            justifyContent: "center",
-                            alignItems: "center",
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
                           }}
                         >
-                          <Button
-                            variant="primary"
-                            onClick={() => handleView(order)}
+                          {productDetails}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.name || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.contactNo || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.shippingAddress || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.installation || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          <Badge
                             style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "22px",
-                              padding: "0",
+                              background:
+                                order.installationStatus === "Pending"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  : order.installationStatus === "In Progress"
+                                  ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                                  : order.installationStatus === "Completed"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                  : "linear-gradient(135deg, #6c757d, #5a6268)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
                             }}
-                            aria-label="View order details"
                           >
-                            <FaEye style={{ marginBottom: "3px" }} />
-                          </Button>
-                          <button
-                            className="editBtn"
-                            variant="secondary"
-                            onClick={() => handleEdit(order)}
+                            {order.installationStatus || "Pending"}
+                          </Badge>
+                        </td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          <div
                             style={{
-                              minWidth: "40px",
-                              width: "40px",
-                              padding: "0",
+                              display: "flex",
+                              gap: "10px",
+                              justifyContent: "center",
+                              alignItems: "center",
                             }}
                           >
-                            <svg height="1em" viewBox="0 0 512 512">
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            <Button
+                              variant="primary"
+                              onClick={() => handleView(order)}
+                              style={{
+                                width: "40px",
+                                height: "40px",
+                                borderRadius: "22px",
+                                padding: "0",
+                              }}
+                              aria-label="View order details"
+                            >
+                              <FaEye style={{ marginBottom: "3px" }} />
+                            </Button>
+                            <button
+                              className="editBtn"
+                              variant="secondary"
+                              onClick={() => handleEdit(order)}
+                              style={{
+                                minWidth: "40px",
+                                width: "40px",
+                                padding: "0",
+                              }}
+                            >
+                              <svg height="1em" viewBox="0 0 512 512">
+                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -601,34 +619,57 @@ function Installation() {
                   <div
                     style={{
                       display: "flex",
-                      alignItems: "center",
-                      gap: "1.5rem",
-                      flexWrap: "wrap",
+                      flexDirection: "column",
+                      gap: "0.8rem",
                     }}
                   >
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Model No:</strong> {viewOrder.modelNo || "N/A"}
+                      <strong>Model Nos:</strong>{" "}
+                      {viewOrder.modelNos?.join(", ") || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Serial No:</strong> {viewOrder.serialno || "N/A"}
+                      <strong>Serial Nos:</strong>{" "}
+                      {viewOrder.serialNos?.join(", ") || "N/A"}
                     </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Product Type:</strong>{" "}
-                      {viewOrder.productType || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Size:</strong> {viewOrder.size || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Spec:</strong> {viewOrder.spec || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Details:</strong>{" "}
-                      {viewOrder.productDetails || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Qty:</strong> {viewOrder.qty || "N/A"}
-                    </span>
+                    {viewOrder.products && viewOrder.products.length > 0 ? (
+                      viewOrder.products.map((product, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "1.5rem",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <span style={{ fontSize: "1rem", color: "#555" }}>
+                            <strong>Product {index + 1} Type:</strong>{" "}
+                            {product.productType || "N/A"}
+                          </span>
+                          <span style={{ fontSize: "1rem", color: "#555" }}>
+                            <strong>Size:</strong> {product.size || "N/A"}
+                          </span>
+                          <span style={{ fontSize: "1rem", color: "#555" }}>
+                            <strong>Spec:</strong> {product.spec || "N/A"}
+                          </span>
+                          <span style={{ fontSize: "1rem", color: "#555" }}>
+                            <strong>Qty:</strong> {product.qty || "N/A"}
+                          </span>
+                          <span style={{ fontSize: "1rem", color: "#555" }}>
+                            <strong>Serial Nos:</strong>{" "}
+                            {product.serialNos?.join(", ") || "N/A"}
+                          </span>
+                          <span style={{ fontSize: "1rem", color: "#555" }}>
+                            <strong>Model Nos:</strong>{" "}
+                            {product.modelNos?.join(", ") || "N/A"}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Products:</strong> N/A
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

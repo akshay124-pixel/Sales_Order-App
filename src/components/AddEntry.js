@@ -5,10 +5,18 @@ import { toast } from "react-toastify";
 function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [products, setProducts] = useState([]);
+  const [currentProduct, setCurrentProduct] = useState({
+    productType: "",
+    size: "",
+    spec: "",
+    qty: "",
+    unitPrice: "",
+  });
+
   const [formData, setFormData] = useState({
     soDate: "",
     committedDate: "",
-
     status: "Pending",
     name: "",
     partyAndAddress: "",
@@ -17,27 +25,51 @@ function AddEntry({ onSubmit, onClose }) {
     pinCode: "",
     contactNo: "",
     customerEmail: "",
-
-    productType: "",
-    size: "",
-    spec: "",
-    productDetails: "",
-    qty: "",
-    unitPrice: "",
+    customername: "",
     gst: "",
-    total: "",
     paymentTerms: "",
     amount2: "",
     freightcs: "",
-
     installation: "",
     salesPerson: "",
     company: "",
-
     shippingAddress: "",
     billingAddress: "",
     sameAddress: false,
   });
+
+  const productOptions = {
+    IFPD: {
+      sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
+      specs: ["Android 14, 8GB RAM, 128GB ROM"],
+    },
+    OPS: {
+      sizes: ["N/A"],
+      specs: [
+        "i5 11th Gen, 8GB RAM, 256GB ROM",
+        "i5 11th Gen, 8GB RAM, 512GB ROM",
+        "i5 11th Gen, 8GB RAM, 1TB ROM",
+        "i5 12th Gen, 8GB RAM, 256GB ROM",
+        "i5 12th Gen, 8GB RAM, 512GB ROM",
+        "i5 12th Gen, 8GB RAM, 1TB ROM",
+        "i7 11th Gen, 8GB RAM, 256GB ROM",
+        "i7 11th Gen, 8GB RAM, 512GB ROM",
+        "i7 11th Gen, 8GB RAM, 1TB ROM",
+        "i7 12th Gen, 8GB RAM, 256GB ROM",
+        "i7 12th Gen, 8GB RAM, 512GB ROM",
+        "i7 12th Gen, 8GB RAM, 1TB ROM",
+        "i7 12th Gen, 16GB RAM, 256GB ROM",
+        "i7 12th Gen, 16GB RAM, 512GB ROM",
+        "i7 12th Gen, 16GB RAM, 1TB ROM",
+      ],
+    },
+    "Digital Podium": { sizes: ["Full"], specs: ["N/A"] },
+    "Audio Podium": { sizes: ["Full"], specs: ["N/A"] },
+    Kiosk: { sizes: ["N/A"], specs: ["Touch", "Non-Touch"] },
+    "PTZ Camera": { sizes: ["N/A"], specs: ["4K 12x", "HD 20x"] },
+    "Document Camera": { sizes: ["N/A"], specs: ["Visualizer"] },
+    UPS: { sizes: ["N/A"], specs: ["N/A"] },
+  };
 
   const statesAndCities = {
     "Andhra Pradesh": [
@@ -67,7 +99,7 @@ function AddEntry({ onSubmit, onClose }) {
       "Naharlagun",
       "Roing",
       "Aalo",
-      "Tezu",
+      "Tezuifferences",
       "Changlang",
       "Khonsa",
       "Yingkiong",
@@ -348,7 +380,6 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     Maharashtra: [
       "Mumbai",
-      "Gadchiroli",
       "Pune",
       "Nagpur",
       "Nashik",
@@ -487,21 +518,21 @@ function AddEntry({ onSubmit, onClose }) {
       "Jalandhar",
       "Patiala",
       "Bathinda",
-      "Mohali", // Also known as Sahibzada Ajit Singh Nagar (SAS Nagar)
+      "Mohali",
       "Hoshiarpur",
       "Gurdaspur",
       "Ferozepur",
       "Sangrur",
       "Moga",
-      "Rupnagar", // Official name for Ropar
+      "Rupnagar",
       "Kapurthala",
       "Faridkot",
-      "Muktsar", // Corrected from "Makatsar"
+      "Muktsar",
       "Fazilka",
       "Barnala",
       "Mansa",
       "Tarn Taran",
-      "Nawanshahr", // Also known as Shaheed Bhagat Singh Nagar
+      "Nawanshahr",
       "Pathankot",
       "Zirakpur",
       "Khanna",
@@ -516,7 +547,7 @@ function AddEntry({ onSubmit, onClose }) {
       "Kharar",
       "Morinda",
       "Bassi Pathana",
-      "Khamanon", // Corrected from "Khamano"
+      "Khamanon",
       "Chunni Kalan",
       "Balachaur",
       "Dinanagar",
@@ -531,7 +562,6 @@ function AddEntry({ onSubmit, onClose }) {
     Rajasthan: [
       "Baran",
       "Newai",
-
       "Gaganagar",
       "Suratgarh",
       "Jaipur",
@@ -621,7 +651,7 @@ function AddEntry({ onSubmit, onClose }) {
       "Melaghar",
     ],
     "Uttar Pradesh": [
-      "Shikohabad ",
+      "Shikohabad",
       "Lucknow",
       "Matbarganj",
       "Kasganj",
@@ -637,7 +667,6 @@ function AddEntry({ onSubmit, onClose }) {
       "Moradabad",
       "Saharanpur",
       "Gorakhpur",
-      "Ballia",
       "Firozabad",
       "Jhansi",
       "Muzaffarnagar",
@@ -725,7 +754,6 @@ function AddEntry({ onSubmit, onClose }) {
       "Sector 10",
       "Sector 11",
       "Sector 12",
-      "Sector 13", // Note: Sector 13 does not exist in Chandigarh.
       "Sector 14",
       "Sector 15",
       "Sector 16",
@@ -776,7 +804,6 @@ function AddEntry({ onSubmit, onClose }) {
     Delhi: [
       "New Delhi",
       "Old Delhi",
-      "Vasant Vihar",
       "Dwarka",
       "Rohini",
       "Karol Bagh",
@@ -854,24 +881,57 @@ function AddEntry({ onSubmit, onClose }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     if (type === "checkbox") {
-      setFormData((prevData) => ({
-        ...prevData,
+      setFormData((prev) => ({
+        ...prev,
         sameAddress: checked,
-        billingAddress: checked
-          ? prevData.shippingAddress
-          : prevData.billingAddress,
+        billingAddress: checked ? prev.shippingAddress : prev.billingAddress,
       }));
     } else {
-      setFormData((prevData) => ({
-        ...prevData,
+      setFormData((prev) => ({
+        ...prev,
         [name]: value,
-        ...(name === "shippingAddress" && prevData.sameAddress
+        ...(name === "shippingAddress" && prev.sameAddress
           ? { billingAddress: value }
           : {}),
       }));
     }
+  };
+
+  const handleProductChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentProduct((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "productType"
+        ? { size: "", spec: "" }
+        : name === "size"
+        ? { spec: "" }
+        : {}),
+    }));
+  };
+
+  const addProduct = () => {
+    if (
+      !currentProduct.productType ||
+      !currentProduct.qty ||
+      !currentProduct.unitPrice
+    ) {
+      toast.error("Please fill all required product fields");
+      return;
+    }
+    setProducts([...products, { ...currentProduct }]);
+    setCurrentProduct({
+      productType: "",
+      size: "",
+      spec: "",
+      qty: "",
+      unitPrice: "",
+    });
+  };
+
+  const removeProduct = (index) => {
+    setProducts(products.filter((_, i) => i !== index));
   };
 
   const handleStateChange = (e) => {
@@ -897,53 +957,64 @@ function AddEntry({ onSubmit, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.soDate || !formData.qty || !formData.unitPrice) {
-      toast.error(
-        "Please fill in all required fields: SO Date, Quantity, Unit Price"
-      );
+    if (!formData.soDate || products.length === 0) {
+      toast.error("Please fill SO Date and add at least one product");
       return;
     }
 
-    const total =
-      Number(formData.qty) * Number(formData.unitPrice) +
-      (Number(formData.gst || 0) / 100) * Number(formData.unitPrice) +
-      Number(formData.freightcs || 0) +
-      Number(formData.amount2 || 0);
+    const calculateTotal = (products, formData) => {
+      // Calculate subtotal for all products including GST
+      const subtotal = products.reduce((sum, product) => {
+        // Ensure numeric values with proper fallbacks
+        const quantity = Number(product.qty) || 0;
+        const price = Number(product.unitPrice) || 0;
+        const gstPercentage = Number(formData.gst) || 0;
+
+        // Calculate base amount for this product
+        const baseAmount = quantity * price;
+        // Calculate GST amount for this product
+        const gstAmount = (gstPercentage / 100) * baseAmount;
+
+        return sum + baseAmount + gstAmount;
+      }, 0);
+
+      // Add additional charges with proper fallbacks
+      const freight = Number(formData.freightcs) || 0;
+      const additionalAmount = Number(formData.amount2) || 0;
+
+      // Calculate final total
+      const total = subtotal + freight + additionalAmount;
+
+      return Number(total.toFixed(2)); // Round to 2 decimal places
+    };
+
+    // Usage example:
+    const total = calculateTotal(products, formData);
 
     const newEntry = {
       ...formData,
+      products,
       soDate: new Date(formData.soDate),
       committedDate: formData.committedDate
         ? new Date(formData.committedDate)
         : null,
-      receiptDate: formData.receiptDate ? new Date(formData.receiptDate) : null,
-      qty: Number(formData.qty),
-      unitPrice: Number(formData.unitPrice),
       gst: Number(formData.gst || 0),
-      total: Number(total),
+      total: Number(total), // Ensure total is always a number
       amount2: Number(formData.amount2 || 0),
-      freight: Number(formData.freight || 0),
+      freightcs: formData.freightcs || null,
     };
-
-    console.log("Submitting data:", newEntry);
 
     try {
       const response = await axios.post(
         "https://sales-order-server.onrender.com/api/orders",
-        newEntry,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        newEntry
       );
-      console.log("Success response:", response.data);
       toast.success("Order submitted successfully!");
       onSubmit(response.data);
       onClose();
     } catch (error) {
-      console.error("Error submitting form:", error);
-      const errorMessage = error.response?.data?.error || "An error occurred";
-      const errorDetails = error.response?.data?.details || [];
-      toast.error(`${errorMessage}\nDetails: ${JSON.stringify(errorDetails)}`);
+      console.error("Error:", error);
+      toast.error(error.response?.data?.error || "An error occurred");
     }
   };
 
@@ -985,26 +1056,14 @@ function AddEntry({ onSubmit, onClose }) {
           opacity: 0,
           animation: "slideUp 0.4s ease forwards",
           overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
         }}
       >
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            textAlign: "center",
-            marginBottom: "1.5rem",
-          }}
-        >
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <h2
             style={{
               fontSize: "2rem",
               fontWeight: "600",
               color: "#2575fc",
-              letterSpacing: "-0.025em",
-              margin: 0,
             }}
           >
             Add Sales Entry
@@ -1013,21 +1072,12 @@ function AddEntry({ onSubmit, onClose }) {
             onClick={onClose}
             style={{
               position: "absolute",
-              top: "0.5rem",
-              right: "0.5rem",
+              top: "1rem",
+              right: "1rem",
               background: "none",
               border: "none",
               cursor: "pointer",
               color: "#64748b",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.color = "#1e293b";
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.color = "#64748b";
-              e.currentTarget.style.transform = "scale(1)";
             }}
           >
             <svg
@@ -1052,19 +1102,23 @@ function AddEntry({ onSubmit, onClose }) {
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "1.5rem",
-            width: "100%",
-            padding: "0 1rem",
           }}
         >
+          {/* Basic Fields */}
           {[
             {
               label: "SO Date *",
               name: "soDate",
               type: "date",
               required: true,
+              placeholder: "Select Sales Order Date",
             },
-            { label: "Committed Date", name: "committedDate", type: "date" },
-
+            {
+              label: "Committed Date",
+              name: "committedDate",
+              type: "date",
+              placeholder: "Select Committed Date",
+            },
             {
               label: "Status",
               name: "status",
@@ -1077,8 +1131,21 @@ function AddEntry({ onSubmit, onClose }) {
                 "Dispatched",
                 "In Transit",
               ],
+              placeholder: "Select Order Status",
             },
-            { label: "Party & Address", name: "partyAndAddress", type: "text" },
+            {
+              label: "Customer Name",
+              name: "customername",
+              type: "text",
+              required: true,
+              placeholder: "Enter Customer Name",
+            },
+            {
+              label: "Address",
+              name: "partyAndAddress",
+              type: "text",
+              placeholder: "Enter Full Address",
+            },
             {
               label: "State *",
               name: "state",
@@ -1086,6 +1153,7 @@ function AddEntry({ onSubmit, onClose }) {
               options: Object.keys(statesAndCities),
               onChange: handleStateChange,
               required: true,
+              placeholder: "Select State",
             },
             {
               label: "City *",
@@ -1095,147 +1163,114 @@ function AddEntry({ onSubmit, onClose }) {
               onChange: handleCityChange,
               required: true,
               disabled: !selectedState,
+              placeholder: "Select City",
             },
             {
               label: "Pin Code",
               name: "pinCode",
               type: "tel",
               inputMode: "numeric",
-              pattern: "[0-9]*",
-              onChange: (e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [e.target.name]: e.target.value.replace(/[^0-9]/g, ""),
-                })),
+              required: true,
+              placeholder: "e.g. 110001",
             },
             {
               label: "Contact Person Name",
               name: "name",
               type: "text",
+              required: true,
+              placeholder: "Enter Contact Person Name",
             },
             {
               label: "Contact Person No",
               name: "contactNo",
               type: "tel",
               inputMode: "numeric",
-              pattern: "[0-9]*",
               maxLength: 10,
-              onChange: (e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [e.target.name]: e.target.value
-                    .replace(/[^0-9]/g, "")
-                    .slice(0, 10),
-                })),
-            },
-            { label: "Customer Email", name: "customerEmail", type: "email" },
-
-            { label: "Product Type", name: "productType", type: "text" },
-            { label: "Size", name: "size", type: "text" },
-            { label: "Spec", name: "spec", type: "text" },
-            { label: "Product Details", name: "productDetails", type: "text" },
-            {
-              label: "Quantity *",
-              name: "qty",
-              type: "number",
-              inputMode: "numeric",
-              pattern: "[0-9]*",
               required: true,
-              onChange: (e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [e.target.name]: e.target.value.replace(/[^0-9]/g, ""),
-                })),
+              placeholder: "e.g. 9876543210",
             },
             {
-              label: "Unit Price *",
-              name: "unitPrice",
-              type: "number",
-              inputMode: "decimal",
+              label: "Customer Email",
+              name: "customerEmail",
+              type: "email",
               required: true,
-              onChange: (e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [e.target.name]: e.target.value
-                    .replace(/[^0-9.]/g, "")
-                    .replace(/(\..*)\./g, "$1"),
-                })),
+              placeholder: "e.g. example@domain.com",
             },
             {
               label: "GST (%)",
               name: "gst",
               type: "number",
               inputMode: "decimal",
-              onChange: (e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [e.target.name]: e.target.value
-                    .replace(/[^0-9.]/g, "")
-                    .replace(/(\..*)\./g, "$1"),
-                })),
+              required: true,
+              placeholder: "e.g. 18",
             },
-            { label: "Payment Terms", name: "paymentTerms", type: "text" },
+            {
+              label: "Payment Terms",
+              name: "paymentTerms",
+              type: "text",
+              required: true,
+              placeholder: "e.g. 50% Advance, 50% on Delivery",
+            },
             {
               label: "Amount2",
               name: "amount2",
               type: "number",
               inputMode: "decimal",
-              onChange: (e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [e.target.name]: e.target.value
-                    .replace(/[^0-9.]/g, "")
-                    .replace(/(\..*)\./g, "$1"),
-                })),
+              required: true,
+              placeholder: "Enter Total Amount",
             },
             {
               label: "Freight Charges & Status",
               name: "freightcs",
               type: "text",
+              required: true,
+              placeholder: "e.g. ₹2000, Paid",
             },
-
             {
               label: "Installation Charges",
               name: "installation",
               type: "text",
+              required: true,
+              placeholder: "e.g. ₹1000, Not Included",
             },
-            { label: "Sales Person", name: "salesPerson", type: "text" },
+            {
+              label: "Sales Person",
+              name: "salesPerson",
+              type: "text",
+              required: true,
+              placeholder: "Enter Sales Person's Name",
+            },
             {
               label: "Company",
               name: "company",
               type: "select",
-              options: ["ProMark", "ProMine", "Others"],
+              options: ["Promark", "Promine", "Others"],
+              placeholder: "Select Company",
             },
-
             {
               label: "Shipping Address *",
               name: "shippingAddress",
               type: "text",
-
-              onChange: handleChange,
+              required: true,
+              placeholder: "Enter Shipping Address",
             },
             {
               label: "Billing Address *",
               name: "billingAddress",
               type: "text",
-
-              onChange: handleChange,
+              required: true,
               disabled: formData.sameAddress,
+              placeholder: "Enter Billing Address",
             },
             {
-              label: "📝 Same as Shipping Address",
+              label: "📝 Same as Shipping",
               name: "sameAddress",
               type: "checkbox",
-              onChange: handleChange,
             },
           ].map((field) => (
             <div
               key={field.name}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                minWidth: 0,
-              }}
+              style={{ display: "flex", flexDirection: "column" }}
             >
               <label
                 style={{
@@ -1243,58 +1278,25 @@ function AddEntry({ onSubmit, onClose }) {
                   fontWeight: "600",
                   color: "#475569",
                   marginBottom: "0.5rem",
-                  letterSpacing: "0.02em",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
                 }}
               >
                 {field.label}
-                {field.required && (
-                  <span style={{ color: "#f43f5e", marginLeft: "0.3rem" }}>
-                    *
-                  </span>
-                )}
+                {field.required && <span style={{ color: "#f43f5e" }}>*</span>}
               </label>
               {field.type === "select" ? (
                 <select
                   name={field.name}
                   value={formData[field.name] || ""}
-                  onChange={
-                    field.onChange ||
-                    ((e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        [e.target.name]: e.target.value,
-                      })))
-                  }
+                  onChange={field.onChange || handleChange}
                   required={field.required}
                   disabled={field.disabled}
                   style={{
-                    width: "100%",
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
                     fontSize: "1rem",
-                    color: field.disabled ? "#6b7280" : "#1e293b",
-                    outline: "none",
-                    transition: "all 0.3s ease",
-                    boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
-                    cursor: field.disabled ? "not-allowed" : "pointer",
-                    minHeight: "2.5rem",
-                  }}
-                  onFocus={(e) => {
-                    if (!field.disabled) {
-                      e.target.style.borderColor = "#6366f1";
-                      e.target.style.boxShadow =
-                        "0 0 0 4px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.05)";
-                    }
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "#e2e8f0";
-                    e.target.style.boxShadow =
-                      "inset 0 2px 4px rgba(0, 0, 0, 0.05)";
+                    color: "#1e293b",
                   }}
                 >
                   <option value="">Select {field.label.split(" ")[0]}</option>
@@ -1309,13 +1311,11 @@ function AddEntry({ onSubmit, onClose }) {
                   type="checkbox"
                   name={field.name}
                   checked={formData[field.name] || false}
-                  onChange={field.onChange || handleChange}
+                  onChange={handleChange}
                   style={{
                     width: "1.25rem",
                     height: "1.25rem",
-                    marginTop: "0.5rem",
                     accentColor: "#6366f1",
-                    cursor: "pointer",
                   }}
                 />
               ) : (
@@ -1323,89 +1323,250 @@ function AddEntry({ onSubmit, onClose }) {
                   type={field.type}
                   name={field.name}
                   value={formData[field.name] || ""}
-                  onChange={
-                    field.onChange ||
-                    ((e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        [e.target.name]: e.target.value,
-                      })))
-                  }
+                  onChange={field.onChange || handleChange}
                   required={field.required}
                   maxLength={field.maxLength}
                   inputMode={field.inputMode}
-                  pattern={field.pattern}
                   disabled={field.disabled}
                   style={{
-                    width: "100%",
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
                     fontSize: "1rem",
-                    color: field.disabled ? "#6b7280" : "#1e293b",
-                    outline: "none",
-                    transition: "all 0.3s ease",
-                    boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.05)",
-                    minHeight: "2.5rem",
-                  }}
-                  onFocus={(e) => {
-                    if (!field.disabled) {
-                      e.target.style.borderColor = "#6366f1";
-                      e.target.style.boxShadow =
-                        "0 0 0 4px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.05)";
-                    }
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "#e2e8f0";
-                    e.target.style.boxShadow =
-                      "inset 0 2px 4px rgba(0, 0, 0, 0.05)";
-                  }}
-                  onKeyPress={(e) => {
-                    if (field.inputMode === "numeric" && !/[0-9]/.test(e.key))
-                      e.preventDefault();
-                    if (field.inputMode === "decimal" && !/[0-9.]/.test(e.key))
-                      e.preventDefault();
-                  }}
-                  onPaste={(e) => {
-                    const pasted = e.clipboardData.getData("text");
-                    if (
-                      field.inputMode === "numeric" &&
-                      !/^[0-9]*$/.test(pasted)
-                    ) {
-                      e.preventDefault();
-                      setFormData((prev) => ({
-                        ...prev,
-                        [field.name]: pasted
-                          .replace(/[^0-9]/g, "")
-                          .slice(0, field.maxLength || Infinity),
-                      }));
-                    }
-                    if (
-                      field.inputMode === "decimal" &&
-                      !/^[0-9.]*$/.test(pasted)
-                    ) {
-                      e.preventDefault();
-                      setFormData((prev) => ({
-                        ...prev,
-                        [field.name]: pasted
-                          .replace(/[^0-9.]/g, "")
-                          .replace(/(\..*)\./g, "$1"),
-                      }));
-                    }
+                    color: "#1e293b",
                   }}
                 />
               )}
             </div>
           ))}
+
+          {/* Product Section */}
+          <div style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
+            <h3
+              style={{
+                fontSize: "1.25rem",
+                color: "#2575fc",
+                marginBottom: "1rem",
+              }}
+            >
+              Add Products
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto",
+                gap: "1rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                  }}
+                >
+                  Product Type *
+                </label>
+                <select
+                  name="productType"
+                  value={currentProduct.productType}
+                  onChange={handleProductChange}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                  }}
+                >
+                  <option value="">Select Product</option>
+                  {Object.keys(productOptions).map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                  }}
+                >
+                  Size
+                </label>
+                <select
+                  name="size"
+                  value={currentProduct.size}
+                  onChange={handleProductChange}
+                  disabled={!currentProduct.productType}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                  }}
+                >
+                  <option value="">Select Size</option>
+                  {currentProduct.productType &&
+                    productOptions[currentProduct.productType].sizes.map(
+                      (size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      )
+                    )}
+                </select>
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                  }}
+                >
+                  Specification
+                </label>
+                <select
+                  name="spec"
+                  value={currentProduct.spec}
+                  onChange={handleProductChange}
+                  disabled={!currentProduct.productType}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                  }}
+                >
+                  <option value="">Select Spec</option>
+                  {currentProduct.productType &&
+                    productOptions[currentProduct.productType].specs.map(
+                      (spec) => (
+                        <option key={spec} value={spec}>
+                          {spec}
+                        </option>
+                      )
+                    )}
+                </select>
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                  }}
+                >
+                  Quantity *
+                </label>
+                <input
+                  type="number"
+                  name="qty"
+                  value={currentProduct.qty}
+                  onChange={handleProductChange}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                  }}
+                >
+                  Unit Price *
+                </label>
+                <input
+                  type="number"
+                  name="unitPrice"
+                  value={currentProduct.unitPrice}
+                  onChange={handleProductChange}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addProduct}
+                style={{
+                  padding: "0.75rem",
+                  background: "#10b981",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "0.75rem",
+                  cursor: "pointer",
+                  alignSelf: "end",
+                }}
+              >
+                Add
+              </button>
+            </div>
+
+            {/* Added Products List */}
+            {products.length > 0 && (
+              <div style={{ marginTop: "1rem" }}>
+                <h4 style={{ fontSize: "1rem", color: "#475569" }}>
+                  Added Products:
+                </h4>
+                <div style={{ maxHeight: "150px", overflowY: "auto" }}>
+                  {products.map((product, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "0.5rem",
+                        background: "#f1f5f9",
+                        borderRadius: "0.5rem",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <span>
+                        {product.productType} | {product.size} | {product.spec}{" "}
+                        | Qty: {product.qty} | Price: ₹{product.unitPrice}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeProduct(index)}
+                        style={{
+                          color: "#ef4444",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Submit Buttons */}
           <div
             style={{
               gridColumn: "1 / -1",
               display: "flex",
               justifyContent: "flex-end",
               gap: "1rem",
-              marginTop: "1.5rem",
-              paddingBottom: "1rem",
             }}
           >
             <button
@@ -1418,22 +1579,6 @@ function AddEntry({ onSubmit, onClose }) {
                 border: "none",
                 borderRadius: "0.75rem",
                 cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "600",
-                transition: "all 0.3s ease",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "#cbd5e1";
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow =
-                  "0 6px 20px rgba(0, 0, 0, 0.15)";
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "#e2e8f0";
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 15px rgba(0, 0, 0, 0.1)";
               }}
             >
               Cancel
@@ -1447,24 +1592,6 @@ function AddEntry({ onSubmit, onClose }) {
                 border: "none",
                 borderRadius: "0.75rem",
                 cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "600",
-                transition: "all 0.3s ease",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(135deg, #6d28d9, #2563eb)";
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow =
-                  "0 6px 20px rgba(0, 0, 0, 0.25)";
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(135deg, #7c3aed, #3b82f6)";
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 15px rgba(0, 0, 0, 0.2)";
               }}
             >
               Submit

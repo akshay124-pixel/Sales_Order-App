@@ -9,6 +9,23 @@ function ViewEntry({ isOpen, onClose, entry }) {
   const handleCopy = useCallback(() => {
     if (!entry) return;
 
+    const productsText = entry.products
+      ? entry.products
+          .map(
+            (p, i) =>
+              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
+                p.qty || "N/A"
+              }, Size: ${p.size || "N/A"}, Spec: ${
+                p.spec || "N/A"
+              }, Serial Nos: ${
+                p.serialNos?.length > 0 ? p.serialNos.join(", ") : "N/A"
+              }, Model Nos: ${
+                p.modelNos?.length > 0 ? p.modelNos.join(", ") : "N/A"
+              })`
+          )
+          .join("\n")
+      : "N/A";
+
     const textToCopy = `
       SO Date: ${
         entry.soDate ? new Date(entry.soDate).toLocaleDateString() : "N/A"
@@ -33,13 +50,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Contact Person Name: ${entry.name || "N/A"}
       Contact Person No: ${entry.contactNo || "N/A"}
       Customer Email: ${entry.customerEmail || "N/A"}
-      Model No: ${entry.modelNo || "N/A"}
-      Serial No: ${entry.serialno || "N/A"}
-      Product Type: ${entry.productType || "N/A"}
-      Size: ${entry.size || "N/A"}
-      Spec: ${entry.spec || "N/A"}
-      Product Details: ${entry.productDetails || "N/A"}
-      Qty: ${entry.qty || "N/A"}
+      Products:\n${productsText}
       Unit Price: $${entry.unitPrice?.toFixed(2) || "0.00"}
       GST: ${entry.gst ? `${entry.gst}%` : "N/A"}
       Total: $${entry.total?.toFixed(2) || "0.00"}
@@ -293,7 +304,10 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Party & Address:</strong> {entry.partyAndAddress || "N/A"}
+              <strong>Customer Name :</strong> {entry.customername || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Address:</strong> {entry.partyAndAddress || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>City:</strong> {entry.city || "N/A"}
@@ -345,36 +359,56 @@ function ViewEntry({ isOpen, onClose, entry }) {
           >
             Product Info
           </h3>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "1.5rem",
-              flexWrap: "wrap",
-            }}
-          >
+          {entry.products && entry.products.length > 0 ? (
+            entry.products.map((product, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1.5rem",
+                  flexWrap: "wrap",
+                  padding: "0.5rem 0",
+                  borderBottom:
+                    index < entry.products.length - 1
+                      ? "1px solid #eee"
+                      : "none",
+                }}
+              >
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Product {index + 1}:</strong>{" "}
+                  {product.productType || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Qty:</strong> {product.qty || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Size:</strong> {product.size || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Spec:</strong> {product.spec || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Serial Nos:</strong>{" "}
+                  {product.serialNos?.length > 0
+                    ? product.serialNos.join(", ")
+                    : "N/A"}{" "}
+                  {/* Updated to display serialNos */}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Model Nos:</strong>{" "}
+                  {product.modelNos?.length > 0
+                    ? product.modelNos.join(", ")
+                    : "N/A"}{" "}
+                  {/* Updated to display modelNos */}
+                </span>
+              </div>
+            ))
+          ) : (
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Model No:</strong> {entry.modelNo || "N/A"}
+              <strong>Products:</strong> N/A
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Serial No:</strong> {entry.serialno || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Product Type:</strong> {entry.productType || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Size:</strong> {entry.size || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Spec:</strong> {entry.spec || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Details:</strong> {entry.productDetails || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Qty:</strong> {entry.qty || "N/A"}
-            </span>
-          </div>
+          )}
         </div>
 
         {/* Financial Info Section */}

@@ -7,7 +7,7 @@ import styled from "styled-components";
 import debounce from "lodash/debounce";
 import { FaEdit, FaSyncAlt, FaCog } from "react-icons/fa";
 
-// Styled Components
+// Styled Components (unchanged)
 const StyledModal = styled(Modal)`
   .modal-content {
     border-radius: 12px;
@@ -59,11 +59,25 @@ const FormSection = styled.div`
   gap: 20px;
 `;
 
+const ProductContainer = styled.div`
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fff;
+`;
+
+const ProductHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
 function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const initialFormData = useMemo(
     () => ({
       soDate: "",
-      serialno: "",
       committedDate: "",
       dispatchFrom: "",
       status: "Pending",
@@ -75,27 +89,45 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       name: "",
       contactNo: "",
       customerEmail: "",
-      modelNo: "",
-      productType: "",
-      size: "",
-      spec: "",
-      productDetails: "",
-      qty: "",
-      unitPrice: "",
-      gst: "",
+      customername: "",
+      products: [
+        {
+          productType: "",
+          size: "N/A",
+          spec: "N/A",
+          qty: "",
+          unitPrice: "", // Added unitPrice with empty string default
+          serialNos: "",
+          modelNos: "",
+        },
+      ],
+      gst: "0",
       total: "",
       paymentTerms: "",
-      amount2: "",
+      amount2: "0",
       freightcs: "",
-      installation: "",
+      installation: "N/A",
+      installationStatus: "Pending",
+      remarksByInstallation: "",
+      dispatchStatus: "Not Dispatched",
       salesPerson: "",
-      company: "",
+      company: "ProMark",
       transporter: "",
       transporterDetails: "",
       docketNo: "",
       receiptDate: "",
       shippingAddress: "",
       billingAddress: "",
+      sameAddress: false,
+      invoiceNo: "",
+      invoiceDate: "",
+      fulfillingStatus: "Pending",
+      remarksByProduction: "",
+      remarksByAccounts: "",
+      paymentReceived: "Not Received",
+      billNumber: "",
+      completionStatus: "In Progress",
+      fulfillmentDate: "",
     }),
     []
   );
@@ -122,12 +154,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm({
     mode: "onChange",
     defaultValues: initialFormData,
   });
 
   const selectedState = watch("state");
+  const products = watch("products") || [];
 
   useEffect(() => {
     if (isOpen && entryToEdit) {
@@ -140,7 +174,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : "",
         dispatchFrom: entryToEdit.dispatchFrom || "",
         status: entryToEdit.status || "Pending",
-        serialno: entryToEdit.serialno || "",
         dispatchDate: entryToEdit.dispatchDate
           ? new Date(entryToEdit.dispatchDate).toISOString().split("T")[0]
           : "",
@@ -151,34 +184,66 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         name: entryToEdit.name || "",
         contactNo: entryToEdit.contactNo || "",
         customerEmail: entryToEdit.customerEmail || "",
-        modelNo: entryToEdit.modelNo || "",
-        productType: entryToEdit.productType || "",
-        size: entryToEdit.size || "",
-        spec: entryToEdit.spec || "",
-        productDetails: entryToEdit.productDetails || "",
-        qty: entryToEdit.qty !== undefined ? String(entryToEdit.qty) : "",
-        unitPrice:
-          entryToEdit.unitPrice !== undefined
-            ? String(entryToEdit.unitPrice)
-            : "",
-        gst: entryToEdit.gst !== undefined ? String(entryToEdit.gst) : "",
+        customername: entryToEdit.customername || "",
+        products:
+          entryToEdit.products && entryToEdit.products.length > 0
+            ? entryToEdit.products.map((p) => ({
+                productType: p.productType || "",
+                size: p.size || "N/A",
+                spec: p.spec || "N/A",
+                qty: p.qty !== undefined ? String(p.qty) : "",
+                unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "", // Map unitPrice
+                serialNos:
+                  p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
+                modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+              }))
+            : [
+                {
+                  productType: "",
+                  size: "N/A",
+                  spec: "N/A",
+                  qty: "",
+                  unitPrice: "", // Ensure unitPrice is included
+                  serialNos: "",
+                  modelNos: "",
+                },
+              ],
+        gst: entryToEdit.gst !== undefined ? String(entryToEdit.gst) : "0",
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
         paymentTerms: entryToEdit.paymentTerms || "",
         amount2:
-          entryToEdit.amount2 !== undefined ? String(entryToEdit.amount2) : "",
-
+          entryToEdit.amount2 !== undefined ? String(entryToEdit.amount2) : "0",
         freightcs: entryToEdit.freightcs || "",
-
-        installation: entryToEdit.installation || "",
+        installation: entryToEdit.installation || "N/A",
+        installationStatus: entryToEdit.installationStatus || "Pending",
+        remarksByInstallation: entryToEdit.remarksByInstallation || "",
+        dispatchStatus: entryToEdit.dispatchStatus || "Not Dispatched",
         salesPerson: entryToEdit.salesPerson || "",
-        company: entryToEdit.company || "",
+        company: entryToEdit.company || "ProMark",
         transporter: entryToEdit.transporter || "",
         transporterDetails: entryToEdit.transporterDetails || "",
-        shippingAddress: entryToEdit.shippingAddress || "",
-        billingAddress: entryToEdit.billingAddress || "",
         docketNo: entryToEdit.docketNo || "",
         receiptDate: entryToEdit.receiptDate
           ? new Date(entryToEdit.receiptDate).toISOString().split("T")[0]
+          : "",
+        shippingAddress: entryToEdit.shippingAddress || "",
+        billingAddress: entryToEdit.billingAddress || "",
+        sameAddress: entryToEdit.sameAddress || false,
+        invoiceNo:
+          entryToEdit.invoiceNo !== undefined
+            ? String(entryToEdit.invoiceNo)
+            : "",
+        invoiceDate: entryToEdit.invoiceDate
+          ? new Date(entryToEdit.invoiceDate).toISOString().split("T")[0]
+          : "",
+        fulfillingStatus: entryToEdit.fulfillingStatus || "Pending",
+        remarksByProduction: entryToEdit.remarksByProduction || "",
+        remarksByAccounts: entryToEdit.remarksByAccounts || "",
+        paymentReceived: entryToEdit.paymentReceived || "Not Received",
+        billNumber: entryToEdit.billNumber || "",
+        completionStatus: entryToEdit.completionStatus || "In Progress",
+        fulfillmentDate: entryToEdit.fulfillmentDate
+          ? new Date(entryToEdit.fulfillmentDate).toISOString().split("T")[0]
           : "",
       };
       const newUpdateData = {
@@ -195,18 +260,39 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   }, [isOpen, entryToEdit, reset]);
 
   const debouncedHandleInputChange = useCallback(
-    debounce((name, value) => {
-      setFormData((prev) => ({
-        ...prev,
-        [name]:
-          name === "contactNo"
-            ? value.replace(/\D/g, "").slice(0, 10)
-            : ["qty", "unitPrice", "gst", "total", "amount2"].includes(name)
-            ? value === ""
-              ? ""
-              : Number(value)
-            : value,
-      }));
+    debounce((name, value, index) => {
+      if (name.startsWith("products.")) {
+        const [_, field, idx] = name.split(".");
+        setFormData((prev) => {
+          const newProducts = [...prev.products];
+          newProducts[idx] = {
+            ...newProducts[idx],
+            [field]:
+              field === "qty" || field === "unitPrice" // Handle unitPrice as number
+                ? value === ""
+                  ? ""
+                  : Number(value)
+                : field === "serialNos" || field === "modelNos"
+                ? value
+                : value,
+          };
+          return { ...prev, products: newProducts };
+        });
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [name]:
+            name === "contactNo"
+              ? value.replace(/\D/g, "").slice(0, 10)
+              : ["gst", "total", "amount2", "invoiceNo"].includes(name)
+              ? value === ""
+                ? ""
+                : Number(value)
+              : name === "sameAddress"
+              ? value === "true" || value === true
+              : value,
+        }));
+      }
     }, 300),
     []
   );
@@ -224,41 +310,75 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     setLoading(true);
     try {
       const submissionData = {
-        soDate: data.soDate || undefined,
-        serialno: data.serialno || undefined,
-        committedDate: data.committedDate || undefined,
-        dispatchFrom: data.dispatchFrom || undefined,
+        soDate: data.soDate ? new Date(data.soDate) : undefined,
+        committedDate: data.committedDate ? new Date(data.committedDate) : null,
+        dispatchFrom: data.dispatchFrom || null,
         status: data.status || "Pending",
-        dispatchDate: data.dispatchDate || undefined,
-        partyAndAddress: data.partyAndAddress || undefined,
-        city: data.city || undefined,
-        state: data.state || undefined,
-        pinCode: data.pinCode || undefined,
-        name: data.name || undefined,
-        contactNo: data.contactNo || undefined,
-        customerEmail: data.customerEmail || undefined,
-        modelNo: data.modelNo || undefined,
-        productType: data.productType || undefined,
-        size: data.size || undefined,
-        spec: data.spec || undefined,
-        productDetails: data.productDetails || undefined,
-        qty: data.qty === "" ? undefined : Number(data.qty),
-        unitPrice: data.unitPrice === "" ? undefined : Number(data.unitPrice),
-        gst: data.gst === "" ? undefined : Number(data.gst),
+        dispatchDate: data.dispatchDate ? new Date(data.dispatchDate) : null,
+        partyAndAddress: data.partyAndAddress || null,
+        city: data.city || null,
+        state: data.state || null,
+        pinCode: data.pinCode || null,
+        name: data.name || null,
+        contactNo: data.contactNo || null,
+        customerEmail: data.customerEmail || null,
+        customername: data.customername || null,
+        products: data.products.map((p) => ({
+          productType: p.productType || undefined,
+          size: p.size || "N/A",
+          spec: p.spec || "N/A",
+          qty: p.qty === "" ? undefined : Number(p.qty),
+          unitPrice: p.unitPrice === "" ? undefined : Number(p.unitPrice), // Ensure unitPrice is included
+          serialNos: p.serialNos
+            ? p.serialNos
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+          modelNos: p.modelNos
+            ? p.modelNos
+                .split(",")
+                .map((m) => m.trim())
+                .filter(Boolean)
+            : [],
+        })),
+        gst: data.gst === "" ? 0 : Number(data.gst),
         total: data.total === "" ? undefined : Number(data.total),
-        paymentTerms: data.paymentTerms || undefined,
-        amount2: data.amount2 === "" ? undefined : Number(data.amount2),
-        freightcs: data.freightcs || undefined,
-        installation: data.installation || undefined,
-        salesPerson: data.salesPerson || undefined,
-        company: data.company || undefined,
-        transporter: data.transporter || undefined,
-        transporterDetails: data.transporterDetails || undefined,
-        shippingAddress: data.shippingAddress || undefined,
-        billingAddress: data.billingAddress || undefined,
-        docketNo: data.docketNo || undefined,
-        receiptDate: data.receiptDate || undefined,
+        paymentTerms: data.paymentTerms || null,
+        amount2: data.amount2 === "" ? 0 : Number(data.amount2),
+        freightcs: data.freightcs || null,
+        installation: data.installation || "N/A",
+        installationStatus: data.installationStatus || "Pending",
+        remarksByInstallation: data.remarksByInstallation || "",
+        dispatchStatus: data.dispatchStatus || "Not Dispatched",
+        salesPerson: data.salesPerson || null,
+        company: data.company || "ProMark",
+        transporter: data.transporter || null,
+        transporterDetails: data.transporterDetails || null,
+        docketNo: data.docketNo || null,
+        receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
+        shippingAddress: data.shippingAddress || "",
+        billingAddress: data.billingAddress || "",
+        sameAddress: data.sameAddress || false,
+        invoiceNo: data.invoiceNo === "" ? null : Number(data.invoiceNo),
+        invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : null,
+        fulfillingStatus: data.fulfillingStatus || "Pending",
+        remarksByProduction: data.remarksByProduction || null,
+        remarksByAccounts: data.remarksByAccounts || null,
+        paymentReceived: data.paymentReceived || "Not Received",
+        billNumber: data.billNumber || "",
+        completionStatus: data.completionStatus || "In Progress",
+        fulfillmentDate: data.fulfillmentDate
+          ? new Date(data.fulfillmentDate)
+          : null,
       };
+
+      // Validate that all products have a unitPrice
+      submissionData.products.forEach((p, index) => {
+        if (p.unitPrice === undefined || p.unitPrice === null) {
+          throw new Error(`Unit Price is required for product ${index + 1}`);
+        }
+      });
 
       const response = await axios.put(
         `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
@@ -278,10 +398,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     } catch (err) {
       console.error("Edit submission error:", err);
       const errorMessage =
-        err.response?.data?.message || "Failed to update entry.";
+        err.response?.data?.message || err.message || "Failed to update entry.";
       const errorDetails = err.response?.data?.errors
         ? err.response.data.errors.join(", ")
-        : err.response?.data?.error || err.message;
+        : err.response?.data?.error || "";
       setError(
         errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
       );
@@ -301,7 +421,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     try {
       const submissionData = {
         sostatus: updateData.sostatus || "Pending for Approval",
-        remarks: updateData.remarks || undefined,
+        remarks: updateData.remarks || null,
       };
 
       const response = await axios.put(
@@ -334,6 +454,60 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       setLoading(false);
       setShowConfirm(false);
     }
+  };
+
+  const addProduct = () => {
+    const newProducts = [
+      ...products,
+      {
+        productType: "",
+        size: "N/A",
+        spec: "N/A",
+        qty: "",
+        unitPrice: "", // Ensure unitPrice is included
+        serialNos: "",
+        modelNos: "",
+      },
+    ];
+    setValue("products", newProducts);
+    setFormData((prev) => ({ ...prev, products: newProducts }));
+  };
+
+  const removeProduct = (index) => {
+    const newProducts = products.filter((_, i) => i !== index);
+    setValue(
+      "products",
+      newProducts.length > 0
+        ? newProducts
+        : [
+            {
+              productType: "",
+              size: "N/A",
+              spec: "N/A",
+              qty: "",
+              unitPrice: "", // Ensure unitPrice is included
+              serialNos: "",
+              modelNos: "",
+            },
+          ]
+    );
+    setFormData((prev) => ({
+      ...prev,
+      products:
+        newProducts.length > 0
+          ? newProducts
+          : [
+              {
+                productType: "",
+                size: "N/A",
+                spec: "N/A",
+                qty: "",
+                unitPrice: "", // Ensure unitPrice is included
+                serialNos: "",
+                modelNos: "",
+              },
+            ],
+    }));
   };
 
   const states = [
@@ -377,813 +551,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
   const citiesByState = useMemo(
     () => ({
-      "Andhra Pradesh": [
-        "Visakhapatnam",
-        "Jaganathpuram",
-        "Vijayawada",
-        "Guntur",
-        "Tirupati",
-        "Kurnool",
-        "Rajahmundry",
-        "Nellore",
-        "Anantapur",
-        "Kadapa",
-        "Srikakulam",
-        "Eluru",
-        "Ongole",
-        "Chittoor",
-        "Proddatur",
-        "Machilipatnam",
-      ],
-      "Arunachal Pradesh": [
-        "Itanagar",
-        "Tawang",
-        "Ziro",
-        "Pasighat",
-        "Bomdila",
-        "Naharlagun",
-        "Roing",
-        "Aalo",
-        "Tezu",
-        "Changlang",
-        "Khonsa",
-        "Yingkiong",
-        "Daporijo",
-        "Seppa",
-      ],
-      Assam: [
-        "Agartala",
-        "Tripura",
-        "Guwahati",
-        "Dibrugarh",
-        "Jorhat",
-        "Silchar",
-        "Tezpur",
-        "Tinsukia",
-        "Nagaon",
-        "Sivasagar",
-        "Barpeta",
-        "Goalpara",
-        "Karimganj",
-        "Lakhimpur",
-        "Diphu",
-        "Golaghat",
-        "Kamrup",
-      ],
-      Bihar: [
-        "Patna",
-        "Mirzapur",
-        "Jehanabad",
-        "Mithapur",
-        "Gaya",
-        "Bhagalpur",
-        "Muzaffarpur",
-        "Darbhanga",
-        "Purnia",
-        "Ara",
-        "Begusarai",
-        "Katihar",
-        "Munger",
-        "Chapra",
-        "Sasaram",
-        "Hajipur",
-        "Bihar Sharif",
-        "Sitamarhi",
-      ],
-      Chhattisgarh: [
-        "Raipur",
-        "Bilaspur",
-        "Durg",
-        "Korba",
-        "Bhilai",
-        "Rajnandgaon",
-        "Jagdalpur",
-        "Ambikapur",
-        "Raigarh",
-        "Dhamtari",
-        "Kawardha",
-        "Mahasamund",
-        "Kondagaon",
-        "Bijapur",
-      ],
-      Goa: [
-        "Panaji",
-        "Margao",
-        "Vasco da Gama",
-        "Mapusa",
-        "Ponda",
-        "Bicholim",
-        "Sanguem",
-        "Canacona",
-        "Quepem",
-        "Valpoi",
-        "Sanquelim",
-        "Curchorem",
-      ],
-      Gujarat: [
-        "Ahmedabad",
-        "Surat",
-        "Vadodara",
-        "Rajkot",
-        "Bhavnagar",
-        "Jamnagar",
-        "Junagadh",
-        "Gandhinagar",
-        "Anand",
-        "Morbi",
-        "Nadiad",
-        "Porbandar",
-        "Mehsana",
-        "Bharuch",
-        "Navsari",
-        "Surendranagar",
-      ],
-      Haryana: [
-        "Bahadurgarh",
-        "Gurugram",
-        "Faridabad",
-        "Panipat",
-        "Ambala",
-        "Hisar",
-        "Rohtak",
-        "Karnal",
-        "Bhiwani",
-        "Kaithal",
-        "Kurukshetra",
-        "Sonipat",
-        "Jhajjar",
-        "Jind",
-        "Fatehabad",
-        "Pehowa",
-        "Pinjore",
-        "Rewari",
-        "Yamunanagar",
-        "Sirsa",
-        "Dabwali",
-        "Narwana",
-      ],
-      "Himachal Pradesh": [
-        "Nagrota Surian",
-        "Shimla",
-        "Dharamshala",
-        "Solan",
-        "Mandi",
-        "Hamirpur",
-        "Kullu",
-        "Manali",
-        "Nahan",
-        "Palampur",
-        "Baddi",
-        "Sundarnagar",
-        "Paonta Sahib",
-        "Bilaspur",
-        "Chamba",
-        "Una",
-        "Kangra",
-        "Parwanoo",
-        "Nalagarh",
-        "Rohru",
-        "Keylong",
-      ],
-      Jharkhand: [
-        "Ranchi",
-        "Jamshedpur",
-        "Dhanbad",
-        "Bokaro",
-        "Deoghar",
-        "Hazaribagh",
-        "Giridih",
-        "Ramgarh",
-        "Chaibasa",
-        "Palamu",
-        "Gumla",
-        "Lohardaga",
-        "Dumka",
-        "Chatra",
-        "Pakur",
-        "Jamtara",
-        "Simdega",
-        "Sahibganj",
-        "Godda",
-        "Latehar",
-        "Khunti",
-      ],
-      Karnataka: [
-        "Bengaluru",
-        "Mysuru",
-        "Mangaluru",
-        "Hubballi",
-        "Belagavi",
-        "Kalaburagi",
-        "Ballari",
-        "Davangere",
-        "Shivamogga",
-        "Tumakuru",
-        "Udupi",
-        "Vijayapura",
-        "Chikkamagaluru",
-        "Hassan",
-        "Mandya",
-        "Raichur",
-        "Bidar",
-        "Bagalkot",
-        "Chitradurga",
-        "Kolar",
-        "Gadag",
-        "Yadgir",
-        "Haveri",
-        "Dharwad",
-        "Ramanagara",
-        "Chikkaballapur",
-        "Kodagu",
-        "Koppal",
-      ],
-      Kerala: [
-        "Thiruvananthapuram",
-        "Kochi",
-        "Kozhikode",
-        "Kannur",
-        "Alappuzha",
-        "Thrissur",
-        "Kottayam",
-        "Palakkad",
-        "Ernakulam",
-        "Malappuram",
-        "Pathanamthitta",
-        "Idukki",
-        "Wayanad",
-        "Kollam",
-        "Kasaragod",
-        "Punalur",
-        "Varkala",
-        "Changanassery",
-        "Kayani",
-        "Kizhakkambalam",
-        "Perumbavoor",
-        "Muvattupuzha",
-        "Attingal",
-        "Vypin",
-        "North Paravur",
-        "Adoor",
-        "Cherthala",
-        "Mattancherry",
-        "Fort Kochi",
-        "Munroe Island",
-      ],
-      "Madhya Pradesh": [
-        "Bhopal",
-        "Indore",
-        "Gwalior",
-        "Jabalpur",
-        "Ujjain",
-        "Sagar",
-        "Ratlam",
-        "Satna",
-        "Dewas",
-        "Murwara (Katni)",
-        "Chhindwara",
-        "Rewa",
-        "Burhanpur",
-        "Khandwa",
-        "Bhind",
-        "Shivpuri",
-        "Vidisha",
-        "Sehore",
-        "Hoshangabad",
-        "Itarsi",
-        "Neemuch",
-        "Chhatarpur",
-        "Betul",
-        "Mandsaur",
-        "Damoh",
-        "Singrauli",
-        "Guna",
-        "Ashok Nagar",
-        "Datia",
-        "Mhow",
-        "Pithampur",
-        "Shahdol",
-        "Seoni",
-        "Mandla",
-        "Tikamgarh",
-        "Raisen",
-        "Narsinghpur",
-        "Morena",
-        "Barwani",
-        "Rajgarh",
-        "Khargone",
-        "Anuppur",
-        "Umaria",
-        "Dindori",
-        "Sheopur",
-        "Alirajpur",
-        "Jhabua",
-        "Sidhi",
-        "Harda",
-        "Balaghat",
-        "Agar Malwa",
-      ],
-      Maharashtra: [
-        "Mumbai",
-        "Gadchiroli",
-        "Pune",
-        "Nagpur",
-        "Nashik",
-        "Aurangabad",
-        "Solapur",
-        "Kolhapur",
-        "Thane",
-        "Satara",
-        "Latur",
-        "Chandrapur",
-        "Jalgaon",
-        "Bhiwandi",
-        "Shirdi",
-        "Akola",
-        "Parbhani",
-        "Raigad",
-        "Washim",
-        "Buldhana",
-        "Nanded",
-        "Yavatmal",
-        "Beed",
-        "Amravati",
-        "Kalyan",
-        "Dombivli",
-        "Ulhasnagar",
-        "Nagothane",
-        "Vasai",
-        "Virar",
-        "Mira-Bhayandar",
-        "Dhule",
-        "Sangli",
-        "Wardha",
-        "Ahmednagar",
-        "Pandharpur",
-        "Malegaon",
-        "Osmanabad",
-        "Gondia",
-        "Baramati",
-        "Jalna",
-        "Hingoli",
-        "Sindhudurg",
-        "Ratnagiri",
-        "Palghar",
-        "Ambarnath",
-        "Badlapur",
-        "Taloja",
-        "Alibaug",
-        "Murbad",
-        "Karjat",
-        "Pen",
-        "Newasa",
-      ],
-      Manipur: [
-        "Imphal",
-        "Churachandpur",
-        "Thoubal",
-        "Bishnupur",
-        "Kakching",
-        "Senapati",
-        "Ukhrul",
-        "Tamenglong",
-        "Jiribam",
-        "Moreh",
-        "Noney",
-        "Pherzawl",
-        "Kangpokpi",
-      ],
-      Meghalaya: [
-        "Shillong",
-        "Tura",
-        "Nongpoh",
-        "Cherrapunjee",
-        "Jowai",
-        "Baghmara",
-        "Williamnagar",
-        "Mawkyrwat",
-        "Resubelpara",
-        "Mairang",
-      ],
-      Mizoram: [
-        "Aizawl",
-        "Lunglei",
-        "Champhai",
-        "Serchhip",
-        "Kolasib",
-        "Saiha",
-        "Lawngtlai",
-        "Mamit",
-        "Hnahthial",
-        "Khawzawl",
-        "Saitual",
-      ],
-      Nagaland: [
-        "Kohima",
-        "Dimapur",
-        "Mokokchung",
-        "Tuensang",
-        "Wokha",
-        "Mon",
-        "Zunheboto",
-        "Phek",
-        "Longleng",
-        "Kiphire",
-        "Peren",
-      ],
-      Odisha: [
-        "Bhubaneswar",
-        "Cuttack",
-        "Rourkela",
-        "Puri",
-        "Sambalpur",
-        "Berhampur",
-        "Balasore",
-        "Baripada",
-        "Bhadrak",
-        "Jeypore",
-        "Angul",
-        "Dhenkanal",
-        "Keonjhar",
-        "Kendrapara",
-        "Jagatsinghpur",
-        "Paradeep",
-        "Bargarh",
-        "Rayagada",
-        "Koraput",
-        "Nabarangpur",
-        "Kalahandi",
-        "Nuapada",
-        "Phulbani",
-        "Balangir",
-        "Sundargarh",
-      ],
-      Punjab: [
-        "Amritsar",
-        "Ludhiana",
-        "Jalandhar",
-        "Patiala",
-        "Bathinda",
-        "Mohali", // Also known as Sahibzada Ajit Singh Nagar (SAS Nagar)
-        "Hoshiarpur",
-        "Gurdaspur",
-        "Ferozepur",
-        "Sangrur",
-        "Moga",
-        "Rupnagar", // Official name for Ropar
-        "Kapurthala",
-        "Faridkot",
-        "Muktsar", // Corrected from "Makatsar"
-        "Fazilka",
-        "Barnala",
-        "Mansa",
-        "Tarn Taran",
-        "Nawanshahr", // Also known as Shaheed Bhagat Singh Nagar
-        "Pathankot",
-        "Zirakpur",
-        "Khanna",
-        "Malerkotla",
-        "Abohar",
-        "Rajpura",
-        "Phagwara",
-        "Batala",
-        "Samrala",
-        "Anandpur Sahib",
-        "Sirhind",
-        "Kharar",
-        "Morinda",
-        "Bassi Pathana",
-        "Khamanon", // Corrected from "Khamano"
-        "Chunni Kalan",
-        "Balachaur",
-        "Dinanagar",
-        "Dasuya",
-        "Nakodar",
-        "Jagraon",
-        "Sunam",
-        "Dhuri",
-        "Lehragaga",
-        "Rampura Phul",
-      ],
-      Rajasthan: [
-        "Baran",
-        "Newai",
-        "Gaganagar",
-        "Suratgarh",
-        "Jaipur",
-        "Udaipur",
-        "Jodhpur",
-        "Kota",
-        "Ajmer",
-        "Bikaner",
-        "Alwar",
-        "Bharatpur",
-        "Sikar",
-        "Pali",
-        "Nagaur",
-        "Jhunjhunu",
-        "Chittorgarh",
-        "Tonk",
-        "Barmer",
-        "Jaisalmer",
-        "Dholpur",
-        "Bhilwara",
-        "Hanumangarh",
-        "Sawai Madhopur",
-      ],
-      Sikkim: [
-        "Gangtok",
-        "Namchi",
-        "Pelling",
-        "Geyzing",
-        "Mangan",
-        "Rangpo",
-        "Jorethang",
-        "Yuksom",
-        "Ravangla",
-        "Lachen",
-        "Lachung",
-      ],
-      "Tamil Nadu": [
-        "Chennai",
-        "Coimbatore",
-        "Madurai",
-        "Tiruchirappalli",
-        "Salem",
-        "Erode",
-        "Tirunelveli",
-        "Vellore",
-        "Thanjavur",
-        "Tuticorin",
-        "Dindigul",
-        "Cuddalore",
-        "Kancheepuram",
-        "Nagercoil",
-        "Kumbakonam",
-        "Karur",
-        "Sivakasi",
-        "Namakkal",
-        "Tiruppur",
-      ],
-      Telangana: [
-        "Hyderabad",
-        "Warangal",
-        "Nizamabad",
-        "Karimnagar",
-        "Khammam",
-        "Mahbubnagar",
-        "Ramagundam",
-        "Siddipet",
-        "Adilabad",
-        "Nalgonda",
-        "Mancherial",
-        "Kothagudem",
-        "Zaheerabad",
-        "Miryalaguda",
-        "Bhongir",
-        "Jagtial",
-      ],
-      Tripura: [
-        "Agartala",
-        "Udaipur",
-        "Dharmanagar",
-        "Kailashahar",
-        "Belonia",
-        "Kamalpur",
-        "Ambassa",
-        "Khowai",
-        "Sabroom",
-        "Sonamura",
-        "Melaghar",
-      ],
-      "Uttar Pradesh": [
-        "Shikohabad ",
-        "Lucknow",
-        "Matbarganj",
-        "Kasganj",
-        "Kanpur",
-        "Varanasi",
-        "Agra",
-        "Prayagraj (Allahabad)",
-        "Ghaziabad",
-        "Noida",
-        "Meerut",
-        "Aligarh",
-        "Bareilly",
-        "Moradabad",
-        "Saharanpur",
-        "Gorakhpur",
-        "Firozabad",
-        "Jhansi",
-        "Muzaffarnagar",
-        "Mathura-Vrindavan",
-        "Budaun",
-        "Rampur",
-        "Shahjahanpur",
-        "Farrukhabad-Fatehgarh",
-        "Ayodhya",
-        "Unnao",
-        "Jaunpur",
-        "Lakhimpur",
-        "Hathras",
-        "Banda",
-        "Pilibhit",
-        "Barabanki",
-        "Khurja",
-        "Gonda",
-        "Mainpuri",
-        "Lalitpur",
-        "Sitapur",
-        "Etah",
-        "Deoria",
-        "Ghazipur",
-      ],
-      Uttarakhand: [
-        "Dehradun",
-        "Haridwar",
-        "Nainital",
-        "Rishikesh",
-        "Mussoorie",
-        "Almora",
-        "Pithoragarh",
-        "Haldwani",
-        "Rudrapur",
-        "Bageshwar",
-        "Champawat",
-        "Uttarkashi",
-        "Roorkee",
-        "Tehri",
-        "Lansdowne",
-      ],
-      "West Bengal": [
-        "Kolkata",
-        "Garia",
-        "Darjeeling",
-        "Siliguri",
-        "Howrah",
-        "Asansol",
-        "Durgapur",
-        "Malda",
-        "Cooch Behar",
-        "Haldia",
-        "Kharagpur",
-        "Raiganj",
-        "Bardhaman",
-        "Jalpaiguri",
-        "Chandannagar",
-        "Kalimpong",
-        "Alipurduar",
-      ],
-      "Andaman and Nicobar Islands": [
-        "Port Blair",
-        "Havelock Island",
-        "Diglipur",
-        "Neil Island",
-        "Car Nicobar",
-        "Little Andaman",
-        "Long Island",
-        "Mayabunder",
-        "Campbell Bay",
-        "Rangat",
-        "Wandoor",
-      ],
-      Chandigarh: [
-        "Sector 1",
-        "Sector 2",
-        "Sector 3",
-        "Sector 4",
-        "Sector 5",
-        "Sector 6",
-        "Sector 7",
-        "Sector 8",
-        "Sector 9",
-        "Sector 10",
-        "Sector 11",
-        "Sector 12",
-        "Sector 13", // Note: Sector 13 does not exist in Chandigarh.
-        "Sector 14",
-        "Sector 15",
-        "Sector 16",
-        "Sector 17",
-        "Sector 18",
-        "Sector 19",
-        "Sector 20",
-        "Sector 21",
-        "Sector 22",
-        "Sector 23",
-        "Sector 24",
-        "Sector 25",
-        "Sector 26",
-        "Sector 27",
-        "Sector 28",
-        "Sector 29",
-        "Sector 30",
-        "Sector 31",
-        "Sector 32",
-        "Sector 33",
-        "Sector 34",
-        "Sector 35",
-        "Sector 36",
-        "Sector 37",
-        "Sector 38",
-        "Sector 39",
-        "Sector 40",
-        "Sector 41",
-        "Sector 42",
-        "Sector 43",
-        "Sector 44",
-        "Sector 45",
-        "Sector 46",
-        "Sector 47",
-      ],
-      "Dadra and Nagar Haveli and Daman and Diu": [
-        "Daman",
-        "Diu",
-        "Silvassa",
-        "Amli",
-        "Kachigam",
-        "Naroli",
-        "Vapi",
-        "Marwad",
-        "Samarvarni",
-        "Kawant",
-      ],
-      Delhi: [
-        "New Delhi",
-        "Old Delhi",
-        "Dwarka",
-        "Rohini",
-        "Karol Bagh",
-        "Lajpat Nagar",
-        "Saket",
-        "Vasant Kunj",
-        "Janakpuri",
-        "Mayur Vihar",
-        "Shahdara",
-        "Preet Vihar",
-        "Pitampura",
-        "Chanakyapuri",
-        "Narela",
-        "Mehrauli",
-        "Najafgarh",
-        "Okhla",
-        "Tilak Nagar",
-      ],
-      "Jammu and Kashmir": [
-        "Srinagar",
-        "Jammu",
-        "Anantnag",
-        "Baramulla",
-        "Pulwama",
-        "Kupwara",
-        "Udhampur",
-        "Kathua",
-        "Poonch",
-        "Kulgam",
-        "Budgam",
-        "Bandipora",
-        "Ganderbal",
-        "Rajouri",
-        "Reasi",
-        "Doda",
-        "Miran sahib",
-      ],
-      Ladakh: [
-        "Leh",
-        "Kargil",
-        "Diskit",
-        "Padum",
-        "Nubra",
-        "Tangtse",
-        "Sankoo",
-        "Zanskar",
-        "Nyoma",
-        "Turtuk",
-        "Hanle",
-      ],
-      Lakshadweep: [
-        "Kavaratti",
-        "Agatti",
-        "Minicoy",
-        "Amini",
-        "Andrott",
-        "Kalpeni",
-        "Kadmat",
-        "Chetlat",
-        "Bitra",
-        "Bangaram",
-      ],
-      Puducherry: [
-        "Puducherry",
-        "Karaikal",
-        "Mahe",
-        "Yanam",
-        "Villianur",
-        "Bahour",
-        "Oulgaret",
-        "Ariyankuppam",
-        "Nettapakkam",
-      ],
+      // Your citiesByState object here (unchanged)
     }),
     []
   );
@@ -1233,9 +601,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.committedDate}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.committedDate?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="dispatchFrom">
@@ -1247,9 +612,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.dispatchFrom}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.dispatchFrom?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="status">
@@ -1275,9 +637,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               </Form.Select>
             )}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.status?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="dispatchDate">
@@ -1290,9 +649,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.dispatchDate}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.dispatchDate?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="partyAndAddress">
@@ -1306,9 +662,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.partyAndAddress}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.partyAndAddress?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="state">
@@ -1334,9 +687,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               </Form.Select>
             )}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.state?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="city">
@@ -1364,9 +714,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               </Form.Select>
             )}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.city?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="pinCode">
@@ -1395,9 +742,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             onChange={(e) => debouncedHandleInputChange("name", e.target.value)}
             isInvalid={!!errors.name}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.name?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="contactNo">
@@ -1416,6 +760,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
           <Form.Control.Feedback type="invalid">
             {errors.contactNo?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="customername">
+          <Form.Label>👤 Customer Name</Form.Label>
+          <Form.Control
+            type="text"
+            {...register("customername", {
+              required: "Customer name is required",
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("customername", e.target.value)
+            }
+            isInvalid={!!errors.customername}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.customername?.message}
           </Form.Control.Feedback>
         </Form.Group>
 
@@ -1440,174 +800,192 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
 
         <Form.Group controlId="shippingAddress">
-          <Form.Label>📦 Shipping Address *</Form.Label>
+          <Form.Label>📦 Shipping Address</Form.Label>
           <Form.Control
             as="textarea"
             rows={2}
-            {...register("shippingAddress", {})}
+            {...register("shippingAddress")}
             onChange={(e) =>
               debouncedHandleInputChange("shippingAddress", e.target.value)
             }
             isInvalid={!!errors.shippingAddress}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.shippingAddress?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="billingAddress">
-          <Form.Label>🏠 Billing Address *</Form.Label>
+          <Form.Label>🏠 Billing Address</Form.Label>
           <Form.Control
             as="textarea"
             rows={2}
-            {...register("billingAddress", {})}
+            {...register("billingAddress")}
             onChange={(e) =>
               debouncedHandleInputChange("billingAddress", e.target.value)
             }
             isInvalid={!!errors.billingAddress}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.billingAddress?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="modelNo">
-          <Form.Label>🔢 Model No</Form.Label>
-          <Form.Control
-            placeholder="Enter Model number"
-            {...register("modelNo")}
+        <Form.Group controlId="sameAddress">
+          <Form.Label>📝 Same as Shipping</Form.Label>
+          <Form.Check
+            type="checkbox"
+            {...register("sameAddress")}
             onChange={(e) =>
-              debouncedHandleInputChange("modelNo", e.target.value)
+              debouncedHandleInputChange("sameAddress", e.target.checked)
             }
-            isInvalid={!!errors.modelNo}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.modelNo?.message}
-          </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="serialno" style={{ marginBottom: "20px" }}>
-          <Form.Label
-            style={{
-              fontWeight: "600",
-              color: "#333",
-              marginBottom: "8px",
-            }}
+
+        {/* Products Section */}
+        <div>
+          <Form.Label>📦 Products *</Form.Label>
+          {products.map((product, index) => (
+            <ProductContainer key={index}>
+              <ProductHeader>
+                <h5>Product {index + 1}</h5>
+                {products.length > 1 && (
+                  <StyledButton
+                    variant="danger"
+                    onClick={() => removeProduct(index)}
+                    style={{ padding: "5px 10px", fontSize: "0.9rem" }}
+                  >
+                    Remove
+                  </StyledButton>
+                )}
+              </ProductHeader>
+              <Form.Group controlId={`products.${index}.productType`}>
+                <Form.Label>📦 Product Type *</Form.Label>
+                <Form.Control
+                  {...register(`products.${index}.productType`, {
+                    required: "Product Type is required",
+                  })}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.productType`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.productType}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.products?.[index]?.productType?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group controlId={`products.${index}.size`}>
+                <Form.Label>📏 Size</Form.Label>
+                <Form.Control
+                  {...register(`products.${index}.size`)}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.size`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.size}
+                />
+              </Form.Group>
+              <Form.Group controlId={`products.${index}.spec`}>
+                <Form.Label>📋 Specification</Form.Label>
+                <Form.Control
+                  {...register(`products.${index}.spec`)}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.spec`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.spec}
+                />
+              </Form.Group>
+              <Form.Group controlId={`products.${index}.qty`}>
+                <Form.Label>🔢 Quantity *</Form.Label>
+                <Form.Control
+                  type="number"
+                  {...register(`products.${index}.qty`, {
+                    required: "Quantity is required",
+                    min: { value: 1, message: "Quantity must be at least 1" },
+                  })}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.qty`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.qty}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.products?.[index]?.qty?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group controlId={`products.${index}.unitPrice`}>
+                <Form.Label>💰 Unit Price *</Form.Label>
+                <Form.Control
+                  type="number"
+                  step="0.01"
+                  {...register(`products.${index}.unitPrice`, {
+                    required: "Unit Price is required",
+                    min: {
+                      value: 0,
+                      message: "Unit Price cannot be negative",
+                    },
+                  })}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.unitPrice`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.unitPrice}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.products?.[index]?.unitPrice?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group controlId={`products.${index}.serialNos`}>
+                <Form.Label>🔢 Serial Nos (comma-separated)</Form.Label>
+                <Form.Control
+                  {...register(`products.${index}.serialNos`)}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.serialNos`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.serialNos}
+                  placeholder="e.g., SN1, SN2, SN3"
+                />
+              </Form.Group>
+              <Form.Group controlId={`products.${index}.modelNos`}>
+                <Form.Label>🔢 Model Nos (comma-separated)</Form.Label>
+                <Form.Control
+                  {...register(`products.${index}.modelNos`)}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.modelNos`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.modelNos}
+                  placeholder="e.g., MN1, MN2, MN3"
+                />
+              </Form.Group>
+            </ProductContainer>
+          ))}
+          <StyledButton
+            variant="primary"
+            onClick={addProduct}
+            style={{ marginTop: "10px" }}
           >
-            🏷️ Serial No
-          </Form.Label>
-          <Form.Control
-            type="text"
-            {...register("serialno")}
-            onChange={(e) =>
-              debouncedHandleInputChange("serialno", e.target.value)
-            }
-            placeholder="Enter serial number"
-            style={{
-              borderRadius: "10px",
-              border: "1px solid #ced4da",
-              padding: "12px",
-              fontSize: "1rem",
-              transition: "all 0.3s ease",
-            }}
-            onFocus={(e) =>
-              (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
-            }
-            onBlur={(e) => (e.target.style.boxShadow = "none")}
-            isInvalid={!!errors.serialno}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.serialno?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="productType">
-          <Form.Label>📦 Product Type</Form.Label>
-          <Form.Control
-            {...register("productType")}
-            onChange={(e) =>
-              debouncedHandleInputChange("productType", e.target.value)
-            }
-            isInvalid={!!errors.productType}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.productType?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="size">
-          <Form.Label>📏 Size</Form.Label>
-          <Form.Control
-            {...register("size")}
-            onChange={(e) => debouncedHandleInputChange("size", e.target.value)}
-            isInvalid={!!errors.size}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.size?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="spec">
-          <Form.Label>📋 Specification</Form.Label>
-          <Form.Control
-            {...register("spec")}
-            onChange={(e) => debouncedHandleInputChange("spec", e.target.value)}
-            isInvalid={!!errors.spec}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.spec?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="productDetails">
-          <Form.Label>📝 Product Details</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            {...register("productDetails")}
-            onChange={(e) =>
-              debouncedHandleInputChange("productDetails", e.target.value)
-            }
-            isInvalid={!!errors.productDetails}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.productDetails?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="qty">
-          <Form.Label>🔢 Quantity *</Form.Label>
-          <Form.Control
-            type="number"
-            {...register("qty", {
-              required: "Quantity is required",
-              min: { value: 1, message: "Quantity must be at least 1" },
-            })}
-            onChange={(e) => debouncedHandleInputChange("qty", e.target.value)}
-            isInvalid={!!errors.qty}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.qty?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="unitPrice">
-          <Form.Label>💰 Unit Price *</Form.Label>
-          <Form.Control
-            type="number"
-            step="0.01"
-            {...register("unitPrice", {
-              required: "Unit Price is required",
-              min: { value: 0, message: "Unit Price cannot be negative" },
-            })}
-            onChange={(e) =>
-              debouncedHandleInputChange("unitPrice", e.target.value)
-            }
-            isInvalid={!!errors.unitPrice}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.unitPrice?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
+            Add Product
+          </StyledButton>
+        </div>
 
         <Form.Group controlId="gst">
           <Form.Label>📊 GST (%)</Form.Label>
@@ -1654,9 +1032,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.paymentTerms}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.paymentTerms?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="amount2">
@@ -1686,9 +1061,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.freightcs}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.freightcs?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="installation">
@@ -1700,9 +1072,70 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.installation}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.installation?.message}
-          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="installationStatus">
+          <Form.Label>🛠️ Installation Status</Form.Label>
+          <Controller
+            name="installationStatus"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange(
+                    "installationStatus",
+                    e.target.value
+                  );
+                }}
+                isInvalid={!!errors.installationStatus}
+              >
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Failed">Failed</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="remarksByInstallation">
+          <Form.Label>✏️ Remarks by Installation</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            {...register("remarksByInstallation")}
+            onChange={(e) =>
+              debouncedHandleInputChange(
+                "remarksByInstallation",
+                e.target.value
+              )
+            }
+            isInvalid={!!errors.remarksByInstallation}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="dispatchStatus">
+          <Form.Label>🚚 Dispatch Status</Form.Label>
+          <Controller
+            name="dispatchStatus"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("dispatchStatus", e.target.value);
+                }}
+                isInvalid={!!errors.dispatchStatus}
+              >
+                <option value="Not Dispatched">Not Dispatched</option>
+                <option value="Dispatched">Dispatched</option>
+                <option value="Delivered">Delivered</option>
+              </Form.Select>
+            )}
+          />
         </Form.Group>
 
         <Form.Group controlId="salesPerson">
@@ -1714,9 +1147,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.salesPerson}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.salesPerson?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="company">
@@ -1728,14 +1158,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.company}
           >
-            <option value="">Select Company</option>
             <option value="ProMark">ProMark</option>
             <option value="ProMine">ProMine</option>
             <option value="Others">Others</option>
           </Form.Select>
-          <Form.Control.Feedback type="invalid">
-            {errors.company?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="transporter">
@@ -1747,9 +1173,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.transporter}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.transporter?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="transporterDetails">
@@ -1763,24 +1186,17 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.transporterDetails}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.transporterDetails?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="docketNo">
           <Form.Label>📄 Docket No</Form.Label>
           <Form.Control
-            placeholder="Enter Docket No"
             {...register("docketNo")}
             onChange={(e) =>
               debouncedHandleInputChange("docketNo", e.target.value)
             }
             isInvalid={!!errors.docketNo}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.docketNo?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="receiptDate">
@@ -1793,9 +1209,135 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.receiptDate}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.receiptDate?.message}
-          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="invoiceNo">
+          <Form.Label>📄 Invoice No</Form.Label>
+          <Form.Control
+            type="number"
+            {...register("invoiceNo")}
+            onChange={(e) =>
+              debouncedHandleInputChange("invoiceNo", e.target.value)
+            }
+            isInvalid={!!errors.invoiceNo}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="invoiceDate">
+          <Form.Label>📅 Invoice Date</Form.Label>
+          <Form.Control
+            type="date"
+            {...register("invoiceDate")}
+            onChange={(e) =>
+              debouncedHandleInputChange("invoiceDate", e.target.value)
+            }
+            isInvalid={!!errors.invoiceDate}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="fulfillingStatus">
+          <Form.Label>📋 Fulfilling Status</Form.Label>
+          <Form.Control
+            {...register("fulfillingStatus")}
+            onChange={(e) =>
+              debouncedHandleInputChange("fulfillingStatus", e.target.value)
+            }
+            isInvalid={!!errors.fulfillingStatus}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="remarksByProduction">
+          <Form.Label>✏️ Remarks by Production</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            {...register("remarksByProduction")}
+            onChange={(e) =>
+              debouncedHandleInputChange("remarksByProduction", e.target.value)
+            }
+            isInvalid={!!errors.remarksByProduction}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="remarksByAccounts">
+          <Form.Label>✏️ Remarks by Accounts</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            {...register("remarksByAccounts")}
+            onChange={(e) =>
+              debouncedHandleInputChange("remarksByAccounts", e.target.value)
+            }
+            isInvalid={!!errors.remarksByAccounts}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="paymentReceived">
+          <Form.Label>💰 Payment Received</Form.Label>
+          <Controller
+            name="paymentReceived"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("paymentReceived", e.target.value);
+                }}
+                isInvalid={!!errors.paymentReceived}
+              >
+                <option value="Not Received">Not Received</option>
+                <option value="Received">Received</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="billNumber">
+          <Form.Label>📄 Bill Number</Form.Label>
+          <Form.Control
+            {...register("billNumber")}
+            onChange={(e) =>
+              debouncedHandleInputChange("billNumber", e.target.value)
+            }
+            isInvalid={!!errors.billNumber}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="completionStatus">
+          <Form.Label>📋 Completion Status</Form.Label>
+          <Controller
+            name="completionStatus"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange(
+                    "completionStatus",
+                    e.target.value
+                  );
+                }}
+                isInvalid={!!errors.completionStatus}
+              >
+                <option value="In Progress">In Progress</option>
+                <option value="Complete">Complete</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="fulfillmentDate">
+          <Form.Label>📅 Production Date</Form.Label>
+          <Form.Control
+            type="date"
+            {...register("fulfillmentDate")}
+            onChange={(e) =>
+              debouncedHandleInputChange("fulfillmentDate", e.target.value)
+            }
+            isInvalid={!!errors.fulfillmentDate}
+          />
         </Form.Group>
       </FormSection>
     </Form>

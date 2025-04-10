@@ -51,13 +51,46 @@ const Sales = () => {
   const filterOrders = () => {
     let filtered = [...orders];
     if (searchTerm) {
-      filtered = filtered.filter((order) =>
-        Object.values(order).some(
+      filtered = filtered.filter((order) => {
+        const searchableFields = [
+          order.name,
+          order.orderId,
+          order.partyAndAddress,
+          order.city,
+          order.state,
+          order.pinCode,
+          order.contactNo,
+          order.customerEmail,
+          order.customername,
+          order.sostatus,
+          order.status,
+          ...(order.products || []).flatMap((p) =>
+            (p.serialNos || []).concat(p.modelNos || [])
+          ), // Updated to search serialNos and modelNos arrays
+          order.paymentTerms,
+          order.freightcs,
+          order.installation,
+          order.salesPerson,
+          order.company,
+          order.transporter,
+          order.transporterDetails,
+          order.shippingAddress,
+          order.billingAddress,
+          order.docketNo,
+          order.dispatchFrom,
+          order.remarks,
+          order.invoiceNo,
+          order.billNumber,
+          ...(order.products || []).map((p) =>
+            `${p.productType} ${p.size} ${p.spec} ${p.qty} ${p.unitPrice}`.toLowerCase()
+          ),
+        ];
+        return searchableFields.some(
           (value) =>
             value &&
             value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
+        );
+      });
     }
     if (approvalFilter !== "All") {
       filtered = filtered.filter((order) => order.sostatus === approvalFilter);
@@ -114,33 +147,27 @@ const Sales = () => {
     setIsDeleteModalOpen(false);
     toast.success("Order deleted successfully!");
   };
+
   const handleEntryUpdated = async (updatedEntry) => {
     try {
-      // Send the updated order to the server via PUT request
       const response = await axios.put(
         `https://sales-order-server.onrender.com/api/edit/${updatedEntry._id}`,
         updatedEntry
       );
-      const updatedOrder = response.data; // Get the updated order from the server response
-
-      // Update the orders state with the new data, replacing the old order
+      const updatedOrder = response.data.data || response.data;
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order._id === updatedOrder._id ? updatedOrder : order
         )
       );
-
-      // Close the edit modal
       setIsEditModalOpen(false);
       toast.success("Order updated successfully!");
-
-      // Note: The useEffect hook watching 'orders' will trigger filterOrders(),
-      // ensuring the filteredOrders state reflects the updated order immediately
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Failed to update order!");
     }
   };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -190,7 +217,6 @@ const Sales = () => {
           const soDate = parseDate(entry.sodate);
           return {
             soDate,
-            serialno: String(entry.serialno || "").trim(),
             committedDate: parseDate(entry.committeddate),
             dispatchFrom: String(entry.dispatchfrom || "").trim(),
             status: String(entry.status || "Pending").trim(),
@@ -202,13 +228,26 @@ const Sales = () => {
             name: String(entry.name || "").trim(),
             contactNo: String(entry.contactno || "").trim(),
             customerEmail: String(entry.customeremail || "").trim(),
-            modelNo: String(entry.modelno || "").trim(),
-            productType: String(entry.producttype || "").trim(),
-            size: String(entry.size || "").trim(),
-            spec: String(entry.spec || "").trim(),
-            productDetails: String(entry.productdetails || "").trim(),
-            qty: Number(entry.qty) || 0,
-            unitPrice: Number(entry.unitprice) || 0,
+            customername: String(entry.customername || "").trim(),
+            products: [
+              {
+                productType: String(entry.producttype || "").trim(),
+                size: String(entry.size || "").trim(),
+                spec: String(entry.spec || "").trim(),
+                qty: Number(entry.qty) || 0,
+                unitPrice: Number(entry.unitprice) || 0,
+                serialNos: entry.serialnos
+                  ? String(entry.serialnos)
+                      .split(",")
+                      .map((s) => s.trim())
+                  : [], // Updated to handle serialNos as comma-separated string
+                modelNos: entry.modelnos
+                  ? String(entry.modelnos)
+                      .split(",")
+                      .map((m) => m.trim())
+                  : [], // Updated to handle modelNos as comma-separated string
+              },
+            ],
             gst: Number(entry.gst) || 0,
             total: Number(entry.total) || 0,
             paymentTerms: String(entry.paymentterms || "").trim(),
@@ -238,11 +277,14 @@ const Sales = () => {
         });
 
         const validEntries = newEntries.filter(
-          (entry) => entry.soDate && !isNaN(entry.qty)
+          (entry) =>
+            entry.soDate &&
+            entry.products.length > 0 &&
+            !isNaN(entry.products[0].qty)
         );
         if (validEntries.length === 0) {
           toast.error(
-            "No valid entries found with required fields (soDate, qty)."
+            "No valid entries found with required fields (soDate, products with qty)."
           );
           return;
         }
@@ -294,16 +336,24 @@ const Sales = () => {
 
   const isOrderComplete = (order) => {
     const allFields = Object.keys(order).filter(
-      (key) => key !== "_id" && key !== "__v"
+      (key) => key !== "_id" && key !== "__v" && key !== "products"
     );
-    return allFields.every((field) => {
-      const value = order[field];
-      return (
-        value !== undefined &&
-        value !== null &&
-        (value !== "" || value === 0 || value === "-")
-      );
-    });
+    const productFieldsComplete = (order.products || []).every(
+      (product) =>
+        product.productType &&
+        product.qty !== undefined &&
+        product.unitPrice !== undefined
+    );
+    return (
+      allFields.every((field) => {
+        const value = order[field];
+        return (
+          value !== undefined &&
+          value !== null &&
+          (value !== "" || value === 0 || value === "-")
+        );
+      }) && productFieldsComplete
+    );
   };
 
   return (
@@ -653,26 +703,29 @@ const Sales = () => {
             <tr>
               {[
                 "Seq No",
-                "Contact Person Name",
+                "Customer Name",
+
                 "Product Details",
                 "Unit Price",
                 "Qty",
                 "Freight Charges & Status",
                 "GST",
                 "Total",
-                "Party & Address",
+
+                "Address",
                 "Order ID",
                 "SO Date",
                 "Committed Date",
                 "Status",
-                "Approvel Status",
+                "Approval Status",
                 "City",
                 "State",
                 "Pin Code",
+                "Contact Person Name",
                 "Contact No",
                 "Customer Email",
-                "Model No",
-                "Serial No",
+                "Model Nos", // Updated header
+                "Serial Nos", // Updated header
                 "Product Type",
                 "Size",
                 "Spec",
@@ -715,6 +768,23 @@ const Sales = () => {
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order, index) => {
                 const complete = isOrderComplete(order);
+                const firstProduct =
+                  order.products && order.products[0] ? order.products[0] : {};
+                const productDetails = order.products
+                  ? order.products
+                      .map((p) => `${p.productType} (${p.qty})`)
+                      .join(", ")
+                  : "-";
+                const totalUnitPrice = order.products
+                  ? order.products.reduce(
+                      (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+                      0
+                    )
+                  : 0;
+                const totalQty = order.products
+                  ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+                  : 0;
+
                 return (
                   <tr
                     key={order._id || index}
@@ -743,16 +813,14 @@ const Sales = () => {
                     >
                       {index + 1}
                     </td>
-                    <td style={{ padding: "15px" }}>{order.name || "-"}</td>
                     <td style={{ padding: "15px" }}>
-                      {order.productDetails || "-"}
+                      {order.customername || "-"}
                     </td>
+                    <td style={{ padding: "15px" }}>{productDetails}</td>
                     <td style={{ padding: "15px" }}>
-                      ₹{order.unitPrice?.toFixed(2) || "0.00"}
+                      ₹{totalUnitPrice.toFixed(2) || "0.00"}
                     </td>
-                    <td style={{ padding: "15px" }}>
-                      {order.qty !== undefined ? order.qty : "-"}
-                    </td>
+                    <td style={{ padding: "15px" }}>{totalQty || "-"}</td>
                     <td style={{ padding: "15px" }}>
                       {order.freightcs || "-"}
                     </td>
@@ -762,6 +830,7 @@ const Sales = () => {
                     <td style={{ padding: "15px" }}>
                       ₹{order.total?.toFixed(2) || "0.00"}
                     </td>
+
                     <td style={{ padding: "15px" }}>
                       {order.partyAndAddress || "-"}
                     </td>
@@ -815,19 +884,34 @@ const Sales = () => {
                     <td style={{ padding: "15px" }}>{order.city || "-"}</td>
                     <td style={{ padding: "15px" }}>{order.state || "-"}</td>
                     <td style={{ padding: "15px" }}>{order.pinCode || "-"}</td>
+                    <td style={{ padding: "15px" }}>{order.name || "-"}</td>
                     <td style={{ padding: "15px" }}>
                       {order.contactNo || "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
                       {order.customerEmail || "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>{order.modelNo || "-"}</td>
-                    <td style={{ padding: "15px" }}>{order.serialno || "-"}</td>
                     <td style={{ padding: "15px" }}>
-                      {order.productType || "-"}
+                      {firstProduct.modelNos?.length > 0
+                        ? firstProduct.modelNos.join(", ")
+                        : "-"}{" "}
+                      {/* Updated to display modelNos array */}
                     </td>
-                    <td style={{ padding: "15px" }}>{order.size || "-"}</td>
-                    <td style={{ padding: "15px" }}>{order.spec || "-"}</td>
+                    <td style={{ padding: "15px" }}>
+                      {firstProduct.serialNos?.length > 0
+                        ? firstProduct.serialNos.join(", ")
+                        : "-"}{" "}
+                      {/* Updated to display serialNos array */}
+                    </td>
+                    <td style={{ padding: "15px" }}>
+                      {firstProduct.productType || "-"}
+                    </td>
+                    <td style={{ padding: "15px" }}>
+                      {firstProduct.size || "-"}
+                    </td>
+                    <td style={{ padding: "15px" }}>
+                      {firstProduct.spec || "-"}
+                    </td>
                     <td style={{ padding: "15px" }}>
                       {order.paymentTerms || "-"}
                     </td>
@@ -1038,11 +1122,11 @@ const Sales = () => {
         }
         ::-webkit-scrollbar-track {
           background: #e6f0fa;
-          border-radius: 5px;
+          borderradius: 5px;
         }
         ::-webkit-scrollbar-thumb {
           background: linear-gradient(135deg, #2575fc, #6a11cb);
-          border-radius: 5px;
+          borderradius: 5px;
           transition: all 0.3s ease;
         }
         ::-webkit-scrollbar-thumb:hover {

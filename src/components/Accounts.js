@@ -15,7 +15,6 @@ function Accounts() {
   const [formData, setFormData] = useState({
     billNumber: "",
     dispatchDate: "",
-
     paymentReceived: "Not Received",
     remarksByAccounts: "",
     invoiceNo: "",
@@ -68,6 +67,18 @@ function Accounts() {
 
   const handleCopy = () => {
     if (!viewOrder) return;
+    const productsText = viewOrder.products
+      ? viewOrder.products
+          .map(
+            (p, i) =>
+              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
+                p.qty || "N/A"
+              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
+                p.modelNos?.join(", ") || "N/A"
+              })`
+          )
+          .join("\n")
+      : "N/A";
     const orderText = `
       Bill Number: ${viewOrder.billNumber || "N/A"}
       Date: ${viewOrder.dispatchDate || "N/A"}
@@ -80,6 +91,9 @@ function Accounts() {
       Remarks: ${viewOrder.remarksByAccounts || "N/A"}
       Invoice Number: ${viewOrder.invoiceNo || "N/A"}
       Invoice Date: ${viewOrder.invoiceDate || "N/A"}
+      Serial Nos: ${viewOrder.serialNos?.join(", ") || "N/A"}
+      Model Nos: ${viewOrder.modelNos?.join(", ") || "N/A"}
+      Products:\n${productsText}
     `.trim();
     navigator.clipboard.writeText(orderText);
     setCopied(true);
@@ -97,7 +111,6 @@ function Accounts() {
       dispatchDate: order.dispatchDate
         ? new Date(order.dispatchDate).toISOString().split("T")[0]
         : "",
-
       paymentReceived: order.paymentReceived || "Not Received",
       remarksByAccounts: order.remarksByAccounts || "",
       invoiceNo: order.invoiceNo || "",
@@ -117,7 +130,6 @@ function Accounts() {
     if (!formData.dispatchDate || formData.dispatchDate.trim() === "") {
       newErrors.dispatchDate = "Date is required";
     }
-
     if (
       !formData.remarksByAccounts ||
       formData.remarksByAccounts.trim() === ""
@@ -205,7 +217,7 @@ function Accounts() {
             textShadow: "1px 1px 2px rgba(0, 0, 0, 0.1)",
           }}
         >
-          Loading Accounts Orders...
+          Loading Payment Collection Orders...
         </p>
       </div>
     );
@@ -243,7 +255,7 @@ function Accounts() {
               textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
             }}
           >
-            Accounts Dashboard
+            Payment Collection Dashboard
           </h1>
         </header>
 
@@ -261,7 +273,7 @@ function Accounts() {
                 fontWeight: "500",
               }}
             >
-              No accounts orders available at this time.
+              No Payment Collection available at this time.
             </div>
           ) : (
             <div
@@ -300,6 +312,7 @@ function Accounts() {
                       "Mobile",
                       "Total",
                       "GST",
+                      "Products",
                       "Payment Received",
                       "Actions",
                     ].map((header, index) => (
@@ -320,163 +333,182 @@ function Accounts() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order, index) => (
-                    <tr
-                      key={order._id}
-                      style={{
-                        background: index % 2 === 0 ? "#f8f9fa" : "#fff",
-                        transition: "all 0.3s ease",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.background = "#e9ecef")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.background =
-                          index % 2 === 0 ? "#f8f9fa" : "#fff")
-                      }
-                    >
-                      <td
+                  {orders.map((order, index) => {
+                    const productDetails = order.products
+                      ? order.products
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
+                      : "N/A";
+
+                    return (
+                      <tr
+                        key={order._id}
                         style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
+                          background: index % 2 === 0 ? "#f8f9fa" : "#fff",
+                          transition: "all 0.3s ease",
                         }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = "#e9ecef")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background =
+                            index % 2 === 0 ? "#f8f9fa" : "#fff")
+                        }
                       >
-                        {order.billNumber || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.dispatchDate
-                          ? new Date(order.dispatchDate).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.partyAndAddress || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.customerEmail || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.contactNo || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.total || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        {order.gst || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        <Badge
+                        <td
                           style={{
-                            background:
-                              order.paymentReceived === "Received"
-                                ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                : "linear-gradient(135deg, #ff6b6b, #ff8787)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
                           }}
                         >
-                          {order.paymentReceived || "Not Received"}
-                        </Badge>
-                      </td>
-                      <td style={{ padding: "12px", textAlign: "center" }}>
-                        <div
+                          {order.billNumber || "N/A"}
+                        </td>
+                        <td
                           style={{
-                            display: "flex",
-                            gap: "10px",
-                            justifyContent: "center",
-                            alignItems: "center",
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
                           }}
                         >
-                          <Button
-                            variant="primary"
-                            onClick={() => handleView(order)}
+                          {order.dispatchDate
+                            ? new Date(order.dispatchDate).toLocaleDateString()
+                            : "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.partyAndAddress || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.customerEmail || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.contactNo || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.total || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.gst || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {productDetails}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          <Badge
                             style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "22px",
-                              padding: "0",
+                              background:
+                                order.paymentReceived === "Received"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                  : "linear-gradient(135deg, #ff6b6b, #ff8787)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
                             }}
-                            aria-label="View order details"
                           >
-                            <FaEye style={{ marginBottom: "3px" }} />
-                          </Button>
-                          <button
-                            className="editBtn"
-                            variant="secondary"
-                            onClick={() => handleEdit(order)}
+                            {order.paymentReceived || "Not Received"}
+                          </Badge>
+                        </td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          <div
                             style={{
-                              minWidth: "40px",
-                              width: "40px",
-                              padding: "0",
+                              display: "flex",
+                              gap: "10px",
+                              justifyContent: "center",
+                              alignItems: "center",
                             }}
                           >
-                            <svg height="1em" viewBox="0 0 512 512">
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            <Button
+                              variant="primary"
+                              onClick={() => handleView(order)}
+                              style={{
+                                width: "40px",
+                                height: "40px",
+                                borderRadius: "22px",
+                                padding: "0",
+                              }}
+                              aria-label="View order details"
+                            >
+                              <FaEye style={{ marginBottom: "3px" }} />
+                            </Button>
+                            <button
+                              className="editBtn"
+                              variant="secondary"
+                              onClick={() => handleEdit(order)}
+                              style={{
+                                minWidth: "40px",
+                                width: "40px",
+                                padding: "0",
+                              }}
+                            >
+                              <svg height="1em" viewBox="0 0 512 512">
+                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -606,6 +638,70 @@ function Accounts() {
                       ? new Date(viewOrder.invoiceDate).toLocaleDateString()
                       : "N/A"}
                   </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Serial Nos:</strong>{" "}
+                    {viewOrder.serialNos?.join(", ") || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Model Nos:</strong>{" "}
+                    {viewOrder.modelNos?.join(", ") || "N/A"}
+                  </span>
+                </div>
+                <hr />
+                <div
+                  style={{
+                    background: "#fafafa",
+                    borderRadius: "10px",
+                    padding: "1.2rem",
+                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.8rem",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "1.3rem",
+                      fontWeight: "600",
+                      color: "#333",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Products
+                  </h3>
+                  {viewOrder.products && viewOrder.products.length > 0 ? (
+                    viewOrder.products.map((product, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "1.5rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Product {index + 1}:</strong>{" "}
+                          {product.productType || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Quantity:</strong> {product.qty || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Serial Nos:</strong>{" "}
+                          {product.serialNos?.join(", ") || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Model Nos:</strong>{" "}
+                          {product.modelNos?.join(", ") || "N/A"}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Products:</strong> N/A
+                    </span>
+                  )}
                 </div>
               </div>
               <Button
@@ -660,7 +756,7 @@ function Accounts() {
               letterSpacing: "1px",
             }}
           >
-            Edit Accounts Order
+            Edit Payment Collection
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -696,6 +792,33 @@ function Accounts() {
               {errors.billNumber && (
                 <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
                   {errors.billNumber}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Dispatch Date <span style={{ color: "red" }}>*</span>
+              </Form.Label>
+              <Form.Control
+                type="date"
+                value={formData.dispatchDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, dispatchDate: e.target.value })
+                }
+                style={{
+                  borderRadius: "10px",
+                  border: errors.dispatchDate
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                required
+              />
+              {errors.dispatchDate && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.dispatchDate}
                 </Form.Text>
               )}
             </Form.Group>
@@ -759,6 +882,7 @@ function Accounts() {
                 }}
               />
             </Form.Group>
+
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                 Remarks by Accounts <span style={{ color: "red" }}>*</span>
