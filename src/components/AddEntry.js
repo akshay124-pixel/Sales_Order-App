@@ -531,6 +531,7 @@ function AddEntry({ onSubmit, onClose }) {
     Rajasthan: [
       "Baran",
       "Newai",
+
       "Gaganagar",
       "Suratgarh",
       "Jaipur",
@@ -636,6 +637,7 @@ function AddEntry({ onSubmit, onClose }) {
       "Moradabad",
       "Saharanpur",
       "Gorakhpur",
+      "Ballia",
       "Firozabad",
       "Jhansi",
       "Muzaffarnagar",
