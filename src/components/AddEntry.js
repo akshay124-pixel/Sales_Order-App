@@ -774,6 +774,7 @@ function AddEntry({ onSubmit, onClose }) {
     Delhi: [
       "New Delhi",
       "Old Delhi",
+      "Vasant Vihar",
       "Dwarka",
       "Rohini",
       "Karol Bagh",
