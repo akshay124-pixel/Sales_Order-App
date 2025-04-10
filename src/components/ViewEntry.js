@@ -338,17 +338,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
         </div>
 
         {/* Product Info Section */}
-        <div
-          style={{
-            background: "#fafafa",
-            borderRadius: "10px",
-            padding: "1.2rem",
-            boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.8rem",
-          }}
-        >
+        <div>
           <h3
             style={{
               fontSize: "1.3rem",
@@ -392,15 +382,19 @@ function ViewEntry({ isOpen, onClose, entry }) {
                   <strong>Serial Nos:</strong>{" "}
                   {product.serialNos?.length > 0
                     ? product.serialNos.join(", ")
-                    : "N/A"}{" "}
-                  {/* Updated to display serialNos */}
+                    : "N/A"}
                 </span>
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Model Nos:</strong>{" "}
                   {product.modelNos?.length > 0
                     ? product.modelNos.join(", ")
-                    : "N/A"}{" "}
-                  {/* Updated to display modelNos */}
+                    : "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Unit Price:</strong>{" "}
+                  {product.unitPrice !== undefined
+                    ? `$${product.unitPrice.toFixed(2)}`
+                    : "N/A"}
                 </span>
               </div>
             ))
@@ -441,10 +435,6 @@ function ViewEntry({ isOpen, onClose, entry }) {
               flexWrap: "wrap",
             }}
           >
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Unit Price:</strong> ₹
-              {entry.unitPrice?.toFixed(2) || "0.00"}
-            </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>GST:</strong> {entry.gst ? `${entry.gst}%` : "N/A"}
             </span>
