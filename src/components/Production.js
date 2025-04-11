@@ -445,7 +445,7 @@ const Production = () => {
                           {order.contactNo || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
-                          {firstProduct.productDetails || "N/A"}
+                          {productDetails || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
                           {firstProduct.size || "N/A"}
