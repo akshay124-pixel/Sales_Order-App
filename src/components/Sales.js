@@ -82,7 +82,7 @@ const Sales = () => {
           order.invoiceNo,
           order.billNumber,
           ...(order.products || []).map((p) =>
-            `${p.productType} ${p.size} ${p.spec} ${p.qty} ${p.unitPrice}`.toLowerCase()
+            `${p.productType} ${p.size} ${p.spec} ${p.qty} ${p.unitPrice} ${p.gst}`.toLowerCase()
           ),
         ];
         return searchableFields.some(
@@ -227,6 +227,7 @@ const Sales = () => {
                 spec: String(entry.spec || "").trim(),
                 qty: Number(entry.qty) || 0,
                 unitPrice: Number(entry.unitprice) || 0,
+                gst: Number(entry.gst) || 0, // GST now within product
                 serialNos: entry.serialnos
                   ? String(entry.serialnos)
                       .split(",")
@@ -258,7 +259,6 @@ const Sales = () => {
             customerEmail: String(entry.customeremail || "").trim(),
             customername: String(entry.customername || "").trim(),
             products,
-            gst: Number(entry.gst) || 0,
             total: Number(entry.total) || 0,
             paymentTerms: String(entry.paymentterms || "").trim(),
             amount2: Number(entry.amount2) || 0,
@@ -363,7 +363,6 @@ const Sales = () => {
       "contactNo",
       "customername",
       "customerEmail",
-      "gst",
       "total",
       "paymentTerms",
       "amount2",
@@ -411,7 +410,8 @@ const Sales = () => {
           product.size &&
           product.size.trim() !== "" &&
           product.spec &&
-          product.spec.trim() !== ""
+          product.spec.trim() !== "" &&
+          product.gst !== undefined // Check GST within product
         );
       });
 
@@ -850,6 +850,12 @@ const Sales = () => {
                 const totalQty = order.products
                   ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
                   : 0;
+                const gstValues = order.products
+                  ? order.products
+                      .map((p) => `${p.gst}%`)
+                      .filter(Boolean)
+                      .join(", ")
+                  : "-";
 
                 return (
                   <tr
@@ -890,9 +896,7 @@ const Sales = () => {
                     <td style={{ padding: "15px" }}>
                       {order.freightcs || "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
-                      {order.gst ? `${order.gst}%` : "-"}
-                    </td>
+                    <td style={{ padding: "15px" }}>{gstValues}</td>
                     <td style={{ padding: "15px" }}>
                       ₹{order.total?.toFixed(2) || "0.00"}
                     </td>

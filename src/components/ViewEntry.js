@@ -17,6 +17,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 p.qty || "N/A"
               }, Size: ${p.size || "N/A"}, Spec: ${
                 p.spec || "N/A"
+              }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${
+                p.gst !== undefined ? `${p.gst}%` : "N/A"
               }, Serial Nos: ${
                 p.serialNos?.length > 0 ? p.serialNos.join(", ") : "N/A"
               }, Model Nos: ${
@@ -24,6 +26,20 @@ function ViewEntry({ isOpen, onClose, entry }) {
               })`
           )
           .join("\n")
+      : "N/A";
+
+    const totalUnitPrice = entry.products
+      ? entry.products.reduce(
+          (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+          0
+        )
+      : 0;
+
+    const gstText = entry.products
+      ? entry.products
+          .map((p) => `${p.gst}%`)
+          .filter(Boolean)
+          .join(", ")
       : "N/A";
 
     const textToCopy = `
@@ -51,11 +67,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Contact Person No: ${entry.contactNo || "N/A"}
       Customer Email: ${entry.customerEmail || "N/A"}
       Products:\n${productsText}
-      Unit Price: $${entry.unitPrice?.toFixed(2) || "0.00"}
-      GST: ${entry.gst ? `${entry.gst}%` : "N/A"}
-      Total: $${entry.total?.toFixed(2) || "0.00"}
+      Unit Price: ₹${totalUnitPrice.toFixed(2)}
+      GST: ${gstText}
+      Total: ₹${entry.total?.toFixed(2) || "0.00"}
       Payment Terms: ${entry.paymentTerms || "N/A"}
-      Amount2: $${entry.amount2?.toFixed(2) || "0.00"}
+      Amount2: ₹${entry.amount2?.toFixed(2) || "0.00"}
       Freight Charges & Status: ${entry.freightcs || "N/A"}
       Installation: ${entry.installation || "N/A"}
       Order Type: ${entry.orderType || "N/A"}
@@ -105,6 +121,20 @@ function ViewEntry({ isOpen, onClose, entry }) {
   }, [entry]);
 
   if (!entry) return null;
+
+  const totalUnitPrice = entry.products
+    ? entry.products.reduce(
+        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+        0
+      )
+    : 0;
+
+  const gstText = entry.products
+    ? entry.products
+        .map((p) => `${p.gst}%`)
+        .filter(Boolean)
+        .join(", ")
+    : "N/A";
 
   return (
     <Modal
@@ -272,7 +302,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
               </Badge>
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Order Type :</strong> {entry.orderType || "N/A"}
+              <strong>Order Type:</strong> {entry.orderType || "N/A"}
             </span>
           </div>
         </div>
@@ -308,7 +338,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Customer Name :</strong> {entry.customername || "N/A"}
+              <strong>Customer Name:</strong> {entry.customername || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Address:</strong> {entry.partyAndAddress || "N/A"}
@@ -393,18 +423,24 @@ function ViewEntry({ isOpen, onClose, entry }) {
                   <strong>Spec:</strong> {product.spec || "N/A"}
                 </span>
                 <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Unit Price:</strong> ₹
+                  {product.unitPrice?.toFixed(2) || "0.00"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>GST:</strong>{" "}
+                  {product.gst !== undefined ? `${product.gst}%` : "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Serial Nos:</strong>{" "}
                   {product.serialNos?.length > 0
                     ? product.serialNos.join(", ")
-                    : "N/A"}{" "}
-                  {/* Updated to display serialNos */}
+                    : "N/A"}
                 </span>
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Model Nos:</strong>{" "}
                   {product.modelNos?.length > 0
                     ? product.modelNos.join(", ")
-                    : "N/A"}{" "}
-                  {/* Updated to display modelNos */}
+                    : "N/A"}
                 </span>
               </div>
             ))
@@ -446,11 +482,10 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }}
           >
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Unit Price:</strong> ₹
-              {entry.unitPrice?.toFixed(2) || "0.00"}
+              <strong>Total Unit Price:</strong> ₹{totalUnitPrice.toFixed(2)}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>GST:</strong> {entry.gst ? `${entry.gst}%` : "N/A"}
+              <strong>GST:</strong> {gstText}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Total:</strong> ₹{entry.total?.toFixed(2) || "0.00"}
@@ -546,7 +581,6 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 {entry.fulfillingStatus || "Pending"}
               </Badge>
             </span>
-
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Production Date:</strong>{" "}
               {entry.fulfillmentDate
