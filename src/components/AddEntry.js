@@ -1066,13 +1066,19 @@ function AddEntry({ onSubmit, onClose }) {
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <h2
             style={{
-              fontSize: "2rem",
-              fontWeight: "600",
-              color: "#2575fc",
+              fontSize: "2.2rem",
+              fontWeight: "700",
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              letterSpacing: "1px",
+              textShadow: "1px 1px 3px rgba(0, 0, 0, 0.05)",
+              marginBottom: "1rem",
             }}
           >
-            Add Sales Entry
+            📝 Add Sales Order
           </h2>
+
           <button
             onClick={onClose}
             style={{
@@ -1358,13 +1364,19 @@ function AddEntry({ onSubmit, onClose }) {
           <div style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
             <h3
               style={{
-                fontSize: "1.25rem",
-                color: "#2575fc",
+                fontSize: "1.5rem",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "700",
                 marginBottom: "1rem",
+                letterSpacing: "1px",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
             >
-              Add Products
+              ✨ Add Products
             </h3>
+
             <div
               style={{
                 display: "grid",
@@ -1518,16 +1530,27 @@ function AddEntry({ onSubmit, onClose }) {
                 type="button"
                 onClick={addProduct}
                 style={{
-                  padding: "0.75rem",
-                  background: "#10b981",
+                  padding: "0.75rem 1.5rem",
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                   color: "#fff",
                   border: "none",
                   borderRadius: "0.75rem",
                   cursor: "pointer",
                   alignSelf: "end",
+                  fontWeight: "600",
+                  letterSpacing: "0.5px",
+                  transition: "all 0.3s ease",
                 }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    "0 6px 16px rgba(101, 86, 231, 0.5)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(101, 86, 231, 0.3)")
+                }
               >
-                Add
+                Add ➕
               </button>
             </div>
 

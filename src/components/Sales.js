@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaEye } from "react-icons/fa";
-import { Button, Form, Dropdown } from "react-bootstrap";
+import { Button, Form, Dropdown, Badge } from "react-bootstrap";
 import ViewEntry from "./ViewEntry";
 import DeleteModal from "./Delete";
 import EditEntry from "./EditEntry";
@@ -8,11 +8,10 @@ import AddEntry from "./AddEntry";
 import axios from "axios";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
-import moment from "moment";
-import { Badge } from "react-bootstrap";
 import { ArrowRight } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import { parse, isValid, format } from "date-fns";
+
 const Sales = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -66,7 +65,7 @@ const Sales = () => {
           order.status,
           ...(order.products || []).flatMap((p) =>
             (p.serialNos || []).concat(p.modelNos || [])
-          ), // Updated to search serialNos and modelNos arrays
+          ),
           order.paymentTerms,
           order.freightcs,
           order.orderType,
@@ -172,7 +171,6 @@ const Sales = () => {
   const parseDate = (dateValue) => {
     if (!dateValue) return null;
     if (typeof dateValue === "number") {
-      // Excel serial date
       const date = new Date((dateValue - 25569) * 86400 * 1000);
       return isValid(date) ? format(date, "yyyy-MM-dd") : null;
     }
@@ -221,10 +219,8 @@ const Sales = () => {
           const products = [];
           if (entry.products) {
             try {
-              // Attempt to parse products as JSON if provided
               products.push(...JSON.parse(entry.products));
             } catch {
-              // Fallback to single product
               products.push({
                 productType: String(entry.producttype || "").trim(),
                 size: String(entry.size || "").trim(),
@@ -273,12 +269,12 @@ const Sales = () => {
             billingAddress: String(entry.billingaddress || "").trim(),
             company: String(entry.company || "").trim(),
             transporter: String(entry.transporter || "").trim(),
-            orderType: String(entry.orderType || "").trim(),
+            orderType: String(entry.ordertype || "Private order").trim(),
             transporterDetails: String(entry.transporterdetails || "").trim(),
             docketNo: String(entry.docketno || "").trim(),
             receiptDate: parseDate(entry.receiptdate),
             sostatus: String(entry.sostatus || "Pending for Approval").trim(),
-            invoiceNo: String(entry.invoiceno || ""),
+            invoiceNo: String(entry.invoiceno || "").trim(),
             invoiceDate: parseDate(entry.invoicedate),
             remarks: String(entry.remarks || "").trim(),
             fulfillingStatus: String(entry.fulfillingstatus || "").trim(),
@@ -288,7 +284,6 @@ const Sales = () => {
             fulfillmentDate: parseDate(entry.fulfillmentdate),
             remarksByAccounts: String(entry.remarksbyaccounts || "").trim(),
             paymentReceived: String(entry.paymentreceived || "").trim(),
-            orderType: String(entry.ordertype || "Private order").trim(), // Added orderType
           };
         });
 
@@ -353,26 +348,74 @@ const Sales = () => {
       toast.error("Failed to export orders!");
     }
   };
+
   const isOrderComplete = (order) => {
-    const allFields = Object.keys(order).filter(
-      (key) => key !== "_id" && key !== "__v" && key !== "products"
-    );
-    const productFieldsComplete = (order.products || []).every(
-      (product) =>
-        product.productType &&
-        product.qty !== undefined &&
-        product.unitPrice !== undefined
-    );
-    return (
-      allFields.every((field) => {
-        const value = order[field];
+    const requiredFields = [
+      "soDate",
+      "committedDate",
+      "dispatchFrom",
+      "status",
+      "name",
+      "partyAndAddress",
+      "city",
+      "state",
+      "pinCode",
+      "contactNo",
+      "customername",
+      "customerEmail",
+      "gst",
+      "total",
+      "paymentTerms",
+      "amount2",
+      "freightcs",
+      "orderType",
+      "installation",
+      "salesPerson",
+      "shippingAddress",
+      "billingAddress",
+      "company",
+      "transporter",
+      "transporterDetails",
+      "docketNo",
+      "sostatus",
+      "invoiceNo",
+      "remarks",
+      "fulfillingStatus",
+      "remarksByProduction",
+      "billNumber",
+      "completionStatus",
+      "remarksByAccounts",
+      "paymentReceived",
+    ];
+
+    const areFieldsComplete = requiredFields.every((field) => {
+      const value = order[field];
+      return (
+        value !== undefined &&
+        value !== null &&
+        (value !== "" || value === 0 || value === "-")
+      );
+    });
+
+    const areProductsComplete =
+      order.products &&
+      order.products.length > 0 &&
+      order.products.every((product) => {
         return (
-          value !== undefined &&
-          value !== null &&
-          (value !== "" || value === 0 || value === "-")
+          product.productType &&
+          product.productType.trim() !== "" &&
+          product.qty !== undefined &&
+          product.qty > 0 &&
+          product.unitPrice !== undefined &&
+          product.unitPrice >= 0 &&
+          product.size &&
+          product.size.trim() !== "" &&
+          product.spec &&
+          product.spec.trim() !== ""
         );
-      }) && productFieldsComplete
-    );
+      });
+
+    return areFieldsComplete && areProductsComplete;
   };
 
   return (
@@ -723,14 +766,12 @@ const Sales = () => {
               {[
                 "Seq No",
                 "Customer Name",
-
                 "Product Details",
                 "Unit Price",
                 "Qty",
                 "Freight Charges & Status",
                 "GST",
                 "Total",
-
                 "Address",
                 "Order ID",
                 "SO Date",
@@ -744,8 +785,8 @@ const Sales = () => {
                 "Contact No",
                 "Customer Email",
                 "Order Type",
-                "Model Nos", // Updated header
-                "Serial Nos", // Updated header
+                "Model Nos",
+                "Serial Nos",
                 "Product Type",
                 "Size",
                 "Spec",
@@ -850,7 +891,6 @@ const Sales = () => {
                     <td style={{ padding: "15px" }}>
                       ₹{order.total?.toFixed(2) || "0.00"}
                     </td>
-
                     <td style={{ padding: "15px" }}>
                       {order.partyAndAddress || "-"}
                     </td>
@@ -917,14 +957,12 @@ const Sales = () => {
                     <td style={{ padding: "15px" }}>
                       {firstProduct.modelNos?.length > 0
                         ? firstProduct.modelNos.join(", ")
-                        : "-"}{" "}
-                      {/* Updated to display modelNos array */}
+                        : "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
                       {firstProduct.serialNos?.length > 0
                         ? firstProduct.serialNos.join(", ")
-                        : "-"}{" "}
-                      {/* Updated to display serialNos array */}
+                        : "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
                       {firstProduct.productType || "-"}
@@ -1145,11 +1183,11 @@ const Sales = () => {
         }
         ::-webkit-scrollbar-track {
           background: #e6f0fa;
-          borderradius: 5px;
+          border-radius: 5px;
         }
         ::-webkit-scrollbar-thumb {
           background: linear-gradient(135deg, #2575fc, #6a11cb);
-          borderradius: 5px;
+          border-radius: 5px;
           transition: all 0.3s ease;
         }
         ::-webkit-scrollbar-thumb:hover {

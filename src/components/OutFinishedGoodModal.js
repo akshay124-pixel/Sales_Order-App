@@ -150,9 +150,19 @@ const OutFinishedGoodModal = ({
     <Modal
       title={
         <h2
-          style={{ textAlign: "center", fontWeight: "bold", color: "#2575fc" }}
+          style={{
+            textAlign: "center",
+            fontWeight: "800",
+            fontSize: "2.2rem",
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "1.5px",
+            textShadow: "1px 1px 3px rgba(0, 0, 0, 0.05)",
+            marginBottom: "1.5rem",
+          }}
         >
-          Edit Dispatch
+          🚚 Dispatch
         </h2>
       }
       open={visible}
