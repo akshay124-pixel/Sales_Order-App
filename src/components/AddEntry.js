@@ -36,6 +36,7 @@ function AddEntry({ onSubmit, onClose }) {
     shippingAddress: "",
     billingAddress: "",
     sameAddress: false,
+    orderType: "Private order", // Added orderType with default value
   });
 
   const productOptions = {
@@ -879,6 +880,15 @@ function AddEntry({ onSubmit, onClose }) {
     ],
   };
 
+  const orderTypeOptions = [
+    "GEM order",
+    "Govt. order",
+    "Private order",
+    "For Demo",
+    "Replacement",
+    "For repair purpose",
+  ]; // Added orderType options
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -965,30 +975,24 @@ function AddEntry({ onSubmit, onClose }) {
     const calculateTotal = (products, formData) => {
       // Calculate subtotal for all products including GST
       const subtotal = products.reduce((sum, product) => {
-        // Ensure numeric values with proper fallbacks
         const quantity = Number(product.qty) || 0;
         const price = Number(product.unitPrice) || 0;
         const gstPercentage = Number(formData.gst) || 0;
 
-        // Calculate base amount for this product
         const baseAmount = quantity * price;
-        // Calculate GST amount for this product
         const gstAmount = (gstPercentage / 100) * baseAmount;
 
         return sum + baseAmount + gstAmount;
       }, 0);
 
-      // Add additional charges with proper fallbacks
       const freight = Number(formData.freightcs) || 0;
       const additionalAmount = Number(formData.amount2) || 0;
 
-      // Calculate final total
       const total = subtotal + freight + additionalAmount;
 
-      return Number(total.toFixed(2)); // Round to 2 decimal places
+      return Number(total.toFixed(2));
     };
 
-    // Usage example:
     const total = calculateTotal(products, formData);
 
     const newEntry = {
@@ -999,9 +1003,10 @@ function AddEntry({ onSubmit, onClose }) {
         ? new Date(formData.committedDate)
         : null,
       gst: Number(formData.gst || 0),
-      total: Number(total), // Ensure total is always a number
+      total: Number(total),
       amount2: Number(formData.amount2 || 0),
       freightcs: formData.freightcs || null,
+      orderType: formData.orderType || "Private order", // Ensure orderType is included
     };
 
     try {
@@ -1132,6 +1137,14 @@ function AddEntry({ onSubmit, onClose }) {
                 "In Transit",
               ],
               placeholder: "Select Order Status",
+            },
+            {
+              label: "Order Type *", // Added Order Type field
+              name: "orderType",
+              type: "select",
+              options: orderTypeOptions,
+              required: true,
+              placeholder: "Select Order Type",
             },
             {
               label: "Customer Name",

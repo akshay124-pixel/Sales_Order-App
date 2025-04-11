@@ -373,6 +373,8 @@ const Production = () => {
                     {[
                       "Order ID",
                       "Customer Name",
+                      "Customer Email",
+                      "Customer Contact No",
                       "Product Type",
                       "Size",
                       "Spec",
@@ -428,6 +430,12 @@ const Production = () => {
                         </td>{" "}
                         <td style={{ padding: "15px", textAlign: "center" }}>
                           {order.customername || "N/A"}
+                        </td>
+                        <td style={{ padding: "15px", textAlign: "center" }}>
+                          {order.customerEmail || "N/A"}
+                        </td>
+                        <td style={{ padding: "15px", textAlign: "center" }}>
+                          {order.contactNo || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
                           {firstProduct.productType || "N/A"}

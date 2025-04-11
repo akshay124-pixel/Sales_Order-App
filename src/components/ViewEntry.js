@@ -58,6 +58,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Amount2: $${entry.amount2?.toFixed(2) || "0.00"}
       Freight Charges & Status: ${entry.freightcs || "N/A"}
       Installation: ${entry.installation || "N/A"}
+      Order Type: ${entry.orderType || "N/A"}
       Installation Status: ${entry.installationStatus || "N/A"}
       Dispatch Status: ${entry.dispatchStatus || "N/A"}
       Sales Person: ${entry.salesPerson || "N/A"}
@@ -270,6 +271,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 {entry.completionStatus || "N/A"}
               </Badge>
             </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Order Type :</strong> {entry.orderType || "N/A"}
+            </span>
           </div>
         </div>
 
@@ -392,19 +396,15 @@ function ViewEntry({ isOpen, onClose, entry }) {
                   <strong>Serial Nos:</strong>{" "}
                   {product.serialNos?.length > 0
                     ? product.serialNos.join(", ")
-                    : "N/A"}
+                    : "N/A"}{" "}
+                  {/* Updated to display serialNos */}
                 </span>
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Model Nos:</strong>{" "}
                   {product.modelNos?.length > 0
                     ? product.modelNos.join(", ")
-                    : "N/A"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Unit Price:</strong>{" "}
-                  {product.unitPrice !== undefined
-                    ? `₹${product.unitPrice.toFixed(2)}`
-                    : "N/A"}
+                    : "N/A"}{" "}
+                  {/* Updated to display modelNos */}
                 </span>
               </div>
             ))
@@ -445,6 +445,10 @@ function ViewEntry({ isOpen, onClose, entry }) {
               flexWrap: "wrap",
             }}
           >
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Unit Price:</strong> ₹
+              {entry.unitPrice?.toFixed(2) || "0.00"}
+            </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>GST:</strong> {entry.gst ? `${entry.gst}%` : "N/A"}
             </span>

@@ -12,7 +12,7 @@ import moment from "moment";
 import { Badge } from "react-bootstrap";
 import { ArrowRight } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
-
+import { parse, isValid, format } from "date-fns";
 const Sales = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -69,6 +69,7 @@ const Sales = () => {
           ), // Updated to search serialNos and modelNos arrays
           order.paymentTerms,
           order.freightcs,
+          order.orderType,
           order.installation,
           order.salesPerson,
           order.company,
@@ -168,6 +169,28 @@ const Sales = () => {
     }
   };
 
+  const parseDate = (dateValue) => {
+    if (!dateValue) return null;
+    if (typeof dateValue === "number") {
+      // Excel serial date
+      const date = new Date((dateValue - 25569) * 86400 * 1000);
+      return isValid(date) ? format(date, "yyyy-MM-dd") : null;
+    }
+    const formats = [
+      "yyyy-MM-dd",
+      "dd/MM/yyyy",
+      "MM/dd/yyyy",
+      "dd/M/yyyy",
+      "M/d/yyyy",
+    ];
+    for (const fmt of formats) {
+      const parsed = parse(String(dateValue), fmt, new Date());
+      if (isValid(parsed)) return format(parsed, "yyyy-MM-dd");
+    }
+    console.warn(`Invalid date format: ${dateValue}`);
+    return null;
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -184,39 +207,48 @@ const Sales = () => {
           raw: false,
         });
 
-        const headers = parsedData[0];
+        const headers = parsedData[0].map((h) =>
+          h.toLowerCase().replace(/\s+/g, "")
+        );
         const rows = parsedData.slice(1);
-
-        const parseDate = (dateValue) => {
-          if (!dateValue) return null;
-          if (!isNaN(dateValue) && typeof dateValue === "number") {
-            const date = XLSX.SSF.parse_date_code(dateValue);
-            return moment({
-              year: date.y,
-              month: date.m - 1,
-              day: date.d,
-            }).format("YYYY-MM-DD");
-          }
-          const formats = [
-            "YYYY-MM-DD",
-            "DD/MM/YYYY",
-            "MM/DD/YYYY",
-            "DD/M/YYYY",
-            "M/D/YYYY",
-          ];
-          const parsed = moment(dateValue, formats, true);
-          return parsed.isValid() ? parsed.format("YYYY-MM-DD") : null;
-        };
 
         const newEntries = rows.map((row) => {
           const entry = {};
           headers.forEach((header, index) => {
-            entry[header.toLowerCase().replace(/\s+/g, "")] = row[index];
+            entry[header] = row[index];
           });
 
-          const soDate = parseDate(entry.sodate);
+          const products = [];
+          if (entry.products) {
+            try {
+              // Attempt to parse products as JSON if provided
+              products.push(...JSON.parse(entry.products));
+            } catch {
+              // Fallback to single product
+              products.push({
+                productType: String(entry.producttype || "").trim(),
+                size: String(entry.size || "").trim(),
+                spec: String(entry.spec || "").trim(),
+                qty: Number(entry.qty) || 0,
+                unitPrice: Number(entry.unitprice) || 0,
+                serialNos: entry.serialnos
+                  ? String(entry.serialnos)
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                  : [],
+                modelNos: entry.modelnos
+                  ? String(entry.modelnos)
+                      .split(",")
+                      .map((m) => m.trim())
+                      .filter(Boolean)
+                  : [],
+              });
+            }
+          }
+
           return {
-            soDate,
+            soDate: parseDate(entry.sodate),
             committedDate: parseDate(entry.committeddate),
             dispatchFrom: String(entry.dispatchfrom || "").trim(),
             status: String(entry.status || "Pending").trim(),
@@ -229,25 +261,7 @@ const Sales = () => {
             contactNo: String(entry.contactno || "").trim(),
             customerEmail: String(entry.customeremail || "").trim(),
             customername: String(entry.customername || "").trim(),
-            products: [
-              {
-                productType: String(entry.producttype || "").trim(),
-                size: String(entry.size || "").trim(),
-                spec: String(entry.spec || "").trim(),
-                qty: Number(entry.qty) || 0,
-                unitPrice: Number(entry.unitprice) || 0,
-                serialNos: entry.serialnos
-                  ? String(entry.serialnos)
-                      .split(",")
-                      .map((s) => s.trim())
-                  : [], // Updated to handle serialNos as comma-separated string
-                modelNos: entry.modelnos
-                  ? String(entry.modelnos)
-                      .split(",")
-                      .map((m) => m.trim())
-                  : [], // Updated to handle modelNos as comma-separated string
-              },
-            ],
+            products,
             gst: Number(entry.gst) || 0,
             total: Number(entry.total) || 0,
             paymentTerms: String(entry.paymentterms || "").trim(),
@@ -259,6 +273,7 @@ const Sales = () => {
             billingAddress: String(entry.billingaddress || "").trim(),
             company: String(entry.company || "").trim(),
             transporter: String(entry.transporter || "").trim(),
+            orderType: String(entry.orderType || "").trim(),
             transporterDetails: String(entry.transporterdetails || "").trim(),
             docketNo: String(entry.docketno || "").trim(),
             receiptDate: parseDate(entry.receiptdate),
@@ -273,18 +288,21 @@ const Sales = () => {
             fulfillmentDate: parseDate(entry.fulfillmentdate),
             remarksByAccounts: String(entry.remarksbyaccounts || "").trim(),
             paymentReceived: String(entry.paymentreceived || "").trim(),
+            orderType: String(entry.ordertype || "Private order").trim(), // Added orderType
           };
         });
 
         const validEntries = newEntries.filter(
           (entry) =>
             entry.soDate &&
+            entry.total &&
             entry.products.length > 0 &&
-            !isNaN(entry.products[0].qty)
+            entry.products.every((p) => p.productType && p.qty > 0)
         );
+
         if (validEntries.length === 0) {
           toast.error(
-            "No valid entries found with required fields (soDate, products with qty)."
+            "No valid entries found. Ensure soDate, total, and at least one product with productType and qty are provided."
           );
           return;
         }
@@ -296,14 +314,16 @@ const Sales = () => {
         );
 
         setOrders((prevOrders) => [...prevOrders, ...response.data.data]);
-        toast.success("Bulk orders uploaded successfully!");
+        toast.success(
+          `Successfully uploaded ${response.data.data.length} orders!`
+        );
       } catch (error) {
         console.error("Error uploading entries:", error);
-        toast.error(
-          `${error.response?.data?.message || "Failed to upload entries"}: ${
-            error.response?.data?.error || error.message
-          }`
-        );
+        const message =
+          error.response?.data?.details?.join(", ") ||
+          error.response?.data?.message ||
+          "Failed to upload entries";
+        toast.error(message);
       }
     };
     reader.readAsArrayBuffer(file);
@@ -333,7 +353,6 @@ const Sales = () => {
       toast.error("Failed to export orders!");
     }
   };
-
   const isOrderComplete = (order) => {
     const allFields = Object.keys(order).filter(
       (key) => key !== "_id" && key !== "__v" && key !== "products"
@@ -724,6 +743,7 @@ const Sales = () => {
                 "Contact Person Name",
                 "Contact No",
                 "Customer Email",
+                "Order Type",
                 "Model Nos", // Updated header
                 "Serial Nos", // Updated header
                 "Product Type",
@@ -890,6 +910,9 @@ const Sales = () => {
                     </td>
                     <td style={{ padding: "15px" }}>
                       {order.customerEmail || "-"}
+                    </td>
+                    <td style={{ padding: "15px" }}>
+                      {order.orderType || "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
                       {firstProduct.modelNos?.length > 0
