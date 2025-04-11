@@ -2175,6 +2175,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             name="sostatus"
           >
             <option value="Pending for Approval">Pending for Approval</option>
+            <option value="Accounts Approved">"Accounts Approved"</option>
             <option value="Approved">Approved</option>
           </Form.Select>
         </Form.Group>

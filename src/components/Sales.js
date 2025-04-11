@@ -496,7 +496,12 @@ const Sales = () => {
                 padding: "10px",
               }}
             >
-              {["All", "Approved", "Pending for Approval"].map((option) => (
+              {[
+                "All",
+                "Approved",
+                "Accounts Approved",
+                "Pending for Approval",
+              ].map((option) => (
                 <Dropdown.Item
                   key={option}
                   onClick={() => setApprovalFilter(option)}
