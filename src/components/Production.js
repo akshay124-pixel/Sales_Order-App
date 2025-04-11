@@ -375,7 +375,7 @@ const Production = () => {
                       "Customer Name",
                       "Customer Email",
                       "Customer Contact No",
-                      "Product Type",
+                      "Product Details",
                       "Size",
                       "Spec",
                       "Serial Nos",
@@ -438,7 +438,7 @@ const Production = () => {
                           {order.contactNo || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
-                          {firstProduct.productType || "N/A"}
+                          {firstProduct.productDetails || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
                           {firstProduct.size || "N/A"}
