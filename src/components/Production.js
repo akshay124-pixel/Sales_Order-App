@@ -409,7 +409,14 @@ const Production = () => {
                     const totalQty = Array.isArray(order.products)
                       ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
                       : "N/A";
-
+                    const productDetails = Array.isArray(order.products)
+                      ? order.products
+                          .map(
+                            (p) =>
+                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                          )
+                          .join(", ")
+                      : "N/A";
                     return (
                       <tr
                         key={order._id}
