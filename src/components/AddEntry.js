@@ -12,6 +12,7 @@ function AddEntry({ onSubmit, onClose }) {
     spec: "",
     qty: "",
     unitPrice: "",
+    gst: "",
   });
 
   const [formData, setFormData] = useState({
@@ -26,7 +27,6 @@ function AddEntry({ onSubmit, onClose }) {
     contactNo: "",
     customerEmail: "",
     customername: "",
-    gst: "",
     paymentTerms: "",
     amount2: "",
     freightcs: "",
@@ -36,7 +36,7 @@ function AddEntry({ onSubmit, onClose }) {
     shippingAddress: "",
     billingAddress: "",
     sameAddress: false,
-    orderType: "Private order", // Added orderType with default value
+    orderType: "Private order",
   });
 
   const productOptions = {
@@ -100,7 +100,7 @@ function AddEntry({ onSubmit, onClose }) {
       "Naharlagun",
       "Roing",
       "Aalo",
-      "Tezuifferences",
+      "Tezu",
       "Changlang",
       "Khonsa",
       "Yingkiong",
@@ -887,7 +887,7 @@ function AddEntry({ onSubmit, onClose }) {
     "For Demo",
     "Replacement",
     "For repair purpose",
-  ]; // Added orderType options
+  ];
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -914,9 +914,9 @@ function AddEntry({ onSubmit, onClose }) {
       ...prev,
       [name]: value,
       ...(name === "productType"
-        ? { size: "", spec: "" }
+        ? { size: "", spec: "", gst: "" }
         : name === "size"
-        ? { spec: "" }
+        ? { spec: "", gst: "" }
         : {}),
     }));
   };
@@ -925,9 +925,10 @@ function AddEntry({ onSubmit, onClose }) {
     if (
       !currentProduct.productType ||
       !currentProduct.qty ||
-      !currentProduct.unitPrice
+      !currentProduct.unitPrice ||
+      currentProduct.gst === ""
     ) {
-      toast.error("Please fill all required product fields");
+      toast.error("Please fill all required product fields including GST");
       return;
     }
     setProducts([...products, { ...currentProduct }]);
@@ -937,6 +938,7 @@ function AddEntry({ onSubmit, onClose }) {
       spec: "",
       qty: "",
       unitPrice: "",
+      gst: "",
     });
   };
 
@@ -973,11 +975,10 @@ function AddEntry({ onSubmit, onClose }) {
     }
 
     const calculateTotal = (products, formData) => {
-      // Calculate subtotal for all products including GST
       const subtotal = products.reduce((sum, product) => {
         const quantity = Number(product.qty) || 0;
         const price = Number(product.unitPrice) || 0;
-        const gstPercentage = Number(formData.gst) || 0;
+        const gstPercentage = Number(product.gst) || 0;
 
         const baseAmount = quantity * price;
         const gstAmount = (gstPercentage / 100) * baseAmount;
@@ -997,16 +998,18 @@ function AddEntry({ onSubmit, onClose }) {
 
     const newEntry = {
       ...formData,
-      products,
+      products: products.map((p) => ({
+        ...p,
+        gst: Number(p.gst || 0),
+      })),
       soDate: new Date(formData.soDate),
       committedDate: formData.committedDate
         ? new Date(formData.committedDate)
         : null,
-      gst: Number(formData.gst || 0),
       total: Number(total),
       amount2: Number(formData.amount2 || 0),
       freightcs: formData.freightcs || null,
-      orderType: formData.orderType || "Private order", // Ensure orderType is included
+      orderType: formData.orderType || "Private order",
     };
 
     try {
@@ -1056,7 +1059,7 @@ function AddEntry({ onSubmit, onClose }) {
           zIndex: 1000,
           maxHeight: "85vh",
           width: "90%",
-          maxWidth: "1000px",
+          maxWidth: "1100px",
           fontFamily: "'Poppins', sans-serif",
           opacity: 0,
           animation: "slideUp 0.4s ease forwards",
@@ -1145,7 +1148,7 @@ function AddEntry({ onSubmit, onClose }) {
               placeholder: "Select Order Status",
             },
             {
-              label: "Order Type *", // Added Order Type field
+              label: "Order Type *",
               name: "orderType",
               type: "select",
               options: orderTypeOptions,
@@ -1216,14 +1219,6 @@ function AddEntry({ onSubmit, onClose }) {
               placeholder: "e.g. example@domain.com",
             },
             {
-              label: "GST (%)",
-              name: "gst",
-              type: "number",
-              inputMode: "decimal",
-              required: true,
-              placeholder: "e.g. 18",
-            },
-            {
               label: "Payment Terms",
               name: "paymentTerms",
               type: "text",
@@ -1236,7 +1231,7 @@ function AddEntry({ onSubmit, onClose }) {
               type: "number",
               inputMode: "decimal",
               required: true,
-              placeholder: "Enter Total Amount",
+              placeholder: "Enter Additional Amount",
             },
             {
               label: "Freight Charges & Status",
@@ -1380,7 +1375,7 @@ function AddEntry({ onSubmit, onClose }) {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto",
+                gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr auto",
                 gap: "1rem",
                 marginBottom: "1rem",
               }}
@@ -1526,6 +1521,29 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                 />
               </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                  }}
+                >
+                  GST (%) *
+                </label>
+                <input
+                  type="number"
+                  name="gst"
+                  value={currentProduct.gst}
+                  onChange={handleProductChange}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                  }}
+                />
+              </div>
               <button
                 type="button"
                 onClick={addProduct}
@@ -1575,7 +1593,8 @@ function AddEntry({ onSubmit, onClose }) {
                     >
                       <span>
                         {product.productType} | {product.size} | {product.spec}{" "}
-                        | Qty: {product.qty} | Price: ₹{product.unitPrice}
+                        | Qty: {product.qty} | Price: ₹{product.unitPrice} |
+                        GST: {product.gst}%
                       </span>
                       <button
                         type="button"
@@ -1636,18 +1655,26 @@ function AddEntry({ onSubmit, onClose }) {
         </form>
       </div>
 
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
           }
-          @keyframes slideUp {
-            from { opacity: 0; transform: translate(-50%, -40%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
+          to {
+            opacity: 1;
           }
-        `}
-      </style>
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -40%);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+          }
+        }
+      `}</style>
     </>
   );
 }
