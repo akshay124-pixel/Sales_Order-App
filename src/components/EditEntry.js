@@ -1979,8 +1979,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             }
             isInvalid={!!errors.company}
           >
-            <option value="ProMark">ProMark</option>
-            <option value="ProMine">ProMine</option>
+            <option value="Promark">Promark</option>
+            <option value="Promine">Promine</option>
             <option value="Others">Others</option>
           </Form.Select>
         </Form.Group>
