@@ -552,7 +552,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     }));
   };
 
- // Mock Data
+  // Mock Data
   const states = [
     "Andhra Pradesh",
     "Arunachal Pradesh",
