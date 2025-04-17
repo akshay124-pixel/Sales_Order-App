@@ -63,10 +63,13 @@ const Sales = () => {
           order.customername,
           order.sostatus,
           order.status,
+          String(order.paymentCollected || ""), // Convert to string
+          order.paymentMethod,
+          String(order.paymentDue || ""), // Convert to string
+          order.remarks,
           ...(order.products || []).flatMap((p) =>
             (p.serialNos || []).concat(p.modelNos || [])
           ),
-          order.paymentTerms,
           order.freightcs,
           order.orderType,
           order.installation,
@@ -78,8 +81,8 @@ const Sales = () => {
           order.billingAddress,
           order.docketNo,
           order.dispatchFrom,
-          order.remarks,
-          order.invoiceNo,
+          order.remarksByProduction,
+          order.remarksByAccounts,
           order.billNumber,
           ...(order.products || []).map((p) =>
             `${p.productType} ${p.size} ${p.spec} ${p.qty} ${p.unitPrice} ${p.gst}`.toLowerCase()
@@ -189,6 +192,13 @@ const Sales = () => {
     return null;
   };
 
+  const formatCurrency = (value) => {
+    if (!value || value === "") return "₹0.00";
+    const numericValue = parseFloat(value.toString().replace(/[^0-9.-]+/g, ""));
+    if (isNaN(numericValue)) return "₹0.00";
+    return `₹${numericValue.toFixed(2)}`;
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -223,11 +233,11 @@ const Sales = () => {
             } catch {
               products.push({
                 productType: String(entry.producttype || "").trim(),
-                size: String(entry.size || "").trim(),
-                spec: String(entry.spec || "").trim(),
+                size: String(entry.size || "N/A").trim(),
+                spec: String(entry.spec || "N/A").trim(),
                 qty: Number(entry.qty) || 0,
                 unitPrice: Number(entry.unitprice) || 0,
-                gst: Number(entry.gst) || 0, // GST now within product
+                gst: Number(entry.gst) || 0,
                 serialNos: entry.serialnos
                   ? String(entry.serialnos)
                       .split(",")
@@ -260,14 +270,15 @@ const Sales = () => {
             customername: String(entry.customername || "").trim(),
             products,
             total: Number(entry.total) || 0,
-            paymentTerms: String(entry.paymentterms || "").trim(),
-            amount2: Number(entry.amount2) || 0,
+            paymentCollected: String(entry.paymentcollected || "").trim(), // Ensure string
+            paymentMethod: String(entry.paymentmethod || "").trim(), // Ensure string
+            paymentDue: String(entry.payementdue || "").trim(), // Ensure string
             freightcs: String(entry.freightcs || "").trim(),
-            installation: String(entry.installation || "").trim(),
+            installation: String(entry.installation || "N/A").trim(),
             salesPerson: String(entry.salesperson || "").trim(),
             shippingAddress: String(entry.shippingaddress || "").trim(),
             billingAddress: String(entry.billingaddress || "").trim(),
-            company: String(entry.company || "").trim(),
+            company: String(entry.company || "Promark").trim(),
             transporter: String(entry.transporter || "").trim(),
             orderType: String(entry.ordertype || "Private order").trim(),
             transporterDetails: String(entry.transporterdetails || "").trim(),
@@ -277,13 +288,30 @@ const Sales = () => {
             invoiceNo: String(entry.invoiceno || "").trim(),
             invoiceDate: parseDate(entry.invoicedate),
             remarks: String(entry.remarks || "").trim(),
-            fulfillingStatus: String(entry.fulfillingstatus || "").trim(),
+            fulfillingStatus: String(
+              entry.fulfillingstatus || "Pending"
+            ).trim(),
             remarksByProduction: String(entry.remarksbyproduction || "").trim(),
             billNumber: String(entry.billnumber || "").trim(),
-            completionStatus: String(entry.completionstatus || "").trim(),
+            completionStatus: String(
+              entry.completionstatus || "In Progress"
+            ).trim(),
             fulfillmentDate: parseDate(entry.fulfillmentdate),
             remarksByAccounts: String(entry.remarksbyaccounts || "").trim(),
-            paymentReceived: String(entry.paymentreceived || "").trim(),
+            paymentReceived: String(
+              entry.paymentreceived || "Not Received"
+            ).trim(),
+            amount2: Number(entry.amount2) || 0,
+            installationStatus: String(
+              entry.installationstatus || "Pending"
+            ).trim(),
+            remarksByInstallation: String(
+              entry.remarksbyinstallation || ""
+            ).trim(),
+            dispatchStatus: String(
+              entry.dispatchstatus || "Not Dispatched"
+            ).trim(),
+            sameAddress: Boolean(entry.sameaddress || false),
           };
         });
 
@@ -364,8 +392,9 @@ const Sales = () => {
       "customername",
       "customerEmail",
       "total",
-      "paymentTerms",
-      "amount2",
+      "paymentCollected",
+      "paymentMethod",
+      "paymentDue",
       "freightcs",
       "orderType",
       "installation",
@@ -378,13 +407,17 @@ const Sales = () => {
       "docketNo",
       "sostatus",
       "invoiceNo",
+      "invoiceDate",
       "remarks",
       "fulfillingStatus",
       "remarksByProduction",
+      "remarksByAccounts",
       "billNumber",
       "completionStatus",
-      "remarksByAccounts",
       "paymentReceived",
+      "amount2",
+      "installationStatus",
+      "dispatchStatus",
     ];
 
     const areFieldsComplete = requiredFields.every((field) => {
@@ -392,7 +425,7 @@ const Sales = () => {
       return (
         value !== undefined &&
         value !== null &&
-        (value !== "" || value === 0 || value === "-")
+        (value !== "" || value === 0 || value === "N/A" || value === false)
       );
     });
 
@@ -408,10 +441,8 @@ const Sales = () => {
           product.unitPrice !== undefined &&
           product.unitPrice >= 0 &&
           product.size &&
-          product.size.trim() !== "" &&
           product.spec &&
-          product.spec.trim() !== "" &&
-          product.gst !== undefined // Check GST within product
+          product.gst !== undefined
         );
       });
 
@@ -795,7 +826,9 @@ const Sales = () => {
                 "Product Type",
                 "Size",
                 "Spec",
-                "Payment Terms",
+                "Payment Collected",
+                "Payment Method",
+                "Payment Due",
                 "Amount2",
                 "Installation",
                 "Sales Person",
@@ -943,6 +976,8 @@ const Sales = () => {
                             ? "warning"
                             : order.sostatus === "Approved"
                             ? "success"
+                            : order.sostatus === "Accounts Approved"
+                            ? "info"
                             : "secondary"
                         }
                         style={{ padding: "6px 12px", fontSize: "0.9rem" }}
@@ -983,7 +1018,13 @@ const Sales = () => {
                       {firstProduct.spec || "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
-                      {order.paymentTerms || "-"}
+                      {formatCurrency(order.paymentCollected)}
+                    </td>
+                    <td style={{ padding: "15px" }}>
+                      {order.paymentMethod || "-"}
+                    </td>
+                    <td style={{ padding: "15px" }}>
+                      {formatCurrency(order.paymentDue)}
                     </td>
                     <td style={{ padding: "15px" }}>
                       ₹{order.amount2?.toFixed(2) || "0.00"}
@@ -1150,7 +1191,7 @@ const Sales = () => {
             ) : (
               <tr>
                 <td
-                  colSpan="43"
+                  colSpan="45"
                   style={{
                     padding: "50px",
                     textAlign: "center",
@@ -1192,11 +1233,11 @@ const Sales = () => {
         }
         ::-webkit-scrollbar-track {
           background: #e6f0fa;
-          border-radius: 5px;
+          borderradius: 5px;
         }
         ::-webkit-scrollbar-thumb {
           background: linear-gradient(135deg, #2575fc, #6a11cb);
-          border-radius: 5px;
+          borderradius: 5px;
           transition: all 0.3s ease;
         }
         ::-webkit-scrollbar-thumb:hover {

@@ -19,6 +19,11 @@ function Accounts() {
     remarksByAccounts: "",
     invoiceNo: "",
     invoiceDate: "",
+    paymentCollected: "",
+    paymentMethod: "",
+    paymentDue: "",
+    neftTransactionId: "",
+    chequeId: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -75,24 +80,35 @@ function Accounts() {
                 p.qty || "N/A"
               }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
                 p.modelNos?.join(", ") || "N/A"
-              })`
+              }, GST: ${p.gst || "0"})`
           )
           .join("\n")
       : "N/A";
     const orderText = `
       Bill Number: ${viewOrder.billNumber || "N/A"}
-      Date: ${viewOrder.dispatchDate || "N/A"}
+      Date: ${
+        viewOrder.dispatchDate
+          ? new Date(viewOrder.dispatchDate).toLocaleDateString()
+          : "N/A"
+      }
       Party & Address: ${viewOrder.partyAndAddress || "N/A"}
       Email: ${viewOrder.customerEmail || "N/A"}
       Mobile: ${viewOrder.contactNo || "N/A"}
       Total: ${viewOrder.total || "N/A"}
-      GST: ${viewOrder.gst || "N/A"}
+     
+      Payment Collected: ${viewOrder.paymentCollected || "N/A"}
+      Payment Method: ${viewOrder.paymentMethod || "N/A"}
+      Payment Due: ${viewOrder.paymentDue || "N/A"}
+      NEFT Transaction ID: ${viewOrder.neftTransactionId || "N/A"}
+      Cheque ID: ${viewOrder.chequeId || "N/A"}
       Payment Received: ${viewOrder.paymentReceived || "Not Received"}
       Remarks: ${viewOrder.remarksByAccounts || "N/A"}
       Invoice Number: ${viewOrder.invoiceNo || "N/A"}
-      Invoice Date: ${viewOrder.invoiceDate || "N/A"}
-      Serial Nos: ${viewOrder.serialNos?.join(", ") || "N/A"}
-      Model Nos: ${viewOrder.modelNos?.join(", ") || "N/A"}
+      Invoice Date: ${
+        viewOrder.invoiceDate
+          ? new Date(viewOrder.invoiceDate).toLocaleDateString()
+          : "N/A"
+      }
       Products:\n${productsText}
     `.trim();
     navigator.clipboard.writeText(orderText);
@@ -117,6 +133,11 @@ function Accounts() {
       invoiceDate: order.invoiceDate
         ? new Date(order.invoiceDate).toISOString().split("T")[0]
         : "",
+      paymentCollected: order.paymentCollected || "",
+      paymentMethod: order.paymentMethod || "",
+      paymentDue: order.paymentDue || "",
+      neftTransactionId: order.neftTransactionId || "",
+      chequeId: order.chequeId || "",
     });
     setErrors({});
     setShowEditModal(true);
@@ -136,6 +157,25 @@ function Accounts() {
     ) {
       newErrors.remarksByAccounts = "Remarks are required";
     }
+    if (
+      formData.paymentMethod &&
+      !["Cash", "NEFT", "RTGS", "Cheque", ""].includes(formData.paymentMethod)
+    ) {
+      newErrors.paymentMethod = "Invalid Payment Method";
+    }
+    if (
+      formData.paymentMethod === "NEFT" &&
+      (!formData.neftTransactionId || formData.neftTransactionId.trim() === "")
+    ) {
+      newErrors.neftTransactionId =
+        "NEFT Transaction ID is required for NEFT payments";
+    }
+    if (
+      formData.paymentMethod === "Cheque" &&
+      (!formData.chequeId || formData.chequeId.trim() === "")
+    ) {
+      newErrors.chequeId = "Cheque ID is required for Cheque payments";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -146,11 +186,19 @@ function Accounts() {
 
     try {
       const submissionData = {
-        ...formData,
+        billNumber: formData.billNumber,
         dispatchDate: new Date(formData.dispatchDate).toISOString(),
+        paymentReceived: formData.paymentReceived,
+        remarksByAccounts: formData.remarksByAccounts,
+        invoiceNo: formData.invoiceNo || undefined,
         invoiceDate: formData.invoiceDate
           ? new Date(formData.invoiceDate).toISOString()
           : undefined,
+        paymentCollected: formData.paymentCollected || undefined,
+        paymentMethod: formData.paymentMethod || undefined,
+        paymentDue: formData.paymentDue || undefined,
+        neftTransactionId: formData.neftTransactionId || undefined,
+        chequeId: formData.chequeId || undefined,
       };
 
       const response = await axios.put(
@@ -311,7 +359,7 @@ function Accounts() {
                       "Email",
                       "Mobile",
                       "Total",
-                      "GST",
+
                       "Products",
                       "Payment Received",
                       "Actions",
@@ -423,17 +471,7 @@ function Accounts() {
                         >
                           {order.total || "N/A"}
                         </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                          }}
-                        >
-                          {order.gst || "N/A"}
-                        </td>
+
                         <td
                           style={{
                             padding: "15px",
@@ -617,8 +655,25 @@ function Accounts() {
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Total:</strong> {viewOrder.total || "N/A"}
                   </span>
+
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>GST:</strong> {viewOrder.gst || "N/A"}
+                    <strong>Payment Collected:</strong>{" "}
+                    {viewOrder.paymentCollected || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Payment Method:</strong>{" "}
+                    {viewOrder.paymentMethod || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Payment Due:</strong>{" "}
+                    {viewOrder.paymentDue || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>NEFT Transaction ID:</strong>{" "}
+                    {viewOrder.neftTransactionId || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Cheque ID:</strong> {viewOrder.chequeId || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Payment Received:</strong>{" "}
@@ -637,14 +692,6 @@ function Accounts() {
                     {viewOrder.invoiceDate
                       ? new Date(viewOrder.invoiceDate).toLocaleDateString()
                       : "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Serial Nos:</strong>{" "}
-                    {viewOrder.serialNos?.join(", ") || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Model Nos:</strong>{" "}
-                    {viewOrder.modelNos?.join(", ") || "N/A"}
                   </span>
                 </div>
                 <hr />
@@ -686,6 +733,9 @@ function Accounts() {
                         </span>
                         <span style={{ fontSize: "1rem", color: "#555" }}>
                           <strong>Quantity:</strong> {product.qty || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>GST:</strong> {product.gst || "0"}
                         </span>
                         <span style={{ fontSize: "1rem", color: "#555" }}>
                           <strong>Serial Nos:</strong>{" "}
@@ -825,12 +875,165 @@ function Accounts() {
 
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Payment Collected
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.paymentCollected}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    paymentCollected: e.target.value,
+                  })
+                }
+                placeholder="Enter payment collected"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.paymentCollected
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
+              {errors.paymentCollected && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.paymentCollected}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Payment Method
+              </Form.Label>
+              <Form.Select
+                value={formData.paymentMethod}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    paymentMethod: e.target.value,
+                  })
+                }
+                style={{
+                  borderRadius: "10px",
+                  border: errors.paymentMethod
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              >
+                <option value="">-- Select Payment Method --</option>
+                <option value="Cash">Cash</option>
+                <option value="NEFT">NEFT</option>
+                <option value="RTGS">RTGS</option>
+                <option value="Cheque">Cheque</option>
+              </Form.Select>
+              {errors.paymentMethod && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.paymentMethod}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Payment Due
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.paymentDue}
+                onChange={(e) =>
+                  setFormData({ ...formData, paymentDue: e.target.value })
+                }
+                placeholder="Enter payment due"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.paymentDue
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+              />
+              {errors.paymentDue && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.paymentDue}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                NEFT Transaction ID
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.neftTransactionId}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    neftTransactionId: e.target.value,
+                  })
+                }
+                placeholder="Enter NEFT transaction ID"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.neftTransactionId
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                disabled={formData.paymentMethod !== "NEFT"}
+              />
+              {errors.neftTransactionId && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.neftTransactionId}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                Cheque ID
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.chequeId}
+                onChange={(e) =>
+                  setFormData({ ...formData, chequeId: e.target.value })
+                }
+                placeholder="Enter cheque ID"
+                style={{
+                  borderRadius: "10px",
+                  border: errors.chequeId
+                    ? "1px solid red"
+                    : "1px solid #ced4da",
+                  padding: "12px",
+                  fontSize: "1rem",
+                }}
+                disabled={formData.paymentMethod !== "Cheque"}
+              />
+              {errors.chequeId && (
+                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                  {errors.chequeId}
+                </Form.Text>
+              )}
+            </Form.Group>
+
+            <Form.Group style={{ marginBottom: "20px" }}>
+              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                 Payment Received
               </Form.Label>
               <Form.Select
                 value={formData.paymentReceived}
                 onChange={(e) =>
-                  setFormData({ ...formData, paymentReceived: e.target.value })
+                  setFormData({
+                    ...formData,
+                    paymentReceived: e.target.value,
+                  })
                 }
                 style={{
                   borderRadius: "10px",

@@ -12,7 +12,7 @@ function AddEntry({ onSubmit, onClose }) {
     spec: "",
     qty: "",
     unitPrice: "",
-    gst: "",
+    gst: "", // Raw percentage input
   });
 
   const [formData, setFormData] = useState({
@@ -27,16 +27,21 @@ function AddEntry({ onSubmit, onClose }) {
     contactNo: "",
     customerEmail: "",
     customername: "",
-    paymentTerms: "",
     amount2: "",
     freightcs: "",
     installation: "",
+    remarks: "",
     salesPerson: "",
     company: "",
     shippingAddress: "",
     billingAddress: "",
     sameAddress: false,
     orderType: "Private order",
+    paymentCollected: "",
+    paymentMethod: "",
+    paymentDue: "",
+    neftTransactionId: "",
+    chequeId: "",
   });
 
   const productOptions = {
@@ -90,6 +95,7 @@ function AddEntry({ onSubmit, onClose }) {
     "UPS Cabinet": { sizes: ["N/A"], specs: ["N/A"] },
     "SD Card": { sizes: ["N/A"], specs: ["N/A"] },
     Casing: { sizes: ["N/A"], specs: ["N/A"] },
+    Fನಿಷ್ಪಾದಿ: { sizes: ["N/A"], specs: ["N/A"] },
     "Fitting Accessories": { sizes: ["N/A"], specs: ["N/A"] },
     "HDMI Cable": { sizes: ["N/A"], specs: ["N/A"] },
     "White Board": { sizes: ["N/A"], specs: ["N/A"] },
@@ -974,6 +980,8 @@ function AddEntry({ onSubmit, onClose }) {
     "For repair purpose",
   ];
 
+  const paymentMethodOptions = ["Cash", "NEFT", "RTGS", "Cheque"];
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -988,6 +996,12 @@ function AddEntry({ onSubmit, onClose }) {
         [name]: value,
         ...(name === "shippingAddress" && prev.sameAddress
           ? { billingAddress: value }
+          : {}),
+        ...(name === "paymentCollected"
+          ? { paymentDue: calculatePaymentDue(Number(value) || 0) }
+          : {}),
+        ...(name === "paymentMethod"
+          ? { neftTransactionId: "", chequeId: "" }
           : {}),
       }));
     }
@@ -1013,7 +1027,22 @@ function AddEntry({ onSubmit, onClose }) {
       !currentProduct.unitPrice ||
       currentProduct.gst === ""
     ) {
-      toast.error("Please fill all required product fields including GST");
+      toast.error("Please fill all required product fields including GST (%)");
+      return;
+    }
+    if (isNaN(Number(currentProduct.qty)) || Number(currentProduct.qty) <= 0) {
+      toast.error("Quantity must be a positive number");
+      return;
+    }
+    if (
+      isNaN(Number(currentProduct.unitPrice)) ||
+      Number(currentProduct.unitPrice) < 0
+    ) {
+      toast.error("Unit Price must be a non-negative number");
+      return;
+    }
+    if (isNaN(Number(currentProduct.gst)) || Number(currentProduct.gst) < 0) {
+      toast.error("GST (%) must be a non-negative number");
       return;
     }
     setProducts([...products, { ...currentProduct }]);
@@ -1025,10 +1054,18 @@ function AddEntry({ onSubmit, onClose }) {
       unitPrice: "",
       gst: "",
     });
+    setFormData((prev) => ({
+      ...prev,
+      paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
+    }));
   };
 
   const removeProduct = (index) => {
     setProducts(products.filter((_, i) => i !== index));
+    setFormData((prev) => ({
+      ...prev,
+      paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
+    }));
   };
 
   const handleStateChange = (e) => {
@@ -1051,50 +1088,70 @@ function AddEntry({ onSubmit, onClose }) {
     }));
   };
 
+  const calculateTotal = () => {
+    const subtotal = products.reduce((sum, product) => {
+      const quantity = Number(product.qty) || 0;
+      const price = Number(product.unitPrice) || 0;
+      return sum + quantity * price;
+    }, 0);
+    const freight = Number(formData.freightcs) || 0;
+    const additionalAmount = Number(formData.amount2) || 0;
+    return Number((subtotal + freight + additionalAmount).toFixed(2));
+  };
+
+  const calculatePaymentDue = (paymentCollected) => {
+    const total = calculateTotal();
+    const due = total - paymentCollected;
+    return Number(due.toFixed(2));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.soDate || products.length === 0) {
-      toast.error("Please fill SO Date and add at least one product");
+    if (!formData.soDate) {
+      toast.error("Please fill SO Date");
+      return;
+    }
+    if (products.length === 0) {
+      toast.error("Please add at least one product");
+      return;
+    }
+    if (formData.paymentMethod === "NEFT" && !formData.neftTransactionId) {
+      toast.error("Please provide NEFT Transaction ID");
+      return;
+    }
+    if (formData.paymentMethod === "Cheque" && !formData.chequeId) {
+      toast.error("Please provide Cheque ID");
       return;
     }
 
-    const calculateTotal = (products, formData) => {
-      const subtotal = products.reduce((sum, product) => {
-        const quantity = Number(product.qty) || 0;
-        const price = Number(product.unitPrice) || 0;
-        const gstPercentage = Number(product.gst) || 0;
-
-        const baseAmount = quantity * price;
-        const gstAmount = (gstPercentage / 100) * baseAmount;
-
-        return sum + baseAmount + gstAmount;
-      }, 0);
-
-      const freight = Number(formData.freightcs) || 0;
-      const additionalAmount = Number(formData.amount2) || 0;
-
-      const total = subtotal + freight + additionalAmount;
-
-      return Number(total.toFixed(2));
-    };
-
-    const total = calculateTotal(products, formData);
+    const total = calculateTotal();
 
     const newEntry = {
       ...formData,
       products: products.map((p) => ({
-        ...p,
-        gst: Number(p.gst || 0),
+        productType: p.productType,
+        size: p.size || "N/A",
+        spec: p.spec || "N/A",
+        qty: Number(p.qty),
+        unitPrice: Number(p.unitPrice),
+        gst: Number(p.gst), // Send raw GST percentage
+        serialNos: [],
+        modelNos: [],
       })),
-      soDate: new Date(formData.soDate),
-      committedDate: formData.committedDate
-        ? new Date(formData.committedDate)
-        : null,
-      total: Number(total),
+      soDate: formData.soDate,
+      committedDate: formData.committedDate || null,
+      total,
       amount2: Number(formData.amount2 || 0),
-      freightcs: formData.freightcs || null,
-      orderType: formData.orderType || "Private order",
+      freightcs: formData.freightcs || "",
+      installation: formData.installation || "N/A",
+      orderType: formData.orderType,
+      paymentCollected: String(formData.paymentCollected || ""),
+      paymentMethod: formData.paymentMethod || "",
+      paymentDue: String(formData.paymentDue || ""),
+      neftTransactionId: formData.neftTransactionId || "",
+      chequeId: formData.chequeId || "",
+      remarks: formData.remarks || "",
     };
 
     try {
@@ -1203,7 +1260,6 @@ function AddEntry({ onSubmit, onClose }) {
             gap: "1.5rem",
           }}
         >
-          {/* Basic Fields */}
           {[
             {
               label: "SO Date *",
@@ -1244,7 +1300,6 @@ function AddEntry({ onSubmit, onClose }) {
               label: "Customer Name",
               name: "customername",
               type: "text",
-              required: true,
               placeholder: "Enter Customer Name",
             },
             {
@@ -1254,21 +1309,19 @@ function AddEntry({ onSubmit, onClose }) {
               placeholder: "Enter Full Address",
             },
             {
-              label: "State *",
+              label: "State",
               name: "state",
               type: "select",
               options: Object.keys(statesAndCities),
               onChange: handleStateChange,
-              required: true,
               placeholder: "Select State",
             },
             {
-              label: "City *",
+              label: "City",
               name: "city",
               type: "select",
               options: selectedState ? statesAndCities[selectedState] : [],
               onChange: handleCityChange,
-              required: true,
               disabled: !selectedState,
               placeholder: "Select City",
             },
@@ -1277,14 +1330,12 @@ function AddEntry({ onSubmit, onClose }) {
               name: "pinCode",
               type: "tel",
               inputMode: "numeric",
-              required: true,
               placeholder: "e.g. 110001",
             },
             {
               label: "Contact Person Name",
               name: "name",
               type: "text",
-              required: true,
               placeholder: "Enter Contact Person Name",
             },
             {
@@ -1293,50 +1344,55 @@ function AddEntry({ onSubmit, onClose }) {
               type: "tel",
               inputMode: "numeric",
               maxLength: 10,
-              required: true,
               placeholder: "e.g. 9876543210",
             },
             {
               label: "Customer Email",
               name: "customerEmail",
               type: "email",
-              required: true,
               placeholder: "e.g. example@domain.com",
-            },
-            {
-              label: "Payment Terms",
-              name: "paymentTerms",
-              type: "text",
-              required: true,
-              placeholder: "e.g. 50% Advance, 50% on Delivery",
             },
             {
               label: "Amount2",
               name: "amount2",
               type: "number",
               inputMode: "decimal",
-              required: true,
               placeholder: "Enter Additional Amount",
+              onChange: (e) => {
+                handleChange(e);
+                setFormData((prev) => ({
+                  ...prev,
+                  paymentDue: calculatePaymentDue(
+                    Number(prev.paymentCollected) || 0
+                  ),
+                }));
+              },
             },
             {
               label: "Freight Charges & Status",
               name: "freightcs",
               type: "text",
-              required: true,
               placeholder: "e.g. ₹2000, Paid",
+              onChange: (e) => {
+                handleChange(e);
+                setFormData((prev) => ({
+                  ...prev,
+                  paymentDue: calculatePaymentDue(
+                    Number(prev.paymentCollected) || 0
+                  ),
+                }));
+              },
             },
             {
               label: "Installation Charges",
               name: "installation",
               type: "text",
-              required: true,
               placeholder: "e.g. ₹1000, Not Included",
             },
             {
               label: "Sales Person",
               name: "salesPerson",
               type: "text",
-              required: true,
               placeholder: "Enter Sales Person's Name",
             },
             {
@@ -1347,17 +1403,21 @@ function AddEntry({ onSubmit, onClose }) {
               placeholder: "Select Company",
             },
             {
-              label: "Shipping Address *",
+              label: "Remarks",
+              name: "remarks",
+              type: "text",
+              placeholder: "Enter any additional remarks",
+            },
+            {
+              label: "Shipping Address",
               name: "shippingAddress",
               type: "text",
-              required: true,
               placeholder: "Enter Shipping Address",
             },
             {
-              label: "Billing Address *",
+              label: "Billing Address",
               name: "billingAddress",
               type: "text",
-              required: true,
               disabled: formData.sameAddress,
               placeholder: "Enter Billing Address",
             },
@@ -1440,7 +1500,6 @@ function AddEntry({ onSubmit, onClose }) {
             </div>
           ))}
 
-          {/* Product Section */}
           <div style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
             <h3
               style={{
@@ -1657,7 +1716,6 @@ function AddEntry({ onSubmit, onClose }) {
               </button>
             </div>
 
-            {/* Added Products List */}
             {products.length > 0 && (
               <div style={{ marginTop: "1rem" }}>
                 <h4 style={{ fontSize: "1rem", color: "#475569" }}>
@@ -1700,7 +1758,208 @@ function AddEntry({ onSubmit, onClose }) {
             )}
           </div>
 
-          {/* Submit Buttons */}
+          <div style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "700",
+                marginBottom: "1rem",
+                letterSpacing: "1px",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              💰 Payment Details
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: "1rem",
+              }}
+            >
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Payment Collected *
+                </label>
+                <input
+                  type="number"
+                  name="paymentCollected"
+                  value={formData.paymentCollected}
+                  onChange={handleChange}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Payment Method *
+                </label>
+                <select
+                  name="paymentMethod"
+                  value={formData.paymentMethod}
+                  onChange={handleChange}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                >
+                  <option value="">Select Method</option>
+                  {paymentMethodOptions.map((method) => (
+                    <option key={method} value={method}>
+                      {method}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Payment Due
+                </label>
+                <input
+                  type="number"
+                  name="paymentDue"
+                  value={formData.paymentDue}
+                  readOnly
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#e5e7eb",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                />
+              </div>
+              {formData.paymentMethod === "NEFT" && (
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    NEFT Transaction ID *
+                  </label>
+                  <input
+                    type="text"
+                    name="neftTransactionId"
+                    value={formData.neftTransactionId}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter NEFT Transaction ID"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
+                </div>
+              )}
+              {formData.paymentMethod === "Cheque" && (
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Cheque ID *
+                  </label>
+                  <input
+                    type="text"
+                    name="chequeId"
+                    value={formData.chequeId}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter Cheque ID"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: "1rem" }}>
+              <label
+                style={{
+                  fontSize: "0.9rem",
+                  fontWeight: "600",
+                  color: "#475569",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                Total Amount
+              </label>
+              <input
+                type="number"
+                value={calculateTotal()}
+                readOnly
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "0.75rem",
+                  backgroundColor: "#e5e7eb",
+                  fontSize: "1rem",
+                  color: "#1e293b",
+                }}
+              />
+            </div>
+          </div>
+
           <div
             style={{
               gridColumn: "1 / -1",

@@ -7,7 +7,7 @@ import styled from "styled-components";
 import debounce from "lodash/debounce";
 import { FaEdit, FaSyncAlt, FaCog } from "react-icons/fa";
 
-// Styled Components (unchanged)
+// Styled Components
 const StyledModal = styled(Modal)`
   .modal-content {
     border-radius: 12px;
@@ -82,11 +82,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       dispatchFrom: "",
       status: "Pending",
       dispatchDate: "",
+      name: "",
       partyAndAddress: "",
       city: "",
       state: "",
       pinCode: "",
-      name: "",
       contactNo: "",
       customerEmail: "",
       customername: "",
@@ -96,30 +96,34 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           size: "N/A",
           spec: "N/A",
           qty: "",
-          unitPrice: "", // Added unitPrice with empty string default
+          unitPrice: "",
           serialNos: "",
           modelNos: "",
+          gst: "0",
         },
       ],
-      gst: "0",
       total: "",
+      paymentCollected: "",
+      paymentMethod: "",
+      paymentDue: "",
+      neftTransactionId: "",
+      chequeId: "",
       paymentTerms: "",
       amount2: "0",
       freightcs: "",
+      orderType: "Private order",
       installation: "N/A",
       installationStatus: "Pending",
       remarksByInstallation: "",
       dispatchStatus: "Not Dispatched",
       salesPerson: "",
-      company: "ProMark",
-      orderType: "Private order",
+      company: "Promark",
       transporter: "",
       transporterDetails: "",
       docketNo: "",
       receiptDate: "",
       shippingAddress: "",
       billingAddress: "",
-      sameAddress: false,
       invoiceNo: "",
       invoiceDate: "",
       fulfillingStatus: "Pending",
@@ -129,6 +133,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       billNumber: "",
       completionStatus: "In Progress",
       fulfillmentDate: "",
+      remarks: "",
+      sostatus: "Pending for Approval",
     }),
     []
   );
@@ -163,6 +169,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
   const selectedState = watch("state");
   const products = watch("products") || [];
+  const paymentMethod = watch("paymentMethod");
 
   useEffect(() => {
     if (isOpen && entryToEdit) {
@@ -178,11 +185,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         dispatchDate: entryToEdit.dispatchDate
           ? new Date(entryToEdit.dispatchDate).toISOString().split("T")[0]
           : "",
+        name: entryToEdit.name || "",
         partyAndAddress: entryToEdit.partyAndAddress || "",
         city: entryToEdit.city || "",
         state: entryToEdit.state || "",
         pinCode: entryToEdit.pinCode || "",
-        name: entryToEdit.name || "",
         contactNo: entryToEdit.contactNo || "",
         customerEmail: entryToEdit.customerEmail || "",
         customername: entryToEdit.customername || "",
@@ -193,10 +200,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 size: p.size || "N/A",
                 spec: p.spec || "N/A",
                 qty: p.qty !== undefined ? String(p.qty) : "",
-                unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "", // Map unitPrice
+                unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "",
                 serialNos:
                   p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
                 modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+                gst: p.gst !== undefined ? String(p.gst) : "0",
               }))
             : [
                 {
@@ -204,24 +212,35 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   size: "N/A",
                   spec: "N/A",
                   qty: "",
-                  unitPrice: "", // Ensure unitPrice is included
+                  unitPrice: "",
                   serialNos: "",
                   modelNos: "",
+                  gst: "0",
                 },
               ],
-        gst: entryToEdit.gst !== undefined ? String(entryToEdit.gst) : "0",
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
+        paymentCollected:
+          entryToEdit.paymentCollected !== undefined
+            ? String(entryToEdit.paymentCollected)
+            : "",
+        paymentMethod: entryToEdit.paymentMethod || "",
+        paymentDue:
+          entryToEdit.paymentDue !== undefined
+            ? String(entryToEdit.paymentDue)
+            : "",
+        neftTransactionId: entryToEdit.neftTransactionId || "",
+        chequeId: entryToEdit.chequeId || "",
         paymentTerms: entryToEdit.paymentTerms || "",
         amount2:
           entryToEdit.amount2 !== undefined ? String(entryToEdit.amount2) : "0",
         freightcs: entryToEdit.freightcs || "",
+        orderType: entryToEdit.orderType || "Private order",
         installation: entryToEdit.installation || "N/A",
         installationStatus: entryToEdit.installationStatus || "Pending",
         remarksByInstallation: entryToEdit.remarksByInstallation || "",
         dispatchStatus: entryToEdit.dispatchStatus || "Not Dispatched",
         salesPerson: entryToEdit.salesPerson || "",
-        company: entryToEdit.company || "ProMark",
-        orderType: entryToEdit.orderType || "Private order",
+        company: entryToEdit.company || "Promark",
         transporter: entryToEdit.transporter || "",
         transporterDetails: entryToEdit.transporterDetails || "",
         docketNo: entryToEdit.docketNo || "",
@@ -230,11 +249,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : "",
         shippingAddress: entryToEdit.shippingAddress || "",
         billingAddress: entryToEdit.billingAddress || "",
-        sameAddress: entryToEdit.sameAddress || false,
-        invoiceNo:
-          entryToEdit.invoiceNo !== undefined
-            ? String(entryToEdit.invoiceNo)
-            : "",
+        invoiceNo: entryToEdit.invoiceNo || "",
         invoiceDate: entryToEdit.invoiceDate
           ? new Date(entryToEdit.invoiceDate).toISOString().split("T")[0]
           : "",
@@ -247,13 +262,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         fulfillmentDate: entryToEdit.fulfillmentDate
           ? new Date(entryToEdit.fulfillmentDate).toISOString().split("T")[0]
           : "",
-      };
-      const newUpdateData = {
-        sostatus: entryToEdit.sostatus || "Pending for Approval",
         remarks: entryToEdit.remarks || "",
+        sostatus: entryToEdit.sostatus || "Pending for Approval",
       };
       setFormData(newFormData);
-      setUpdateData(newUpdateData);
+      setUpdateData({
+        sostatus: entryToEdit.sostatus || "Pending for Approval",
+        remarks: entryToEdit.remarks || "",
+      });
       reset(newFormData);
       setView("options");
       setError(null);
@@ -269,30 +285,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           const newProducts = [...prev.products];
           newProducts[idx] = {
             ...newProducts[idx],
-            [field]:
-              field === "qty" || field === "unitPrice" // Handle unitPrice as number
-                ? value === ""
-                  ? ""
-                  : Number(value)
-                : field === "serialNos" || field === "modelNos"
-                ? value
-                : value,
+            [field]: value,
           };
           return { ...prev, products: newProducts };
         });
       } else {
         setFormData((prev) => ({
           ...prev,
-          [name]:
-            name === "contactNo"
-              ? value.replace(/\D/g, "").slice(0, 10)
-              : ["gst", "total", "amount2", "invoiceNo"].includes(name)
-              ? value === ""
-                ? ""
-                : Number(value)
-              : name === "sameAddress"
-              ? value === "true" || value === true
-              : value,
+          [name]: value,
         }));
       }
     }, 300),
@@ -317,11 +317,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         dispatchFrom: data.dispatchFrom || null,
         status: data.status || "Pending",
         dispatchDate: data.dispatchDate ? new Date(data.dispatchDate) : null,
+        name: data.name || null,
         partyAndAddress: data.partyAndAddress || null,
         city: data.city || null,
         state: data.state || null,
         pinCode: data.pinCode || null,
-        name: data.name || null,
         contactNo: data.contactNo || null,
         customerEmail: data.customerEmail || null,
         customername: data.customername || null,
@@ -329,8 +329,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           productType: p.productType || undefined,
           size: p.size || "N/A",
           spec: p.spec || "N/A",
-          qty: p.qty === "" ? undefined : Number(p.qty),
-          unitPrice: p.unitPrice === "" ? undefined : Number(p.unitPrice), // Ensure unitPrice is included
+          qty: p.qty ? Number(p.qty) : undefined,
+          unitPrice: p.unitPrice ? Number(p.unitPrice) : undefined,
           serialNos: p.serialNos
             ? p.serialNos
                 .split(",")
@@ -343,27 +343,33 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 .map((m) => m.trim())
                 .filter(Boolean)
             : [],
+          gst: p.gst ? Number(p.gst) : 0,
         })),
-        gst: data.gst === "" ? 0 : Number(data.gst),
-        total: data.total === "" ? undefined : Number(data.total),
+        total: data.total ? Number(data.total) : undefined,
+        paymentCollected: data.paymentCollected
+          ? String(data.paymentCollected)
+          : null,
+        paymentMethod: data.paymentMethod || null,
+        paymentDue: data.paymentDue ? String(data.paymentDue) : null,
+        neftTransactionId: data.neftTransactionId || null,
+        chequeId: data.chequeId || null,
         paymentTerms: data.paymentTerms || null,
-        amount2: data.amount2 === "" ? 0 : Number(data.amount2),
+        amount2: data.amount2 ? Number(data.amount2) : 0,
         freightcs: data.freightcs || null,
+        orderType: data.orderType || "Private order",
         installation: data.installation || "N/A",
         installationStatus: data.installationStatus || "Pending",
         remarksByInstallation: data.remarksByInstallation || "",
         dispatchStatus: data.dispatchStatus || "Not Dispatched",
         salesPerson: data.salesPerson || null,
-        company: data.company || "ProMark",
+        company: data.company || "Promark",
         transporter: data.transporter || null,
         transporterDetails: data.transporterDetails || null,
         docketNo: data.docketNo || null,
-        orderType: data.orderType || "Private order",
         receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
         shippingAddress: data.shippingAddress || "",
         billingAddress: data.billingAddress || "",
-        sameAddress: data.sameAddress || false,
-        invoiceNo: data.invoiceNo === "" ? null : Number(data.invoiceNo),
+        invoiceNo: data.invoiceNo || null,
         invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : null,
         fulfillingStatus: data.fulfillingStatus || "Pending",
         remarksByProduction: data.remarksByProduction || null,
@@ -374,14 +380,44 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         fulfillmentDate: data.fulfillmentDate
           ? new Date(data.fulfillmentDate)
           : null,
+        remarks: data.remarks || "",
+        sostatus: data.sostatus || "Pending for Approval",
       };
 
-      // Validate that all products have a unitPrice
+      // Validate products
       submissionData.products.forEach((p, index) => {
-        if (p.unitPrice === undefined || p.unitPrice === null) {
-          throw new Error(`Unit Price is required for product ${index + 1}`);
+        if (!p.productType) {
+          throw new Error(`Product ${index + 1}: Product Type is required`);
+        }
+        if (!p.qty || p.qty <= 0) {
+          throw new Error(`Product ${index + 1}: Quantity must be positive`);
+        }
+        if (!p.unitPrice || p.unitPrice < 0) {
+          throw new Error(
+            `Product ${index + 1}: Unit Price must be non-negative`
+          );
         }
       });
+
+      // Validate payment method dependencies
+      if (
+        submissionData.paymentMethod === "NEFT" &&
+        !submissionData.neftTransactionId
+      ) {
+        throw new Error("NEFT Transaction ID is required for NEFT payments");
+      }
+      if (
+        submissionData.paymentMethod === "RTGS" &&
+        !submissionData.neftTransactionId
+      ) {
+        throw new Error("NEFT Transaction ID is required for RTGS payments");
+      }
+      if (
+        submissionData.paymentMethod === "Cheque" &&
+        !submissionData.chequeId
+      ) {
+        throw new Error("Cheque ID is required for Cheque payments");
+      }
 
       const response = await axios.put(
         `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
@@ -467,9 +503,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         size: "N/A",
         spec: "N/A",
         qty: "",
-        unitPrice: "", // Ensure unitPrice is included
+        unitPrice: "",
         serialNos: "",
         modelNos: "",
+        gst: "0",
       },
     ];
     setValue("products", newProducts);
@@ -488,9 +525,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               size: "N/A",
               spec: "N/A",
               qty: "",
-              unitPrice: "", // Ensure unitPrice is included
+              unitPrice: "",
               serialNos: "",
               modelNos: "",
+              gst: "0",
             },
           ]
     );
@@ -505,9 +543,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 size: "N/A",
                 spec: "N/A",
                 qty: "",
-                unitPrice: "", // Ensure unitPrice is included
+                unitPrice: "",
                 serialNos: "",
                 modelNos: "",
+                gst: "0",
               },
             ],
     }));
@@ -554,812 +593,42 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
   const citiesByState = useMemo(
     () => ({
-      "Andhra Pradesh": [
-        "Visakhapatnam",
-        "Jaganathpuram",
-        "Vijayawada",
-        "Guntur",
-        "Tirupati",
-        "Kurnool",
-        "Rajahmundry",
-        "Nellore",
-        "Anantapur",
-        "Kadapa",
-        "Srikakulam",
-        "Eluru",
-        "Ongole",
-        "Chittoor",
-        "Proddatur",
-        "Machilipatnam",
-      ],
-      "Arunachal Pradesh": [
-        "Itanagar",
-        "Tawang",
-        "Ziro",
-        "Pasighat",
-        "Bomdila",
-        "Naharlagun",
-        "Roing",
-        "Aalo",
-        "Tezu",
-        "Changlang",
-        "Khonsa",
-        "Yingkiong",
-        "Daporijo",
-        "Seppa",
-      ],
-      Assam: [
-        "Agartala",
-        "Tripura",
-        "Guwahati",
-        "Dibrugarh",
-        "Jorhat",
-        "Silchar",
-        "Tezpur",
-        "Tinsukia",
-        "Nagaon",
-        "Sivasagar",
-        "Barpeta",
-        "Goalpara",
-        "Karimganj",
-        "Lakhimpur",
-        "Diphu",
-        "Golaghat",
-        "Kamrup",
-      ],
-      Bihar: [
-        "Patna",
-        "Mirzapur",
-        "Jehanabad",
-        "Mithapur",
-        "Gaya",
-        "Bhagalpur",
-        "Muzaffarpur",
-        "Darbhanga",
-        "Purnia",
-        "Ara",
-        "Begusarai",
-        "Katihar",
-        "Munger",
-        "Chapra",
-        "Sasaram",
-        "Hajipur",
-        "Bihar Sharif",
-        "Sitamarhi",
-      ],
-      Chhattisgarh: [
-        "Raipur",
-        "Bilaspur",
-        "Durg",
-        "Korba",
-        "Bhilai",
-        "Rajnandgaon",
-        "Jagdalpur",
-        "Ambikapur",
-        "Raigarh",
-        "Dhamtari",
-        "Kawardha",
-        "Mahasamund",
-        "Kondagaon",
-        "Bijapur",
-      ],
-      Goa: [
-        "Panaji",
-        "Margao",
-        "Vasco da Gama",
-        "Mapusa",
-        "Ponda",
-        "Bicholim",
-        "Sanguem",
-        "Canacona",
-        "Quepem",
-        "Valpoi",
-        "Sanquelim",
-        "Curchorem",
-      ],
-      Gujarat: [
-        "Ahmedabad",
-        "Surat",
-        "Vadodara",
-        "Rajkot",
-        "Bhavnagar",
-        "Jamnagar",
-        "Junagadh",
-        "Gandhinagar",
-        "Anand",
-        "Morbi",
-        "Nadiad",
-        "Porbandar",
-        "Mehsana",
-        "Bharuch",
-        "Navsari",
-        "Surendranagar",
-      ],
-      Haryana: [
-        "Bahadurgarh",
-        "Gurugram",
-        "Faridabad",
-        "Panipat",
-        "Ambala",
-        "Hisar",
-        "Rohtak",
-        "Karnal",
-        "Bhiwani",
-        "Kaithal",
-        "Kurukshetra",
-        "Sonipat",
-        "Jhajjar",
-        "Jind",
-        "Fatehabad",
-        "Pehowa",
-        "Pinjore",
-        "Rewari",
-        "Yamunanagar",
-        "Sirsa",
-        "Dabwali",
-        "Narwana",
-      ],
-      "Himachal Pradesh": [
-        "Nagrota Surian",
-        "Shimla",
-        "Dharamshala",
-        "Solan",
-        "Mandi",
-        "Hamirpur",
-        "Kullu",
-        "Manali",
-        "Nahan",
-        "Palampur",
-        "Baddi",
-        "Sundarnagar",
-        "Paonta Sahib",
-        "Bilaspur",
-        "Chamba",
-        "Una",
-        "Kangra",
-        "Parwanoo",
-        "Nalagarh",
-        "Rohru",
-        "Keylong",
-      ],
-      Jharkhand: [
-        "Ranchi",
-        "Jamshedpur",
-        "Dhanbad",
-        "Bokaro",
-        "Deoghar",
-        "Hazaribagh",
-        "Giridih",
-        "Ramgarh",
-        "Chaibasa",
-        "Palamu",
-        "Gumla",
-        "Lohardaga",
-        "Dumka",
-        "Chatra",
-        "Pakur",
-        "Jamtara",
-        "Simdega",
-        "Sahibganj",
-        "Godda",
-        "Latehar",
-        "Khunti",
-      ],
-      Karnataka: [
-        "Bengaluru",
-        "Mysuru",
-        "Mangaluru",
-        "Hubballi",
-        "Belagavi",
-        "Kalaburagi",
-        "Ballari",
-        "Davangere",
-        "Shivamogga",
-        "Tumakuru",
-        "Udupi",
-        "Vijayapura",
-        "Chikkamagaluru",
-        "Hassan",
-        "Mandya",
-        "Raichur",
-        "Bidar",
-        "Bagalkot",
-        "Chitradurga",
-        "Kolar",
-        "Gadag",
-        "Yadgir",
-        "Haveri",
-        "Dharwad",
-        "Ramanagara",
-        "Chikkaballapur",
-        "Kodagu",
-        "Koppal",
-      ],
-      Kerala: [
-        "Thiruvananthapuram",
-        "Kochi",
-        "Kozhikode",
-        "Kannur",
-        "Alappuzha",
-        "Thrissur",
-        "Kottayam",
-        "Palakkad",
-        "Ernakulam",
-        "Malappuram",
-        "Pathanamthitta",
-        "Idukki",
-        "Wayanad",
-        "Kollam",
-        "Kasaragod",
-        "Punalur",
-        "Varkala",
-        "Changanassery",
-        "Kayani",
-        "Kizhakkambalam",
-        "Perumbavoor",
-        "Muvattupuzha",
-        "Attingal",
-        "Vypin",
-        "North Paravur",
-        "Adoor",
-        "Cherthala",
-        "Mattancherry",
-        "Fort Kochi",
-        "Munroe Island",
-      ],
-      "Madhya Pradesh": [
-        "Bhopal",
-        "Indore",
-        "Gwalior",
-        "Jabalpur",
-        "Ujjain",
-        "Sagar",
-        "Ratlam",
-        "Satna",
-        "Dewas",
-        "Murwara (Katni)",
-        "Chhindwara",
-        "Rewa",
-        "Burhanpur",
-        "Khandwa",
-        "Bhind",
-        "Shivpuri",
-        "Vidisha",
-        "Sehore",
-        "Hoshangabad",
-        "Itarsi",
-        "Neemuch",
-        "Chhatarpur",
-        "Betul",
-        "Mandsaur",
-        "Damoh",
-        "Singrauli",
-        "Guna",
-        "Ashok Nagar",
-        "Datia",
-        "Mhow",
-        "Pithampur",
-        "Shahdol",
-        "Seoni",
-        "Mandla",
-        "Tikamgarh",
-        "Raisen",
-        "Narsinghpur",
-        "Morena",
-        "Barwani",
-        "Rajgarh",
-        "Khargone",
-        "Anuppur",
-        "Umaria",
-        "Dindori",
-        "Sheopur",
-        "Alirajpur",
-        "Jhabua",
-        "Sidhi",
-        "Harda",
-        "Balaghat",
-        "Agar Malwa",
-      ],
-      Maharashtra: [
-        "Mumbai",
-        "Pune",
-        "Nagpur",
-        "Nashik",
-        "Aurangabad",
-        "Solapur",
-        "Kolhapur",
-        "Thane",
-        "Satara",
-        "Latur",
-        "Chandrapur",
-        "Jalgaon",
-        "Bhiwandi",
-        "Shirdi",
-        "Akola",
-        "Parbhani",
-        "Raigad",
-        "Washim",
-        "Buldhana",
-        "Nanded",
-        "Yavatmal",
-        "Beed",
-        "Amravati",
-        "Kalyan",
-        "Dombivli",
-        "Ulhasnagar",
-        "Nagothane",
-        "Vasai",
-        "Virar",
-        "Mira-Bhayandar",
-        "Dhule",
-        "Sangli",
-        "Wardha",
-        "Ahmednagar",
-        "Pandharpur",
-        "Malegaon",
-        "Osmanabad",
-        "Gondia",
-        "Baramati",
-        "Jalna",
-        "Hingoli",
-        "Sindhudurg",
-        "Ratnagiri",
-        "Palghar",
-        "Ambarnath",
-        "Badlapur",
-        "Taloja",
-        "Alibaug",
-        "Murbad",
-        "Karjat",
-        "Pen",
-        "Newasa",
-      ],
-      Manipur: [
-        "Imphal",
-        "Churachandpur",
-        "Thoubal",
-        "Bishnupur",
-        "Kakching",
-        "Senapati",
-        "Ukhrul",
-        "Tamenglong",
-        "Jiribam",
-        "Moreh",
-        "Noney",
-        "Pherzawl",
-        "Kangpokpi",
-      ],
-      Meghalaya: [
-        "Shillong",
-        "Tura",
-        "Nongpoh",
-        "Cherrapunjee",
-        "Jowai",
-        "Baghmara",
-        "Williamnagar",
-        "Mawkyrwat",
-        "Resubelpara",
-        "Mairang",
-      ],
-      Mizoram: [
-        "Aizawl",
-        "Lunglei",
-        "Champhai",
-        "Serchhip",
-        "Kolasib",
-        "Saiha",
-        "Lawngtlai",
-        "Mamit",
-        "Hnahthial",
-        "Khawzawl",
-        "Saitual",
-      ],
-      Nagaland: [
-        "Kohima",
-        "Dimapur",
-        "Mokokchung",
-        "Tuensang",
-        "Wokha",
-        "Mon",
-        "Zunheboto",
-        "Phek",
-        "Longleng",
-        "Kiphire",
-        "Peren",
-      ],
-      Odisha: [
-        "Bhubaneswar",
-        "Cuttack",
-        "Rourkela",
-        "Puri",
-        "Sambalpur",
-        "Berhampur",
-        "Balasore",
-        "Baripada",
-        "Bhadrak",
-        "Jeypore",
-        "Angul",
-        "Dhenkanal",
-        "Keonjhar",
-        "Kendrapara",
-        "Jagatsinghpur",
-        "Paradeep",
-        "Bargarh",
-        "Rayagada",
-        "Koraput",
-        "Nabarangpur",
-        "Kalahandi",
-        "Nuapada",
-        "Phulbani",
-        "Balangir",
-        "Sundargarh",
-      ],
-      Punjab: [
-        "Amritsar",
-        "Ludhiana",
-        "Jalandhar",
-        "Patiala",
-        "Bathinda",
-        "Mohali", // Also known as Sahibzada Ajit Singh Nagar (SAS Nagar)
-        "Hoshiarpur",
-        "Gurdaspur",
-        "Ferozepur",
-        "Sangrur",
-        "Moga",
-        "Rupnagar", // Official name for Ropar
-        "Kapurthala",
-        "Faridkot",
-        "Muktsar", // Corrected from "Makatsar"
-        "Fazilka",
-        "Barnala",
-        "Mansa",
-        "Tarn Taran",
-        "Nawanshahr", // Also known as Shaheed Bhagat Singh Nagar
-        "Pathankot",
-        "Zirakpur",
-        "Khanna",
-        "Malerkotla",
-        "Abohar",
-        "Rajpura",
-        "Phagwara",
-        "Batala",
-        "Samrala",
-        "Anandpur Sahib",
-        "Sirhind",
-        "Kharar",
-        "Morinda",
-        "Bassi Pathana",
-        "Khamanon", // Corrected from "Khamano"
-        "Chunni Kalan",
-        "Balachaur",
-        "Dinanagar",
-        "Dasuya",
-        "Nakodar",
-        "Jagraon",
-        "Sunam",
-        "Dhuri",
-        "Lehragaga",
-        "Rampura Phul",
-      ],
-      Rajasthan: [
-        "Baran",
-        "Newai",
-        "Gaganagar",
-        "Suratgarh",
-        "Jaipur",
-        "Udaipur",
-        "Jodhpur",
-        "Kota",
-        "Ajmer",
-        "Bikaner",
-        "Alwar",
-        "Bharatpur",
-        "Sikar",
-        "Pali",
-        "Nagaur",
-        "Jhunjhunu",
-        "Chittorgarh",
-        "Tonk",
-        "Barmer",
-        "Jaisalmer",
-        "Dholpur",
-        "Bhilwara",
-        "Hanumangarh",
-        "Sawai Madhopur",
-      ],
-      Sikkim: [
-        "Gangtok",
-        "Namchi",
-        "Pelling",
-        "Geyzing",
-        "Mangan",
-        "Rangpo",
-        "Jorethang",
-        "Yuksom",
-        "Ravangla",
-        "Lachen",
-        "Lachung",
-      ],
-      "Tamil Nadu": [
-        "Chennai",
-        "Coimbatore",
-        "Madurai",
-        "Tiruchirappalli",
-        "Salem",
-        "Erode",
-        "Tirunelveli",
-        "Vellore",
-        "Thanjavur",
-        "Tuticorin",
-        "Dindigul",
-        "Cuddalore",
-        "Kancheepuram",
-        "Nagercoil",
-        "Kumbakonam",
-        "Karur",
-        "Sivakasi",
-        "Namakkal",
-        "Tiruppur",
-      ],
-      Telangana: [
-        "Hyderabad",
-        "Warangal",
-        "Nizamabad",
-        "Karimnagar",
-        "Khammam",
-        "Mahbubnagar",
-        "Ramagundam",
-        "Siddipet",
-        "Adilabad",
-        "Nalgonda",
-        "Mancherial",
-        "Kothagudem",
-        "Zaheerabad",
-        "Miryalaguda",
-        "Bhongir",
-        "Jagtial",
-      ],
-      Tripura: [
-        "Agartala",
-        "Udaipur",
-        "Dharmanagar",
-        "Kailashahar",
-        "Belonia",
-        "Kamalpur",
-        "Ambassa",
-        "Khowai",
-        "Sabroom",
-        "Sonamura",
-        "Melaghar",
-      ],
-      "Uttar Pradesh": [
-        "Shikohabad ",
-        "Lucknow",
-        "Matbarganj",
-        "Kasganj",
-        "Kanpur",
-        "Varanasi",
-        "Agra",
-        "Prayagraj (Allahabad)",
-        "Ghaziabad",
-        "Noida",
-        "Meerut",
-        "Aligarh",
-        "Bareilly",
-        "Moradabad",
-        "Saharanpur",
-        "Gorakhpur",
-        "Firozabad",
-        "Jhansi",
-        "Muzaffarnagar",
-        "Mathura-Vrindavan",
-        "Budaun",
-        "Rampur",
-        "Shahjahanpur",
-        "Farrukhabad-Fatehgarh",
-        "Ayodhya",
-        "Unnao",
-        "Jaunpur",
-        "Lakhimpur",
-        "Hathras",
-        "Banda",
-        "Pilibhit",
-        "Barabanki",
-        "Khurja",
-        "Gonda",
-        "Mainpuri",
-        "Lalitpur",
-        "Sitapur",
-        "Etah",
-        "Deoria",
-        "Ghazipur",
-      ],
-      Uttarakhand: [
-        "Dehradun",
-        "Haridwar",
-        "Nainital",
-        "Rishikesh",
-        "Mussoorie",
-        "Almora",
-        "Pithoragarh",
-        "Haldwani",
-        "Rudrapur",
-        "Bageshwar",
-        "Champawat",
-        "Uttarkashi",
-        "Roorkee",
-        "Tehri",
-        "Lansdowne",
-      ],
-      "West Bengal": [
-        "Kolkata",
-        "Garia",
-        "Darjeeling",
-        "Siliguri",
-        "Howrah",
-        "Asansol",
-        "Durgapur",
-        "Malda",
-        "Cooch Behar",
-        "Haldia",
-        "Kharagpur",
-        "Raiganj",
-        "Bardhaman",
-        "Jalpaiguri",
-        "Chandannagar",
-        "Kalimpong",
-        "Alipurduar",
-      ],
-      "Andaman and Nicobar Islands": [
-        "Port Blair",
-        "Havelock Island",
-        "Diglipur",
-        "Neil Island",
-        "Car Nicobar",
-        "Little Andaman",
-        "Long Island",
-        "Mayabunder",
-        "Campbell Bay",
-        "Rangat",
-        "Wandoor",
-      ],
-      Chandigarh: [
-        "Sector 1",
-        "Sector 2",
-        "Sector 3",
-        "Sector 4",
-        "Sector 5",
-        "Sector 6",
-        "Sector 7",
-        "Sector 8",
-        "Sector 9",
-        "Sector 10",
-        "Sector 11",
-        "Sector 12",
-        "Sector 13", // Note: Sector 13 does not exist in Chandigarh.
-        "Sector 14",
-        "Sector 15",
-        "Sector 16",
-        "Sector 17",
-        "Sector 18",
-        "Sector 19",
-        "Sector 20",
-        "Sector 21",
-        "Sector 22",
-        "Sector 23",
-        "Sector 24",
-        "Sector 25",
-        "Sector 26",
-        "Sector 27",
-        "Sector 28",
-        "Sector 29",
-        "Sector 30",
-        "Sector 31",
-        "Sector 32",
-        "Sector 33",
-        "Sector 34",
-        "Sector 35",
-        "Sector 36",
-        "Sector 37",
-        "Sector 38",
-        "Sector 39",
-        "Sector 40",
-        "Sector 41",
-        "Sector 42",
-        "Sector 43",
-        "Sector 44",
-        "Sector 45",
-        "Sector 46",
-        "Sector 47",
-      ],
-      "Dadra and Nagar Haveli and Daman and Diu": [
-        "Daman",
-        "Diu",
-        "Silvassa",
-        "Amli",
-        "Kachigam",
-        "Naroli",
-        "Vapi",
-        "Marwad",
-        "Samarvarni",
-        "Kawant",
-      ],
-      Delhi: [
-        "New Delhi",
-        "Old Delhi",
-        "Dwarka",
-        "Rohini",
-        "Karol Bagh",
-        "Lajpat Nagar",
-        "Saket",
-        "Vasant Kunj",
-        "Janakpuri",
-        "Mayur Vihar",
-        "Shahdara",
-        "Preet Vihar",
-        "Pitampura",
-        "Chanakyapuri",
-        "Narela",
-        "Mehrauli",
-        "Najafgarh",
-        "Okhla",
-        "Tilak Nagar",
-      ],
-      "Jammu and Kashmir": [
-        "Srinagar",
-        "Jammu",
-        "Anantnag",
-        "Baramulla",
-        "Pulwama",
-        "Kupwara",
-        "Udhampur",
-        "Kathua",
-        "Poonch",
-        "Kulgam",
-        "Budgam",
-        "Bandipora",
-        "Ganderbal",
-        "Rajouri",
-        "Reasi",
-        "Doda",
-        "Miran sahib",
-      ],
-      Ladakh: [
-        "Leh",
-        "Kargil",
-        "Diskit",
-        "Padum",
-        "Nubra",
-        "Tangtse",
-        "Sankoo",
-        "Zanskar",
-        "Nyoma",
-        "Turtuk",
-        "Hanle",
-      ],
-      Lakshadweep: [
-        "Kavaratti",
-        "Agatti",
-        "Minicoy",
-        "Amini",
-        "Andrott",
-        "Kalpeni",
-        "Kadmat",
-        "Chetlat",
-        "Bitra",
-        "Bangaram",
-      ],
-      Puducherry: [
-        "Puducherry",
-        "Karaikal",
-        "Mahe",
-        "Yanam",
-        "Villianur",
-        "Bahour",
-        "Oulgaret",
-        "Ariyankuppam",
-        "Nettapakkam",
-      ],
+      "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore"],
+      "Arunachal Pradesh": ["Itanagar", "Naharlagun"],
+      Assam: ["Guwahati", "Silchar", "Dibrugarh"],
+      Bihar: ["Patna", "Gaya", "Bhagalpur"],
+      Chhattisgarh: ["Raipur", "Bhilai", "Bilaspur"],
+      Goa: ["Panaji", "Margao"],
+      Gujarat: ["Ahmedabad", "Surat", "Vadodara", "Rajkot"],
+      Haryana: ["Gurgaon", "Faridabad", "Panipat"],
+      "Himachal Pradesh": ["Shimla", "Dharamshala"],
+      Jharkhand: ["Ranchi", "Jamshedpur", "Dhanbad"],
+      Karnataka: ["Bangalore", "Mysore", "Hubli"],
+      Kerala: ["Kochi", "Thiruvananthapuram", "Kozhikode"],
+      "Madhya Pradesh": ["Bhopal", "Indore", "Jabalpur"],
+      Maharashtra: ["Mumbai", "Pune", "Nagpur", "Nashik"],
+      Manipur: ["Imphal"],
+      Meghalaya: ["Shillong"],
+      Mizoram: ["Aizawl"],
+      Nagaland: ["Kohima", "Dimapur"],
+      Odisha: ["Bhubaneswar", "Cuttack", "Rourkela"],
+      Punjab: ["Ludhiana", "Amritsar", "Jalandhar"],
+      Rajasthan: ["Jaipur", "Jodhpur", "Udaipur"],
+      Sikkim: ["Gangtok"],
+      "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
+      Telangana: ["Hyderabad", "Warangal"],
+      Tripura: ["Agartala"],
+      "Uttar Pradesh": ["Lucknow", "Kanpur", "Noida", "Ghaziabad"],
+      Uttarakhand: ["Dehradun", "Haridwar"],
+      "West Bengal": ["Kolkata", "Howrah", "Durgapur"],
+      "Andaman and Nicobar Islands": ["Port Blair"],
+      Chandigarh: ["Chandigarh"],
+      "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Silvassa"],
+      Delhi: ["New Delhi"],
+      "Jammu and Kashmir": ["Srinagar", "Jammu"],
+      Ladakh: ["Leh"],
+      Lakshadweep: ["Kavaratti"],
+      Puducherry: ["Puducherry"],
     }),
     []
   );
@@ -1459,6 +728,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
         </Form.Group>
 
+        <Form.Group controlId="name">
+          <Form.Label>👤 Name</Form.Label>
+          <Form.Control
+            {...register("name")}
+            onChange={(e) => debouncedHandleInputChange("name", e.target.value)}
+            isInvalid={!!errors.name}
+          />
+        </Form.Group>
+
         <Form.Group controlId="partyAndAddress">
           <Form.Label>🏠 Party & Address</Form.Label>
           <Form.Control
@@ -1543,28 +821,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="orderType">
-          <Form.Label>📦 Order Type</Form.Label>
-          <Form.Control
-            as="select"
-            {...register("orderType")}
-            onChange={(e) =>
-              debouncedHandleInputChange("orderType", e.target.value)
-            }
-            isInvalid={!!errors.orderType}
-          >
-            <option value="GEM order">GEM order</option>
-            <option value="Govt. order">Govt. order</option>
-            <option value="Private order">Private order</option>
-            <option value="For Demo">For Demo</option>
-            <option value="Replacement">Replacement</option>
-            <option value="For repair purpose">For repair purpose</option>
-          </Form.Control>
-          <Form.Control.Feedback type="invalid">
-            {errors.orderType?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
         <Form.Group controlId="contactNo">
           <Form.Label>📱 Contact Number</Form.Label>
           <Form.Control
@@ -1583,21 +839,16 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.contactNo?.message}
           </Form.Control.Feedback>
         </Form.Group>
+
         <Form.Group controlId="customername">
           <Form.Label>👤 Customer Name</Form.Label>
           <Form.Control
-            type="text"
-            {...register("customername", {
-              required: "Customer name is required",
-            })}
+            {...register("customername")}
             onChange={(e) =>
               debouncedHandleInputChange("customername", e.target.value)
             }
             isInvalid={!!errors.customername}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.customername?.message}
-          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group controlId="customerEmail">
@@ -1620,40 +871,28 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="shippingAddress">
-          <Form.Label>📦 Shipping Address</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            {...register("shippingAddress")}
-            onChange={(e) =>
-              debouncedHandleInputChange("shippingAddress", e.target.value)
-            }
-            isInvalid={!!errors.shippingAddress}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="billingAddress">
-          <Form.Label>🏠 Billing Address</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            {...register("billingAddress")}
-            onChange={(e) =>
-              debouncedHandleInputChange("billingAddress", e.target.value)
-            }
-            isInvalid={!!errors.billingAddress}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="sameAddress">
-          <Form.Label>📝 Same as Shipping</Form.Label>
-          <Form.Check
-            type="checkbox"
-            {...register("sameAddress")}
-            onChange={(e) =>
-              debouncedHandleInputChange("sameAddress", e.target.checked)
-            }
+        <Form.Group controlId="orderType">
+          <Form.Label>📦 Order Type</Form.Label>
+          <Controller
+            name="orderType"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("orderType", e.target.value);
+                }}
+                isInvalid={!!errors.orderType}
+              >
+                <option value="GEM order">GEM order</option>
+                <option value="Govt. order">Govt. order</option>
+                <option value="Private order">Private order</option>
+                <option value="For Demo">For Demo</option>
+                <option value="Replacement">Replacement</option>
+                <option value="For repair purpose">For repair purpose</option>
+              </Form.Select>
+            )}
           />
         </Form.Group>
 
@@ -1797,6 +1036,28 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   placeholder="e.g., MN1, MN2, MN3"
                 />
               </Form.Group>
+              <Form.Group controlId={`products.${index}.gst`}>
+                <Form.Label>📊 GST (%)</Form.Label>
+                <Form.Control
+                  type="number"
+                  step="0.01"
+                  {...register(`products.${index}.gst`, {
+                    min: { value: 0, message: "GST cannot be negative" },
+                    max: { value: 100, message: "GST cannot exceed 100%" },
+                  })}
+                  onChange={(e) =>
+                    debouncedHandleInputChange(
+                      `products.${index}.gst`,
+                      e.target.value,
+                      index
+                    )
+                  }
+                  isInvalid={!!errors.products?.[index]?.gst}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.products?.[index]?.gst?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
             </ProductContainer>
           ))}
           <StyledButton
@@ -1807,23 +1068,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             Add Product
           </StyledButton>
         </div>
-
-        <Form.Group controlId="gst">
-          <Form.Label>📊 GST (%)</Form.Label>
-          <Form.Control
-            type="number"
-            step="0.01"
-            {...register("gst", {
-              min: { value: 0, message: "GST cannot be negative" },
-              max: { value: 100, message: "GST cannot exceed 100%" },
-            })}
-            onChange={(e) => debouncedHandleInputChange("gst", e.target.value)}
-            isInvalid={!!errors.gst}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.gst?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
 
         <Form.Group controlId="total">
           <Form.Label>💵 Total *</Form.Label>
@@ -1841,6 +1085,109 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
           <Form.Control.Feedback type="invalid">
             {errors.total?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="paymentCollected">
+          <Form.Label>💰 Payment Collected</Form.Label>
+          <Form.Control
+            type="number"
+            step="0.01"
+            {...register("paymentCollected", {
+              min: {
+                value: 0,
+                message: "Payment Collected cannot be negative",
+              },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("paymentCollected", e.target.value)
+            }
+            isInvalid={!!errors.paymentCollected}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.paymentCollected?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="paymentMethod">
+          <Form.Label>💳 Payment Method</Form.Label>
+          <Controller
+            name="paymentMethod"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("paymentMethod", e.target.value);
+                }}
+                isInvalid={!!errors.paymentMethod}
+              >
+                <option value="">-- Select Payment Method --</option>
+                <option value="Cash">Cash</option>
+                <option value="NEFT">NEFT</option>
+                <option value="RTGS">RTGS</option>
+                <option value="Cheque">Cheque</option>
+                <option value="UPI">UPI</option>
+                <option value="Credit Card">Credit Card</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="paymentDue">
+          <Form.Label>💰 Payment Due</Form.Label>
+          <Form.Control
+            type="number"
+            step="0.01"
+            {...register("paymentDue", {
+              min: { value: 0, message: "Payment Due cannot be negative" },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("paymentDue", e.target.value)
+            }
+            isInvalid={!!errors.paymentDue}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.paymentDue?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="neftTransactionId">
+          <Form.Label>📄 NEFT/RTGS Transaction ID</Form.Label>
+          <Form.Control
+            {...register("neftTransactionId", {
+              required:
+                paymentMethod === "NEFT" || paymentMethod === "RTGS"
+                  ? "NEFT/RTGS Transaction ID is required"
+                  : false,
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("neftTransactionId", e.target.value)
+            }
+            isInvalid={!!errors.neftTransactionId}
+            disabled={paymentMethod !== "NEFT" && paymentMethod !== "RTGS"}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.neftTransactionId?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="chequeId">
+          <Form.Label>📄 Cheque ID</Form.Label>
+          <Form.Control
+            {...register("chequeId", {
+              required:
+                paymentMethod === "Cheque" ? "Cheque ID is required" : false,
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("chequeId", e.target.value)
+            }
+            isInvalid={!!errors.chequeId}
+            disabled={paymentMethod !== "Cheque"}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.chequeId?.message}
           </Form.Control.Feedback>
         </Form.Group>
 
@@ -1954,6 +1301,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="Not Dispatched">Not Dispatched</option>
                 <option value="Dispatched">Dispatched</option>
                 <option value="Delivered">Delivered</option>
+                <option value="Docket Awaited Dispatched">
+                  Docket Awaited Dispatched
+                </option>
               </Form.Select>
             )}
           />
@@ -1972,17 +1322,24 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
         <Form.Group controlId="company">
           <Form.Label>🏢 Company</Form.Label>
-          <Form.Select
-            {...register("company")}
-            onChange={(e) =>
-              debouncedHandleInputChange("company", e.target.value)
-            }
-            isInvalid={!!errors.company}
-          >
-            <option value="Promark">Promark</option>
-            <option value="Promine">Promine</option>
-            <option value="Others">Others</option>
-          </Form.Select>
+          <Controller
+            name="company"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("company", e.target.value);
+                }}
+                isInvalid={!!errors.company}
+              >
+                <option value="Promark">Promark</option>
+                <option value="Promine">Promine</option>
+                <option value="Others">Others</option>
+              </Form.Select>
+            )}
+          />
         </Form.Group>
 
         <Form.Group controlId="transporter">
@@ -2032,10 +1389,35 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
         </Form.Group>
 
+        <Form.Group controlId="shippingAddress">
+          <Form.Label>📦 Shipping Address</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            {...register("shippingAddress")}
+            onChange={(e) =>
+              debouncedHandleInputChange("shippingAddress", e.target.value)
+            }
+            isInvalid={!!errors.shippingAddress}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="billingAddress">
+          <Form.Label>🏠 Billing Address</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            {...register("billingAddress")}
+            onChange={(e) =>
+              debouncedHandleInputChange("billingAddress", e.target.value)
+            }
+            isInvalid={!!errors.billingAddress}
+          />
+        </Form.Group>
+
         <Form.Group controlId="invoiceNo">
           <Form.Label>📄 Invoice No</Form.Label>
           <Form.Control
-            type="number"
             {...register("invoiceNo")}
             onChange={(e) =>
               debouncedHandleInputChange("invoiceNo", e.target.value)
@@ -2150,7 +1532,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
 
         <Form.Group controlId="fulfillmentDate">
-          <Form.Label>📅 Production Date</Form.Label>
+          <Form.Label>📅 Fulfillment Date</Form.Label>
           <Form.Control
             type="date"
             {...register("fulfillmentDate")}
@@ -2175,7 +1557,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             name="sostatus"
           >
             <option value="Pending for Approval">Pending for Approval</option>
-            <option value="Accounts Approved">"Accounts Approved"</option>
+            <option value="Accounts Approved">Accounts Approved</option>
             <option value="Approved">Approved</option>
           </Form.Select>
         </Form.Group>

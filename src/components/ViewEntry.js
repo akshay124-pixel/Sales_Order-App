@@ -66,10 +66,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Contact Person Name: ${entry.name || "N/A"}
       Contact Person No: ${entry.contactNo || "N/A"}
       Customer Email: ${entry.customerEmail || "N/A"}
+      Customer Name: ${entry.customername || "N/A"}
       Products:\n${productsText}
       Unit Price: ₹${totalUnitPrice.toFixed(2)}
       GST: ${gstText}
       Total: ₹${entry.total?.toFixed(2) || "0.00"}
+      Payment Collected: ₹${entry.paymentCollected || "0.00"}
+      Payment Method: ${entry.paymentMethod || "N/A"}
+      Payment Due: ₹${entry.paymentDue || "0.00"}
+      NEFT Transaction ID: ${entry.neftTransactionId || "N/A"}
+      Cheque ID: ${entry.chequeId || "N/A"}
       Payment Terms: ${entry.paymentTerms || "N/A"}
       Amount2: ₹${entry.amount2?.toFixed(2) || "0.00"}
       Freight Charges & Status: ${entry.freightcs || "N/A"}
@@ -105,6 +111,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
           ? new Date(entry.fulfillmentDate).toLocaleDateString()
           : "N/A"
       }
+      Remarks (Accounts): ${entry.remarksByAccounts || "N/A"}
+      Remarks (Production): ${entry.remarksByProduction || "N/A"}
+      Remarks (Installation): ${entry.remarksByInstallation || "N/A"}
     `.trim();
 
     navigator.clipboard
@@ -491,6 +500,23 @@ function ViewEntry({ isOpen, onClose, entry }) {
               <strong>Total:</strong> ₹{entry.total?.toFixed(2) || "0.00"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Payment Collected:</strong> ₹
+              {entry.paymentCollected || "0.00"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Payment Method:</strong> {entry.paymentMethod || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Payment Due:</strong> ₹{entry.paymentDue || "0.00"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>NEFT Transaction ID:</strong>{" "}
+              {entry.neftTransactionId || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Cheque ID:</strong> {entry.chequeId || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Payment Terms:</strong> {entry.paymentTerms || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -620,7 +646,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "1.5rem",
+              gap: "1rem",
               flexWrap: "wrap",
             }}
           >
