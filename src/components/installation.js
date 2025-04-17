@@ -623,14 +623,6 @@ function Installation() {
                       gap: "0.8rem",
                     }}
                   >
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Model Nos:</strong>{" "}
-                      {viewOrder.modelNos?.join(", ") || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Serial Nos:</strong>{" "}
-                      {viewOrder.serialNos?.join(", ") || "N/A"}
-                    </span>
                     {viewOrder.products && viewOrder.products.length > 0 ? (
                       viewOrder.products.map((product, index) => (
                         <div

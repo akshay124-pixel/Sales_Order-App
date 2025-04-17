@@ -615,14 +615,7 @@ function Finish() {
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                 </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Serial Nos:</strong>{" "}
-                  {viewOrder.serialNos?.join(", ") || "N/A"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Model Nos:</strong>{" "}
-                  {viewOrder.modelNos?.join(", ") || "N/A"}
-                </span>
+
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Bill No:</strong> {viewOrder.billNumber || "N/A"}
                 </span>
