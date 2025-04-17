@@ -55,7 +55,7 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
           src="logo.png"
           alt="Logo"
           className="logo-image"
-          style={{ width: "90px", height: "auto", marginLeft: "20px" }}
+          style={{ width: "130px", height: "auto", marginLeft: "20px" }}
         />
       </div>
       <div className="navbar-links">{renderNavLinks()}</div>
