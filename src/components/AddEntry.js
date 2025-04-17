@@ -2154,190 +2154,213 @@ function AddEntry({ onSubmit, onClose }) {
             >
               💰 Payment Details
             </h3>
+
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "1rem",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1.5rem",
+                alignItems: "start",
               }}
             >
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Payment Collected *
-                </label>
-                <input
-                  type="number"
-                  name="paymentCollected"
-                  value={formData.paymentCollected}
-                  onChange={handleChange}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Payment Method *
-                </label>
-                <select
-                  name="paymentMethod"
-                  value={formData.paymentMethod}
-                  onChange={handleChange}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
-                >
-                  <option value="">Select Method</option>
-                  {paymentMethodOptions.map((method) => (
-                    <option key={method} value={method}>
-                      {method}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Payment Due
-                </label>
-                <input
-                  type="number"
-                  name="paymentDue"
-                  value={formData.paymentDue}
-                  readOnly
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: "#e5e7eb",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
-                />
-              </div>
-              {formData.paymentMethod === "NEFT" && (
-                <div>
-                  <label
-                    style={{
-                      fontSize: "0.9rem",
-                      fontWeight: "600",
-                      color: "#475569",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    NEFT Transaction ID *
-                  </label>
-                  <input
-                    type="text"
-                    name="neftTransactionId"
-                    value={formData.neftTransactionId}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter NEFT Transaction ID"
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                  />
-                </div>
-              )}
-              {formData.paymentMethod === "Cheque" && (
-                <div>
-                  <label
-                    style={{
-                      fontSize: "0.9rem",
-                      fontWeight: "600",
-                      color: "#475569",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Cheque ID *
-                  </label>
-                  <input
-                    type="text"
-                    name="chequeId"
-                    value={formData.chequeId}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter Cheque ID"
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div style={{ marginTop: "1rem" }}>
-              <label
+              {/* Left Side */}
+              <div
                 style={{
-                  fontSize: "0.9rem",
-                  fontWeight: "600",
-                  color: "#475569",
-                  marginBottom: "0.5rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
                 }}
               >
-                Total Amount
-              </label>
-              <input
-                type="number"
-                value={calculateTotal()}
-                readOnly
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Total Amount
+                  </label>
+                  <div
+                    style={{
+                      padding: "0.75rem",
+                      backgroundColor: "#f1f5f9",
+                      borderRadius: "0.75rem",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                      fontWeight: "600",
+                    }}
+                  >
+                    ₹ {calculateTotal()}
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Payment Collected *
+                  </label>
+                  <input
+                    type="number"
+                    name="paymentCollected"
+                    value={formData.paymentCollected}
+                    onChange={handleChange}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Payment Due
+                  </label>
+                  <input
+                    type="number"
+                    name="paymentDue"
+                    value={formData.paymentDue}
+                    readOnly
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#e5e7eb",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Right Side */}
+              <div
                 style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "0.75rem",
-                  backgroundColor: "#e5e7eb",
-                  fontSize: "1rem",
-                  color: "#1e293b",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
                 }}
-              />
+              >
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Payment Method *
+                  </label>
+                  <select
+                    name="paymentMethod"
+                    value={formData.paymentMethod}
+                    onChange={handleChange}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  >
+                    <option value="">Select Method</option>
+                    {paymentMethodOptions.map((method) => (
+                      <option key={method} value={method}>
+                        {method}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {formData.paymentMethod === "NEFT" && (
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        color: "#475569",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      NEFT Transaction ID *
+                    </label>
+                    <input
+                      type="text"
+                      name="neftTransactionId"
+                      value={formData.neftTransactionId}
+                      onChange={handleChange}
+                      required
+                      placeholder="Enter NEFT Transaction ID"
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    />
+                  </div>
+                )}
+
+                {formData.paymentMethod === "Cheque" && (
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        color: "#475569",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      Cheque ID *
+                    </label>
+                    <input
+                      type="text"
+                      name="chequeId"
+                      value={formData.chequeId}
+                      onChange={handleChange}
+                      required
+                      placeholder="Enter Cheque ID"
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
