@@ -171,32 +171,24 @@ const Sales = () => {
     }
   };
 
-  const parseDate = (dateValue) => {
-    if (!dateValue) return null;
-    if (typeof dateValue === "number") {
-      const date = new Date((dateValue - 25569) * 86400 * 1000);
-      return isValid(date) ? format(date, "yyyy-MM-dd") : null;
-    }
-    const formats = [
-      "yyyy-MM-dd",
-      "dd/MM/yyyy",
-      "MM/dd/yyyy",
-      "dd/M/yyyy",
-      "M/d/yyyy",
-    ];
-    for (const fmt of formats) {
-      const parsed = parse(String(dateValue), fmt, new Date());
-      if (isValid(parsed)) return format(parsed, "yyyy-MM-dd");
-    }
-    console.warn(`Invalid date format: ${dateValue}`);
-    return null;
-  };
-
   const formatCurrency = (value) => {
     if (!value || value === "") return "₹0.00";
     const numericValue = parseFloat(value.toString().replace(/[^0-9.-]+/g, ""));
     if (isNaN(numericValue)) return "₹0.00";
     return `₹${numericValue.toFixed(2)}`;
+  };
+
+  const parseExcelDate = (dateValue) => {
+    if (!dateValue) return "";
+    if (typeof dateValue === "number") {
+      const excelEpoch = new Date(1899, 11, 30);
+      const date = new Date(
+        excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000
+      );
+      return isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+    }
+    const date = new Date(String(dateValue).trim());
+    return isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
   };
 
   const handleFileUpload = async (e) => {
@@ -207,37 +199,78 @@ const Sales = () => {
     reader.onload = async (event) => {
       try {
         const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
+        const workbook = XLSX.read(data, {
+          type: "array",
+          raw: false,
+          dateNF: "yyyy-mm-dd",
+        });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(worksheet, {
           header: 1,
           raw: false,
+          blankrows: false,
         });
 
         const headers = parsedData[0].map((h) =>
-          h.toLowerCase().replace(/\s+/g, "")
+          h
+            ? h
+                .toLowerCase()
+                .replace(/\s+/g, "")
+                .replace(/[^a-z0-9]/g, "")
+            : ""
         );
-        const rows = parsedData.slice(1);
+        const rows = parsedData
+          .slice(1)
+          .filter((row) =>
+            row.some((cell) => cell !== undefined && cell !== "")
+          );
 
         const newEntries = rows.map((row) => {
           const entry = {};
           headers.forEach((header, index) => {
-            entry[header] = row[index];
+            entry[header] = row[index] !== undefined ? row[index] : "";
           });
 
-          const products = [];
+          let products = [];
           if (entry.products) {
             try {
-              products.push(...JSON.parse(entry.products));
+              products = JSON.parse(entry.products);
+              if (!Array.isArray(products)) {
+                products = [products];
+              }
             } catch {
-              products.push({
-                productType: String(entry.producttype || "").trim(),
+              products = [
+                {
+                  productType: String(entry.producttype || "Unknown").trim(),
+                  size: String(entry.size || "N/A").trim(),
+                  spec: String(entry.spec || "N/A").trim(),
+                  qty: Number(entry.qty) || 1,
+                  unitPrice: Number(entry.unitprice) || 0,
+                  serialNos: entry.serialnos
+                    ? String(entry.serialnos)
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                    : [],
+                  modelNos: entry.modelnos
+                    ? String(entry.modelnos)
+                        .split(",")
+                        .map((m) => m.trim())
+                        .filter(Boolean)
+                    : [],
+                  gst: Number(entry.gst) || 0,
+                },
+              ];
+            }
+          } else {
+            products = [
+              {
+                productType: String(entry.producttype || "Unknown").trim(),
                 size: String(entry.size || "N/A").trim(),
                 spec: String(entry.spec || "N/A").trim(),
-                qty: Number(entry.qty) || 0,
+                qty: Number(entry.qty) || 1,
                 unitPrice: Number(entry.unitprice) || 0,
-                gst: Number(entry.gst) || 0,
                 serialNos: entry.serialnos
                   ? String(entry.serialnos)
                       .split(",")
@@ -250,58 +283,39 @@ const Sales = () => {
                       .map((m) => m.trim())
                       .filter(Boolean)
                   : [],
-              });
-            }
+                gst: Number(entry.gst) || 0,
+              },
+            ];
           }
 
           return {
-            soDate: parseDate(entry.sodate),
-            committedDate: parseDate(entry.committeddate),
+            soDate:
+              parseExcelDate(entry.sodate) ||
+              new Date().toISOString().slice(0, 10),
+            committedDate: parseExcelDate(entry.committeddate) || "",
             dispatchFrom: String(entry.dispatchfrom || "").trim(),
             status: String(entry.status || "Pending").trim(),
-            dispatchDate: parseDate(entry.dispatchdate),
+            dispatchDate: parseExcelDate(entry.dispatchdate) || "",
+            name: String(entry.name || "").trim(),
             partyAndAddress: String(entry.partyandaddress || "").trim(),
             city: String(entry.city || "").trim(),
             state: String(entry.state || "").trim(),
             pinCode: String(entry.pincode || "").trim(),
-            name: String(entry.name || "").trim(),
             contactNo: String(entry.contactno || "").trim(),
             customerEmail: String(entry.customeremail || "").trim(),
             customername: String(entry.customername || "").trim(),
             products,
             total: Number(entry.total) || 0,
-            paymentCollected: String(entry.paymentcollected || "").trim(), // Ensure string
-            paymentMethod: String(entry.paymentmethod || "").trim(), // Ensure string
-            paymentDue: String(entry.payementdue || "").trim(), // Ensure string
-            freightcs: String(entry.freightcs || "").trim(),
-            installation: String(entry.installation || "N/A").trim(),
-            salesPerson: String(entry.salesperson || "").trim(),
-            shippingAddress: String(entry.shippingaddress || "").trim(),
-            billingAddress: String(entry.billingaddress || "").trim(),
-            company: String(entry.company || "Promark").trim(),
-            transporter: String(entry.transporter || "").trim(),
-            orderType: String(entry.ordertype || "Private order").trim(),
-            transporterDetails: String(entry.transporterdetails || "").trim(),
-            docketNo: String(entry.docketno || "").trim(),
-            receiptDate: parseDate(entry.receiptdate),
-            sostatus: String(entry.sostatus || "Pending for Approval").trim(),
-            invoiceNo: String(entry.invoiceno || "").trim(),
-            invoiceDate: parseDate(entry.invoicedate),
-            remarks: String(entry.remarks || "").trim(),
-            fulfillingStatus: String(
-              entry.fulfillingstatus || "Pending"
-            ).trim(),
-            remarksByProduction: String(entry.remarksbyproduction || "").trim(),
-            billNumber: String(entry.billnumber || "").trim(),
-            completionStatus: String(
-              entry.completionstatus || "In Progress"
-            ).trim(),
-            fulfillmentDate: parseDate(entry.fulfillmentdate),
-            remarksByAccounts: String(entry.remarksbyaccounts || "").trim(),
-            paymentReceived: String(
-              entry.paymentreceived || "Not Received"
-            ).trim(),
+            paymentCollected: String(entry.paymentcollected || "").trim(),
+            paymentMethod: String(entry.paymentmethod || "").trim(),
+            paymentDue: String(entry.paymentdue || "").trim(),
+            neftTransactionId: String(entry.nefttransactionid || "").trim(),
+            chequeId: String(entry.chequeid || "").trim(),
+            paymentTerms: String(entry.paymentterms || "").trim(),
             amount2: Number(entry.amount2) || 0,
+            freightcs: String(entry.freightcs || "").trim(),
+            orderType: String(entry.ordertype || "Private order").trim(),
+            installation: String(entry.installation || "N/A").trim(),
             installationStatus: String(
               entry.installationstatus || "Pending"
             ).trim(),
@@ -311,28 +325,39 @@ const Sales = () => {
             dispatchStatus: String(
               entry.dispatchstatus || "Not Dispatched"
             ).trim(),
-            sameAddress: Boolean(entry.sameaddress || false),
+            salesPerson: String(entry.salesperson || "").trim(),
+            company: String(entry.company || "Promark").trim(),
+            transporter: String(entry.transporter || "").trim(),
+            transporterDetails: String(entry.transporterdetails || "").trim(),
+            docketNo: String(entry.docketno || "").trim(),
+            receiptDate: parseExcelDate(entry.receiptdate) || "",
+            shippingAddress: String(entry.shippingaddress || "").trim(),
+            billingAddress: String(entry.billingaddress || "").trim(),
+            invoiceNo: String(entry.invoiceno || "").trim(),
+            invoiceDate: parseExcelDate(entry.invoicedate) || "",
+            fulfillingStatus: String(
+              entry.fulfillingstatus || "Pending"
+            ).trim(),
+            remarksByProduction: String(entry.remarksbyproduction || "").trim(),
+            remarksByAccounts: String(entry.remarksbyaccounts || "").trim(),
+            paymentReceived: String(
+              entry.paymentreceived || "Not Received"
+            ).trim(),
+            billNumber: String(entry.billnumber || "").trim(),
+            completionStatus: String(
+              entry.completionstatus || "In Progress"
+            ).trim(),
+            fulfillmentDate: parseExcelDate(entry.fulfillmentdate) || "",
+            remarks: String(entry.remarks || "").trim(),
+            sostatus: String(entry.sostatus || "Pending for Approval").trim(),
           };
         });
 
-        const validEntries = newEntries.filter(
-          (entry) =>
-            entry.soDate &&
-            entry.total &&
-            entry.products.length > 0 &&
-            entry.products.every((p) => p.productType && p.qty > 0)
-        );
-
-        if (validEntries.length === 0) {
-          toast.error(
-            "No valid entries found. Ensure soDate, total, and at least one product with productType and qty are provided."
-          );
-          return;
-        }
+        console.log("Sending entries:", JSON.stringify(newEntries, null, 2));
 
         const response = await axios.post(
-          "https://sales-order-server.onrender.com/api/bulk-orders",
-          validEntries,
+          "http://localhost:5000/api/bulk-orders",
+          newEntries,
           { headers: { "Content-Type": "application/json" } }
         );
 
@@ -345,7 +370,7 @@ const Sales = () => {
         const message =
           error.response?.data?.details?.join(", ") ||
           error.response?.data?.message ||
-          "Failed to upload entries";
+          "Failed to upload entries. Please check the data and try again.";
         toast.error(message);
       }
     };
@@ -354,12 +379,9 @@ const Sales = () => {
 
   const handleExport = async () => {
     try {
-      const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/export",
-        {
-          responseType: "arraybuffer",
-        }
-      );
+      const response = await axios.get("http://localhost:5000/api/export", {
+        responseType: "arraybuffer",
+      });
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -376,7 +398,6 @@ const Sales = () => {
       toast.error("Failed to export orders!");
     }
   };
-
   const isOrderComplete = (order) => {
     const requiredFields = [
       "soDate",
