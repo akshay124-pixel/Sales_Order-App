@@ -48,11 +48,11 @@ function AddEntry({ onSubmit, onClose }) {
     IFPD: {
       sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
       specs: [
+        "Android 9, 4GB RAM, 32GB ROM",
+        "Android 8, 4GB RAM, 32GB ROM",
         "Android 11, 4GB RAM, 32GB ROM",
         "Android 13, 8GB RAM, 128GB ROM",
-        "Android 8, 4GB RAM, 32GB ROM",
         "Android 13, 4GB RAM, 32GB ROM",
-        "Android 9, 4GB RAM, 32GB ROM",
       ],
     },
     OPS: {
