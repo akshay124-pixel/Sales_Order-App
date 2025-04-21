@@ -51,8 +51,12 @@ function AddEntry({ onSubmit, onClose }) {
         "Android 9, 4GB RAM, 32GB ROM",
         "Android 8, 4GB RAM, 32GB ROM",
         "Android 11, 4GB RAM, 32GB ROM",
-        "Android 13, 8GB RAM, 128GB ROM",
+        "Android 11, 8GB RAM, 128GB ROM",
         "Android 13, 4GB RAM, 32GB ROM",
+        "Android 13, 8GB RAM, 128GB ROM",
+        "Android 13, 8GB RAM, 128GB ROM  Inbuilt Camera",
+        "Android 14, 8GB RAM, 128GB ROM",
+        "Android 14, 8GB RAM, 128GB ROM Inbuilt Camera",
       ],
     },
     OPS: {
