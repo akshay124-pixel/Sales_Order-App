@@ -2019,7 +2019,6 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentCollected"
                     value={formData.paymentCollected}
                     onChange={handleChange}
-                    required
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -2084,7 +2083,6 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentMethod"
                     value={formData.paymentMethod}
                     onChange={handleChange}
-                    required
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -2121,7 +2119,6 @@ function AddEntry({ onSubmit, onClose }) {
                       name="neftTransactionId"
                       value={formData.neftTransactionId}
                       onChange={handleChange}
-                      required
                       placeholder="Enter NEFT Transaction ID"
                       style={{
                         width: "100%",
@@ -2153,7 +2150,6 @@ function AddEntry({ onSubmit, onClose }) {
                       name="chequeId"
                       value={formData.chequeId}
                       onChange={handleChange}
-                      required
                       placeholder="Enter Cheque ID"
                       style={{
                         width: "100%",
