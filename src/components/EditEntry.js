@@ -1166,6 +1166,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       ],
       "Uttar Pradesh": [
         "Shikohabad ",
+        "Badhnan",
         "Khalilabad",
         "Lucknow",
         "Matbarganj",
