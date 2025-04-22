@@ -932,6 +932,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     "Uttar Pradesh": [
       "Shikohabad",
+      "Khalilabad",
       "Lucknow",
       "Matbarganj",
       "Kasganj",
