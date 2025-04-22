@@ -176,7 +176,7 @@ function AddEntry({ onSubmit, onClose }) {
       ],
     },
     "Digital Podium": {
-      sizes: ["43 inch", "55 inch", "65 inch"],
+      sizes: ["N/A"],
       specs: [
         "Standard Digital Podium",
         "Advanced Digital Podium",
@@ -187,7 +187,10 @@ function AddEntry({ onSubmit, onClose }) {
       ],
     },
     "Audio Podium": { sizes: ["Full"], specs: ["N/A"] },
-    Kiosk: { sizes: ["N/A"], specs: ["Touch", "Non-Touch"] },
+    Kiosk: {
+      sizes: ["32 inch,43 inch,55 inch,65 inch"],
+      specs: ["Touch", "Non-Touch"],
+    },
     "PTZ Camera": {
       sizes: ["N/A"],
       specs: [
@@ -290,7 +293,7 @@ function AddEntry({ onSubmit, onClose }) {
       specs: ["Projector Ceiling Mount", "PTZ Ceiling Mount"],
     },
     "Almirah Type Shutter": {
-      sizes: ["55 inch", "65 inch", "75 inch"],
+      sizes: ["65 inch", "75 inch", "86 inch", "98  inch"],
       specs: ["N/A"],
     },
     Aicharya: {
