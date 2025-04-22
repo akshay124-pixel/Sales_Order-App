@@ -176,8 +176,7 @@ function AddEntry({ onSubmit, onClose }) {
       ],
     },
     "Digital Podium": {
-      sizes: ["N/A"],
-      specs: [
+      sizes: [
         "Standard Digital Podium",
         "Advanced Digital Podium",
         "Android Touch",
@@ -185,11 +184,25 @@ function AddEntry({ onSubmit, onClose }) {
         "Windows Touch",
         "Windows Non-Touch",
       ],
+      specs: [
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 2 COOLER MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 2 COOLER MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+      ],
     },
     "Audio Podium": { sizes: ["Full"], specs: ["N/A"] },
     Kiosk: {
       sizes: ["32 inch,43 inch,55 inch,65 inch"],
-      specs: ["Touch", "Non-Touch"],
+      specs: ["Touch Andriod 13/4/32", "Non-Touch Andriod 13/4/32"],
     },
     "PTZ Camera": {
       sizes: ["N/A"],
@@ -257,7 +270,10 @@ function AddEntry({ onSubmit, onClose }) {
     "Floor Stand": { sizes: ["N/A"], specs: ["N/A"] },
     "Notice Board": { sizes: ["N/A"], specs: ["N/A"] },
     Visualizer: { sizes: ["N/A"], specs: ["N/A"] },
-    "Web Cam": { sizes: ["N/A"], specs: ["Full HD", "4K"] },
+    "Web Cam": {
+      sizes: ["N/A"],
+      specs: ["Full HD Non-AI Featured", "4K AI Featured", "4K Auto Tracking"],
+    },
     "Bluetooth Microphone": { sizes: ["N/A"], specs: ["N/A"] },
     "UPS Cabinet": { sizes: ["N/A"], specs: ["N/A"] },
     "SD Card": {
