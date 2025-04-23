@@ -1393,13 +1393,15 @@ function AddEntry({ onSubmit, onClose }) {
 
   const calculateTotal = () => {
     const subtotal = products.reduce((sum, product) => {
-      const quantity = Number(product.qty) || 0;
-      const price = Number(product.unitPrice) || 0;
-      return sum + quantity * price;
+      return (
+        sum + (Number(product.qty) || 0) * (Number(product.unitPrice) || 0)
+      );
     }, 0);
-    const freight = Number(formData.freightcs) || 0;
 
-    return Number((subtotal + freight).toFixed(2));
+    const freight = Number(formData.freightcs) || 0;
+    const gstRate = Number(formData.gst) || 0;
+
+    return Number(((subtotal + freight) * (1 + gstRate / 100)).toFixed(2));
   };
 
   const calculatePaymentDue = (paymentCollected) => {

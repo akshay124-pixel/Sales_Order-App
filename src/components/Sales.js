@@ -312,7 +312,7 @@ const Sales = () => {
             neftTransactionId: String(entry.nefttransactionid || "").trim(),
             chequeId: String(entry.chequeid || "").trim(),
             paymentTerms: String(entry.paymentterms || "").trim(),
-            amount2: Number(entry.amount2) || 0,
+
             freightcs: String(entry.freightcs || "").trim(),
             orderType: String(entry.ordertype || "Private order").trim(),
             installation: String(entry.installation || "N/A").trim(),
@@ -326,6 +326,7 @@ const Sales = () => {
               entry.dispatchstatus || "Not Dispatched"
             ).trim(),
             salesPerson: String(entry.salesperson || "").trim(),
+            report: String(entry.report || "").trim(),
             company: String(entry.company || "Promark").trim(),
             transporter: String(entry.transporter || "").trim(),
             transporterDetails: String(entry.transporterdetails || "").trim(),
@@ -420,6 +421,7 @@ const Sales = () => {
       "orderType",
       "installation",
       "salesPerson",
+      "report",
       "shippingAddress",
       "billingAddress",
       "company",
@@ -436,7 +438,7 @@ const Sales = () => {
       "billNumber",
       "completionStatus",
       "paymentReceived",
-      "amount2",
+
       "installationStatus",
       "dispatchStatus",
     ];
@@ -850,7 +852,7 @@ const Sales = () => {
                 "Payment Collected",
                 "Payment Method",
                 "Payment Due",
-                "Amount2",
+
                 "Installation",
                 "Sales Person",
                 "Company",
@@ -1047,9 +1049,7 @@ const Sales = () => {
                     <td style={{ padding: "15px" }}>
                       {formatCurrency(order.paymentDue)}
                     </td>
-                    <td style={{ padding: "15px" }}>
-                      ₹{order.amount2?.toFixed(2) || "0.00"}
-                    </td>
+
                     <td style={{ padding: "15px" }}>
                       {order.installation || "-"}
                     </td>
