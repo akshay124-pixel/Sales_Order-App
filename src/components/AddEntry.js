@@ -36,7 +36,7 @@ function AddEntry({ onSubmit, onClose }) {
     shippingAddress: "",
     billingAddress: "",
     sameAddress: false,
-    orderType: "Private order",
+    orderType: "Private",
     paymentCollected: "",
     paymentMethod: "",
     paymentDue: "",
@@ -1194,12 +1194,12 @@ function AddEntry({ onSubmit, onClose }) {
   };
 
   const orderTypeOptions = [
-    "GEM order",
-    "Govt. order",
-    "Private order",
-    "For Demo",
+    "GEM ",
+    "Goverment",
+    "Private",
+    "Demo",
     "Replacement",
-    "For repair purpose",
+    "Repair",
   ];
 
   const paymentMethodOptions = ["Cash", "NEFT", "RTGS", "Cheque"];
