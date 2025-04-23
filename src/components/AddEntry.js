@@ -194,7 +194,7 @@ function AddEntry({ onSubmit, onClose }) {
         'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
       ],
     },
-    "Digital Podium": {
+    "Advance Digital Podium": {
       sizes: ["Front Display 32inch"],
       specs: [
         'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
@@ -213,6 +213,7 @@ function AddEntry({ onSubmit, onClose }) {
     "PTZ Camera": {
       sizes: ["N/A"],
       specs: [
+        "Non-Voice Tracking-Full HD",
         "UHD 20x",
         "FHD Voice Tracking",
         "4K Auto Tracking",
