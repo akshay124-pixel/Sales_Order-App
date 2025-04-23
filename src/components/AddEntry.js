@@ -1574,28 +1574,6 @@ function AddEntry({ onSubmit, onClose }) {
               type: "email",
               placeholder: "e.g. example@domain.com",
             },
-
-            {
-              label: "Freight Charges & Status",
-              name: "freightcs",
-              type: "text",
-              placeholder: "e.g. ₹2000, Paid",
-              onChange: (e) => {
-                handleChange(e);
-                setFormData((prev) => ({
-                  ...prev,
-                  paymentDue: calculatePaymentDue(
-                    Number(prev.paymentCollected) || 0
-                  ),
-                }));
-              },
-            },
-            {
-              label: "Installation Charges",
-              name: "installation",
-              type: "text",
-              placeholder: "e.g. ₹1000, Not Included",
-            },
             {
               label: "Sales Person",
               name: "salesPerson",
@@ -1963,6 +1941,78 @@ function AddEntry({ onSubmit, onClose }) {
                 </div>
               </div>
             )}
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1.5rem",
+                marginTop: "1rem",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Freight Charges & Status
+                </label>
+                <input
+                  type="text"
+                  name="freightcs"
+                  value={formData.freightcs || ""}
+                  onChange={(e) => {
+                    handleChange(e);
+                    setFormData((prev) => ({
+                      ...prev,
+                      paymentDue: calculatePaymentDue(
+                        Number(prev.paymentCollected) || 0
+                      ),
+                    }));
+                  }}
+                  placeholder="e.g. ₹2000, Paid"
+                  style={{
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Installation Charges
+                </label>
+                <input
+                  type="text"
+                  name="installation"
+                  value={formData.installation || ""}
+                  onChange={handleChange}
+                  placeholder="e.g. ₹1000, Not Included"
+                  style={{
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
           <div style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
