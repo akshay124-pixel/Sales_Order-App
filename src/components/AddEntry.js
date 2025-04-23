@@ -2055,7 +2055,7 @@ function AddEntry({ onSubmit, onClose }) {
                     marginBottom: "0.5rem",
                   }}
                 >
-                  Freight Charges & Status
+                  Freight Charges
                 </label>
                 <input
                   type="text"
