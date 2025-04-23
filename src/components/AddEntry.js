@@ -1392,16 +1392,21 @@ function AddEntry({ onSubmit, onClose }) {
   };
 
   const calculateTotal = () => {
-    const subtotal = products.reduce((sum, product) => {
-      return (
-        sum + (Number(product.qty) || 0) * (Number(product.unitPrice) || 0)
-      );
+    const subtotalWithGST = products.reduce((sum, product) => {
+      const qty = Number(product.qty) || 0;
+      const unitPrice = Number(product.unitPrice) || 0;
+      const gstRate = Number(product.gst) || 0;
+
+      const base = qty * unitPrice;
+      const gst = base * (gstRate / 100);
+
+      return sum + base + gst;
     }, 0);
 
+    const installation = Number(formData.installation) || 0;
     const freight = Number(formData.freightcs) || 0;
-    const gstRate = Number(formData.gst) || 0;
 
-    return Number(((subtotal + freight) * (1 + gstRate / 100)).toFixed(2));
+    return Number((subtotalWithGST + freight + installation).toFixed(2));
   };
 
   const calculatePaymentDue = (paymentCollected) => {
