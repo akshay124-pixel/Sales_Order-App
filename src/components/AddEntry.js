@@ -27,7 +27,7 @@ function AddEntry({ onSubmit, onClose }) {
     contactNo: "",
     customerEmail: "",
     customername: "",
-    amount2: "",
+
     freightcs: "",
     installation: "",
     remarks: "",
@@ -1317,8 +1317,8 @@ function AddEntry({ onSubmit, onClose }) {
       return sum + quantity * price;
     }, 0);
     const freight = Number(formData.freightcs) || 0;
-    const additionalAmount = Number(formData.amount2) || 0;
-    return Number((subtotal + freight + additionalAmount).toFixed(2));
+
+    return Number((subtotal + freight).toFixed(2));
   };
 
   const calculatePaymentDue = (paymentCollected) => {
@@ -1364,7 +1364,7 @@ function AddEntry({ onSubmit, onClose }) {
       soDate: formData.soDate,
       committedDate: formData.committedDate || null,
       total,
-      amount2: Number(formData.amount2 || 0),
+
       freightcs: formData.freightcs || "",
       installation: formData.installation || "N/A",
       orderType: formData.orderType,
@@ -1574,22 +1574,7 @@ function AddEntry({ onSubmit, onClose }) {
               type: "email",
               placeholder: "e.g. example@domain.com",
             },
-            {
-              label: "Amount2",
-              name: "amount2",
-              type: "number",
-              inputMode: "decimal",
-              placeholder: "Enter Additional Amount",
-              onChange: (e) => {
-                handleChange(e);
-                setFormData((prev) => ({
-                  ...prev,
-                  paymentDue: calculatePaymentDue(
-                    Number(prev.paymentCollected) || 0
-                  ),
-                }));
-              },
-            },
+
             {
               label: "Freight Charges & Status",
               name: "freightcs",
