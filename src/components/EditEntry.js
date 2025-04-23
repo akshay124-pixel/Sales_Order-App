@@ -104,6 +104,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       ],
       total: "",
       paymentCollected: "",
+      report: "",
       paymentMethod: "",
       paymentDue: "",
       neftTransactionId: "",
@@ -240,6 +241,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         remarksByInstallation: entryToEdit.remarksByInstallation || "",
         dispatchStatus: entryToEdit.dispatchStatus || "Not Dispatched",
         salesPerson: entryToEdit.salesPerson || "",
+        report: entryToEdit.report || "",
         company: entryToEdit.company || "Promark",
         transporter: entryToEdit.transporter || "",
         transporterDetails: entryToEdit.transporterDetails || "",
@@ -362,6 +364,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         remarksByInstallation: data.remarksByInstallation || "",
         dispatchStatus: data.dispatchStatus || "Not Dispatched",
         salesPerson: data.salesPerson || null,
+        report: data.report || null,
         company: data.company || "Promark",
         transporter: data.transporter || null,
         transporterDetails: data.transporterDetails || null,
@@ -1397,7 +1400,88 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     }),
     []
   );
-
+  const salesPersonlist = [
+    "Aasim Musadiq",
+    "Abhay Pratap Singh",
+    "Abhayjit Sekhon",
+    "Ajay Kumar",
+    "Amarjeet Singh",
+    "Aniket Singh",
+    "Anil Kumar",
+    "Animesh Trivedi",
+    "Anirban Syam",
+    "Ankit Sharma",
+    "Anup Panday",
+    "Arif Khan",
+    "Arwinder Singh",
+    "Awadesh Kumar Srivastav",
+    "Bachan Pal",
+    "Barjesh Singh",
+    "Gursewak Singh",
+    "Harish Kumar",
+    "Harpeet Singh",
+    "J P Sharma",
+    "Jagan Lal",
+    "Javvad Akram",
+    "Kulwinder Singh",
+    "Manish CS Lange",
+    "Manjit Singh Chowhan",
+    "Mayank Goutam",
+    "Mayank Prasad",
+    "Nikhil Sharma",
+    "Parmjeet Singh",
+    "Pitamber Sharma",
+    "Purnendu Kumar",
+    "Raj Bahadur Singh",
+    "Rajeev Kumar Singh",
+    "Rajeev Pal Singh",
+    "Rajesh Kumar",
+    "Rakesh Kumar",
+    "Ramkumar Singh",
+    "Rohit Kumar Tiwari",
+    "Sahil Gupta",
+    "Savir Khan",
+    "Shri Kant",
+    "Siddhartha Kumar",
+    "Sidhant Oberai",
+    "Sidhant Prajapati",
+    "Sukhjinder Pal Singh",
+    "Sumit Kushwaha",
+    "Sunil Kukkar",
+    "Surbhi Chugh",
+    "Sushil Kumar",
+    "Vageesh Bhardwaj",
+    "Vaibhav Mishra",
+    "Varun Budhiraja",
+    "Vaseem Khan",
+  ];
+  const Reportinglist = [
+    "Abhay Pratap Singh",
+    "Abhayjit Sekhon",
+    "Amarjeet Singh",
+    "Arwinder Singh",
+    "Bachan Pal",
+    "Harpeet Singh",
+    "J P Sharma",
+    "Manish CS Lange",
+    "Manjit Singh Chowhan",
+    "Mayank Prasad",
+    "Nikhil Sharma",
+    "Purnendu Kumar",
+    "Raj Bahadur Singh",
+    "Rajeev Kumar Singh",
+    "Rajeev Pal Singh",
+    "Sahil Gupta",
+    "Savir Khan",
+    "Siddhartha Kumar",
+    "Sukhjinder Pal Singh",
+    "Sumit Kushwaha",
+    "Sunil Kukkar",
+    "Surbhi Chugh",
+    "Sushil Kumar",
+    "Varun Budhiraja",
+    "Vaseem Khan",
+  ];
   const renderOptions = () => (
     <div
       style={{
@@ -2073,16 +2157,52 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="salesPerson">
           <Form.Label>👤 Sales Person</Form.Label>
           <Form.Control
+            as="select"
             {...register("salesPerson")}
             onChange={(e) =>
               debouncedHandleInputChange("salesPerson", e.target.value)
             }
             isInvalid={!!errors.salesPerson}
-          />
+          >
+            <option value="">Select Sales Person</option>
+            {salesPersonlist.map((person) => (
+              <option key={person} value={person}>
+                {person}
+              </option>
+            ))}
+          </Form.Control>
+          {errors.salesPerson && (
+            <Form.Control.Feedback type="invalid">
+              {errors.salesPerson.message}
+            </Form.Control.Feedback>
+          )}
+        </Form.Group>
+
+        <Form.Group controlId="reportingManager">
+          <Form.Label>👤 Reporting Manager</Form.Label>
+          <Form.Control
+            as="select"
+            {...register("reportingManager")}
+            onChange={(e) =>
+              debouncedHandleInputChange("reportingManager", e.target.value)
+            }
+            isInvalid={!!errors.reportingManager}
+          >
+            <option value="">Select Reporting Manager</option>
+            {Reportinglist.map((manager) => (
+              <option key={manager} value={manager}>
+                {manager}
+              </option>
+            ))}
+          </Form.Control>
+          {errors.reportingManager && (
+            <Form.Control.Feedback type="invalid">
+              {errors.reportingManager.message}
+            </Form.Control.Feedback>
+          )}
         </Form.Group>
 
         <Form.Group controlId="company">

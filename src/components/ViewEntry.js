@@ -680,6 +680,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
               <strong>Sales Person:</strong> {entry.salesPerson || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Reporting Person:</strong> {entry.report || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Company:</strong> {entry.company || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
