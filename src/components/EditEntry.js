@@ -2186,9 +2186,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           <Form.Label>👤 Reporting Manager</Form.Label>
           <Form.Control
             as="select"
-            {...register("reportingManager")}
+            {...register("report")}
             onChange={(e) =>
-              debouncedHandleInputChange("reportingManager", e.target.value)
+              debouncedHandleInputChange("report", e.target.value)
             }
             isInvalid={!!errors.reportingManager}
           >
