@@ -954,6 +954,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     "Uttar Pradesh": [
       "Shikohabad",
+      "Mahuwadabar",
       "Badhnan",
       "Khalilabad",
       "Lucknow",
