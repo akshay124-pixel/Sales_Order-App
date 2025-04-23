@@ -1104,6 +1104,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     Delhi: [
       "New Delhi",
+      "Alaknanda",
       "Old Delhi",
       "Dwarka",
       "Rohini",
