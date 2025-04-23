@@ -118,6 +118,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       remarksByInstallation: "",
       dispatchStatus: "Not Dispatched",
       salesPerson: "",
+      report: "",
       company: "Promark",
       transporter: "",
       transporterDetails: "",
