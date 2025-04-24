@@ -390,11 +390,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         if (!p.qty || p.qty <= 0) {
           throw new Error(`Product ${index + 1}: Quantity must be positive`);
         }
-        if (!p.unitPrice || p.unitPrice < 0) {
-          throw new Error(
-            `Product ${index + 1}: Unit Price must be non-negative`
-          );
-        }
       });
 
       // Validate payment method dependencies
