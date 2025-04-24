@@ -47,19 +47,15 @@ function ViewEntry({ isOpen, onClose, entry }) {
         entry.soDate ? new Date(entry.soDate).toLocaleDateString() : "N/A"
       }
       Order ID: ${entry.orderId || "N/A"}
-      Committed Date: ${
-        entry.committedDate
-          ? new Date(entry.committedDate).toLocaleDateString()
-          : "N/A"
-      }
+    
       Dispatch From: ${entry.dispatchFrom || "N/A"}
-      Status: ${entry.status || "N/A"}
+     
       Dispatch Date: ${
         entry.dispatchDate
           ? new Date(entry.dispatchDate).toLocaleDateString()
           : "N/A"
       }
-      Party & Address: ${entry.partyAndAddress || "N/A"}
+      
       City: ${entry.city || "N/A"}
       State: ${entry.state || "N/A"}
       Pin Code: ${entry.pinCode || "N/A"}
@@ -78,7 +74,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Cheque ID: ${entry.chequeId || "N/A"}
       Payment Terms: ${entry.paymentTerms || "N/A"}
       Amount2: ₹${entry.amount2?.toFixed(2) || "0.00"}
-      Freight Charges & Status: ${entry.freightcs || "N/A"}
+      Freight Charges : ${entry.freightcs || "N/A"}
       Installation: ${entry.installation || "N/A"}
       Order Type: ${entry.orderType || "N/A"}
       Installation Status: ${entry.installationStatus || "N/A"}
@@ -233,33 +229,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 ? new Date(entry.soDate).toLocaleDateString()
                 : "N/A"}
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Committed Date:</strong>{" "}
-              {entry.committedDate
-                ? new Date(entry.committedDate).toLocaleDateString()
-                : "N/A"}
-            </span>
+
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Dispatch From:</strong> {entry.dispatchFrom || "N/A"}
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Status:</strong>{" "}
-              <Badge
-                bg={
-                  entry.status === "Pending"
-                    ? "warning"
-                    : entry.status === "Delivered"
-                    ? "success"
-                    : entry.status === "Dispatched"
-                    ? "info"
-                    : entry.status === "In Transit"
-                    ? "primary"
-                    : "secondary"
-                }
-              >
-                {entry.status || "N/A"}
-              </Badge>
-            </span>
+
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Dispatch Status:</strong>{" "}
               <Badge
@@ -349,9 +323,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Customer Name:</strong> {entry.customername || "N/A"}
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Address:</strong> {entry.partyAndAddress || "N/A"}
-            </span>
+
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>City:</strong> {entry.city || "N/A"}
             </span>

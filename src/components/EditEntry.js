@@ -78,12 +78,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const initialFormData = useMemo(
     () => ({
       soDate: "",
-      committedDate: "",
+
       dispatchFrom: "",
-      status: "Pending",
+
       dispatchDate: "",
       name: "",
-      partyAndAddress: "",
+
       city: "",
       state: "",
       pinCode: "",
@@ -179,16 +179,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         soDate: entryToEdit.soDate
           ? new Date(entryToEdit.soDate).toISOString().split("T")[0]
           : "",
-        committedDate: entryToEdit.committedDate
-          ? new Date(entryToEdit.committedDate).toISOString().split("T")[0]
-          : "",
+
         dispatchFrom: entryToEdit.dispatchFrom || "",
-        status: entryToEdit.status || "Pending",
+
         dispatchDate: entryToEdit.dispatchDate
           ? new Date(entryToEdit.dispatchDate).toISOString().split("T")[0]
           : "",
         name: entryToEdit.name || "",
-        partyAndAddress: entryToEdit.partyAndAddress || "",
+
         city: entryToEdit.city || "",
         state: entryToEdit.state || "",
         pinCode: entryToEdit.pinCode || "",
@@ -316,12 +314,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     try {
       const submissionData = {
         soDate: data.soDate ? new Date(data.soDate) : undefined,
-        committedDate: data.committedDate ? new Date(data.committedDate) : null,
+
         dispatchFrom: data.dispatchFrom || null,
-        status: data.status || "Pending",
+
         dispatchDate: data.dispatchDate ? new Date(data.dispatchDate) : null,
         name: data.name || null,
-        partyAndAddress: data.partyAndAddress || null,
+
         city: data.city || null,
         state: data.state || null,
         pinCode: data.pinCode || null,
@@ -424,7 +422,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       }
 
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
+        `http://localhost:5000/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -468,7 +466,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
+        `http://localhost:5000/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -713,7 +711,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       ],
       Haryana: [
         "Bahadurgarh",
-        "Charkhi Dadri",
         "Gurugram",
         "Faridabad",
         "Panipat",
@@ -721,6 +718,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         "Hisar",
         "Rohtak",
         "Karnal",
+        "Charkhi Dadri",
         "Bhiwani",
         "Kaithal",
         "Kurukshetra",
@@ -1412,7 +1410,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Anil Kumar",
     "Animesh Trivedi",
     "Anirban Syam",
-    "Sahiba",
     "Ankit Sharma",
     "Anup Panday",
     "Arif Khan",
@@ -1520,18 +1517,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="committedDate">
-          <Form.Label>📅 Committed Date</Form.Label>
-          <Form.Control
-            type="date"
-            {...register("committedDate")}
-            onChange={(e) =>
-              debouncedHandleInputChange("committedDate", e.target.value)
-            }
-            isInvalid={!!errors.committedDate}
-          />
-        </Form.Group>
-
         <Form.Group controlId="dispatchFrom">
           <Form.Label>📍 Dispatch From</Form.Label>
           <Form.Control
@@ -1540,31 +1525,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("dispatchFrom", e.target.value)
             }
             isInvalid={!!errors.dispatchFrom}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="status">
-          <Form.Label>📊 Status</Form.Label>
-          <Controller
-            name="status"
-            control={control}
-            render={({ field }) => (
-              <Form.Select
-                {...field}
-                onChange={(e) => {
-                  field.onChange(e);
-                  debouncedHandleInputChange("status", e.target.value);
-                }}
-                isInvalid={!!errors.status}
-              >
-                <option value="Pending">Pending</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Hold">Hold</option>
-                <option value="Order Canceled">Order Canceled</option>
-                <option value="Dispatched">Dispatched</option>
-                <option value="In Transit">In Transit</option>
-              </Form.Select>
-            )}
           />
         </Form.Group>
 
@@ -1586,19 +1546,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {...register("name")}
             onChange={(e) => debouncedHandleInputChange("name", e.target.value)}
             isInvalid={!!errors.name}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="partyAndAddress">
-          <Form.Label>🏠 Party & Address</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            {...register("partyAndAddress")}
-            onChange={(e) =>
-              debouncedHandleInputChange("partyAndAddress", e.target.value)
-            }
-            isInvalid={!!errors.partyAndAddress}
           />
         </Form.Group>
 
@@ -2073,7 +2020,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
 
         <Form.Group controlId="freightcs">
-          <Form.Label>🚚 Freight Charges & Status</Form.Label>
+          <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
             {...register("freightcs")}
             onChange={(e) =>
@@ -2420,7 +2367,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
 
         <Form.Group controlId="fulfillmentDate">
-          <Form.Label>📅 Fulfillment Date</Form.Label>
+          <Form.Label>📅 Production Date</Form.Label>
           <Form.Control
             type="date"
             {...register("fulfillmentDate")}

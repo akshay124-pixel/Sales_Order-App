@@ -17,10 +17,9 @@ function AddEntry({ onSubmit, onClose }) {
 
   const [formData, setFormData] = useState({
     soDate: "",
-    committedDate: "",
-    status: "Pending",
+
     name: "",
-    partyAndAddress: "",
+
     city: "",
     state: "",
     pinCode: "",
@@ -1212,6 +1211,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Anil Kumar",
     "Animesh Trivedi",
     "Anirban Syam",
+    "Sahiba",
     "Ankit Sharma",
     "Anup Panday",
     "Arif Khan",
@@ -1242,7 +1242,6 @@ function AddEntry({ onSubmit, onClose }) {
     "Ramkumar Singh",
     "Rohit Kumar Tiwari",
     "Sahil Gupta",
-    "Sahiba",
     "Savir Khan",
     "Shri Kant",
     "Siddhartha Kumar",
@@ -1452,7 +1451,7 @@ function AddEntry({ onSubmit, onClose }) {
         modelNos: [],
       })),
       soDate: formData.soDate,
-      committedDate: formData.committedDate || null,
+
       total,
 
       freightcs: formData.freightcs || "",
@@ -1468,7 +1467,7 @@ function AddEntry({ onSubmit, onClose }) {
 
     try {
       const response = await axios.post(
-        "https://sales-order-server.onrender.com/api/orders",
+        "https://sales-order-server.onrender.comapi/orders",
         newEntry
       );
       toast.success("Order submitted successfully!");
@@ -1568,222 +1567,365 @@ function AddEntry({ onSubmit, onClose }) {
           onSubmit={handleSubmit}
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "1.5rem",
+            gridTemplateColumns: "1fr",
+            gap: "2rem",
           }}
         >
-          {[
-            {
-              label: "SO Date *",
-              name: "soDate",
-              type: "date",
-              required: true,
-              placeholder: "Select Sales Order Date",
-            },
-            {
-              label: "Committed Date",
-              name: "committedDate",
-              type: "date",
-              placeholder: "Select Committed Date",
-            },
-            {
-              label: "Status",
-              name: "status",
-              type: "select",
-              options: [
-                "Pending",
-                "Delivered",
-                "Hold",
-                "Order Canceled",
-                "Dispatched",
-                "In Transit",
-              ],
-              placeholder: "Select Order Status",
-            },
-            {
-              label: "Order Type *",
-              name: "orderType",
-              type: "select",
-              options: orderTypeOptions,
-              required: true,
-              placeholder: "Select Order Type",
-            },
-            {
-              label: "Customer Name",
-              name: "customername",
-              type: "text",
-              placeholder: "Enter Customer Name",
-            },
-            {
-              label: "Address",
-              name: "partyAndAddress",
-              type: "text",
-              placeholder: "Enter Full Address",
-            },
-            {
-              label: "State",
-              name: "state",
-              type: "select",
-              options: Object.keys(statesAndCities),
-              onChange: handleStateChange,
-              placeholder: "Select State",
-            },
-            {
-              label: "City",
-              name: "city",
-              type: "select",
-              options: selectedState ? statesAndCities[selectedState] : [],
-              onChange: handleCityChange,
-              disabled: !selectedState,
-              placeholder: "Select City",
-            },
-            {
-              label: "Pin Code",
-              name: "pinCode",
-              type: "tel",
-              inputMode: "numeric",
-              placeholder: "e.g. 110001",
-            },
-            {
-              label: "Contact Person Name",
-              name: "name",
-              type: "text",
-              placeholder: "Enter Contact Person Name",
-            },
-            {
-              label: "Contact Person No",
-              name: "contactNo",
-              type: "tel",
-              inputMode: "numeric",
-              maxLength: 10,
-              placeholder: "e.g. 9876543210",
-            },
-            {
-              label: "Customer Email",
-              name: "customerEmail",
-              type: "email",
-              placeholder: "e.g. example@domain.com",
-            },
-            {
-              label: "Sales Person",
-              name: "salesPerson",
-              type: "select",
-              options: salesPersonlist,
-              placeholder: "Enter Sales Person's Name",
-            },
-            {
-              label: "Reporting Manager",
-              name: "report",
-              type: "select",
-              options: Reportinglist,
-              placeholder: "Enter Reporting Manager",
-            },
-            {
-              label: "Company",
-              name: "company",
-              type: "select",
-              options: ["Promark", "Promine", "Others"],
-              placeholder: "Select Company",
-            },
-            {
-              label: "Remarks",
-              name: "remarks",
-              type: "text",
-              placeholder: "Enter any additional remarks",
-            },
-            {
-              label: "Shipping Address",
-              name: "shippingAddress",
-              type: "text",
-              placeholder: "Enter Shipping Address",
-            },
-            {
-              label: "Billing Address",
-              name: "billingAddress",
-              type: "text",
-              disabled: formData.sameAddress,
-              placeholder: "Enter Billing Address",
-            },
-            {
-              label: "📝 Same as Shipping",
-              name: "sameAddress",
-              type: "checkbox",
-            },
-          ].map((field) => (
-            <div
-              key={field.name}
-              style={{ display: "flex", flexDirection: "column" }}
+          {/* Order Details Section */}
+          <div>
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "700",
+                marginBottom: "1rem",
+                letterSpacing: "1px",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
+              }}
             >
-              <label
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: "600",
-                  color: "#475569",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {field.label}
-                {field.required && <span style={{ color: "#f43f5e" }}>*</span>}
-              </label>
-              {field.type === "select" ? (
-                <select
-                  name={field.name}
-                  value={formData[field.name] || ""}
-                  onChange={field.onChange || handleChange}
-                  required={field.required}
-                  disabled={field.disabled}
-                  style={{
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
+              📋 Order Details
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1.5rem",
+              }}
+            >
+              {[
+                {
+                  label: "SO Date *",
+                  name: "soDate",
+                  type: "date",
+                  required: true,
+                  placeholder: "Select Sales Order Date",
+                },
+                {
+                  label: "Order Type *",
+                  name: "orderType",
+                  type: "select",
+                  options: orderTypeOptions,
+                  required: true,
+                  placeholder: "Select Order Type",
+                },
+                {
+                  label: "Sales Person",
+                  name: "salesPerson",
+                  type: "select",
+                  options: salesPersonlist,
+                  placeholder: "Enter Sales Person's Name",
+                },
+                {
+                  label: "Reporting Manager",
+                  name: "report",
+                  type: "select",
+                  options: Reportinglist,
+                  placeholder: "Enter Reporting Manager",
+                },
+                {
+                  label: "Company",
+                  name: "company",
+                  type: "select",
+                  options: ["Promark", "Promine", "Others"],
+                  placeholder: "Select Company",
+                },
+              ].map((field) => (
+                <div
+                  key={field.name}
+                  style={{ display: "flex", flexDirection: "column" }}
                 >
-                  <option value="">Select {field.label.split(" ")[0]}</option>
-                  {field.options.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              ) : field.type === "checkbox" ? (
-                <input
-                  type="checkbox"
-                  name={field.name}
-                  checked={formData[field.name] || false}
-                  onChange={handleChange}
-                  style={{
-                    width: "1.25rem",
-                    height: "1.25rem",
-                    accentColor: "#6366f1",
-                  }}
-                />
-              ) : (
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={formData[field.name] || ""}
-                  onChange={field.onChange || handleChange}
-                  required={field.required}
-                  maxLength={field.maxLength}
-                  inputMode={field.inputMode}
-                  disabled={field.disabled}
-                  style={{
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
-                />
-              )}
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {field.label}
+                    {field.required && (
+                      <span style={{ color: "#f43f5e" }}>*</span>
+                    )}
+                  </label>
+                  {field.type === "select" ? (
+                    <select
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={handleChange}
+                      required={field.required}
+                      style={{
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    >
+                      <option value="">
+                        Select {field.label.split(" ")[0]}
+                      </option>
+                      {field.options.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={handleChange}
+                      required={field.required}
+                      placeholder={field.placeholder}
+                      style={{
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
 
-          <div style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
+          {/* Customer Details Section */}
+          <div>
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "700",
+                marginBottom: "1rem",
+                letterSpacing: "1px",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              👤 Customer Details
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1.5rem",
+              }}
+            >
+              {[
+                {
+                  label: "Customer Name",
+                  name: "customername",
+                  type: "text",
+                  placeholder: "Enter Customer Name",
+                },
+                {
+                  label: "Contact Person Name",
+                  name: "name",
+                  type: "text",
+                  placeholder: "Enter Contact Person Name",
+                },
+                {
+                  label: "Contact Person No",
+                  name: "contactNo",
+                  type: "tel",
+                  inputMode: "numeric",
+                  maxLength: 10,
+                  placeholder: "e.g. 9876543210",
+                },
+                {
+                  label: "Customer Email",
+                  name: "customerEmail",
+                  type: "email",
+                  placeholder: "e.g. example@domain.com",
+                },
+              ].map((field) => (
+                <div
+                  key={field.name}
+                  style={{ display: "flex", flexDirection: "column" }}
+                >
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {field.label}
+                  </label>
+                  <input
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleChange}
+                    maxLength={field.maxLength}
+                    inputMode={field.inputMode}
+                    placeholder={field.placeholder}
+                    style={{
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Address Details Section */}
+          <div>
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "700",
+                marginBottom: "1rem",
+                letterSpacing: "1px",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              📍 Address Details
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1.5rem",
+              }}
+            >
+              {[
+                {
+                  label: "State",
+                  name: "state",
+                  type: "select",
+                  options: Object.keys(statesAndCities),
+                  onChange: handleStateChange,
+                  placeholder: "Select State",
+                },
+                {
+                  label: "City",
+                  name: "city",
+                  type: "select",
+                  options: selectedState ? statesAndCities[selectedState] : [],
+                  onChange: handleCityChange,
+                  disabled: !selectedState,
+                  placeholder: "Select City",
+                },
+                {
+                  label: "Pin Code",
+                  name: "pinCode",
+                  type: "tel",
+                  inputMode: "numeric",
+                  placeholder: "e.g. 110001",
+                },
+                {
+                  label: "Shipping Address",
+                  name: "shippingAddress",
+                  type: "text",
+                  placeholder: "Enter Shipping Address",
+                },
+                {
+                  label: "Billing Address",
+                  name: "billingAddress",
+                  type: "text",
+                  disabled: formData.sameAddress,
+                  placeholder: "Enter Billing Address",
+                },
+                {
+                  label: "📝 Same as Shipping",
+                  name: "sameAddress",
+                  type: "checkbox",
+                },
+              ].map((field) => (
+                <div
+                  key={field.name}
+                  style={{ display: "flex", flexDirection: "column" }}
+                >
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {field.label}
+                  </label>
+                  {field.type === "select" ? (
+                    <select
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={field.onChange || handleChange}
+                      disabled={field.disabled}
+                      style={{
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    >
+                      <option value="">
+                        Select {field.label.split(" ")[0]}
+                      </option>
+                      {field.options.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : field.type === "checkbox" ? (
+                    <input
+                      type="checkbox"
+                      name={field.name}
+                      checked={formData[field.name] || false}
+                      onChange={handleChange}
+                      style={{
+                        width: "1.25rem",
+                        height: "1.25rem",
+                        accentColor: "#6366f1",
+                      }}
+                    />
+                  ) : (
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={field.onChange || handleChange}
+                      disabled={field.disabled}
+                      inputMode={field.inputMode}
+                      placeholder={field.placeholder}
+                      style={{
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Add Products Section */}
+          <div>
             <h3
               style={{
                 fontSize: "1.5rem",
@@ -1798,7 +1940,6 @@ function AddEntry({ onSubmit, onClose }) {
             >
               ✨ Add Products
             </h3>
-
             <div
               style={{
                 display: "grid",
@@ -1997,8 +2138,43 @@ function AddEntry({ onSubmit, onClose }) {
               >
                 Add ➕
               </button>
+            </div>{" "}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: "1.5rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Remarks
+                </label>
+                <input
+                  type="text"
+                  name="productRemarks"
+                  value={formData.productRemarks || ""}
+                  onChange={handleChange}
+                  placeholder="Enter product-related remarks"
+                  style={{
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
+                  }}
+                />
+              </div>
             </div>
-
             {products.length > 0 && (
               <div style={{ marginTop: "1rem" }}>
                 <h4 style={{ fontSize: "1rem", color: "#475569" }}>
@@ -2039,81 +2215,91 @@ function AddEntry({ onSubmit, onClose }) {
                 </div>
               </div>
             )}
+          </div>
 
+          {/* Additional Charges Section */}
+          <div>
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "700",
+                marginBottom: "1rem",
+                letterSpacing: "1px",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              💸 Additional Charges
+            </h3>
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "1.5rem",
-                marginTop: "1rem",
               }}
             >
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "0.5rem",
-                  }}
+              {[
+                {
+                  label: "Freight Charges",
+                  name: "freightcs",
+                  type: "text",
+                  placeholder: "e.g. ₹2000",
+                },
+                {
+                  label: "Installation Charges",
+                  name: "installation",
+                  type: "text",
+                  placeholder: "e.g. ₹1000",
+                },
+              ].map((field) => (
+                <div
+                  key={field.name}
+                  style={{ display: "flex", flexDirection: "column" }}
                 >
-                  Freight Charges
-                </label>
-                <input
-                  type="text"
-                  name="freightcs"
-                  value={formData.freightcs || ""}
-                  onChange={(e) => {
-                    handleChange(e);
-                    setFormData((prev) => ({
-                      ...prev,
-                      paymentDue: calculatePaymentDue(
-                        Number(prev.paymentCollected) || 0
-                      ),
-                    }));
-                  }}
-                  placeholder="e.g. ₹2000, Paid"
-                  style={{
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
-                />
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Installation Charges
-                </label>
-                <input
-                  type="text"
-                  name="installation"
-                  value={formData.installation || ""}
-                  onChange={handleChange}
-                  placeholder="e.g. ₹1000, Not Included"
-                  style={{
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: "#f8fafc",
-                    fontSize: "1rem",
-                    color: "#1e293b",
-                  }}
-                />
-              </div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {field.label}
+                  </label>
+                  <input
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={(e) => {
+                      handleChange(e);
+                      if (field.name === "freightcs") {
+                        setFormData((prev) => ({
+                          ...prev,
+                          paymentDue: calculatePaymentDue(
+                            Number(prev.paymentCollected) || 0
+                          ),
+                        }));
+                      }
+                    }}
+                    placeholder={field.placeholder}
+                    style={{
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
-          <div style={{ gridColumn: "1 / -1", marginTop: "1rem" }}>
+          {/* Payment Details Section */}
+          <div>
             <h3
               style={{
                 fontSize: "1.5rem",
@@ -2334,9 +2520,9 @@ function AddEntry({ onSubmit, onClose }) {
             </div>
           </div>
 
+          {/* Form Actions */}
           <div
             style={{
-              gridColumn: "1 / -1",
               display: "flex",
               justifyContent: "flex-end",
               gap: "1rem",

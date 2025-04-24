@@ -17,7 +17,7 @@ function Finish() {
   const fetchFinishedGoods = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/finished-goods",
+        "https://sales-order-server.onrender.comapi/finished-goods",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -125,7 +125,7 @@ function Finish() {
           ? new Date(viewOrder.dispatchDate).toLocaleDateString()
           : "N/A"
       }
-      Customer: ${viewOrder.name || viewOrder.partyAndAddress || "N/A"}
+      Customer: ${viewOrder.name || "N/A"}
       Address: ${
         viewOrder.shippingAddress ||
         `${viewOrder.city || ""}, ${viewOrder.state || ""}` ||

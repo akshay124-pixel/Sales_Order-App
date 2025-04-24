@@ -21,7 +21,7 @@ function Installation() {
   const fetchInstallationOrders = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/installation-orders",
+        "https://sales-order-server.onrender.comapi/installation-orders",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -133,7 +133,7 @@ function Installation() {
 
     try {
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
+        `https://sales-order-server.onrender.comapi/edit/${editOrder?._id}`,
         formData,
         {
           headers: {

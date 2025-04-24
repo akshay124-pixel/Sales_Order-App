@@ -30,7 +30,7 @@ function Accounts() {
   const fetchAccountsOrders = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/accounts-orders",
+        "http://localhost:5000/api/accounts-orders",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -91,7 +91,7 @@ function Accounts() {
           ? new Date(viewOrder.dispatchDate).toLocaleDateString()
           : "N/A"
       }
-      Party & Address: ${viewOrder.partyAndAddress || "N/A"}
+  
       Email: ${viewOrder.customerEmail || "N/A"}
       Mobile: ${viewOrder.contactNo || "N/A"}
       Total: ${viewOrder.total || "N/A"}
@@ -202,7 +202,7 @@ function Accounts() {
       };
 
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
+        `http://localhost:5000/api/edit/${editOrder?._id}`,
         submissionData,
         {
           headers: {
@@ -355,7 +355,7 @@ function Accounts() {
                     {[
                       "Bill Number",
                       "Date",
-                      "Party & Address",
+                      "Address",
                       "Email",
                       "Mobile",
                       "Total",
@@ -436,7 +436,7 @@ function Accounts() {
                             borderBottom: "1px solid #eee",
                           }}
                         >
-                          {order.partyAndAddress || "N/A"}
+                          {order.shippingAddress || "N/A"}
                         </td>
                         <td
                           style={{
@@ -643,8 +643,8 @@ function Accounts() {
                       : "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Party & Address:</strong>{" "}
-                    {viewOrder.partyAndAddress || "N/A"}
+                    <strong>Address:</strong>{" "}
+                    {viewOrder.shippingAddress || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Email:</strong> {viewOrder.customerEmail || "N/A"}

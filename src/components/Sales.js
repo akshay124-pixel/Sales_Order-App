@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import { ArrowRight } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
-import { parse, isValid, format } from "date-fns";
 
 const Sales = () => {
   const [orders, setOrders] = useState([]);
@@ -22,7 +21,7 @@ const Sales = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
+
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
@@ -32,12 +31,12 @@ const Sales = () => {
 
   useEffect(() => {
     filterOrders();
-  }, [orders, searchTerm, approvalFilter, statusFilter, startDate, endDate]);
+  }, [orders, searchTerm, approvalFilter, startDate, endDate]);
 
   const fetchOrders = async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/get-orders"
+        "https://sales-order-server.onrender.comapi/get-orders"
       );
       setOrders(response.data);
       toast.success("Orders fetched successfully!");
@@ -54,7 +53,7 @@ const Sales = () => {
         const searchableFields = [
           order.name,
           order.orderId,
-          order.partyAndAddress,
+
           order.city,
           order.state,
           order.pinCode,
@@ -62,7 +61,7 @@ const Sales = () => {
           order.customerEmail,
           order.customername,
           order.sostatus,
-          order.status,
+
           String(order.paymentCollected || ""), // Convert to string
           order.paymentMethod,
           String(order.paymentDue || ""), // Convert to string
@@ -98,9 +97,7 @@ const Sales = () => {
     if (approvalFilter !== "All") {
       filtered = filtered.filter((order) => order.sostatus === approvalFilter);
     }
-    if (statusFilter !== "All") {
-      filtered = filtered.filter((order) => order.status === statusFilter);
-    }
+
     if (startDate || endDate) {
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.soDate);
@@ -114,7 +111,6 @@ const Sales = () => {
   };
 
   const handleReset = () => {
-    setStatusFilter("All");
     setApprovalFilter("All");
     setSearchTerm("");
     setStartDate(null);
@@ -154,7 +150,7 @@ const Sales = () => {
   const handleEntryUpdated = async (updatedEntry) => {
     try {
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${updatedEntry._id}`,
+        `https://sales-order-server.onrender.comapi/edit/${updatedEntry._id}`,
         updatedEntry
       );
       const updatedOrder = response.data.data || response.data;
@@ -292,12 +288,12 @@ const Sales = () => {
             soDate:
               parseExcelDate(entry.sodate) ||
               new Date().toISOString().slice(0, 10),
-            committedDate: parseExcelDate(entry.committeddate) || "",
+
             dispatchFrom: String(entry.dispatchfrom || "").trim(),
-            status: String(entry.status || "Pending").trim(),
+
             dispatchDate: parseExcelDate(entry.dispatchdate) || "",
             name: String(entry.name || "").trim(),
-            partyAndAddress: String(entry.partyandaddress || "").trim(),
+
             city: String(entry.city || "").trim(),
             state: String(entry.state || "").trim(),
             pinCode: String(entry.pincode || "").trim(),
@@ -357,7 +353,7 @@ const Sales = () => {
         console.log("Sending entries:", JSON.stringify(newEntries, null, 2));
 
         const response = await axios.post(
-          "http://localhost:5000/api/bulk-orders",
+          "https://sales-order-server.onrender.comapi/bulk-orders",
           newEntries,
           { headers: { "Content-Type": "application/json" } }
         );
@@ -380,9 +376,12 @@ const Sales = () => {
 
   const handleExport = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/export", {
-        responseType: "arraybuffer",
-      });
+      const response = await axios.get(
+        "https://sales-order-server.onrender.comapi/export",
+        {
+          responseType: "arraybuffer",
+        }
+      );
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -402,11 +401,11 @@ const Sales = () => {
   const isOrderComplete = (order) => {
     const requiredFields = [
       "soDate",
-      "committedDate",
+
       "dispatchFrom",
-      "status",
+
       "name",
-      "partyAndAddress",
+
       "city",
       "state",
       "pinCode",
@@ -573,64 +572,6 @@ const Sales = () => {
                   }
                 >
                   {option}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-
-          <Dropdown>
-            <Dropdown.Toggle
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                border: "none",
-                padding: "12px 25px",
-                borderRadius: "30px",
-                color: "white",
-                fontWeight: "600",
-                fontSize: "1rem",
-                boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-                transition: "all 0.4s ease",
-              }}
-              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-            >
-              {statusFilter === "All" ? "Order Status" : statusFilter}
-            </Dropdown.Toggle>
-            <Dropdown.Menu
-              style={{
-                borderRadius: "15px",
-                boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-                background: "white",
-                border: "none",
-                padding: "10px",
-              }}
-            >
-              {[
-                "All",
-                "Pending",
-                "Delivered",
-                "Hold",
-                "Order Canceled",
-                "Dispatched",
-                "In Transit",
-              ].map((status) => (
-                <Dropdown.Item
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  style={{
-                    padding: "10px 20px",
-                    color: "#1e3a8a",
-                    fontWeight: "500",
-                    transition: "background 0.3s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.background = "rgba(37,117,252,0.1)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.background = "transparent")
-                  }
-                >
-                  {status}
                 </Dropdown.Item>
               ))}
             </Dropdown.Menu>
@@ -828,14 +769,13 @@ const Sales = () => {
                 "Product Details",
                 "Unit Price",
                 "Qty",
-                "Freight Charges & Status",
+                "Freight Charges ",
                 "GST",
                 "Total",
-                "Address",
+
                 "Order ID",
                 "SO Date",
-                "Committed Date",
-                "Status",
+
                 "Approval Status",
                 "City",
                 "State",
@@ -956,42 +896,14 @@ const Sales = () => {
                     <td style={{ padding: "15px" }}>
                       ₹{order.total?.toFixed(2) || "0.00"}
                     </td>
-                    <td style={{ padding: "15px" }}>
-                      {order.partyAndAddress || "-"}
-                    </td>
+
                     <td style={{ padding: "15px" }}>{order.orderId || "-"}</td>
                     <td style={{ padding: "15px" }}>
                       {order.soDate
                         ? new Date(order.soDate).toLocaleDateString()
                         : "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
-                      {order.committedDate
-                        ? new Date(order.committedDate).toLocaleDateString()
-                        : "-"}
-                    </td>
-                    <td style={{ padding: "15px" }}>
-                      <Badge
-                        bg={
-                          order.status === "Pending"
-                            ? "warning"
-                            : order.status === "Delivered"
-                            ? "success"
-                            : order.status === "Hold"
-                            ? "dark"
-                            : order.status === "Order Canceled"
-                            ? "danger"
-                            : order.status === "Dispatched"
-                            ? "primary"
-                            : order.status === "In Transit"
-                            ? "info"
-                            : "secondary"
-                        }
-                        style={{ padding: "6px 12px", fontSize: "0.9rem" }}
-                      >
-                        {order.status || "-"}
-                      </Badge>
-                    </td>
+
                     <td style={{ padding: "15px" }}>
                       <Badge
                         bg={
