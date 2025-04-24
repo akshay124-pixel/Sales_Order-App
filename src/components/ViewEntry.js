@@ -72,8 +72,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Payment Due: ₹${entry.paymentDue || "0.00"}
       NEFT Transaction ID: ${entry.neftTransactionId || "N/A"}
       Cheque ID: ${entry.chequeId || "N/A"}
-      Payment Terms: ${entry.paymentTerms || "N/A"}
-      Amount2: ₹${entry.amount2?.toFixed(2) || "0.00"}
+   
+    
       Freight Charges : ${entry.freightcs || "N/A"}
       Installation: ${entry.installation || "N/A"}
       Order Type: ${entry.orderType || "N/A"}
@@ -488,12 +488,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Cheque ID:</strong> {entry.chequeId || "N/A"}
             </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Payment Terms:</strong> {entry.paymentTerms || "N/A"}
-            </span>
-            <span style={{ fontSize: "1rem", color: "#555" }}>
-              <strong>Amount2:</strong> ₹{entry.amount2?.toFixed(2) || "0.00"}
-            </span>
+
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Freight Charges:</strong> {entry.freightcs || "N/A"}
             </span>

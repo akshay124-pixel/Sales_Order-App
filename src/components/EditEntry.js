@@ -109,8 +109,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       paymentDue: "",
       neftTransactionId: "",
       chequeId: "",
-      paymentTerms: "",
-      amount2: "0",
+
       freightcs: "",
       orderType: "Private order",
       installation: "N/A",
@@ -230,9 +229,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             : "",
         neftTransactionId: entryToEdit.neftTransactionId || "",
         chequeId: entryToEdit.chequeId || "",
-        paymentTerms: entryToEdit.paymentTerms || "",
-        amount2:
-          entryToEdit.amount2 !== undefined ? String(entryToEdit.amount2) : "0",
+
         freightcs: entryToEdit.freightcs || "",
         orderType: entryToEdit.orderType || "Private order",
         installation: entryToEdit.installation || "N/A",
@@ -354,8 +351,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentDue: data.paymentDue ? String(data.paymentDue) : null,
         neftTransactionId: data.neftTransactionId || null,
         chequeId: data.chequeId || null,
-        paymentTerms: data.paymentTerms || null,
-        amount2: data.amount2 ? Number(data.amount2) : 0,
+
         freightcs: data.freightcs || null,
         orderType: data.orderType || "Private order",
         installation: data.installation || "N/A",
