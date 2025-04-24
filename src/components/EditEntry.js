@@ -1735,12 +1735,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 }}
                 isInvalid={!!errors.orderType}
               >
-                <option value="GEM order">GEM order</option>
-                <option value="Govt. order">Govt. order</option>
-                <option value="Private order">Private order</option>
-                <option value="For Demo">For Demo</option>
+                <option value="GEM">GEM</option>
+                <option value="Goverment">Goverment</option>
+                <option value="Private">Private</option>
+                <option value="Demo">Demo</option>
                 <option value="Replacement">Replacement</option>
-                <option value="For repair purpose">For repair purpose</option>
+                <option value="Repair">repair</option>
               </Form.Select>
             )}
           />

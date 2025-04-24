@@ -1194,7 +1194,7 @@ function AddEntry({ onSubmit, onClose }) {
   };
 
   const orderTypeOptions = [
-    "GEM ",
+    "GEM",
     "Goverment",
     "Private",
     "Demo",
