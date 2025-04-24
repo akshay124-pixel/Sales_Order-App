@@ -504,6 +504,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     Haryana: [
       "Bahadurgarh",
+      "Charkhi Dadri",
       "Gurugram",
       "Faridabad",
       "Panipat",

@@ -713,6 +713,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       ],
       Haryana: [
         "Bahadurgarh",
+        "Charkhi Dadri",
         "Gurugram",
         "Faridabad",
         "Panipat",
