@@ -311,12 +311,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     try {
       const submissionData = {
         soDate: data.soDate ? new Date(data.soDate) : undefined,
-
         dispatchFrom: data.dispatchFrom || null,
-
         dispatchDate: data.dispatchDate ? new Date(data.dispatchDate) : null,
         name: data.name || null,
-
         city: data.city || null,
         state: data.state || null,
         pinCode: data.pinCode || null,
@@ -343,7 +340,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             : [],
           gst: p.gst ? Number(p.gst) : 0,
         })),
-        total: data.total ? Number(data.total) : undefined,
+        total: rawData.total ? Number(rawData.total) : undefined,
         paymentCollected: data.paymentCollected
           ? String(data.paymentCollected)
           : null,
@@ -351,7 +348,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentDue: data.paymentDue ? String(data.paymentDue) : null,
         neftTransactionId: data.neftTransactionId || null,
         chequeId: data.chequeId || null,
-
         freightcs: data.freightcs || null,
         orderType: data.orderType || "Private order",
         installation: data.installation || "N/A",
@@ -381,36 +377,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         remarks: data.remarks || "",
         sostatus: data.sostatus || "Pending for Approval",
       };
-
-      // Validate products
-      submissionData.products.forEach((p, index) => {
-        if (!p.productType) {
-          throw new Error(`Product ${index + 1}: Product Type is required`);
-        }
-        if (!p.qty || p.qty <= 0) {
-          throw new Error(`Product ${index + 1}: Quantity must be positive`);
-        }
-      });
-
-      // Validate payment method dependencies
-      if (
-        submissionData.paymentMethod === "NEFT" &&
-        !submissionData.neftTransactionId
-      ) {
-        throw new Error("NEFT Transaction ID is required for NEFT payments");
-      }
-      if (
-        submissionData.paymentMethod === "RTGS" &&
-        !submissionData.neftTransactionId
-      ) {
-        throw new Error("NEFT Transaction ID is required for RTGS payments");
-      }
-      if (
-        submissionData.paymentMethod === "Cheque" &&
-        !submissionData.chequeId
-      ) {
-        throw new Error("Cheque ID is required for Cheque payments");
-      }
 
       const response = await axios.put(
         `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
