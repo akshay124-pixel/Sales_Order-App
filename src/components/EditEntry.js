@@ -1990,35 +1990,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="paymentTerms">
-          <Form.Label>💳 Payment Terms</Form.Label>
-          <Form.Control
-            {...register("paymentTerms")}
-            onChange={(e) =>
-              debouncedHandleInputChange("paymentTerms", e.target.value)
-            }
-            isInvalid={!!errors.paymentTerms}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="amount2">
-          <Form.Label>💰 Amount 2</Form.Label>
-          <Form.Control
-            type="number"
-            step="0.01"
-            {...register("amount2", {
-              min: { value: 0, message: "Amount 2 cannot be negative" },
-            })}
-            onChange={(e) =>
-              debouncedHandleInputChange("amount2", e.target.value)
-            }
-            isInvalid={!!errors.amount2}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.amount2?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
@@ -2274,7 +2245,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
 
         <Form.Group controlId="fulfillingStatus">
-          <Form.Label>📋 Fulfilling Status</Form.Label>
+          <Form.Label>📋 Production Status</Form.Label>
           <Form.Control
             {...register("fulfillingStatus")}
             onChange={(e) =>
