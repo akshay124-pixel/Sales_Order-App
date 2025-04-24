@@ -1338,13 +1338,6 @@ function AddEntry({ onSubmit, onClose }) {
       toast.error("Quantity must be a positive number");
       return;
     }
-    if (
-      isNaN(Number(currentProduct.unitPrice)) ||
-      Number(currentProduct.unitPrice) < 0
-    ) {
-      toast.error("Unit Price must be a non-negative number");
-      return;
-    }
     if (isNaN(Number(currentProduct.gst)) || Number(currentProduct.gst) < 0) {
       toast.error("GST (%) must be a non-negative number");
       return;
