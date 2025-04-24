@@ -30,7 +30,7 @@ function Accounts() {
   const fetchAccountsOrders = useCallback(async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/accounts-orders",
+        "https://sales-order-server.onrender.com/api/accounts-orders",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -202,7 +202,7 @@ function Accounts() {
       };
 
       const response = await axios.put(
-        `http://localhost:5000/api/edit/${editOrder?._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
         submissionData,
         {
           headers: {

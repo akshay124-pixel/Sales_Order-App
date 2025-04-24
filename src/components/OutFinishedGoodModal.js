@@ -108,7 +108,7 @@ const OutFinishedGoodModal = ({
       };
 
       const response = await axios.put(
-        `https://sales-order-server.onrender.comapi/edit/${entryToEdit._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {

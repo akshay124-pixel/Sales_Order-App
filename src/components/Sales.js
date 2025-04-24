@@ -36,7 +36,7 @@ const Sales = () => {
   const fetchOrders = async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.comapi/get-orders"
+        "https://sales-order-server.onrender.com/api/get-orders"
       );
       setOrders(response.data);
       toast.success("Orders fetched successfully!");
@@ -150,7 +150,7 @@ const Sales = () => {
   const handleEntryUpdated = async (updatedEntry) => {
     try {
       const response = await axios.put(
-        `https://sales-order-server.onrender.comapi/edit/${updatedEntry._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${updatedEntry._id}`,
         updatedEntry
       );
       const updatedOrder = response.data.data || response.data;
@@ -353,7 +353,7 @@ const Sales = () => {
         console.log("Sending entries:", JSON.stringify(newEntries, null, 2));
 
         const response = await axios.post(
-          "https://sales-order-server.onrender.comapi/bulk-orders",
+          "https://sales-order-server.onrender.com/api/bulk-orders",
           newEntries,
           { headers: { "Content-Type": "application/json" } }
         );
@@ -377,7 +377,7 @@ const Sales = () => {
   const handleExport = async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.comapi/export",
+        "https://sales-order-server.onrender.com/api/export",
         {
           responseType: "arraybuffer",
         }

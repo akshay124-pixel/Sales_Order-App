@@ -1467,7 +1467,7 @@ function AddEntry({ onSubmit, onClose }) {
 
     try {
       const response = await axios.post(
-        "https://sales-order-server.onrender.comapi/orders",
+        "https://sales-order-server.onrender.com/api/orders",
         newEntry
       );
       toast.success("Order submitted successfully!");
