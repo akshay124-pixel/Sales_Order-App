@@ -475,17 +475,14 @@ const Sales = () => {
     <>
       <div
         style={{
-          background: "linear-gradient(135deg, #2575fc, #6a11cb)", // Match navbar gradient
+          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
           padding: "25px 40px",
-          display: "flex",
+
+          display: "flex",
           flexWrap: "wrap",
           gap: "20px",
           alignItems: "center",
           justifyContent: "space-between",
-          width: "100vw", // Full viewport width
-          margin: 0, // Remove margins to avoid gaps
-          border: "none", // Explicitly remove all borders
-          boxSizing: "border-box", // Ensure padding doesn't affect width
         }}
       >
         <Form.Control
@@ -593,14 +590,7 @@ const Sales = () => {
           </Button>
         </div>
       </div>
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "linear-gradient(135deg, #e6f0fa, #f3e8ff)",
-          padding: "30px",
-          fontFamily: "'Poppins', sans-serif",
-        }}
-      ></div>
+
       <div
         style={{
           minHeight: "100vh",
