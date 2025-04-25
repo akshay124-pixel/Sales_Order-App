@@ -340,7 +340,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             : [],
           gst: p.gst ? Number(p.gst) : 0,
         })),
-        total: rawData.total ? Number(rawData.total) : undefined,
+        total: data.total ? Number(data.total) : undefined,
         paymentCollected: data.paymentCollected
           ? String(data.paymentCollected)
           : null,
