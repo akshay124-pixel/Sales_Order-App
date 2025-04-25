@@ -90,12 +90,7 @@ const Production = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (
-      !formData.remarksByProduction ||
-      formData.remarksByProduction.trim() === ""
-    ) {
-      newErrors.remarksByProduction = "Remarks by Production is required";
-    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -959,7 +954,7 @@ const Production = () => {
       </div>
       <footer className="footer-container">
         <p style={{ marginTop: "10px", color: "white", height: "20px" }}>
-          © 2025 DataManagement. All rights reserved.
+          © 2025 Sales Order Mangement. All rights reserved.
         </p>
       </footer>
     </>

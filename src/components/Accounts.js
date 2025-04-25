@@ -556,7 +556,7 @@ function Accounts() {
 
       <footer className="footer-container">
         <p style={{ marginTop: "10px", color: "white", height: "20px" }}>
-          © 2025 DataManagement. All rights reserved.
+          © 2025 Sales Order Mangement. All rights reserved.
         </p>
       </footer>
 
