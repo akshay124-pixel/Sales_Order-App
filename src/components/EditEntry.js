@@ -1358,6 +1358,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     []
   );
   const salesPersonlist = [
+    "PS Brar",
+    "Ashwani Kumar",
     "Aasim Musadiq",
     "Abhay Pratap Singh",
     "Abhayjit Sekhon",
@@ -1367,6 +1369,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Anil Kumar",
     "Animesh Trivedi",
     "Anirban Syam",
+    "Sahiba",
     "Ankit Sharma",
     "Anup Panday",
     "Arif Khan",
@@ -1390,6 +1393,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Pitamber Sharma",
     "Purnendu Kumar",
     "Raj Bahadur Singh",
+    "Rajeev Kanda",
     "Rajeev Kumar Singh",
     "Rajeev Pal Singh",
     "Rajesh Kumar",
@@ -1413,7 +1417,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Vaseem Khan",
   ];
   const Reportinglist = [
+    "PS Brar",
+    "Ashwani Kumar",
     "Abhay Pratap Singh",
+    "Rajeev Kanda",
     "Abhayjit Sekhon",
     "Amarjeet Singh",
     "Arwinder Singh",
