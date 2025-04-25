@@ -1210,6 +1210,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Ajay Kumar",
     "Amarjeet Singh",
     "Aniket Singh",
+
     "Anil Kumar",
     "Animesh Trivedi",
     "Anirban Syam",
@@ -1237,6 +1238,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Pitamber Sharma",
     "Purnendu Kumar",
     "Raj Bahadur Singh",
+    "Rajeev Kanda",
     "Rajeev Kumar Singh",
     "Rajeev Pal Singh",
     "Rajesh Kumar",
@@ -1263,7 +1265,7 @@ function AddEntry({ onSubmit, onClose }) {
     "PS Brar",
     "Ashwani Kumar",
     "Abhay Pratap Singh",
-
+    "Rajeev Kanda",
     "Abhayjit Sekhon",
     "Amarjeet Singh",
     "Arwinder Singh",
