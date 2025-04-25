@@ -967,6 +967,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     "Uttar Pradesh": [
       "Shikohabad",
+      "Baghpat",
       "Mahuwadabar",
       "Anandnagar Maharajganj",
       "Badhnan",
