@@ -254,7 +254,13 @@ function AddEntry({ onSubmit, onClose }) {
     "Stylus Pen": { sizes: ["N/A"], specs: ["N/A"] },
     "Sliding Shutter": {
       sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
-      specs: ["Standard"],
+      specs: [
+        "Comman",
+        "White & Red Dispaly Boards",
+        "White & Green Dispaly Boards",
+        "White & Blue Dispaly Boards",
+        "N/A",
+      ],
     },
     "3 Cup Speaker": { sizes: ["N/A"], specs: ["N/A"] },
     Microphone: {
@@ -316,7 +322,7 @@ function AddEntry({ onSubmit, onClose }) {
     },
     "Almirah Type Shutter": {
       sizes: ["65 inch", "75 inch", "86 inch", "98  inch"],
-      specs: ["N/A"],
+      specs: ["Plain", "White Boards", "Green Boards"],
     },
     Aicharya: {
       sizes: ["N/A"],
