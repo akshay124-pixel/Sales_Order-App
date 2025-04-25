@@ -1202,6 +1202,8 @@ function AddEntry({ onSubmit, onClose }) {
     "Repair",
   ];
   const salesPersonlist = [
+    "PS Brar",
+    "Ashwani Kumar",
     "Aasim Musadiq",
     "Abhay Pratap Singh",
     "Abhayjit Sekhon",
@@ -1258,7 +1260,10 @@ function AddEntry({ onSubmit, onClose }) {
     "Vaseem Khan",
   ];
   const Reportinglist = [
+    "PS Brar",
+    "Ashwani Kumar",
     "Abhay Pratap Singh",
+
     "Abhayjit Sekhon",
     "Amarjeet Singh",
     "Arwinder Singh",
