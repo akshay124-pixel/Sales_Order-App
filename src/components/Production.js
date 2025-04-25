@@ -708,7 +708,6 @@ const Production = () => {
                       "0 0 10px rgba(37, 117, 252, 0.5)")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  required
                 />
                 {errors.remarksByProduction && (
                   <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
