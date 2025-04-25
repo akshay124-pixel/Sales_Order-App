@@ -255,7 +255,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Sliding Shutter": {
       sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
       specs: [
-        "Comman",
+        "Common",
         "White & Red Dispaly Boards",
         "White & Green Dispaly Boards",
         "White & Blue Dispaly Boards",
