@@ -1123,6 +1123,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     Delhi: [
       "New Delhi",
+      "Rani Bagh",
       "Alaknanda",
       "Old Delhi",
       "Dwarka",
