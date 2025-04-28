@@ -1215,7 +1215,9 @@ function AddEntry({ onSubmit, onClose }) {
   ];
   const salesPersonlist = [
     "PS Brar",
+
     "Ashwani Kumar",
+    "Priya Sharma",
     "Aasim Musadiq",
     "Abhay Pratap Singh",
     "Abhayjit Sekhon",
