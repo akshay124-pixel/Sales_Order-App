@@ -1128,6 +1128,11 @@ function AddEntry({ onSubmit, onClose }) {
     Delhi: [
       "New Delhi",
       "Rani Bagh",
+      "Shalimar Bagh",
+      "Tilak Nagar",
+      "Hari Nagar Dadb",
+      "Hari Nagar",
+      "Maya Puri",
       "Alaknanda",
       "Old Delhi",
       "Dwarka",
@@ -1217,6 +1222,7 @@ function AddEntry({ onSubmit, onClose }) {
     "PS Brar",
 
     "Ashwani Kumar",
+    "Sahil Kapoor",
     "Priya Sharma",
     "Aasim Musadiq",
     "Abhay Pratap Singh",
@@ -1224,7 +1230,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Ajay Kumar",
     "Amarjeet Singh",
     "Aniket Singh",
-
+    "Ranbeer Kaur",
     "Anil Kumar",
     "Animesh Trivedi",
     "Anirban Syam",
@@ -1278,6 +1284,7 @@ function AddEntry({ onSubmit, onClose }) {
   const Reportinglist = [
     "PS Brar",
     "Ashwani Kumar",
+    "Sahil Kapoor",
     "Priya Sharma",
     "Abhay Pratap Singh",
     "Rajeev Kanda",

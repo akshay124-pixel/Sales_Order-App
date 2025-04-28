@@ -1363,6 +1363,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const salesPersonlist = [
     "PS Brar",
     "Ashwani Kumar",
+    "Sahil Kapoor",
+    "Ranbeer Kaur",
     "Priya Sharma",
     "Aasim Musadiq",
     "Abhay Pratap Singh",
@@ -1423,6 +1425,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const Reportinglist = [
     "PS Brar",
     "Ashwani Kumar",
+    "Sahil Kapoor",
     "Priya Sharma",
     "Abhay Pratap Singh",
     "Rajeev Kanda",
