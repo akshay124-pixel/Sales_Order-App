@@ -88,6 +88,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       state: "",
       pinCode: "",
       contactNo: "",
+      alterno: "",
       customerEmail: "",
       customername: "",
       products: [
@@ -190,6 +191,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         state: entryToEdit.state || "",
         pinCode: entryToEdit.pinCode || "",
         contactNo: entryToEdit.contactNo || "",
+        alterno: entryToEdit.contactNo || "",
         customerEmail: entryToEdit.customerEmail || "",
         customername: entryToEdit.customername || "",
         products:
@@ -318,6 +320,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         state: data.state || null,
         pinCode: data.pinCode || null,
         contactNo: data.contactNo || null,
+        alterno: data.alterno || null,
         customerEmail: data.customerEmail || null,
         customername: data.customername || null,
         products: data.products.map((p) => ({
@@ -1608,6 +1611,24 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
           <Form.Control.Feedback type="invalid">
             {errors.contactNo?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="alternateContactNo">
+          <Form.Label>📞 Alternate Contact Number</Form.Label>
+          <Form.Control
+            {...register("alterno", {
+              pattern: {
+                value: /^\d{10}$/,
+                message: "Alternate contact number must be 10 digits",
+              },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("alterno", e.target.value)
+            }
+            isInvalid={!!errors.alternateContactNo}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.alternateContactNo?.message}
           </Form.Control.Feedback>
         </Form.Group>
 

@@ -24,6 +24,7 @@ function AddEntry({ onSubmit, onClose }) {
     state: "",
     pinCode: "",
     contactNo: "",
+    alterno: "",
     customerEmail: "",
     customername: "",
     report: "",
@@ -1757,6 +1758,14 @@ function AddEntry({ onSubmit, onClose }) {
                 {
                   label: "Contact Person No",
                   name: "contactNo",
+                  type: "tel",
+                  inputMode: "numeric",
+                  maxLength: 10,
+                  placeholder: "e.g. 9876543210",
+                },
+                {
+                  label: "Alternate Contact No",
+                  name: "alterno",
                   type: "tel",
                   inputMode: "numeric",
                   maxLength: 10,

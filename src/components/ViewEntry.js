@@ -61,6 +61,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Pin Code: ${entry.pinCode || "N/A"}
       Contact Person Name: ${entry.name || "N/A"}
       Contact Person No: ${entry.contactNo || "N/A"}
+       Alternate Contact No: ${entry.alterno || "N/A"}
       Customer Email: ${entry.customerEmail || "N/A"}
       Customer Name: ${entry.customername || "N/A"}
       Products:\n${productsText}
@@ -338,6 +339,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Contact No:</strong> {entry.contactNo || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Alternate No:</strong> {entry.alterno || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Email:</strong> {entry.customerEmail || "N/A"}
