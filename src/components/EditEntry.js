@@ -1423,6 +1423,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const Reportinglist = [
     "PS Brar",
     "Ashwani Kumar",
+    "Priya Sharma",
     "Abhay Pratap Singh",
     "Rajeev Kanda",
     "Abhayjit Sekhon",

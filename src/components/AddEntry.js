@@ -1278,6 +1278,7 @@ function AddEntry({ onSubmit, onClose }) {
   const Reportinglist = [
     "PS Brar",
     "Ashwani Kumar",
+    "Priya Sharma",
     "Abhay Pratap Singh",
     "Rajeev Kanda",
     "Abhayjit Sekhon",
