@@ -328,6 +328,10 @@ function AddEntry({ onSubmit, onClose }) {
       sizes: ["N/A"],
       specs: ["Standard"],
     },
+    TripodStand: {
+      sizes: ["N/A"],
+      specs: ["Standard"],
+    },
     Logo: { sizes: ["N/A"], specs: ["N/A"] },
     Microphones: { sizes: ["N/A"], specs: ["N/A"] },
     "E-Share License": { sizes: ["N/A"], specs: ["N/A"] },
