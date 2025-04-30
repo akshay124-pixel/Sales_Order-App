@@ -12,7 +12,7 @@ function AddEntry({ onSubmit, onClose }) {
     spec: "",
     qty: "",
     unitPrice: "",
-    gst: "", // Raw percentage input
+    gst: "",
   });
 
   const [formData, setFormData] = useState({
@@ -384,7 +384,6 @@ function AddEntry({ onSubmit, onClose }) {
     "Bubble Roll": { sizes: ["N/A"], specs: ["N/A"] },
     "Wrapping Roll": { sizes: ["N/A"], specs: ["N/A"] },
   };
-
   const statesAndCities = {
     "Andhra Pradesh": [
       "Visakhapatnam",
@@ -1205,7 +1204,6 @@ function AddEntry({ onSubmit, onClose }) {
       "Nettapakkam",
     ],
   };
-
   const orderTypeOptions = [
     "GEM",
     "Goverment",
@@ -1216,7 +1214,6 @@ function AddEntry({ onSubmit, onClose }) {
   ];
   const salesPersonlist = [
     "PS Brar",
-
     "Ashwani Kumar",
     "Sahil Kapoor",
     "Priya Sharma",
@@ -1309,6 +1306,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Varun Budhiraja",
     "Vaseem Khan",
   ];
+
   const paymentMethodOptions = ["Cash", "NEFT", "RTGS", "Cheque"];
 
   const handleChange = (e) => {
@@ -1465,9 +1463,7 @@ function AddEntry({ onSubmit, onClose }) {
         modelNos: [],
       })),
       soDate: formData.soDate,
-
       total,
-
       freightcs: formData.freightcs || "",
       installation: formData.installation || "N/A",
       orderType: formData.orderType,
@@ -1513,6 +1509,7 @@ function AddEntry({ onSubmit, onClose }) {
       ></div>
 
       <div
+        className="modal-container"
         style={{
           position: "fixed",
           top: "50%",
@@ -1579,6 +1576,7 @@ function AddEntry({ onSubmit, onClose }) {
 
         <form
           onSubmit={handleSubmit}
+          className="form-container"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr",
@@ -1602,6 +1600,7 @@ function AddEntry({ onSubmit, onClose }) {
               📋 Order Details
             </h3>
             <div
+              className="grid-section"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
@@ -1702,10 +1701,10 @@ function AddEntry({ onSubmit, onClose }) {
                       name={field.name}
                       value={
                         field.name === "soDate" && field.value
-                          ? field.value // Use field.value for soDate
+                          ? field.value
                           : formData[field.name] || ""
                       }
-                      onChange={field.disabled ? undefined : handleChange} // Disable onChange for disabled fields
+                      onChange={field.disabled ? undefined : handleChange}
                       required={field.required}
                       placeholder={field.placeholder}
                       disabled={field.disabled || false}
@@ -1741,6 +1740,7 @@ function AddEntry({ onSubmit, onClose }) {
               👤 Customer Details
             </h3>
             <div
+              className="grid-section"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
@@ -1753,15 +1753,14 @@ function AddEntry({ onSubmit, onClose }) {
                   name: "customername",
                   type: "text",
                   placeholder: "Enter Customer Name",
-                  maxLength: 50, // Limit to 50 characters
-                  pattern: "^[A-Za-z]*$", // Allow only letters
+                  maxLength: 50,
+                  pattern: "^[A-Za-z]*$",
                   onChange: (e) => {
                     const value = e.target.value;
-                    // Allow only letters and enforce 50-character limit
                     if (value.length <= 50 && /^[A-Za-z]*$/.test(value)) {
                       setFormData((prev) => ({ ...prev, customername: value }));
                     } else {
-                      e.target.value = formData.customername || ""; // Revert to previous valid value
+                      e.target.value = formData.customername || "";
                       toast.error(
                         "Customer Name can only contain letters (max 50)."
                       );
@@ -1815,7 +1814,7 @@ function AddEntry({ onSubmit, onClose }) {
                     type={field.type}
                     name={field.name}
                     value={formData[field.name] || ""}
-                    onChange={handleChange}
+                    onChange={field.onChange || handleChange}
                     maxLength={field.maxLength}
                     inputMode={field.inputMode}
                     placeholder={field.placeholder}
@@ -1833,7 +1832,6 @@ function AddEntry({ onSubmit, onClose }) {
             </div>
           </div>
           {/* Address Details Section */}
-
           <div>
             <h3
               style={{
@@ -1850,6 +1848,7 @@ function AddEntry({ onSubmit, onClose }) {
               📍 Address Details
             </h3>
             <div
+              className="grid-section"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
@@ -1959,13 +1958,12 @@ function AddEntry({ onSubmit, onClose }) {
                       value={formData[field.name] || ""}
                       onChange={(e) => {
                         const value = e.target.value;
-                        // Restrict pinCode to numeric input only
                         if (
                           field.name === "pinCode" &&
                           value &&
                           !/^\d*$/.test(value)
                         ) {
-                          return; // Prevent non-numeric input
+                          return;
                         }
                         (field.onChange || handleChange)(e);
                       }}
@@ -2023,6 +2021,7 @@ function AddEntry({ onSubmit, onClose }) {
               ✨ Add Products
             </h3>
             <div
+              className="product-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr auto",
@@ -2083,7 +2082,7 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   <option value="">Select Size</option>
                   {currentProduct.productType &&
-                    productOptions[currentProduct.productType].sizes.map(
+                    productOptions[currentProduct.productType]?.sizes.map(
                       (size) => (
                         <option key={size} value={size}>
                           {size}
@@ -2116,7 +2115,7 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   <option value="">Select Spec</option>
                   {currentProduct.productType &&
-                    productOptions[currentProduct.productType].specs.map(
+                    productOptions[currentProduct.productType]?.specs.map(
                       (spec) => (
                         <option key={spec} value={spec}>
                           {spec}
@@ -2220,7 +2219,7 @@ function AddEntry({ onSubmit, onClose }) {
               >
                 Add ➕
               </button>
-            </div>{" "}
+            </div>
             <div
               style={{
                 display: "grid",
@@ -2242,8 +2241,8 @@ function AddEntry({ onSubmit, onClose }) {
                 </label>
                 <input
                   type="text"
-                  name="productRemarks"
-                  value={formData.productRemarks || ""}
+                  name="remarks"
+                  value={formData.remarks || ""}
                   onChange={handleChange}
                   placeholder="Enter product-related remarks"
                   style={{
@@ -2315,6 +2314,7 @@ function AddEntry({ onSubmit, onClose }) {
               💸 Additional Charges
             </h3>
             <div
+              className="grid-section"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
@@ -2432,8 +2432,8 @@ function AddEntry({ onSubmit, onClose }) {
             >
               💰 Payment Details
             </h3>
-
             <div
+              className="grid-section"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
@@ -2441,7 +2441,6 @@ function AddEntry({ onSubmit, onClose }) {
                 alignItems: "start",
               }}
             >
-              {/* Left Side */}
               <div
                 style={{
                   display: "flex",
@@ -2473,7 +2472,6 @@ function AddEntry({ onSubmit, onClose }) {
                     ₹ {calculateTotal()}
                   </div>
                 </div>
-
                 <div>
                   <label
                     style={{
@@ -2501,7 +2499,6 @@ function AddEntry({ onSubmit, onClose }) {
                     }}
                   />
                 </div>
-
                 <div>
                   <label
                     style={{
@@ -2530,8 +2527,6 @@ function AddEntry({ onSubmit, onClose }) {
                   />
                 </div>
               </div>
-
-              {/* Right Side */}
               <div
                 style={{
                   display: "flex",
@@ -2572,7 +2567,6 @@ function AddEntry({ onSubmit, onClose }) {
                     ))}
                   </select>
                 </div>
-
                 {formData.paymentMethod === "NEFT" && (
                   <div>
                     <label
@@ -2603,7 +2597,6 @@ function AddEntry({ onSubmit, onClose }) {
                     />
                   </div>
                 )}
-
                 {formData.paymentMethod === "Cheque" && (
                   <div>
                     <label
@@ -2693,6 +2686,89 @@ function AddEntry({ onSubmit, onClose }) {
           to {
             opacity: 1;
             transform: translate(-50%, -50%);
+          }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+          .modal-container {
+            width: 95%;
+            max-width: 100%;
+            padding: 1rem;
+            max-height: 90vh;
+          }
+
+          .form-container {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+
+          .grid-section {
+            grid-template-columns: 1fr !important;
+            gap: 1rem;
+          }
+
+          .product-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1rem;
+          }
+
+          .product-grid button {
+            align-self: center;
+            width: 100%;
+            max-width: 200px;
+          }
+
+          input,
+          select,
+          .product-grid div {
+            width: 100% !important;
+            box-sizing: border-box;
+          }
+
+          h2 {
+            font-size: 1.8rem;
+          }
+
+          h3 {
+            font-size: 1.2rem;
+          }
+
+          label {
+            font-size: 0.85rem;
+          }
+
+          input,
+          select {
+            font-size: 0.9rem;
+            padding: 0.6rem;
+          }
+
+          button {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+          }
+
+          .modal-container::-webkit-scrollbar {
+            width: 8px;
+          }
+
+          .modal-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+          }
+
+          .modal-container::-webkit-scrollbar-thumb {
+            background: #64748b;
+            border-radius: 10px;
+          }
+
+          /* Ensure no horizontal overflow */
+          .modal-container,
+          .form-container,
+          .grid-section,
+          .product-grid {
+            overflow-x: hidden;
           }
         }
       `}</style>
