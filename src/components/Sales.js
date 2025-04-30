@@ -53,7 +53,6 @@ const Sales = () => {
         const searchableFields = [
           order.name,
           order.orderId,
-
           order.city,
           order.state,
           order.pinCode,
@@ -61,7 +60,6 @@ const Sales = () => {
           order.customerEmail,
           order.customername,
           order.sostatus,
-
           String(order.paymentCollected || ""), // Convert to string
           order.paymentMethod,
           String(order.paymentDue || ""), // Convert to string
@@ -107,6 +105,9 @@ const Sales = () => {
         );
       });
     }
+
+    filtered = filtered.sort((a, b) => new Date(b.soDate) - new Date(a.soDate));
+
     setFilteredOrders(filtered);
   };
 
@@ -430,6 +431,8 @@ const Sales = () => {
       "sostatus",
       "invoiceNo",
       "invoiceDate",
+      "gstno",
+      "freightstatus",
       "remarks",
       "fulfillingStatus",
       "remarksByProduction",

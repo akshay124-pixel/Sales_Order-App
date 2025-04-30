@@ -288,6 +288,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Order Type:</strong> {entry.orderType || "N/A"}
             </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>GST NO.:</strong> {entry.gstno || "N/A"}
+            </span>
           </div>
         </div>
 
@@ -495,6 +498,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Freight Charges:</strong> {entry.freightcs || "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Freight Status:</strong> {entry.freightstatus || "N/A"}
             </span>
             <span style={{ fontSize: "1rem", color: "#555" }}>
               <strong>Invoice No:</strong> {entry.invoiceNo || "N/A"}

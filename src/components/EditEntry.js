@@ -112,6 +112,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       chequeId: "",
 
       freightcs: "",
+      freightstatus: "",
       orderType: "Private order",
       installation: "N/A",
       installationStatus: "Pending",
@@ -136,6 +137,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       completionStatus: "In Progress",
       fulfillmentDate: "",
       remarks: "",
+      gstno: "",
       sostatus: "Pending for Approval",
     }),
     []
@@ -192,6 +194,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         pinCode: entryToEdit.pinCode || "",
         contactNo: entryToEdit.contactNo || "",
         alterno: entryToEdit.contactNo || "",
+        gstno: entryToEdit.gstno || "",
         customerEmail: entryToEdit.customerEmail || "",
         customername: entryToEdit.customername || "",
         products:
@@ -233,6 +236,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         chequeId: entryToEdit.chequeId || "",
 
         freightcs: entryToEdit.freightcs || "",
+        freightstatus: entryToEdit.freightstatus || "",
         orderType: entryToEdit.orderType || "Private order",
         installation: entryToEdit.installation || "N/A",
         installationStatus: entryToEdit.installationStatus || "Pending",
@@ -321,6 +325,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         pinCode: data.pinCode || null,
         contactNo: data.contactNo || null,
         alterno: data.alterno || null,
+        gstno: data.gstno || null,
         customerEmail: data.customerEmail || null,
         customername: data.customername || null,
         products: data.products.map((p) => ({
@@ -352,6 +357,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         neftTransactionId: data.neftTransactionId || null,
         chequeId: data.chequeId || null,
         freightcs: data.freightcs || null,
+        freightstatus: data.freightstatus || null,
         orderType: data.orderType || "Private order",
         installation: data.installation || "N/A",
         installationStatus: data.installationStatus || "Pending",
@@ -1491,7 +1497,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.soDate?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="dispatchFrom">
           <Form.Label>📍 Dispatch From</Form.Label>
           <Form.Control
@@ -1502,7 +1507,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.dispatchFrom}
           />
         </Form.Group>
-
         <Form.Group controlId="dispatchDate">
           <Form.Label>📅 Dispatch Date</Form.Label>
           <Form.Control
@@ -1514,7 +1518,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.dispatchDate}
           />
         </Form.Group>
-
         <Form.Group controlId="name">
           <Form.Label>👤 Name</Form.Label>
           <Form.Control
@@ -1523,7 +1526,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.name}
           />
         </Form.Group>
-
         <Form.Group controlId="state">
           <Form.Label>🗺️ State</Form.Label>
           <Controller
@@ -1548,7 +1550,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="city">
           <Form.Label>🌆 City</Form.Label>
           <Controller
@@ -1575,7 +1576,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="pinCode">
           <Form.Label>📮 Pin Code</Form.Label>
           <Form.Control
@@ -1594,7 +1594,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.pinCode?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="contactNo">
           <Form.Label>📱 Contact Number</Form.Label>
           <Form.Control
@@ -1631,7 +1630,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.alternateContactNo?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="customername">
           <Form.Label>👤 Customer Name</Form.Label>
           <Form.Control
@@ -1642,7 +1640,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.customername}
           />
         </Form.Group>
-
         <Form.Group controlId="customerEmail">
           <Form.Label>📧 Customer Email</Form.Label>
           <Form.Control
@@ -1662,7 +1659,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.customerEmail?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="orderType">
           <Form.Label>📦 Order Type</Form.Label>
           <Controller
@@ -1687,7 +1683,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         {/* Products Section */}
         <div>
           <Form.Label>📦 Products *</Form.Label>
@@ -1860,7 +1855,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             Add Product
           </StyledButton>
         </div>
-
         <Form.Group controlId="total">
           <Form.Label>💵 Total *</Form.Label>
           <Form.Control
@@ -1879,7 +1873,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.total?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="paymentCollected">
           <Form.Label>💰 Payment Collected</Form.Label>
           <Form.Control
@@ -1900,7 +1893,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.paymentCollected?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="paymentMethod">
           <Form.Label>💳 Payment Method</Form.Label>
           <Controller
@@ -1926,7 +1918,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="paymentDue">
           <Form.Label>💰 Payment Due</Form.Label>
           <Form.Control
@@ -1944,7 +1935,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.paymentDue?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="neftTransactionId">
           <Form.Label>📄 NEFT/RTGS Transaction ID</Form.Label>
           <Form.Control
@@ -1964,7 +1954,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.neftTransactionId?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="chequeId">
           <Form.Label>📄 Cheque ID</Form.Label>
           <Form.Control
@@ -1982,7 +1971,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.chequeId?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
@@ -1994,6 +1982,38 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
         </Form.Group>
 
+        <Form.Group controlId="freightstatus">
+          <Form.Label>🚚 Freight Status</Form.Label>
+          <Form.Select
+            {...register("freightstatus")}
+            onChange={(e) =>
+              debouncedHandleInputChange("freightstatus", e.target.value)
+            }
+            isInvalid={!!errors.freightstatus}
+            defaultValue="To Pay"
+          >
+            <option value="To Pay">To Pay</option>
+            <option value="Paid">Paid</option>
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            {errors.freightstatus?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group controlId="gstno">
+          <Form.Label>📑 GST Number</Form.Label>
+          <Form.Control
+            {...register("gstno")}
+            onChange={(e) =>
+              debouncedHandleInputChange("gstno", e.target.value)
+            }
+            isInvalid={!!errors.gstno}
+            placeholder="Enter GST Number"
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.gstno?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
         <Form.Group controlId="installation">
           <Form.Label>🛠️ Installation Charges</Form.Label>
           <Form.Control
@@ -2004,7 +2024,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.installation}
           />
         </Form.Group>
-
         <Form.Group controlId="installationStatus">
           <Form.Label>🛠️ Installation Status</Form.Label>
           <Controller
@@ -2030,7 +2049,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="remarksByInstallation">
           <Form.Label>✏️ Remarks by Installation</Form.Label>
           <Form.Control
@@ -2046,7 +2064,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.remarksByInstallation}
           />
         </Form.Group>
-
         <Form.Group controlId="dispatchStatus">
           <Form.Label>🚚 Dispatch Status</Form.Label>
           <Controller
@@ -2094,7 +2111,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             </Form.Control.Feedback>
           )}
         </Form.Group>
-
         <Form.Group controlId="reportingManager">
           <Form.Label>👤 Reporting Manager</Form.Label>
           <Form.Control
@@ -2118,7 +2134,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             </Form.Control.Feedback>
           )}
         </Form.Group>
-
         <Form.Group controlId="company">
           <Form.Label>🏢 Company</Form.Label>
           <Controller
@@ -2140,7 +2155,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="transporter">
           <Form.Label>🚛 Transporter</Form.Label>
           <Form.Control
@@ -2151,7 +2165,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.transporter}
           />
         </Form.Group>
-
         <Form.Group controlId="transporterDetails">
           <Form.Label>📋 Transporter Details</Form.Label>
           <Form.Control
@@ -2164,7 +2177,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.transporterDetails}
           />
         </Form.Group>
-
         <Form.Group controlId="docketNo">
           <Form.Label>📄 Docket No</Form.Label>
           <Form.Control
@@ -2175,7 +2187,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.docketNo}
           />
         </Form.Group>
-
         <Form.Group controlId="receiptDate">
           <Form.Label>📅 Receipt Date</Form.Label>
           <Form.Control
@@ -2187,7 +2198,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.receiptDate}
           />
         </Form.Group>
-
         <Form.Group controlId="shippingAddress">
           <Form.Label>📦 Shipping Address</Form.Label>
           <Form.Control
@@ -2200,7 +2210,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.shippingAddress}
           />
         </Form.Group>
-
         <Form.Group controlId="billingAddress">
           <Form.Label>🏠 Billing Address</Form.Label>
           <Form.Control
@@ -2213,7 +2222,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.billingAddress}
           />
         </Form.Group>
-
         <Form.Group controlId="invoiceNo">
           <Form.Label>📄 Invoice No</Form.Label>
           <Form.Control
@@ -2224,7 +2232,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.invoiceNo}
           />
         </Form.Group>
-
         <Form.Group controlId="invoiceDate">
           <Form.Label>📅 Invoice Date</Form.Label>
           <Form.Control
@@ -2236,7 +2243,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.invoiceDate}
           />
         </Form.Group>
-
         <Form.Group controlId="fulfillingStatus">
           <Form.Label>📋 Production Status</Form.Label>
           <Form.Control
@@ -2247,7 +2253,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.fulfillingStatus}
           />
         </Form.Group>
-
         <Form.Group controlId="remarksByProduction">
           <Form.Label>✏️ Remarks by Production</Form.Label>
           <Form.Control
@@ -2260,7 +2265,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.remarksByProduction}
           />
         </Form.Group>
-
         <Form.Group controlId="remarksByAccounts">
           <Form.Label>✏️ Remarks by Accounts</Form.Label>
           <Form.Control
@@ -2273,7 +2277,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.remarksByAccounts}
           />
         </Form.Group>
-
         <Form.Group controlId="paymentReceived">
           <Form.Label>💰 Payment Received</Form.Label>
           <Controller
@@ -2294,7 +2297,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="billNumber">
           <Form.Label>📄 Bill Number</Form.Label>
           <Form.Control
@@ -2305,7 +2307,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.billNumber}
           />
         </Form.Group>
-
         <Form.Group controlId="completionStatus">
           <Form.Label>📋 Completion Status</Form.Label>
           <Controller
@@ -2329,7 +2330,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
-
         <Form.Group controlId="fulfillmentDate">
           <Form.Label>📅 Production Date</Form.Label>
           <Form.Control
@@ -2356,7 +2356,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             name="sostatus"
           >
             <option value="Pending for Approval">Pending for Approval</option>
-            <option value="Accounts Approved">Accounts Approved</option>
+
             <option value="Approved">Approved</option>
           </Form.Select>
         </Form.Group>

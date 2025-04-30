@@ -29,6 +29,8 @@ function AddEntry({ onSubmit, onClose }) {
     customername: "",
     report: "",
     freightcs: "",
+    freightstatus: "",
+    gstno: "",
     installation: "",
     remarks: "",
     salesPerson: "",
@@ -1435,10 +1437,6 @@ function AddEntry({ onSubmit, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.soDate) {
-      toast.error("Please fill SO Date");
-      return;
-    }
     if (products.length === 0) {
       toast.error("Please add at least one product");
       return;
@@ -1462,7 +1460,7 @@ function AddEntry({ onSubmit, onClose }) {
         spec: p.spec || "N/A",
         qty: Number(p.qty),
         unitPrice: Number(p.unitPrice),
-        gst: Number(p.gst), // Send raw GST percentage
+        gst: Number(p.gst),
         serialNos: [],
         modelNos: [],
       })),
@@ -1616,7 +1614,8 @@ function AddEntry({ onSubmit, onClose }) {
                   name: "soDate",
                   type: "date",
                   required: true,
-                  placeholder: "Select Sales Order Date",
+                  disabled: true,
+                  value: new Date().toISOString().split("T")[0],
                 },
                 {
                   label: "Order Type *",
@@ -1647,6 +1646,12 @@ function AddEntry({ onSubmit, onClose }) {
                   options: ["Promark", "Promine", "Others"],
                   placeholder: "Select Company",
                 },
+                {
+                  label: "GST NO.",
+                  name: "gstno",
+                  type: "text",
+                  placeholder: "Enter GST NO.",
+                },
               ].map((field) => (
                 <div
                   key={field.name}
@@ -1671,13 +1676,15 @@ function AddEntry({ onSubmit, onClose }) {
                       value={formData[field.name] || ""}
                       onChange={handleChange}
                       required={field.required}
+                      disabled={field.disabled || false}
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
                         borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
+                        backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
+                        cursor: field.disabled ? "not-allowed" : "pointer",
                       }}
                     >
                       <option value="">
@@ -1693,17 +1700,23 @@ function AddEntry({ onSubmit, onClose }) {
                     <input
                       type={field.type}
                       name={field.name}
-                      value={formData[field.name] || ""}
-                      onChange={handleChange}
+                      value={
+                        field.name === "soDate" && field.value
+                          ? field.value // Use field.value for soDate
+                          : formData[field.name] || ""
+                      }
+                      onChange={field.disabled ? undefined : handleChange} // Disable onChange for disabled fields
                       required={field.required}
                       placeholder={field.placeholder}
+                      disabled={field.disabled || false}
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
                         borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
+                        backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
+                        cursor: field.disabled ? "not-allowed" : "text",
                       }}
                     />
                   )}
@@ -1711,7 +1724,6 @@ function AddEntry({ onSubmit, onClose }) {
               ))}
             </div>
           </div>
-
           {/* Customer Details Section */}
           <div>
             <h3
@@ -1741,6 +1753,20 @@ function AddEntry({ onSubmit, onClose }) {
                   name: "customername",
                   type: "text",
                   placeholder: "Enter Customer Name",
+                  maxLength: 50, // Limit to 50 characters
+                  pattern: "^[A-Za-z]*$", // Allow only letters
+                  onChange: (e) => {
+                    const value = e.target.value;
+                    // Allow only letters and enforce 50-character limit
+                    if (value.length <= 50 && /^[A-Za-z]*$/.test(value)) {
+                      setFormData((prev) => ({ ...prev, customername: value }));
+                    } else {
+                      e.target.value = formData.customername || ""; // Revert to previous valid value
+                      toast.error(
+                        "Customer Name can only contain letters (max 50)."
+                      );
+                    }
+                  },
                 },
                 {
                   label: "Contact Person Name",
@@ -1806,8 +1832,8 @@ function AddEntry({ onSubmit, onClose }) {
               ))}
             </div>
           </div>
-
           {/* Address Details Section */}
+
           <div>
             <h3
               style={{
@@ -1854,6 +1880,8 @@ function AddEntry({ onSubmit, onClose }) {
                   type: "tel",
                   inputMode: "numeric",
                   placeholder: "e.g. 110001",
+                  maxLength: 6,
+                  pattern: "[0-9]*",
                 },
                 {
                   label: "Shipping Address",
@@ -1929,10 +1957,23 @@ function AddEntry({ onSubmit, onClose }) {
                       type={field.type}
                       name={field.name}
                       value={formData[field.name] || ""}
-                      onChange={field.onChange || handleChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Restrict pinCode to numeric input only
+                        if (
+                          field.name === "pinCode" &&
+                          value &&
+                          !/^\d*$/.test(value)
+                        ) {
+                          return; // Prevent non-numeric input
+                        }
+                        (field.onChange || handleChange)(e);
+                      }}
                       disabled={field.disabled}
                       inputMode={field.inputMode}
                       placeholder={field.placeholder}
+                      maxLength={field.maxLength}
+                      pattern={field.pattern}
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
@@ -1940,14 +1981,31 @@ function AddEntry({ onSubmit, onClose }) {
                         backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
+                        ...(formData[field.name] &&
+                        field.name === "pinCode" &&
+                        !/^\d{6}$/.test(formData[field.name])
+                          ? { borderColor: "red" }
+                          : {}),
                       }}
                     />
                   )}
+                  {formData[field.name] &&
+                    field.name === "pinCode" &&
+                    !/^\d{6}$/.test(formData[field.name]) && (
+                      <span
+                        style={{
+                          color: "red",
+                          fontSize: "0.8rem",
+                          marginTop: "0.25rem",
+                        }}
+                      >
+                        Pin Code must be exactly 6 digits
+                      </span>
+                    )}
                 </div>
               ))}
             </div>
           </div>
-
           {/* Add Products Section */}
           <div>
             <h3
@@ -2240,7 +2298,6 @@ function AddEntry({ onSubmit, onClose }) {
               </div>
             )}
           </div>
-
           {/* Additional Charges Section */}
           <div>
             <h3
@@ -2268,14 +2325,25 @@ function AddEntry({ onSubmit, onClose }) {
                 {
                   label: "Freight Charges",
                   name: "freightcs",
-                  type: "text",
-                  placeholder: "e.g. ₹2000",
+                  type: "tel",
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                  placeholder: "e.g. 2000",
                 },
                 {
                   label: "Installation Charges",
                   name: "installation",
-                  type: "text",
-                  placeholder: "e.g. ₹1000",
+                  type: "tel",
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                  placeholder: "e.g. 1000",
+                },
+                {
+                  label: "Freight Status",
+                  name: "freightstatus",
+                  type: "select",
+                  options: ["To Pay", "Paid"],
+                  placeholder: "Select status",
                 },
               ].map((field) => (
                 <div
@@ -2292,36 +2360,62 @@ function AddEntry({ onSubmit, onClose }) {
                   >
                     {field.label}
                   </label>
-                  <input
-                    type={field.type}
-                    name={field.name}
-                    value={formData[field.name] || ""}
-                    onChange={(e) => {
-                      handleChange(e);
-                      if (field.name === "freightcs") {
-                        setFormData((prev) => ({
-                          ...prev,
-                          paymentDue: calculatePaymentDue(
-                            Number(prev.paymentCollected) || 0
-                          ),
-                        }));
-                      }
-                    }}
-                    placeholder={field.placeholder}
-                    style={{
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                  />
+                  {field.type === "select" ? (
+                    <select
+                      name={field.name}
+                      value={formData[field.name] || "To Pay"}
+                      onChange={(e) => handleChange(e)}
+                      style={{
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    >
+                      {field.options.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={(e) => {
+                        handleChange(e);
+                        if (field.name === "freightcs") {
+                          setFormData((prev) => ({
+                            ...prev,
+                            paymentDue: calculatePaymentDue(
+                              Number(prev.paymentCollected) || 0
+                            ),
+                          }));
+                        }
+                      }}
+                      onKeyPress={(e) => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      placeholder={field.placeholder}
+                      style={{
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                      }}
+                    />
+                  )}
                 </div>
               ))}
             </div>
           </div>
-
           {/* Payment Details Section */}
           <div>
             <h3
@@ -2543,7 +2637,6 @@ function AddEntry({ onSubmit, onClose }) {
               </div>
             </div>
           </div>
-
           {/* Form Actions */}
           <div
             style={{

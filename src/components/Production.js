@@ -367,10 +367,14 @@ const Production = () => {
                   <tr>
                     {[
                       "Order ID",
+                      "So Date",
                       "Customer Name",
+                      "Shipping Address",
                       "Customer Email",
-                      "Customer Contact No",
+                      "Contact No",
+                      "Order Type",
                       "Product Details",
+
                       "Size",
                       "Spec",
                       "Serial Nos",
@@ -431,13 +435,31 @@ const Production = () => {
                           {order.orderId || "N/A"}
                         </td>{" "}
                         <td style={{ padding: "15px", textAlign: "center" }}>
+                          {order.soDate
+                            ? new Date(order.soDate).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                }
+                              )
+                            : "N/A"}
+                        </td>
+                        <td style={{ padding: "15px", textAlign: "center" }}>
                           {order.customername || "N/A"}
+                        </td>
+                        <td style={{ padding: "15px", textAlign: "center" }}>
+                          {order.shippingAddress || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
                           {order.customerEmail || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
                           {order.contactNo || "N/A"}
+                        </td>
+                        <td style={{ padding: "15px", textAlign: "center" }}>
+                          {order.orderType || "N/A"}
                         </td>
                         <td style={{ padding: "15px", textAlign: "center" }}>
                           {productDetails || "N/A"}
