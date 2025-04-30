@@ -13,7 +13,7 @@ import Finish from "./components/Finish";
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
 import Navbar from "./components/Navbar";
-import Installation from "./components/installation"; // Adjusted case to match convention
+import Installation from "./components/installation";
 import Accounts from "./components/Accounts";
 
 const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
@@ -30,9 +30,10 @@ const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
   ) : null;
 };
 
-const PrivateRoute = ({ element, isAuthenticated, requiredRole }) => {
+const PrivateRoute = ({ element, isAuthenticated, allowedRoles }) => {
   const userRole = localStorage.getItem("role");
-  return isAuthenticated && (!requiredRole || userRole === requiredRole) ? (
+  return isAuthenticated &&
+    (!allowedRoles || allowedRoles.includes(userRole)) ? (
     element
   ) : (
     <Navigate to="/login" replace />
@@ -72,8 +73,10 @@ const AppContent = () => {
         navigate("/installation");
       } else if (role === "Accounts") {
         navigate("/accounts");
-      } else {
+      } else if (role === "Sales" || role === "Admin") {
         navigate("/sales");
+      } else {
+        navigate("/login");
       }
     }
   }, [isAuthenticated, navigate]);
@@ -94,6 +97,7 @@ const AppContent = () => {
             <PrivateRoute
               element={<Sales />}
               isAuthenticated={isAuthenticated}
+              allowedRoles={["Sales", "Admin"]}
             />
           }
         />
@@ -103,7 +107,7 @@ const AppContent = () => {
             <PrivateRoute
               element={<Production />}
               isAuthenticated={isAuthenticated}
-              requiredRole="Production"
+              allowedRoles={["Production"]}
             />
           }
         />
@@ -113,7 +117,7 @@ const AppContent = () => {
             <PrivateRoute
               element={<Finish />}
               isAuthenticated={isAuthenticated}
-              requiredRole="Finish"
+              allowedRoles={["Finish"]}
             />
           }
         />
@@ -123,7 +127,7 @@ const AppContent = () => {
             <PrivateRoute
               element={<Installation />}
               isAuthenticated={isAuthenticated}
-              requiredRole="Installation"
+              allowedRoles={["Installation"]}
             />
           }
         />
@@ -133,7 +137,7 @@ const AppContent = () => {
             <PrivateRoute
               element={<Accounts />}
               isAuthenticated={isAuthenticated}
-              requiredRole="Accounts"
+              allowedRoles={["Accounts"]}
             />
           }
         />

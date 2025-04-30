@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+import { Spinner } from "react-bootstrap";
 function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [products, setProducts] = useState([]);
   const [currentProduct, setCurrentProduct] = useState({
     productType: "",
@@ -16,7 +18,7 @@ function AddEntry({ onSubmit, onClose }) {
   });
 
   const [formData, setFormData] = useState({
-    soDate: "",
+    soDate: new Date().toISOString().split("T")[0],
 
     name: "",
 
@@ -29,7 +31,7 @@ function AddEntry({ onSubmit, onClose }) {
     customername: "",
     report: "",
     freightcs: "",
-    freightstatus: "",
+    freightstatus: "To Pay",
     gstno: "",
     installation: "",
     remarks: "",
@@ -1435,6 +1437,12 @@ function AddEntry({ onSubmit, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const userRole = localStorage.getItem("role");
+    if (!["Sales", "Admin"].includes(userRole)) {
+      toast.error("Only Sales or Admin users can create orders");
+      return;
+    }
+
     if (products.length === 0) {
       toast.error("Please add at least one product");
       return;
@@ -1449,9 +1457,12 @@ function AddEntry({ onSubmit, onClose }) {
     }
 
     const total = calculateTotal();
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
     const newEntry = {
       ...formData,
+      createdBy: userId, // Added createdBy field
       products: products.map((p) => ({
         productType: p.productType,
         size: p.size || "N/A",
@@ -1476,16 +1487,31 @@ function AddEntry({ onSubmit, onClose }) {
     };
 
     try {
+      setLoading(true);
       const response = await axios.post(
         "https://sales-order-server.onrender.com/api/orders",
-        newEntry
+        newEntry,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       toast.success("Order submitted successfully!");
       onSubmit(response.data);
       onClose();
     } catch (error) {
       console.error("Error:", error);
-      toast.error(error.response?.data?.error || "An error occurred");
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Failed to create order. Please try again.";
+      toast.error(errorMessage);
+      if (error.response?.status === 403) {
+        toast.error("Unauthorized: Insufficient permissions or invalid token");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -2654,16 +2680,17 @@ function AddEntry({ onSubmit, onClose }) {
             </button>
             <button
               type="submit"
+              disabled={loading}
               style={{
                 padding: "0.75rem 1.5rem",
                 background: "linear-gradient(135deg, #7c3aed, #3b82f6)",
                 color: "#ffffff",
                 border: "none",
                 borderRadius: "0.75rem",
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
               }}
             >
-              Submit
+              {loading ? <Spinner animation="border" size="sm" /> : "Submit"}
             </button>
           </div>
         </form>

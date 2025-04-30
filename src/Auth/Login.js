@@ -6,7 +6,6 @@ import { Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 
 function Login({ onLogin }) {
-  // Add onLogin prop
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -41,7 +40,6 @@ function Login({ onLogin }) {
       if (response.status === 200) {
         const { token, user } = response.data;
 
-        // Store token and user data in localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("userId", user.id);
         localStorage.setItem("role", user.role);
@@ -52,7 +50,6 @@ function Login({ onLogin }) {
           theme: "colored",
         });
 
-        // Call onLogin to notify App.js of successful login
         onLogin({ token, userId: user.id, role: user.role });
       } else {
         toast.error("Unexpected response. Please try again.", {

@@ -21,9 +21,10 @@ const Sales = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("All");
-
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const userRole = localStorage.getItem("role"); // Get role from localStorage
+  const userId = localStorage.getItem("userId"); // Get user ID from localStorage
 
   useEffect(() => {
     fetchOrders();
@@ -35,8 +36,12 @@ const Sales = () => {
 
   const fetchOrders = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/get-orders"
+        "https://sales-order-server.onrender.com/api/get-orders",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       setOrders(response.data);
       toast.success("Orders fetched successfully!");
@@ -60,9 +65,9 @@ const Sales = () => {
           order.customerEmail,
           order.customername,
           order.sostatus,
-          String(order.paymentCollected || ""), // Convert to string
+          String(order.paymentCollected || ""),
           order.paymentMethod,
-          String(order.paymentDue || ""), // Convert to string
+          String(order.paymentDue || ""),
           order.remarks,
           ...(order.products || []).flatMap((p) =>
             (p.serialNos || []).concat(p.modelNos || [])
@@ -150,9 +155,11 @@ const Sales = () => {
 
   const handleEntryUpdated = async (updatedEntry) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `https://sales-order-server.onrender.com/api/edit/${updatedEntry._id}`,
-        updatedEntry
+        updatedEntry,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const updatedOrder = response.data.data || response.data;
       setOrders((prevOrders) =>
@@ -289,12 +296,9 @@ const Sales = () => {
             soDate:
               parseExcelDate(entry.sodate) ||
               new Date().toISOString().slice(0, 10),
-
             dispatchFrom: String(entry.dispatchfrom || "").trim(),
-
             dispatchDate: parseExcelDate(entry.dispatchdate) || "",
             name: String(entry.name || "").trim(),
-
             city: String(entry.city || "").trim(),
             state: String(entry.state || "").trim(),
             pinCode: String(entry.pincode || "").trim(),
@@ -309,9 +313,8 @@ const Sales = () => {
             neftTransactionId: String(entry.nefttransactionid || "").trim(),
             chequeId: String(entry.chequeid || "").trim(),
             paymentTerms: String(entry.paymentterms || "").trim(),
-
             freightcs: String(entry.freightcs || "").trim(),
-            orderType: String(entry.ordertype || "Private order").trim(),
+            orderType: String(entry.ordertype || "Private").trim(),
             installation: String(entry.installation || "N/A").trim(),
             installationStatus: String(
               entry.installationstatus || "Pending"
@@ -351,12 +354,16 @@ const Sales = () => {
           };
         });
 
-        console.log("Sending entries:", JSON.stringify(newEntries, null, 2));
-
+        const token = localStorage.getItem("token");
         const response = await axios.post(
           "https://sales-order-server.onrender.com/api/bulk-orders",
           newEntries,
-          { headers: { "Content-Type": "application/json" } }
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         setOrders((prevOrders) => [...prevOrders, ...response.data.data]);
@@ -377,9 +384,11 @@ const Sales = () => {
 
   const handleExport = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         "https://sales-order-server.onrender.com/api/export",
         {
+          headers: { Authorization: `Bearer ${token}` },
           responseType: "arraybuffer",
         }
       );
@@ -399,14 +408,12 @@ const Sales = () => {
       toast.error("Failed to export orders!");
     }
   };
+
   const isOrderComplete = (order) => {
     const requiredFields = [
       "soDate",
-
       "dispatchFrom",
-
       "name",
-
       "city",
       "state",
       "pinCode",
@@ -440,7 +447,6 @@ const Sales = () => {
       "billNumber",
       "completionStatus",
       "paymentReceived",
-
       "installationStatus",
       "dispatchStatus",
     ];
@@ -480,7 +486,6 @@ const Sales = () => {
         style={{
           background: "linear-gradient(135deg, #2575fc, #6a11cb)",
           padding: "25px 40px",
-
           display: "flex",
           flexWrap: "wrap",
           gap: "20px",
@@ -602,7 +607,6 @@ const Sales = () => {
           fontFamily: "'Poppins', sans-serif",
         }}
       >
-        {/* Action Buttons */}
         <div
           style={{
             display: "flex",
@@ -612,38 +616,40 @@ const Sales = () => {
             flexWrap: "wrap",
           }}
         >
-          <label
-            style={{
-              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-              color: "white",
-              padding: "15px 30px",
-              borderRadius: "35px",
-              fontWeight: "600",
-              fontSize: "1.1rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
-              transition: "all 0.4s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
-            }}
-          >
-            <span style={{ fontSize: "1.3rem" }}>⬅</span> Bulk Upload
-            <input
-              type="file"
-              accept=".xlsx, .xls"
-              onChange={handleFileUpload}
-              style={{ display: "none" }}
-            />
-          </label>
+          {userRole === "Admin" && (
+            <label
+              style={{
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                color: "white",
+                padding: "15px 30px",
+                borderRadius: "35px",
+                fontWeight: "600",
+                fontSize: "1.1rem",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+                transition: "all 0.4s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+                e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+                e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+              }}
+            >
+              <span style={{ fontSize: "1.3rem" }}>⬅</span> Bulk Upload
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileUpload}
+                style={{ display: "none" }}
+              />
+            </label>
+          )}
 
           <Button
             onClick={() => setIsAddModalOpen(true)}
@@ -702,7 +708,6 @@ const Sales = () => {
           </Button>
         </div>
 
-        {/* Modals */}
         {isAddModalOpen && (
           <AddEntry
             onSubmit={handleAddEntry}
@@ -733,7 +738,6 @@ const Sales = () => {
           />
         )}
 
-        {/* Table */}
         <div
           style={{
             background: "white",
@@ -770,13 +774,11 @@ const Sales = () => {
                   "Product Details",
                   "Unit Price",
                   "Qty",
-                  "Freight Charges ",
+                  "Freight Charges",
                   "GST",
                   "Total",
-
                   "Order ID",
                   "SO Date",
-
                   "Approval Status",
                   "City",
                   "State",
@@ -793,7 +795,6 @@ const Sales = () => {
                   "Payment Collected",
                   "Payment Method",
                   "Payment Due",
-
                   "Installation",
                   "Sales Person",
                   "Company",
@@ -855,6 +856,9 @@ const Sales = () => {
                         .filter(Boolean)
                         .join(", ")
                     : "-";
+                  const canEditDelete =
+                    userRole === "Admin" ||
+                    (userRole === "Sales" && order.createdBy?._id === userId);
 
                   return (
                     <tr
@@ -899,7 +903,6 @@ const Sales = () => {
                       <td style={{ padding: "15px" }}>
                         ₹{order.total?.toFixed(2) || "0.00"}
                       </td>
-
                       <td style={{ padding: "15px" }}>
                         {order.orderId || "-"}
                       </td>
@@ -908,7 +911,6 @@ const Sales = () => {
                           ? new Date(order.soDate).toLocaleDateString()
                           : "-"}
                       </td>
-
                       <td style={{ padding: "15px" }}>
                         <Badge
                           bg={
@@ -968,7 +970,6 @@ const Sales = () => {
                       <td style={{ padding: "15px" }}>
                         {formatCurrency(order.paymentDue)}
                       </td>
-
                       <td style={{ padding: "15px" }}>
                         {order.installation || "-"}
                       </td>
@@ -1017,14 +1018,8 @@ const Sales = () => {
                       <td style={{ padding: "15px" }}>
                         {order.remarks || "-"}
                       </td>
-                      <td style={{ padding: "15px" }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "10px",
-                            justifyContent: "center",
-                          }}
-                        >
+                      <td style={{ padding: "15px", textAlign: "center" }}>
+                        <div style={{ display: "flex", gap: "10px" }}>
                           <Button
                             variant="primary"
                             onClick={() => handleViewClick(order)}
@@ -1038,97 +1033,101 @@ const Sales = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <FaEye style={{ marginBottom: "2px" }} />
+                            <FaEye />
                           </Button>
-                          <button
-                            className="editBtn"
-                            onClick={() => handleEditClick(order)}
-                            style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "50%",
-                              padding: "0",
-                              background: "#6b7280",
-                              border: "none",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              zIndex: "1",
-                            }}
-                          >
-                            <svg
-                              height="1em"
-                              viewBox="0 0 512 512"
-                              fill="#ffffff"
-                            >
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
-                            </svg>
-                          </button>
-                          <button
-                            className="bin-button"
-                            onClick={() => handleDeleteClick(order)}
-                            style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "50%",
-                              padding: "0",
-                              background: "#ef4444",
-                              border: "none",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <svg
-                              className="bin-top"
-                              viewBox="0 0 39 7"
-                              fill="none"
-                              style={{ width: "20px", height: "5px" }}
-                            >
-                              <line
-                                y1="5"
-                                x2="39"
-                                y2="5"
-                                stroke="white"
-                                strokeWidth="4"
-                              ></line>
-                              <line
-                                x1="12"
-                                y1="1.5"
-                                x2="26.0357"
-                                y2="1.5"
-                                stroke="white"
-                                strokeWidth="3"
-                              ></line>
-                            </svg>
-                            <svg
-                              className="bin-bottom"
-                              viewBox="0 0 33 39"
-                              fill="none"
-                              style={{ width: "20px", height: "20px" }}
-                            >
-                              <mask id="path-1-inside-1_8_19" fill="white">
-                                <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
-                              </mask>
-                              <path
-                                d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                                fill="white"
-                                mask="url(#path-1-inside-1_8_19)"
-                              ></path>
-                              <path
-                                d="M12 6L12 29"
-                                stroke="white"
-                                strokeWidth="4"
-                              ></path>
-                              <path
-                                d="M21 6V29"
-                                stroke="white"
-                                strokeWidth="4"
-                              ></path>
-                            </svg>
-                          </button>
+                          {canEditDelete && (
+                            <>
+                              <button
+                                className="editBtn"
+                                onClick={() => handleEditClick(order)}
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  borderRadius: "50%",
+                                  padding: "0",
+                                  background: "#6b7280",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  zIndex: "1",
+                                }}
+                              >
+                                <svg
+                                  height="1em"
+                                  viewBox="0 0 512 512"
+                                  fill="#ffffff"
+                                >
+                                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                                </svg>
+                              </button>
+                              <button
+                                className="bin-button"
+                                onClick={() => handleDeleteClick(order)}
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  borderRadius: "50%",
+                                  padding: "0",
+                                  background: "#ef4444",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <svg
+                                  className="bin-top"
+                                  viewBox="0 0 39 7"
+                                  fill="none"
+                                  style={{ width: "20px", height: "5px" }}
+                                >
+                                  <line
+                                    y1="5"
+                                    x2="39"
+                                    y2="5"
+                                    stroke="white"
+                                    strokeWidth="4"
+                                  ></line>
+                                  <line
+                                    x1="12"
+                                    y1="1.5"
+                                    x2="26.0357"
+                                    y2="1.5"
+                                    stroke="white"
+                                    strokeWidth="3"
+                                  ></line>
+                                </svg>
+                                <svg
+                                  className="bin-bottom"
+                                  viewBox="0 0 33 39"
+                                  fill="none"
+                                  style={{ width: "20px", height: "20px" }}
+                                >
+                                  <mask id="path-1-inside-1_8_19" fill="white">
+                                    <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
+                                  </mask>
+                                  <path
+                                    d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                                    fill="white"
+                                    mask="url(#path-1-inside-1_8_19)"
+                                  ></path>
+                                  <path
+                                    d="M12 6L12 29"
+                                    stroke="white"
+                                    strokeWidth="4"
+                                  ></path>
+                                  <path
+                                    d="M21 6V29"
+                                    stroke="white"
+                                    strokeWidth="4"
+                                  ></path>
+                                </svg>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1137,42 +1136,21 @@ const Sales = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="45"
+                    colSpan="40"
                     style={{
-                      padding: "50px",
+                      padding: "20px",
                       textAlign: "center",
-                      color: "#6a11cb",
-                      fontSize: "1.3rem",
-                      fontWeight: "500",
+                      fontStyle: "italic",
+                      color: "#6b7280",
                     }}
                   >
-                    No Data Available
+                    No orders found.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-
-        {/* Custom Scrollbar Styling */}
-        <style jsx>{`
-          ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-          }
-          ::-webkit-scrollbar-track {
-            background: #e6f0fa;
-            borderradius: 5px;
-          }
-          ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #2575fc, #6a11cb);
-            borderradius: 5px;
-            transition: all 0.3s ease;
-          }
-          ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-          }
-        `}</style>
       </div>
       <footer
         style={{
