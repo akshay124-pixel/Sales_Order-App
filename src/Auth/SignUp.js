@@ -13,6 +13,7 @@ function Signup() {
     role: "Sales",
   });
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -98,6 +99,11 @@ function Signup() {
     }
   };
 
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div
       className="container"
@@ -137,16 +143,34 @@ function Signup() {
               onChange={handleInput}
               required
             />
-            <input
-              type="password"
-              style={{ backgroundColor: "white" }}
-              className="input"
-              placeholder="Password"
-              name="password"
-              value={form.password}
-              onChange={handleInput}
-              required
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                style={{ backgroundColor: "white", paddingRight: "40px" }}
+                className="input"
+                placeholder="Password"
+                name="password"
+                value={form.password}
+                onChange={handleInput}
+                required
+              />
+              <button
+                type="button"
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  color: "blue",
+                  cursor: "pointer",
+                }}
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             <select
               name="role"
               style={{ backgroundColor: "white" }}

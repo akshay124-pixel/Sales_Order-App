@@ -11,6 +11,7 @@ function Login({ onLogin }) {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -73,6 +74,11 @@ function Login({ onLogin }) {
     }
   };
 
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div
       className="login-container"
@@ -101,17 +107,35 @@ function Login({ onLogin }) {
               required
               aria-label="Email Address"
             />
-            <input
-              className="input"
-              style={{ backgroundColor: "white" }}
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleInput}
-              required
-              aria-label="Password"
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                className="input"
+                style={{ backgroundColor: "white", paddingRight: "80px" }}
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleInput}
+                required
+                aria-label="Password"
+              />
+              <button
+                type="button"
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  color: "blue",
+                  cursor: "pointer",
+                }}
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
           <button
