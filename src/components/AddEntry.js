@@ -1671,12 +1671,6 @@ function AddEntry({ onSubmit, onClose }) {
                   options: ["Promark", "Promine", "Others"],
                   placeholder: "Select Company",
                 },
-                {
-                  label: "GST NO.",
-                  name: "gstno",
-                  type: "text",
-                  placeholder: "Enter GST NO.",
-                },
               ].map((field) => (
                 <div
                   key={field.name}
@@ -1820,6 +1814,12 @@ function AddEntry({ onSubmit, onClose }) {
                   name: "customerEmail",
                   type: "email",
                   placeholder: "e.g. example@domain.com",
+                },
+                {
+                  label: "GST NO.",
+                  name: "gstno",
+                  type: "text",
+                  placeholder: "Enter GST NO.",
                 },
               ].map((field) => (
                 <div
