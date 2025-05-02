@@ -99,7 +99,7 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
             padding: 1rem;
             width: 100%;
             box-sizing: border-box;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+           
           }
           .menu-toggle {
             display: none;
