@@ -1774,18 +1774,6 @@ function AddEntry({ onSubmit, onClose }) {
                   type: "text",
                   placeholder: "Enter Customer Name",
                   maxLength: 50,
-                  pattern: "^[A-Za-z]*$",
-                  onChange: (e) => {
-                    const value = e.target.value;
-                    if (value.length <= 50 && /^[A-Za-z]*$/.test(value)) {
-                      setFormData((prev) => ({ ...prev, customername: value }));
-                    } else {
-                      e.target.value = formData.customername || "";
-                      toast.error(
-                        "Customer Name can only contain letters (max 50)."
-                      );
-                    }
-                  },
                 },
                 {
                   label: "Contact Person Name",
