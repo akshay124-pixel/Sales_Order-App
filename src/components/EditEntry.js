@@ -110,7 +110,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       paymentDue: "",
       neftTransactionId: "",
       chequeId: "",
-
+      installchargesstatus: "",
       freightcs: "",
       freightstatus: "",
       orderType: "Private order",
@@ -237,6 +237,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
         freightcs: entryToEdit.freightcs || "",
         freightstatus: entryToEdit.freightstatus || "",
+        installchargesstatus: entryToEdit.installchargesstatus || "",
         orderType: entryToEdit.orderType || "Private order",
         installation: entryToEdit.installation || "N/A",
         installationStatus: entryToEdit.installationStatus || "Pending",
@@ -358,6 +359,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         chequeId: data.chequeId || null,
         freightcs: data.freightcs || null,
         freightstatus: data.freightstatus || null,
+        installchargesstatus: data.installchargesstatus || null,
         orderType: data.orderType || "Private order",
         installation: data.installation || "N/A",
         installationStatus: data.installationStatus || "Pending",
@@ -1993,13 +1995,31 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             defaultValue="To Pay"
           >
             <option value="To Pay">To Pay</option>
-            <option value="Paid">Paid</option>
+            <option value="Including">Including</option>
+            <option value="Extra">Extra</option>
           </Form.Select>
           <Form.Control.Feedback type="invalid">
             {errors.freightstatus?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
+        <Form.Group controlId="installchargesstatus">
+          <Form.Label>🔧 Installation Charges Status</Form.Label>
+          <Form.Select
+            {...register("installchargesstatus")}
+            onChange={(e) =>
+              debouncedHandleInputChange("installchargesstatus", e.target.value)
+            }
+            isInvalid={!!errors.installchargesstatus}
+            defaultValue="To Pay"
+          >
+            <option value="To Pay">To Pay</option>
+            <option value="Including">Including</option>
+            <option value="Extra">Extra</option>
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            {errors.installchargesstatus?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
         <Form.Group controlId="gstno">
           <Form.Label>📑 GST Number</Form.Label>
           <Form.Control

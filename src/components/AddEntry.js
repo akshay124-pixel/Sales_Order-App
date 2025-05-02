@@ -32,6 +32,7 @@ function AddEntry({ onSubmit, onClose }) {
     report: "",
     freightcs: "",
     freightstatus: "To Pay",
+    installchargesstatus: "To Pay",
     gstno: "",
     installation: "",
     remarks: "",
@@ -296,7 +297,10 @@ function AddEntry({ onSubmit, onClose }) {
       sizes: ["N/A"],
       specs: ["Standard", "4K"],
     },
-    "White Board": { sizes: ["N/A"], specs: ["N/A"] },
+    "White Board": {
+      sizes: ["2x3", "3x4", "4x6", "4x5", "4x8", "4x10"],
+      specs: ["Non-Magnetic", "Magnetic", "RC Magnetic", "UM", "UG"],
+    },
     "C-type Cable": { sizes: ["N/A"], specs: ["N/A"] },
     "Fujifilm-Printer": {
       sizes: ["N/A"],
@@ -338,7 +342,10 @@ function AddEntry({ onSubmit, onClose }) {
     "DMS Software": { sizes: ["N/A"], specs: ["N/A"] },
     "Battery Bank": { sizes: ["N/A"], specs: ["N/A"] },
     "Rack & Interlink": { sizes: ["N/A"], specs: ["N/A"] },
-    "Green Board": { sizes: ["N/A"], specs: ["N/A"] },
+    "Green Board": {
+      sizes: ["2x3", "3x4", "4x6", "4x5", "4x8", "4x10"],
+      specs: ["Non-Magnetic", "Magnetic", "RC Magnetic", "UM", "UG"],
+    },
     "Wooden Podium": { sizes: ["N/A"], specs: ["N/A"] },
     "Writing Board": { sizes: ["N/A"], specs: ["N/A"] },
     "LED Video Wall": { sizes: ["N/A"], specs: ["N/A"] },
@@ -1331,6 +1338,12 @@ function AddEntry({ onSubmit, onClose }) {
           : {}),
         ...(name === "paymentMethod"
           ? { neftTransactionId: "", chequeId: "" }
+          : {}),
+        ...(name === "freightstatus" && value !== "Extra"
+          ? { freightcs: "" }
+          : {}),
+        ...(name === "installchargesstatus" && value !== "Extra"
+          ? { installation: "" }
           : {}),
       }));
     }
@@ -2348,6 +2361,7 @@ function AddEntry({ onSubmit, onClose }) {
                   inputMode: "numeric",
                   pattern: "[0-9]*",
                   placeholder: "e.g. 2000",
+                  disabled: formData.freightstatus !== "Extra",
                 },
                 {
                   label: "Installation Charges",
@@ -2356,12 +2370,20 @@ function AddEntry({ onSubmit, onClose }) {
                   inputMode: "numeric",
                   pattern: "[0-9]*",
                   placeholder: "e.g. 1000",
+                  disabled: formData.installchargesstatus !== "Extra",
                 },
                 {
                   label: "Freight Status",
                   name: "freightstatus",
                   type: "select",
-                  options: ["To Pay", "Paid"],
+                  options: ["To Pay", "Including", "Extra"],
+                  placeholder: "Select status",
+                },
+                {
+                  label: "Installation Charges Status",
+                  name: "installchargesstatus",
+                  type: "select",
+                  options: ["To Pay", "Including", "Extra"],
                   placeholder: "Select status",
                 },
               ].map((field) => (
@@ -2383,7 +2405,7 @@ function AddEntry({ onSubmit, onClose }) {
                     <select
                       name={field.name}
                       value={formData[field.name] || "To Pay"}
-                      onChange={(e) => handleChange(e)}
+                      onChange={handleChange}
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
@@ -2406,7 +2428,10 @@ function AddEntry({ onSubmit, onClose }) {
                       value={formData[field.name] || ""}
                       onChange={(e) => {
                         handleChange(e);
-                        if (field.name === "freightcs") {
+                        if (
+                          field.name === "freightcs" ||
+                          field.name === "installation"
+                        ) {
                           setFormData((prev) => ({
                             ...prev,
                             paymentDue: calculatePaymentDue(
@@ -2421,11 +2446,12 @@ function AddEntry({ onSubmit, onClose }) {
                         }
                       }}
                       placeholder={field.placeholder}
+                      disabled={field.disabled}
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
                         borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
+                        backgroundColor: field.disabled ? "#e5e7eb" : "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
                       }}
