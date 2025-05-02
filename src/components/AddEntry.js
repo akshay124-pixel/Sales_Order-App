@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Spinner } from "react-bootstrap";
@@ -1425,15 +1425,20 @@ function AddEntry({ onSubmit, onClose }) {
     const installation = Number(formData.installation) || 0;
     const freight = Number(formData.freightcs) || 0;
 
-    return Number((subtotalWithGST + freight + installation).toFixed(2));
+    return Math.round(subtotalWithGST + freight + installation); // Round to whole number
   };
 
   const calculatePaymentDue = (paymentCollected) => {
     const total = calculateTotal();
     const due = total - paymentCollected;
-    return Number(due.toFixed(2));
+    return Number(due.toFixed(2)); // Keep 2 decimal places for due
   };
-
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
+    }));
+  }, [products]);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
