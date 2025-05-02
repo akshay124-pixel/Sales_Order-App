@@ -797,6 +797,7 @@ const Sales = () => {
                   "Payment Due",
                   "Installation",
                   "Sales Person",
+                  "Created By",
                   "Company",
                   "Transporter",
                   "Transporter Details",
@@ -975,6 +976,9 @@ const Sales = () => {
                       </td>
                       <td style={{ padding: "15px" }}>
                         {order.salesPerson || "-"}
+                      </td>
+                      <td style={{ padding: "15px" }}>
+                        {order.createdBy?.username || "-"}
                       </td>
                       <td style={{ padding: "15px" }}>
                         {order.company || "-"}
