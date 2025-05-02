@@ -978,7 +978,11 @@ const Sales = () => {
                         {order.salesPerson || "-"}
                       </td>
                       <td style={{ padding: "15px" }}>
-                        {order.createdBy?.username || "-"}
+                        {order.createdBy && typeof order.createdBy === "object"
+                          ? order.createdBy.username || "Unknown"
+                          : typeof order.createdBy === "string"
+                          ? order.createdBy
+                          : "-"}
                       </td>
                       <td style={{ padding: "15px" }}>
                         {order.company || "-"}
