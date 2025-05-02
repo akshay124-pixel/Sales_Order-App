@@ -4,20 +4,22 @@ import { Button } from "react-bootstrap";
 import "../App.css"; // Assuming App.css contains any additional global styles
 
 const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
-  const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState("User");
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    setUserName(userId || "User");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setUserName(user.username || "User");
   }, [isAuthenticated]);
 
   const handleLogout = () => {
     onLogout();
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
@@ -90,13 +92,14 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
           }
           .navbar {
             animation: fadeIn 0.5s ease-out;
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 1rem;
             width: 100%;
             box-sizing: border-box;
-            
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
           }
           .menu-toggle {
             display: none;
@@ -159,7 +162,7 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
               border-width: 1px !important;
             }
             .logout-btn {
-              
+              animation: slideInRight 0.3s ease-out;
               order: 2;
               width: auto !important;
               padding: 0.25rem 0.5rem !important;
@@ -168,9 +171,12 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
               gap: 0.25rem;
               min-width: 45px;
               height: 45px !important;
-             
+              line-height: 1;
             }
-            
+            .logout-btn svg {
+              width: 12px !important;
+              height: 12px !important;
+            }
             .navbar-user.auth-buttons {
               justify-content: center;
               flex-wrap: wrap;
@@ -261,6 +267,7 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
                   display: "flex",
                   alignItems: "center",
                   position: "relative",
+                  gap: "0.5rem",
                 }}
                 role="button"
                 aria-label={`User profile for ${userName}`}
@@ -289,6 +296,15 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
                     e.currentTarget.style.borderColor = "#90cdf4";
                   }}
                 />
+                <span
+                  style={{
+                    color: "white",
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                  }}
+                >
+                  Hello, {userName}
+                </span>
               </div>
               <button
                 className="Btn mx-3 logout-btn"

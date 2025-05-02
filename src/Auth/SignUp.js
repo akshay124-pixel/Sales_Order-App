@@ -13,7 +13,7 @@ function Signup() {
     role: "Sales",
   });
   const [error, setError] = useState(null);
-  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -23,7 +23,6 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form data
     if (!form.username || !form.email || !form.password || !form.role) {
       toast.error("All fields are required", {
         position: "top-right",
@@ -44,7 +43,21 @@ function Signup() {
       );
 
       if (response.status === 201) {
-        console.log("Signup successful", response.data);
+        const { token, user } = response.data;
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("role", user.role);
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+          })
+        );
+
         toast.success("Signup successful! Redirecting to login...", {
           position: "top-right",
           autoClose: 3000,
@@ -54,9 +67,8 @@ function Signup() {
           draggable: true,
           theme: "colored",
         });
-        navigate("/login"); // Navigate to login on successful signup
+        navigate("/login");
       } else {
-        console.log("Unexpected response status", response.status);
         toast.error("Unexpected response. Please try again.", {
           position: "top-right",
           autoClose: 3000,
@@ -69,37 +81,22 @@ function Signup() {
       }
     } catch (error) {
       console.error("Error during signup", error);
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        setError(error.response.data.message); // Display API error message
-        toast.error(error.response.data.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "colored",
-        });
-      } else {
-        setError("Something went wrong. Please try again."); // Fallback error message
-        toast.error("Something went wrong. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "colored",
-        });
-      }
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
     }
   };
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -120,8 +117,7 @@ function Signup() {
           <span className="subtitle">
             Create a free account with your email.
           </span>
-          {error && <p style={{ color: "red" }}>{error}</p>}{" "}
-          {/* Display error message */}
+          {error && <p style={{ color: "red" }}>{error}</p>}
           <div className="form-box">
             <input
               type="text"
@@ -146,7 +142,7 @@ function Signup() {
             <div style={{ position: "relative" }}>
               <input
                 type={showPassword ? "text" : "password"}
-                style={{ backgroundColor: "white", paddingRight: "40px" }}
+                style={{ backgroundColor: "white", paddingRight: "80px" }}
                 className="input"
                 placeholder="Password"
                 name="password"

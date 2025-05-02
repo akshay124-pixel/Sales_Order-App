@@ -11,7 +11,7 @@ function Login({ onLogin }) {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -44,6 +44,15 @@ function Login({ onLogin }) {
         localStorage.setItem("token", token);
         localStorage.setItem("userId", user.id);
         localStorage.setItem("role", user.role);
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+          })
+        );
 
         toast.success("Login successful! Redirecting...", {
           position: "top-right",
@@ -74,7 +83,6 @@ function Login({ onLogin }) {
     }
   };
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
