@@ -839,6 +839,7 @@ function AddEntry({ onSubmit, onClose }) {
       "Amritsar",
       "Ludhiana",
       "Jalandhar",
+      "Nabha",
       "Patiala",
       "Bathinda",
       "Mohali",
