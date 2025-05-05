@@ -3,21 +3,25 @@ import axios from "axios";
 import { Button, Modal, Badge } from "react-bootstrap";
 import { FaEye } from "react-icons/fa";
 import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
 import OutFinishedGoodModal from "./OutFinishedGoodModal";
 
 function Finish() {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewOrder, setViewOrder] = useState(null);
   const [copied, setCopied] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [freightStatusFilter, setFreightStatusFilter] = useState("");
+  const [dispatchStatusFilter, setDispatchStatusFilter] = useState("");
 
   const fetchFinishedGoods = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/finished-goods",
+        "https://sales-order-server.onrender.com/finished-goods",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -25,12 +29,11 @@ function Finish() {
         }
       );
       if (response.data.success) {
-        // Filter out "Dispatched" orders from the initial fetch
-        setOrders(
-          response.data.data.filter(
-            (order) => order.dispatchStatus !== "Delivered"
-          )
+        const filteredData = response.data.data.filter(
+          (order) => order.dispatchStatus !== "Delivered"
         );
+        setOrders(filteredData);
+        setFilteredOrders(filteredData);
       } else {
         throw new Error(
           response.data.message || "Failed to fetch finished goods data"
@@ -56,6 +59,22 @@ function Finish() {
     fetchFinishedGoods();
   }, [fetchFinishedGoods]);
 
+  // Apply filters
+  useEffect(() => {
+    let filtered = [...orders];
+    if (freightStatusFilter) {
+      filtered = filtered.filter(
+        (order) => order.freightstatus === freightStatusFilter
+      );
+    }
+    if (dispatchStatusFilter) {
+      filtered = filtered.filter(
+        (order) => order.dispatchStatus === dispatchStatusFilter
+      );
+    }
+    setFilteredOrders(filtered);
+  }, [freightStatusFilter, dispatchStatusFilter, orders]);
+
   const handleEditClick = (order) => {
     setEditData({
       dispatchFrom: order.dispatchFrom || "",
@@ -76,7 +95,6 @@ function Finish() {
   };
 
   const handleModalSubmit = (updatedEntry) => {
-    // Update the orders list and filter out if dispatchStatus is "Dispatched"
     setOrders((prevOrders) =>
       prevOrders
         .map((order) => (order._id === updatedEntry._id ? updatedEntry : order))
@@ -90,7 +108,6 @@ function Finish() {
         autoClose: 3000,
       }
     );
-    // Optional: Refresh from server to ensure consistency
     fetchFinishedGoods();
   };
 
@@ -142,6 +159,43 @@ function Finish() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleExportToXLSX = () => {
+    const tableData = filteredOrders.map((order) => ({
+      "Order ID": order.orderId || "N/A",
+      "Product Name": order.products
+        ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
+        : "N/A",
+      Size: order.products
+        ? order.products.map((p) => p.size || "N/A").join(", ")
+        : "N/A",
+      Quantity: order.products
+        ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+        : "N/A",
+      "Model Nos": order.products
+        ? order.products
+            .flatMap((p) => p.modelNos || [])
+            .filter(Boolean)
+            .join(", ") || "N/A"
+        : "N/A",
+      "Dispatch Date": order.dispatchDate
+        ? new Date(order.dispatchDate).toLocaleDateString()
+        : "N/A",
+      "Customer Name": order.name || "N/A",
+      "Delivery Address": order.shippingAddress || "N/A",
+      "Freight Status": order.freightstatus || "To Pay",
+      "Product Status":
+        order.fulfillingStatus === "Partial Dispatch"
+          ? "Partial Dispatch"
+          : "Complete",
+      "Dispatch Status": order.dispatchStatus || "Not Dispatched",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(tableData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Dispatch Data");
+    XLSX.writeFile(wb, "Dispatch_Data.xlsx");
+  };
+  tata;
   if (loading) {
     return (
       <div
@@ -216,7 +270,83 @@ function Finish() {
         </header>
 
         <div style={{ padding: "20px" }}>
-          {orders.length === 0 ? (
+          <div
+            style={{
+              display: "flex",
+              gap: "15px",
+              marginBottom: "20px",
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <label
+                style={{
+                  fontWeight: "600",
+                  marginRight: "10px",
+                  color: "#333",
+                }}
+              >
+                Freight Status:
+              </label>
+              <select
+                value={freightStatusFilter}
+                onChange={(e) => setFreightStatusFilter(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                <option value="">All</option>
+                <option value="To Pay">To Pay</option>
+                <option value="Including">Including</option>
+                <option value="Extra">Extra</option>
+              </select>
+            </div>
+            <div>
+              <label
+                style={{
+                  fontWeight: "600",
+                  marginRight: "10px",
+                  color: "#333",
+                }}
+              >
+                Dispatch Status:
+              </label>
+              <select
+                value={dispatchStatusFilter}
+                onChange={(e) => setDispatchStatusFilter(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                <option value="">All</option>
+                <option value="Not Dispatched">Not Dispatched</option>
+                <option value="Dispatched">Dispatched</option>
+                <option value="Docket Awaited Dispatched">
+                  Docket Awaited Dispatched
+                </option>
+              </select>
+            </div>
+            <Button
+              onClick={handleExportToXLSX}
+              style={{
+                background: "linear-gradient(135deg, #28a745, #4cd964)",
+                border: "none",
+                padding: "10px 20px",
+                borderRadius: "5px",
+                color: "#fff",
+                fontWeight: "600",
+              }}
+            >
+              Export to XLSX
+            </Button>
+          </div>
+
+          {filteredOrders.length === 0 ? (
             <div
               style={{
                 background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
@@ -263,10 +393,13 @@ function Finish() {
                     {[
                       "Order ID",
                       "Product Name",
+                      "Size",
                       "Quantity",
+                      "Model Nos",
                       "Dispatch Date",
                       "Customer Name",
                       "Delivery Address",
+                      "Freight Status",
                       "Product Status",
                       "Dispatch Status",
                       "Actions",
@@ -288,14 +421,23 @@ function Finish() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order, index) => {
+                  {filteredOrders.map((order, index) => {
                     const productDetails = order.products
                       ? order.products
                           .map((p) => `${p.productType} (${p.qty})`)
                           .join(", ")
                       : "N/A";
+                    const sizeDetails = order.products
+                      ? order.products.map((p) => p.size || "N/A").join(", ")
+                      : "N/A";
                     const totalQty = order.products
                       ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+                      : "N/A";
+                    const modelNos = order.products
+                      ? order.products
+                          .flatMap((p) => p.modelNos || [])
+                          .filter(Boolean)
+                          .join(", ") || "N/A"
                       : "N/A";
 
                     return (
@@ -344,7 +486,29 @@ function Finish() {
                             borderBottom: "1px solid #eee",
                           }}
                         >
+                          {sizeDetails}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
                           {totalQty}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {modelNos}
                         </td>
                         <td
                           style={{
@@ -380,6 +544,31 @@ function Finish() {
                           }}
                         >
                           {order.shippingAddress || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          <Badge
+                            style={{
+                              background:
+                                order.freightstatus === "To Pay"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  : order.freightstatus === "Including"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                  : "linear-gradient(135deg, #ffc107, #ffca2c)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
+                            }}
+                          >
+                            {order.freightstatus || "To Pay"}
+                          </Badge>
                         </td>
                         <td
                           style={{
@@ -492,7 +681,7 @@ function Finish() {
 
       <footer className="footer-container">
         <p style={{ marginTop: "10px", color: "white", height: "20px" }}>
-          © 2025 Sales Order Mangement. All rights reserved.
+          © 2025 Sales Order Management. All rights reserved.
         </p>
       </footer>
 
@@ -615,7 +804,6 @@ function Finish() {
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                 </span>
-
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Bill No:</strong> {viewOrder.billNumber || "N/A"}
                 </span>
