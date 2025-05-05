@@ -195,7 +195,7 @@ function Finish() {
     XLSX.utils.book_append_sheet(wb, ws, "Dispatch Data");
     XLSX.writeFile(wb, "Dispatch_Data.xlsx");
   };
-  tata;
+
   if (loading) {
     return (
       <div
@@ -401,6 +401,7 @@ function Finish() {
                       "Delivery Address",
                       "Freight Status",
                       "Product Status",
+                      "Production Remarks",
                       "Dispatch Status",
                       "Actions",
                     ].map((header, index) => (
@@ -594,6 +595,17 @@ function Finish() {
                               ? "Partial Dispatch"
                               : "Complete"}
                           </Badge>
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.remarksByProduction}
                         </td>
                         <td
                           style={{
