@@ -21,7 +21,7 @@ function Finish() {
   const fetchFinishedGoods = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/finished-goods",
+        "https://sales-order-server.onrender.com/api/finished-goods",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
