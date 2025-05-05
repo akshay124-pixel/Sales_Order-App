@@ -17,6 +17,7 @@ function Finish() {
   const [editData, setEditData] = useState(null);
   const [freightStatusFilter, setFreightStatusFilter] = useState("");
   const [dispatchStatusFilter, setDispatchStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchFinishedGoods = useCallback(async () => {
     try {
@@ -59,21 +60,84 @@ function Finish() {
     fetchFinishedGoods();
   }, [fetchFinishedGoods]);
 
-  // Apply filters
+  // Apply filters and search
   useEffect(() => {
     let filtered = [...orders];
+
+    // Apply freight status filter
     if (freightStatusFilter) {
       filtered = filtered.filter(
         (order) => order.freightstatus === freightStatusFilter
       );
     }
+
+    // Apply dispatch status filter
     if (dispatchStatusFilter) {
       filtered = filtered.filter(
         (order) => order.dispatchStatus === dispatchStatusFilter
       );
     }
+
+    // Apply search filter
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter((order) => {
+        const productDetails = order.products
+          ? order.products
+              .map((p) => `${p.productType} (${p.qty})`)
+              .join(", ")
+              .toLowerCase()
+          : "";
+        const sizeDetails = order.products
+          ? order.products
+              .map((p) => p.size || "N/A")
+              .join(", ")
+              .toLowerCase()
+          : "";
+        const totalQty = order.products
+          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0).toString()
+          : "N/A";
+        const modelNos = order.products
+          ? order.products
+              .flatMap((p) => p.modelNos || [])
+              .filter(Boolean)
+              .join(", ")
+              .toLowerCase() || "N/A"
+          : "";
+        const dispatchDate = order.dispatchDate
+          ? new Date(order.dispatchDate).toLocaleDateString().toLowerCase()
+          : "N/A";
+        const productStatus =
+          order.fulfillingStatus === "Partial Dispatch"
+            ? "Partial Dispatch"
+            : "Complete";
+
+        return (
+          (order.orderId || "N/A").toLowerCase().includes(lowerSearch) ||
+          (order.name || "N/A").toLowerCase().includes(lowerSearch) ||
+          (order.contactNo || "N/A").toLowerCase().includes(lowerSearch) ||
+          (order.shippingAddress || "N/A")
+            .toLowerCase()
+            .includes(lowerSearch) ||
+          productDetails.includes(lowerSearch) ||
+          modelNos.includes(lowerSearch) ||
+          sizeDetails.includes(lowerSearch) ||
+          totalQty.includes(lowerSearch) ||
+          (order.salesPerson || "N/A").toLowerCase().includes(lowerSearch) ||
+          dispatchDate.includes(lowerSearch) ||
+          (order.freightstatus || "To Pay")
+            .toLowerCase()
+            .includes(lowerSearch) ||
+          productStatus.toLowerCase().includes(lowerSearch) ||
+          (order.dispatchStatus || "Not Dispatched")
+            .toLowerCase()
+            .includes(lowerSearch)
+        );
+      });
+    }
+
     setFilteredOrders(filtered);
-  }, [freightStatusFilter, dispatchStatusFilter, orders]);
+  }, [freightStatusFilter, dispatchStatusFilter, searchTerm, orders]);
 
   const handleEditClick = (order) => {
     setEditData({
@@ -162,14 +226,11 @@ function Finish() {
   const handleExportToXLSX = () => {
     const tableData = filteredOrders.map((order) => ({
       "Order ID": order.orderId || "N/A",
+      "Customer Name": order.name || "N/A",
+      "Contact No": order.contactNo || "N/A",
+      "Delivery Address": order.shippingAddress || "N/A",
       "Product Name": order.products
         ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
-        : "N/A",
-      Size: order.products
-        ? order.products.map((p) => p.size || "N/A").join(", ")
-        : "N/A",
-      Quantity: order.products
-        ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
         : "N/A",
       "Model Nos": order.products
         ? order.products
@@ -177,11 +238,16 @@ function Finish() {
             .filter(Boolean)
             .join(", ") || "N/A"
         : "N/A",
+      Size: order.products
+        ? order.products.map((p) => p.size || "N/A").join(", ")
+        : "N/A",
+      Quantity: order.products
+        ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+        : "N/A",
+      "Sales Person": order.salesPerson || "N/A",
       "Dispatch Date": order.dispatchDate
         ? new Date(order.dispatchDate).toLocaleDateString()
         : "N/A",
-      "Customer Name": order.name || "N/A",
-      "Delivery Address": order.shippingAddress || "N/A",
       "Freight Status": order.freightstatus || "To Pay",
       "Product Status":
         order.fulfillingStatus === "Partial Dispatch"
@@ -193,7 +259,7 @@ function Finish() {
     const ws = XLSX.utils.json_to_sheet(tableData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Dispatch Data");
-    XLSX.writeFile(wb, "Dispatch_Data.xlsx");
+    XLSX.writeFile(wb, "Dispatch_Dashboard.xlsx");
   };
 
   if (loading) {
@@ -279,6 +345,25 @@ function Finish() {
               alignItems: "center",
             }}
           >
+            <div style={{ flex: "1", minWidth: "250px" }}>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search across all fields..."
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                  fontSize: "1rem",
+                  boxShadow: "inset 0 1px 3px rgba(0, 0, 0, 0.1)",
+                  transition: "border-color 0.3s ease",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#2575fc")}
+                onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+              />
+            </div>
             <div>
               <label
                 style={{
@@ -392,16 +477,17 @@ function Finish() {
                   <tr>
                     {[
                       "Order ID",
+                      "Customer Name",
+                      "Contact No",
+                      "Delivery Address",
                       "Product Name",
+                      "Model Nos",
                       "Size",
                       "Quantity",
-                      "Model Nos",
+                      "Sales Person",
                       "Dispatch Date",
-                      "Customer Name",
-                      "Delivery Address",
                       "Freight Status",
                       "Product Status",
-                      "Production Remarks",
                       "Dispatch Status",
                       "Actions",
                     ].map((header, index) => (
@@ -476,7 +562,51 @@ function Finish() {
                             borderBottom: "1px solid #eee",
                           }}
                         >
+                          {order.name || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.contactNo || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {order.shippingAddress || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
                           {productDetails}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
+                          {modelNos}
                         </td>
                         <td
                           style={{
@@ -509,7 +639,7 @@ function Finish() {
                             borderBottom: "1px solid #eee",
                           }}
                         >
-                          {modelNos}
+                          {order.salesPerson || "N/A"}
                         </td>
                         <td
                           style={{
@@ -523,28 +653,6 @@ function Finish() {
                           {order.dispatchDate
                             ? new Date(order.dispatchDate).toLocaleDateString()
                             : "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                          }}
-                        >
-                          {order.name || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                          }}
-                        >
-                          {order.shippingAddress || "N/A"}
                         </td>
                         <td
                           style={{
@@ -595,17 +703,6 @@ function Finish() {
                               ? "Partial Dispatch"
                               : "Complete"}
                           </Badge>
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                          }}
-                        >
-                          {order.remarksByProduction}
                         </td>
                         <td
                           style={{
@@ -840,6 +937,10 @@ function Finish() {
                 </span>
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
+                </span>
+                <span style={{ fontSize: "1rem", color: "#555" }}>
+                  <strong>Sales Person:</strong>{" "}
+                  {viewOrder.salesPerson || "N/A"}
                 </span>
               </div>
               <Button

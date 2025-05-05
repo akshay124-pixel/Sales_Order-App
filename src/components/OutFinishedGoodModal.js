@@ -215,15 +215,14 @@ const OutFinishedGoodModal = ({
           </Select>
         </div>
         {[
-          { key: "billNumber", label: "Bill No", type: "text" },
-          {
-            key: "transporterDetails",
-            label: "Transporter Details",
-            type: "text",
-          },
           { key: "dispatchDate", label: "Dispatch Date", type: "date" },
           { key: "docketNo", label: "Docket No", type: "text" },
           { key: "receiptDate", label: "Receipt Date", type: "date" },
+          {
+            key: "transporterDetails",
+            label: "Transporter Remarks",
+            type: "text",
+          },
         ].map((field) => (
           <div key={field.key}>
             <label
