@@ -1940,12 +1940,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="neftTransactionId">
           <Form.Label>📄 NEFT/RTGS Transaction ID</Form.Label>
           <Form.Control
-            {...register("neftTransactionId", {
-              required:
-                paymentMethod === "NEFT" || paymentMethod === "RTGS"
-                  ? "NEFT/RTGS Transaction ID is required"
-                  : false,
-            })}
+            {...register("neftTransactionId")}
             onChange={(e) =>
               debouncedHandleInputChange("neftTransactionId", e.target.value)
             }
@@ -1959,10 +1954,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="chequeId">
           <Form.Label>📄 Cheque ID</Form.Label>
           <Form.Control
-            {...register("chequeId", {
-              required:
-                paymentMethod === "Cheque" ? "Cheque ID is required" : false,
-            })}
+            {...register("chequeId")}
             onChange={(e) =>
               debouncedHandleInputChange("chequeId", e.target.value)
             }
