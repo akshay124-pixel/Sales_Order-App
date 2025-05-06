@@ -1381,6 +1381,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Abhay Pratap Singh",
     "Abhayjit Sekhon",
     "Ajay Kumar",
+    "Rachit Arya",
     "Amarjeet Singh",
     "Aniket Singh",
     "Anil Kumar",
