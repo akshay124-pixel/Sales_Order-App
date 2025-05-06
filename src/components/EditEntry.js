@@ -547,6 +547,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Rajasthan",
     "Sikkim",
     "Tamil Nadu",
+    "Jammu and Kashmir",
     "Telangana",
     "Tripura",
     "Uttar Pradesh",
