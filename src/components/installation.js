@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
 
 function Installation() {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewOrder, setViewOrder] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -17,8 +20,12 @@ function Installation() {
     remarksByInstallation: "",
   });
   const [errors, setErrors] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const fetchInstallationOrders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await axios.get(
         "https://sales-order-server.onrender.com/api/installation-orders",
@@ -30,15 +37,18 @@ function Installation() {
       );
       if (response.data.success) {
         setOrders(response.data.data);
+        setFilteredOrders(response.data.data);
       } else {
-        throw new Error("Failed to fetch installation orders");
+        throw new Error(
+          response.data.message || "Failed to fetch installation orders"
+        );
       }
     } catch (error) {
       console.error("Error fetching installation orders:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to fetch installation orders",
-        { position: "top-right", autoClose: 5000 }
-      );
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch installation orders";
+      setError(errorMessage);
+      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
     } finally {
       setLoading(false);
     }
@@ -46,14 +56,68 @@ function Installation() {
 
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
     fetchInstallationOrders().then(() => {
-      if (!isMounted) setLoading(false); // Prevent state update if unmounted
+      if (!isMounted) setLoading(false);
     });
     return () => {
-      isMounted = false; // Cleanup to prevent memory leak
+      isMounted = false;
     };
   }, [fetchInstallationOrders]);
+
+  // Filter orders based on search query and status
+  useEffect(() => {
+    let filtered = orders;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((order) => {
+        const productDetails = Array.isArray(order.products)
+          ? order.products
+              .map((p) => `${p.productType || ""} (${p.qty || ""})`)
+              .join(", ")
+          : "";
+        return (
+          (order.orderId || "").toLowerCase().includes(query) ||
+          (order.name || "").toLowerCase().includes(query) ||
+          (order.contactNo || "").toLowerCase().includes(query) ||
+          (order.shippingAddress || "").toLowerCase().includes(query) ||
+          (order.installation || "").toLowerCase().includes(query) ||
+          (order.installationStatus || "").toLowerCase().includes(query) ||
+          productDetails.toLowerCase().includes(query) ||
+          (order.products?.[0]?.size || "").toLowerCase().includes(query) ||
+          (order.products?.[0]?.spec || "").toLowerCase().includes(query) ||
+          (order.products?.[0]?.serialNos?.join(", ") || "")
+            .toLowerCase()
+            .includes(query) ||
+          (order.products?.[0]?.modelNos?.join(", ") || "")
+            .toLowerCase()
+            .includes(query)
+        );
+      });
+    }
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(
+        (order) => order.installationStatus === statusFilter
+      );
+    }
+    setFilteredOrders(filtered);
+  }, [orders, searchQuery, statusFilter]);
+
+  // Get unique statuses for filter dropdown
+  const uniqueStatuses = [
+    "All",
+    "Pending",
+    "In Progress",
+    "Completed",
+    "Failed",
+    ...new Set(
+      orders
+        .map((order) => order.installationStatus || "Pending")
+        .filter(
+          (status) =>
+            !["Pending", "In Progress", "Completed", "Failed"].includes(status)
+        )
+    ),
+  ];
 
   const handleView = (order) => {
     setViewOrder(order);
@@ -61,9 +125,9 @@ function Installation() {
     setCopied(false);
   };
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     if (!viewOrder) return;
-    const productsText = viewOrder.products
+    const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
           .map(
             (p, i) =>
@@ -78,25 +142,30 @@ function Installation() {
           .join("\n")
       : "N/A";
     const orderText = `
-    Order ID: ${viewOrder.orderId || "N/A"}
-    Contact Person: ${viewOrder.name || "N/A"}
-    Contact No: ${viewOrder.contactNo || "N/A"}
-    Shipping Address: ${viewOrder.shippingAddress || "N/A"}
-    Installation Details: ${viewOrder.installation || "N/A"}
-    Installation Status: ${viewOrder.installationStatus || "Pending"}
-    Remarks: ${viewOrder.remarksByInstallation || "N/A"}
-    Model Nos: ${viewOrder.modelNos?.join(", ") || "N/A"}
-    Serial Nos: ${viewOrder.serialNos?.join(", ") || "N/A"}
-    Products:\n${productsText}
-  `.trim();
-    navigator.clipboard.writeText(orderText);
-    setCopied(true);
-    toast.success("Details copied to clipboard!", {
-      position: "top-right",
-      autoClose: 2000,
-    });
-    setTimeout(() => setCopied(false), 2000);
-  };
+      Order ID: ${viewOrder.orderId || "N/A"}
+      Contact Person: ${viewOrder.name || "N/A"}
+      Contact No: ${viewOrder.contactNo || "N/A"}
+      Shipping Address: ${viewOrder.shippingAddress || "N/A"}
+      Installation Details: ${viewOrder.installation || "N/A"}
+      Installation Status: ${viewOrder.installationStatus || "Pending"}
+      Remarks: ${viewOrder.remarksByInstallation || "N/A"}
+      Products:\n${productsText}
+    `.trim();
+    navigator.clipboard
+      .writeText(orderText)
+      .then(() => {
+        setCopied(true);
+        toast.success("Details copied to clipboard!", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        toast.error("Failed to copy details!");
+        console.error("Copy error:", err);
+      });
+  }, [viewOrder]);
 
   const handleEdit = (order) => {
     setEditOrder(order);
@@ -155,7 +224,7 @@ function Installation() {
           position: "top-right",
           autoClose: 3000,
         });
-        await fetchInstallationOrders(); // Refresh the list
+        await fetchInstallationOrders();
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
@@ -165,6 +234,32 @@ function Installation() {
         autoClose: 5000,
       });
     }
+  };
+
+  const exportToExcel = () => {
+    const exportData = filteredOrders.map((order) => {
+      const productDetails = Array.isArray(order.products)
+        ? order.products
+            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+            .join(", ")
+        : "N/A";
+      return {
+        "Order ID": order.orderId || "N/A",
+        "Product Details": productDetails,
+        "Contact Person": order.name || "N/A",
+        "Contact No": order.contactNo || "N/A",
+        "Shipping Address": order.shippingAddress || "N/A",
+        "Installation Details": order.installation || "N/A",
+        "Installation Status": order.installationStatus || "Pending",
+      };
+    });
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Installation Orders");
+    XLSX.writeFile(
+      workbook,
+      `Installation_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
   };
 
   if (loading) {
@@ -203,58 +298,171 @@ function Installation() {
   }
 
   return (
-    <>
-      <div
+    <div
+      style={{
+        width: "100%",
+        margin: "0",
+        padding: "20px",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <header
         style={{
-          width: "100%",
-          margin: "0",
           padding: "20px",
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-          borderRadius: "0",
-          boxShadow: "none",
-          minHeight: "100vh",
-          height: "100%",
+          textAlign: "center",
+          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+          color: "#fff",
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
         }}
       >
-        <header
+        <h1
           style={{
-            padding: "20px",
-            textAlign: "center",
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            color: "#fff",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+            fontSize: "2.5rem",
+            fontWeight: "700",
+            textTransform: "uppercase",
+            letterSpacing: "2px",
+            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
           }}
         >
-          <h1
+          Installation Dashboard
+        </h1>
+      </header>
+
+      <div style={{ padding: "20px", flex: 1 }}>
+        {error && (
+          <div
             style={{
-              fontSize: "2.5rem",
-              fontWeight: "700",
-              textTransform: "uppercase",
-              letterSpacing: "2px",
-              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
+              background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+              color: "#fff",
+              padding: "15px",
+              borderRadius: "10px",
+              marginBottom: "20px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
             }}
           >
-            Installation Dashboard
-          </h1>
-        </header>
+            <span>
+              <strong>Error:</strong> {error}
+            </span>
+            <Button
+              onClick={fetchInstallationOrders}
+              style={{
+                background: "transparent",
+                border: "1px solid #fff",
+                color: "#fff",
+                padding: "5px 15px",
+                borderRadius: "20px",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => (e.target.style.background = "#ffffff30")}
+              onMouseLeave={(e) => (e.target.style.background = "transparent")}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
 
-        <div style={{ padding: "20px" }}>
-          {orders.length === 0 ? (
+        {filteredOrders.length === 0 && !error ? (
+          <div
+            style={{
+              background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+              color: "#fff",
+              padding: "20px",
+              borderRadius: "10px",
+              textAlign: "center",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+              fontSize: "1.3rem",
+              fontWeight: "500",
+            }}
+          >
+            No installation orders available at this time.
+          </div>
+        ) : (
+          <>
             <div
               style={{
-                background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
-                color: "#fff",
-                padding: "20px",
-                borderRadius: "10px",
-                textAlign: "center",
-                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                fontSize: "1.3rem",
-                fontWeight: "500",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "15px",
+                marginBottom: "20px",
+                alignItems: "center",
               }}
             >
-              No installation orders available at this time.
+              <div style={{ position: "relative", flex: "1 1 300px" }}>
+                <Form.Control
+                  type="text"
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    borderRadius: "20px",
+                    padding: "10px 40px 10px 15px",
+                    border: "1px solid #ced4da",
+                    fontSize: "1rem",
+                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+                {searchQuery && (
+                  <FaTimes
+                    style={{
+                      position: "absolute",
+                      right: "15px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                      color: "#6c757d",
+                    }}
+                    onClick={() => setSearchQuery("")}
+                  />
+                )}
+              </div>
+              <Form.Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{
+                  flex: "0 1 200px",
+                  borderRadius: "20px",
+                  padding: "10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "1rem",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                {uniqueStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </Form.Select>
+              <Button
+                onClick={exportToExcel}
+                style={{
+                  background: "linear-gradient(135deg, #28a745, #4cd964)",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "20px",
+                  color: "#fff",
+                  fontWeight: "600",
+                  fontSize: "1rem",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
+              >
+                Export to Excel
+              </Button>
             </div>
-          ) : (
             <div
               style={{
                 overflowX: "auto",
@@ -310,13 +518,15 @@ function Installation() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order, index) => {
-                    const productDetails = order.products
+                  {filteredOrders.map((order, index) => {
+                    const productDetails = Array.isArray(order.products)
                       ? order.products
-                          .map((p) => `${p.productType} (${p.qty})`)
+                          .map(
+                            (p) =>
+                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                          )
                           .join(", ")
                       : "N/A";
-
                     return (
                       <tr
                         key={order._id}
@@ -339,7 +549,14 @@ function Installation() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.orderId || "N/A"}
                         >
                           {order.orderId || "N/A"}
                         </td>
@@ -350,7 +567,14 @@ function Installation() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "200px",
                           }}
+                          title={productDetails}
                         >
                           {productDetails}
                         </td>
@@ -361,7 +585,14 @@ function Installation() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.name || "N/A"}
                         >
                           {order.name || "N/A"}
                         </td>
@@ -372,7 +603,14 @@ function Installation() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.contactNo || "N/A"}
                         >
                           {order.contactNo || "N/A"}
                         </td>
@@ -383,7 +621,14 @@ function Installation() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "200px",
                           }}
+                          title={order.shippingAddress || "N/A"}
                         >
                           {order.shippingAddress || "N/A"}
                         </td>
@@ -394,7 +639,14 @@ function Installation() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.installation || "N/A"}
                         >
                           {order.installation || "N/A"}
                         </td>
@@ -405,7 +657,14 @@ function Installation() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.installationStatus || "Pending"}
                         >
                           <Badge
                             style={{
@@ -416,16 +675,33 @@ function Installation() {
                                   ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                   : order.installationStatus === "Completed"
                                   ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : "linear-gradient(135deg, #6c757d, #5a6268)",
+                                  : order.installationStatus === "Failed"
+                                  ? "linear-gradient(135deg, #6c757d, #5a6268)"
+                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {order.installationStatus || "Pending"}
                           </Badge>
                         </td>
-                        <td style={{ padding: "12px", textAlign: "center" }}>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            height: "40px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
                           <div
                             style={{
                               display: "flex",
@@ -442,6 +718,9 @@ function Installation() {
                                 height: "40px",
                                 borderRadius: "22px",
                                 padding: "0",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
                               aria-label="View order details"
                             >
@@ -449,16 +728,28 @@ function Installation() {
                             </Button>
                             <button
                               className="editBtn"
-                              variant="secondary"
                               onClick={() => handleEdit(order)}
                               style={{
                                 minWidth: "40px",
                                 width: "40px",
+                                height: "40px",
                                 padding: "0",
+                                border: "none",
+                                background:
+                                  "linear-gradient(135deg, #6c757d, #5a6268)",
+                                borderRadius: "22px",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
                             >
-                              <svg height="1em" viewBox="0 0 512 512">
-                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                              <svg
+                                height="1em"
+                                viewBox="0 0 512 512"
+                                fill="#fff"
+                              >
+                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                               </svg>
                             </button>
                           </div>
@@ -469,13 +760,22 @@ function Installation() {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
-      <footer className="footer-container">
-        <p style={{ marginTop: "10px", color: "white", height: "20px" }}>
-          © 2025 Sales Order Mangement. All rights reserved.
+      <footer
+        style={{
+          padding: "15px",
+          textAlign: "center",
+          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+          color: "white",
+          marginTop: "auto",
+          boxShadow: "0 -2px 5px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <p style={{ margin: 0, fontSize: "0.9rem" }}>
+          © 2025 Sales Order Management. All rights reserved.
         </p>
       </footer>
 
@@ -579,7 +879,9 @@ function Installation() {
                             ? "linear-gradient(135deg, #f39c12, #f7c200)"
                             : viewOrder.installationStatus === "Completed"
                             ? "linear-gradient(135deg, #28a745, #4cd964)"
-                            : "linear-gradient(135deg, #6c757d, #5a6268)",
+                            : viewOrder.installationStatus === "Failed"
+                            ? "linear-gradient(135deg, #6c757d, #5a6268)"
+                            : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                         color: "#fff",
                         padding: "5px 10px",
                         borderRadius: "12px",
@@ -589,80 +891,69 @@ function Installation() {
                     </Badge>
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Remarks By Production:</strong>{" "}
-                    {viewOrder.remarksByProduction || "N/A"}
+                    <strong>Remarks By Installation:</strong>{" "}
+                    {viewOrder.remarksByInstallation || "N/A"}
                   </span>
                 </div>
-                <hr />
-                {/* Product Info Section */}
-                <div
+              </div>
+              <div
+                style={{
+                  background: "#f8f9fa",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                }}
+              >
+                <h3
                   style={{
-                    background: "#fafafa",
-                    borderRadius: "10px",
-                    padding: "1.2rem",
-                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.8rem",
+                    fontSize: "1.3rem",
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: "15px",
+                    textTransform: "uppercase",
                   }}
                 >
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                      color: "#333",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Product Info
-                  </h3>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.8rem",
-                    }}
-                  >
-                    {viewOrder.products && viewOrder.products.length > 0 ? (
-                      viewOrder.products.map((product, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "1.5rem",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <span style={{ fontSize: "1rem", color: "#555" }}>
-                            <strong>Product {index + 1} Type:</strong>{" "}
-                            {product.productType || "N/A"}
-                          </span>
-                          <span style={{ fontSize: "1rem", color: "#555" }}>
-                            <strong>Size:</strong> {product.size || "N/A"}
-                          </span>
-                          <span style={{ fontSize: "1rem", color: "#555" }}>
-                            <strong>Spec:</strong> {product.spec || "N/A"}
-                          </span>
-                          <span style={{ fontSize: "1rem", color: "#555" }}>
-                            <strong>Qty:</strong> {product.qty || "N/A"}
-                          </span>
-                          <span style={{ fontSize: "1rem", color: "#555" }}>
-                            <strong>Serial Nos:</strong>{" "}
-                            {product.serialNos?.join(", ") || "N/A"}
-                          </span>
-                          <span style={{ fontSize: "1rem", color: "#555" }}>
-                            <strong>Model Nos:</strong>{" "}
-                            {product.modelNos?.join(", ") || "N/A"}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Products:</strong> N/A
-                      </span>
-                    )}
-                  </div>
+                  Product Info
+                </h3>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "15px",
+                  }}
+                >
+                  {Array.isArray(viewOrder.products) &&
+                  viewOrder.products.length > 0 ? (
+                    viewOrder.products.map((product, index) => (
+                      <React.Fragment key={index}>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Product {index + 1} Type:</strong>{" "}
+                          {product.productType || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Size:</strong> {product.size || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Spec:</strong> {product.spec || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Qty:</strong> {product.qty || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Serial Nos:</strong>{" "}
+                          {product.serialNos?.join(", ") || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Model Nos:</strong>{" "}
+                          {product.modelNos?.join(", ") || "N/A"}
+                        </span>
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Products:</strong> N/A
+                    </span>
+                  )}
                 </div>
               </div>
               <Button
@@ -748,7 +1039,13 @@ function Installation() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
               >
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
@@ -784,7 +1081,13 @@ function Installation() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
                 required
               />
               {errors.remarksByInstallation && (
@@ -810,7 +1113,14 @@ function Installation() {
                   borderRadius: "20px",
                   color: "#fff",
                   fontWeight: "600",
+                  transition: "all 0.3s ease",
                 }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
               >
                 Cancel
               </Button>
@@ -823,7 +1133,14 @@ function Installation() {
                   borderRadius: "20px",
                   color: "#fff",
                   fontWeight: "600",
+                  transition: "all 0.3s ease",
                 }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
               >
                 Save Changes
               </Button>
@@ -831,7 +1148,7 @@ function Installation() {
           </Form>
         </Modal.Body>
       </Modal>
-    </>
+    </div>
   );
 }
 
