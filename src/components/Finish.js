@@ -485,6 +485,7 @@ function Finish() {
                       "Size",
                       "Quantity",
                       "Sales Person",
+                      "Production Remarks",
                       "Dispatch Date",
                       "Freight Status",
                       "Product Status",
@@ -703,6 +704,24 @@ function Finish() {
                           title={order.salesPerson || "N/A"}
                         >
                           {order.salesPerson || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={order.salesPerson || "N/A"}
+                        >
+                          {order.remarksByProduction || "N/A"}
                         </td>
                         <td
                           style={{
