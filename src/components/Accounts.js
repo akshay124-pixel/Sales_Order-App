@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
 
 function Accounts() {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewOrder, setViewOrder] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -26,8 +29,12 @@ function Accounts() {
     chequeId: "",
   });
   const [errors, setErrors] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const fetchAccountsOrders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await axios.get(
         "https://sales-order-server.onrender.com/api/accounts-orders",
@@ -38,31 +45,98 @@ function Accounts() {
         }
       );
       if (response.data.success) {
-        setOrders(response.data.data);
+        const data = Array.isArray(response.data.data)
+          ? response.data.data
+          : [];
+        setOrders(data);
+        setFilteredOrders(data);
       } else {
-        throw new Error("Failed to fetch accounts orders");
+        throw new Error(
+          response.data.message || "Failed to fetch accounts orders"
+        );
       }
     } catch (error) {
       console.error("Error fetching accounts orders:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to fetch accounts orders",
-        { position: "top-right", autoClose: 5000 }
-      );
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch accounts orders";
+      setError(errorMessage);
+      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    fetchAccountsOrders().then(() => {
-      if (isMounted) setLoading(false);
-    });
-    return () => {
-      isMounted = false; // Cleanup to prevent memory leak
-    };
+    fetchAccountsOrders();
   }, [fetchAccountsOrders]);
+
+  // Filter orders based on search query and status
+  useEffect(() => {
+    let filtered = orders;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((order) => {
+        const productDetails = Array.isArray(order.products)
+          ? order.products
+              .map((p) => `${p.productType || ""} (${p.qty || ""})`)
+              .join(", ")
+          : "";
+        return (
+          (order.billNumber || "").toLowerCase().includes(query) ||
+          (order.dispatchDate
+            ? new Date(order.dispatchDate).toLocaleDateString()
+            : ""
+          )
+            .toLowerCase()
+            .includes(query) ||
+          (order.shippingAddress || "").toLowerCase().includes(query) ||
+          (order.customerEmail || "").toLowerCase().includes(query) ||
+          (order.contactNo || "").toLowerCase().includes(query) ||
+          (order.total || "").toLowerCase().includes(query) ||
+          productDetails.toLowerCase().includes(query) ||
+          (order.paymentReceived || "").toLowerCase().includes(query) ||
+          (order.paymentMethod || "").toLowerCase().includes(query) ||
+          (order.paymentCollected || "").toLowerCase().includes(query) ||
+          (order.paymentDue || "").toLowerCase().includes(query) ||
+          (order.neftTransactionId || "").toLowerCase().includes(query) ||
+          (order.chequeId || "").toLowerCase().includes(query) ||
+          (order.invoiceNo || "").toLowerCase().includes(query) ||
+          (order.invoiceDate
+            ? new Date(order.invoiceDate).toLocaleDateString()
+            : ""
+          )
+            .toLowerCase()
+            .includes(query) ||
+          (order.remarksByAccounts || "").toLowerCase().includes(query) ||
+          (order.products?.[0]?.gst || "").toLowerCase().includes(query) ||
+          (order.products?.[0]?.serialNos?.join(", ") || "")
+            .toLowerCase()
+            .includes(query) ||
+          (order.products?.[0]?.modelNos?.join(", ") || "")
+            .toLowerCase()
+            .includes(query)
+        );
+      });
+    }
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(
+        (order) => order.paymentReceived === statusFilter
+      );
+    }
+    setFilteredOrders(filtered);
+  }, [orders, searchQuery, statusFilter]);
+
+  // Get unique statuses for filter dropdown
+  const uniqueStatuses = [
+    "All",
+    "Received",
+    "Not Received",
+    ...new Set(
+      orders
+        .map((order) => order.paymentReceived || "Not Received")
+        .filter((status) => !["Received", "Not Received"].includes(status))
+    ),
+  ];
 
   const handleView = (order) => {
     setViewOrder(order);
@@ -70,9 +144,9 @@ function Accounts() {
     setCopied(false);
   };
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     if (!viewOrder) return;
-    const productsText = viewOrder.products
+    const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
           .map(
             (p, i) =>
@@ -91,11 +165,9 @@ function Accounts() {
           ? new Date(viewOrder.dispatchDate).toLocaleDateString()
           : "N/A"
       }
-  
       Email: ${viewOrder.customerEmail || "N/A"}
       Mobile: ${viewOrder.contactNo || "N/A"}
       Total: ${viewOrder.total || "N/A"}
-     
       Payment Collected: ${viewOrder.paymentCollected || "N/A"}
       Payment Method: ${viewOrder.paymentMethod || "N/A"}
       Payment Due: ${viewOrder.paymentDue || "N/A"}
@@ -111,14 +183,24 @@ function Accounts() {
       }
       Products:\n${productsText}
     `.trim();
-    navigator.clipboard.writeText(orderText);
-    setCopied(true);
-    toast.success("Details copied to clipboard!", {
-      position: "top-right",
-      autoClose: 2000,
-    });
-    setTimeout(() => setCopied(false), 2000);
-  };
+    navigator.clipboard
+      .writeText(orderText)
+      .then(() => {
+        setCopied(true);
+        toast.success("Details copied to clipboard!", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        toast.error("Failed to copy details!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+        console.error("Copy error:", err);
+      });
+  }, [viewOrder]);
 
   const handleEdit = (order) => {
     setEditOrder(order);
@@ -224,7 +306,7 @@ function Accounts() {
           position: "top-right",
           autoClose: 3000,
         });
-        await fetchAccountsOrders(); // Refresh the list
+        await fetchAccountsOrders();
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
@@ -235,6 +317,35 @@ function Accounts() {
       });
     }
   };
+
+  const exportToExcel = useCallback(() => {
+    const exportData = filteredOrders.map((order) => {
+      const productDetails = Array.isArray(order.products)
+        ? order.products
+            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+            .join(", ")
+        : "N/A";
+      return {
+        "Bill Number": order.billNumber || "N/A",
+        Date: order.dispatchDate
+          ? new Date(order.dispatchDate).toLocaleDateString()
+          : "N/A",
+        Address: order.shippingAddress || "N/A",
+        Email: order.customerEmail || "N/A",
+        Mobile: order.contactNo || "N/A",
+        Total: order.total || "N/A",
+        Products: productDetails,
+        "Payment Received": order.paymentReceived || "Not Received",
+      };
+    });
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Accounts Orders");
+    XLSX.writeFile(
+      workbook,
+      `Accounts_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
+  }, [filteredOrders]);
 
   if (loading) {
     return (
@@ -272,58 +383,179 @@ function Accounts() {
   }
 
   return (
-    <>
-      <div
+    <div
+      style={{
+        width: "100%",
+        margin: "0",
+        padding: "20px",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+      <header
         style={{
-          width: "100%",
-          margin: "0",
           padding: "20px",
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-          borderRadius: "0",
-          boxShadow: "none",
-          minHeight: "100vh",
-          height: "100%",
+          textAlign: "center",
+          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+          color: "#fff",
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
         }}
       >
-        <header
+        <h1
           style={{
-            padding: "20px",
-            textAlign: "center",
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            color: "#fff",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+            fontSize: "2.5rem",
+            fontWeight: "700",
+            textTransform: "uppercase",
+            letterSpacing: "2px",
+            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
           }}
         >
-          <h1
+          Payment Collection Dashboard
+        </h1>
+      </header>
+
+      <div style={{ padding: "20px", flex: 1 }}>
+        {error && (
+          <div
             style={{
-              fontSize: "2.5rem",
-              fontWeight: "700",
-              textTransform: "uppercase",
-              letterSpacing: "2px",
-              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
+              background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+              color: "#fff",
+              padding: "15px",
+              borderRadius: "10px",
+              marginBottom: "20px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
             }}
           >
-            Payment Collection Dashboard
-          </h1>
-        </header>
+            <span>
+              <strong>Error:</strong> {error}
+            </span>
+            <Button
+              onClick={fetchAccountsOrders}
+              style={{
+                background: "transparent",
+                border: "1px solid #fff",
+                color: "#fff",
+                padding: "5px 15px",
+                borderRadius: "20px",
+                fontWeight: "500",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => (e.target.style.background = "#ffffff30")}
+              onMouseLeave={(e) => (e.target.style.background = "transparent")}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
 
-        <div style={{ padding: "20px" }}>
-          {orders.length === 0 ? (
+        {filteredOrders.length === 0 && !error ? (
+          <div
+            style={{
+              background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+              color: "#fff",
+              padding: "20px",
+              borderRadius: "10px",
+              textAlign: "center",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+              fontSize: "1.3rem",
+              fontWeight: "500",
+            }}
+          >
+            No Payment Collection orders available at this time.
+          </div>
+        ) : (
+          <>
             <div
               style={{
-                background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
-                color: "#fff",
-                padding: "20px",
-                borderRadius: "10px",
-                textAlign: "center",
-                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                fontSize: "1.3rem",
-                fontWeight: "500",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "15px",
+                marginBottom: "20px",
+                alignItems: "center",
               }}
             >
-              No Payment Collection available at this time.
+              <div style={{ position: "relative", flex: "1 1 300px" }}>
+                <Form.Control
+                  type="text"
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    borderRadius: "20px",
+                    padding: "10px 40px 10px 15px",
+                    border: "1px solid #ced4da",
+                    fontSize: "1rem",
+                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+                {searchQuery && (
+                  <FaTimes
+                    style={{
+                      position: "absolute",
+                      right: "15px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                      color: "#6c757d",
+                    }}
+                    onClick={() => setSearchQuery("")}
+                  />
+                )}
+              </div>
+              <Form.Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{
+                  flex: "0 1 200px",
+                  borderRadius: "20px",
+                  padding: "10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "1rem",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                {uniqueStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </Form.Select>
+              <Button
+                onClick={exportToExcel}
+                style={{
+                  background: "linear-gradient(135deg, #28a745, #4cd964)",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "20px",
+                  color: "#fff",
+                  fontWeight: "600",
+                  fontSize: "1rem",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
+              >
+                Export to Excel
+              </Button>
             </div>
-          ) : (
             <div
               style={{
                 overflowX: "auto",
@@ -359,7 +591,6 @@ function Accounts() {
                       "Email",
                       "Mobile",
                       "Total",
-
                       "Products",
                       "Payment Received",
                       "Actions",
@@ -381,13 +612,15 @@ function Accounts() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order, index) => {
-                    const productDetails = order.products
+                  {filteredOrders.map((order, index) => {
+                    const productDetails = Array.isArray(order.products)
                       ? order.products
-                          .map((p) => `${p.productType} (${p.qty})`)
+                          .map(
+                            (p) =>
+                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                          )
                           .join(", ")
                       : "N/A";
-
                     return (
                       <tr
                         key={order._id}
@@ -410,7 +643,14 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.billNumber || "N/A"}
                         >
                           {order.billNumber || "N/A"}
                         </td>
@@ -421,7 +661,20 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={
+                            order.dispatchDate
+                              ? new Date(
+                                  order.dispatchDate
+                                ).toLocaleDateString()
+                              : "N/A"
+                          }
                         >
                           {order.dispatchDate
                             ? new Date(order.dispatchDate).toLocaleDateString()
@@ -434,7 +687,14 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "200px",
                           }}
+                          title={order.shippingAddress || "N/A"}
                         >
                           {order.shippingAddress || "N/A"}
                         </td>
@@ -445,7 +705,14 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.customerEmail || "N/A"}
                         >
                           {order.customerEmail || "N/A"}
                         </td>
@@ -456,7 +723,14 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.contactNo || "N/A"}
                         >
                           {order.contactNo || "N/A"}
                         </td>
@@ -467,11 +741,17 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.total || "N/A"}
                         >
                           {order.total || "N/A"}
                         </td>
-
                         <td
                           style={{
                             padding: "15px",
@@ -479,7 +759,14 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "200px",
                           }}
+                          title={productDetails}
                         >
                           {productDetails}
                         </td>
@@ -490,23 +777,47 @@ function Accounts() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.paymentReceived || "Not Received"}
                         >
                           <Badge
                             style={{
                               background:
                                 order.paymentReceived === "Received"
                                   ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : "linear-gradient(135deg, #ff6b6b, #ff8787)",
+                                  : order.paymentReceived === "Not Received"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {order.paymentReceived || "Not Received"}
                           </Badge>
                         </td>
-                        <td style={{ padding: "12px", textAlign: "center" }}>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            height: "40px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
                           <div
                             style={{
                               display: "flex",
@@ -523,6 +834,9 @@ function Accounts() {
                                 height: "40px",
                                 borderRadius: "22px",
                                 padding: "0",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
                               aria-label="View order details"
                             >
@@ -530,16 +844,28 @@ function Accounts() {
                             </Button>
                             <button
                               className="editBtn"
-                              variant="secondary"
                               onClick={() => handleEdit(order)}
                               style={{
                                 minWidth: "40px",
                                 width: "40px",
+                                height: "40px",
                                 padding: "0",
+                                border: "none",
+                                background:
+                                  "linear-gradient(135deg, #6c757d, #5a6268)",
+                                borderRadius: "22px",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
                             >
-                              <svg height="1em" viewBox="0 0 512 512">
-                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                              <svg
+                                height="1em"
+                                viewBox="0 0 512 512"
+                                fill="#fff"
+                              >
+                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                               </svg>
                             </button>
                           </div>
@@ -550,13 +876,23 @@ function Accounts() {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
-      <footer className="footer-container">
-        <p style={{ marginTop: "10px", color: "white", height: "20px" }}>
-          © 2025 Sales Order Mangement. All rights reserved.
+      <footer
+        className="footer-container"
+        style={{
+          padding: "15px",
+          textAlign: "center",
+          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+          color: "white",
+          marginTop: "auto",
+          boxShadow: "0 -2px 5px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <p style={{ margin: 0, fontSize: "0.9rem" }}>
+          © 2025 Sales Order Management. All rights reserved.
         </p>
       </footer>
 
@@ -604,7 +940,7 @@ function Accounts() {
             gap: "20px",
           }}
         >
-          {viewOrder && (
+          {viewOrder ? (
             <>
               <div
                 style={{
@@ -655,7 +991,6 @@ function Accounts() {
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Total:</strong> {viewOrder.total || "N/A"}
                   </span>
-
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Payment Collected:</strong>{" "}
                     {viewOrder.paymentCollected || "N/A"}
@@ -677,7 +1012,21 @@ function Accounts() {
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Payment Received:</strong>{" "}
-                    {viewOrder.paymentReceived || "Not Received"}
+                    <Badge
+                      style={{
+                        background:
+                          viewOrder.paymentReceived === "Received"
+                            ? "linear-gradient(135deg, #28a745, #4cd964)"
+                            : viewOrder.paymentReceived === "Not Received"
+                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                            : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                        color: "#fff",
+                        padding: "5px 10px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      {viewOrder.paymentReceived || "Not Received"}
+                    </Badge>
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Remarks:</strong>{" "}
@@ -694,58 +1043,71 @@ function Accounts() {
                       : "N/A"}
                   </span>
                 </div>
-                <hr />
-                <div
+              </div>
+              <div
+                style={{
+                  background: "#f8f9fa",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                }}
+              >
+                <h3
                   style={{
-                    background: "#fafafa",
-                    borderRadius: "10px",
-                    padding: "1.2rem",
-                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.8rem",
+                    fontSize: "1.3rem",
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: "15px",
+                    textTransform: "uppercase",
                   }}
                 >
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                      color: "#333",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Products
-                  </h3>
-                  {viewOrder.products && viewOrder.products.length > 0 ? (
+                  Products
+                </h3>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "15px",
+                  }}
+                >
+                  {Array.isArray(viewOrder.products) &&
+                  viewOrder.products.length > 0 ? (
                     viewOrder.products.map((product, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "1.5rem",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <React.Fragment key={`product-${index}`}>
+                        <span
+                          key={`product-type-${index}`}
+                          style={{ fontSize: "1rem", color: "#555" }}
+                        >
                           <strong>Product {index + 1}:</strong>{" "}
                           {product.productType || "N/A"}
                         </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <span
+                          key={`quantity-${index}`}
+                          style={{ fontSize: "1rem", color: "#555" }}
+                        >
                           <strong>Quantity:</strong> {product.qty || "N/A"}
                         </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <span
+                          key={`gst-${index}`}
+                          style={{ fontSize: "1rem", color: "#555" }}
+                        >
                           <strong>GST:</strong> {product.gst || "0"}
                         </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <span
+                          key={`serial-nos-${index}`}
+                          style={{ fontSize: "1rem", color: "#555" }}
+                        >
                           <strong>Serial Nos:</strong>{" "}
                           {product.serialNos?.join(", ") || "N/A"}
                         </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <span
+                          key={`model-nos-${index}`}
+                          style={{ fontSize: "1rem", color: "#555" }}
+                        >
                           <strong>Model Nos:</strong>{" "}
                           {product.modelNos?.join(", ") || "N/A"}
                         </span>
-                      </div>
+                      </React.Fragment>
                     ))
                   ) : (
                     <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -778,6 +1140,10 @@ function Accounts() {
                 {copied ? "✅ Copied!" : "📑 Copy Details"}
               </Button>
             </>
+          ) : (
+            <p style={{ fontSize: "1rem", color: "#555" }}>
+              No order details available.
+            </p>
           )}
         </Modal.Body>
       </Modal>
@@ -836,7 +1202,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
                 required
               />
               {errors.billNumber && (
@@ -863,7 +1235,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
                 required
               />
               {errors.dispatchDate && (
@@ -894,7 +1272,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
               />
               {errors.paymentCollected && (
                 <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
@@ -922,7 +1306,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
               >
                 <option value="">-- Select Payment Method --</option>
                 <option value="Cash">Cash</option>
@@ -955,7 +1345,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
               />
               {errors.paymentDue && (
                 <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
@@ -985,7 +1381,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
                 disabled={formData.paymentMethod !== "NEFT"}
               />
               {errors.neftTransactionId && (
@@ -1013,7 +1415,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
                 disabled={formData.paymentMethod !== "Cheque"}
               />
               {errors.chequeId && (
@@ -1040,10 +1448,21 @@ function Accounts() {
                   border: "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
               >
-                <option value="Not Received">Not Received</option>
-                <option value="Received">Received</option>
+                {uniqueStatuses
+                  .filter((status) => status !== "All")
+                  .map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
               </Form.Select>
             </Form.Group>
 
@@ -1063,7 +1482,13 @@ function Accounts() {
                   border: "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
               />
             </Form.Group>
 
@@ -1082,7 +1507,13 @@ function Accounts() {
                   border: "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
               />
             </Form.Group>
 
@@ -1108,7 +1539,13 @@ function Accounts() {
                     : "1px solid #ced4da",
                   padding: "12px",
                   fontSize: "1rem",
+                  transition: "all 0.3s ease",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
                 required
               />
               {errors.remarksByAccounts && (
@@ -1134,7 +1571,14 @@ function Accounts() {
                   borderRadius: "20px",
                   color: "#fff",
                   fontWeight: "600",
+                  transition: "all 0.3s ease",
                 }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
               >
                 Cancel
               </Button>
@@ -1147,7 +1591,14 @@ function Accounts() {
                   borderRadius: "20px",
                   color: "#fff",
                   fontWeight: "600",
+                  transition: "all 0.3s ease",
                 }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
               >
                 Save Changes
               </Button>
@@ -1155,17 +1606,8 @@ function Accounts() {
           </Form>
         </Modal.Body>
       </Modal>
-    </>
+    </div>
   );
 }
-
-const keyframes = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-document.head.insertAdjacentHTML("beforeend", `<style>${keyframes}</style>`);
 
 export default Accounts;
