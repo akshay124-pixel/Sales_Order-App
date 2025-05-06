@@ -107,7 +107,23 @@ const Production = () => {
   // Get unique statuses for filter dropdown
   const uniqueStatuses = [
     "All",
-    ...new Set(orders.map((order) => order.fulfillingStatus || "Pending")),
+    "Under Process",
+    "Pending",
+    "Partial Dispatch",
+    "Fulfilled",
+    ...new Set(
+      orders
+        .map((order) => order.fulfillingStatus || "Pending")
+        .filter(
+          (status) =>
+            ![
+              "Under Process",
+              "Pending",
+              "Partial Dispatch",
+              "Fulfilled",
+            ].includes(status)
+        )
+    ),
   ];
 
   const handleEdit = (order) => {
