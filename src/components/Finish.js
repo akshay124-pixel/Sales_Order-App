@@ -114,7 +114,7 @@ function Finish() {
 
         return (
           (order.orderId || "N/A").toLowerCase().includes(lowerSearch) ||
-          (order.name || "N/A").toLowerCase().includes(lowerSearch) ||
+          (order.customername || "N/A").toLowerCase().includes(lowerSearch) ||
           (order.contactNo || "N/A").toLowerCase().includes(lowerSearch) ||
           (order.shippingAddress || "N/A")
             .toLowerCase()
@@ -206,7 +206,7 @@ function Finish() {
           ? new Date(viewOrder.dispatchDate).toLocaleDateString()
           : "N/A"
       }
-      Customer: ${viewOrder.name || "N/A"}
+      Customer: ${viewOrder.customername || "N/A"}
       Address: ${
         viewOrder.shippingAddress ||
         `${viewOrder.city || ""}, ${viewOrder.state || ""}` ||
@@ -226,7 +226,7 @@ function Finish() {
   const handleExportToXLSX = () => {
     const tableData = filteredOrders.map((order) => ({
       "Order ID": order.orderId || "N/A",
-      "Customer Name": order.name || "N/A",
+      "Customer Name": order.customername || "N/A",
       "Contact No": order.contactNo || "N/A",
       "Delivery Address": order.shippingAddress || "N/A",
       "Product Name": order.products
@@ -562,7 +562,7 @@ function Finish() {
                             borderBottom: "1px solid #eee",
                           }}
                         >
-                          {order.name || "N/A"}
+                          {order.customername || "N/A"}
                         </td>
                         <td
                           style={{
@@ -923,7 +923,7 @@ function Finish() {
                     : "N/A"}
                 </span>
                 <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Customer:</strong> {viewOrder.name || "N/A"}
+                  <strong>Customer:</strong> {viewOrder.customername || "N/A"}
                 </span>
                 <span style={{ fontSize: "1rem", color: "#555" }}>
                   <strong>Address:</strong> {viewOrder.shippingAddress || "N/A"}
