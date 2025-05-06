@@ -549,7 +549,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.orderId || "N/A"}
                         >
                           {order.orderId || "N/A"}
                         </td>
@@ -560,7 +567,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.customername || "N/A"}
                         >
                           {order.customername || "N/A"}
                         </td>
@@ -571,7 +585,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.contactNo || "N/A"}
                         >
                           {order.contactNo || "N/A"}
                         </td>
@@ -582,7 +603,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "200px",
                           }}
+                          title={order.shippingAddress || "N/A"}
                         >
                           {order.shippingAddress || "N/A"}
                         </td>
@@ -593,7 +621,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "200px",
                           }}
+                          title={productDetails}
                         >
                           {productDetails}
                         </td>
@@ -604,7 +639,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={modelNos}
                         >
                           {modelNos}
                         </td>
@@ -615,7 +657,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={sizeDetails}
                         >
                           {sizeDetails}
                         </td>
@@ -626,7 +675,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "100px",
                           }}
+                          title={totalQty}
                         >
                           {totalQty}
                         </td>
@@ -637,7 +693,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.salesPerson || "N/A"}
                         >
                           {order.salesPerson || "N/A"}
                         </td>
@@ -648,7 +711,20 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={
+                            order.dispatchDate
+                              ? new Date(
+                                  order.dispatchDate
+                                ).toLocaleDateString()
+                              : "N/A"
+                          }
                         >
                           {order.dispatchDate
                             ? new Date(order.dispatchDate).toLocaleDateString()
@@ -661,7 +737,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.freightstatus || "To Pay"}
                         >
                           <Badge
                             style={{
@@ -674,6 +757,11 @@ function Finish() {
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {order.freightstatus || "To Pay"}
@@ -686,7 +774,18 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={
+                            order.fulfillingStatus === "Partial Dispatch"
+                              ? "Partial Dispatch"
+                              : "Complete"
+                          }
                         >
                           <Badge
                             style={{
@@ -697,6 +796,11 @@ function Finish() {
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {order.fulfillingStatus === "Partial Dispatch"
@@ -711,7 +815,14 @@ function Finish() {
                             color: "#2c3e50",
                             fontSize: "1rem",
                             borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
                           }}
+                          title={order.dispatchStatus || "Not Dispatched"}
                         >
                           <Badge
                             style={{
@@ -724,12 +835,27 @@ function Finish() {
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {order.dispatchStatus || "Not Dispatched"}
                           </Badge>
                         </td>
-                        <td style={{ padding: "12px", textAlign: "center" }}>
+                        <td
+                          style={{
+                            padding: "12px",
+                            textAlign: "center",
+                            height: "40px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderBottom: "1px solid #eee",
+                          }}
+                        >
                           <div
                             style={{
                               display: "flex",
@@ -746,6 +872,9 @@ function Finish() {
                                 height: "40px",
                                 borderRadius: "22px",
                                 padding: "0",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
                             >
                               <FaEye style={{ marginBottom: "3px" }} />
