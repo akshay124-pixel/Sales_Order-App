@@ -1018,14 +1018,15 @@ const Sales = () => {
                     }}
                     title={
                       order.soDate
-                        ? new Date(order.soDate).toLocaleDateString()
+                        ? new Date(order.soDate).toLocaleDateString("en-GB")
                         : "-"
                     }
                   >
                     {order.soDate
-                      ? new Date(order.soDate).toLocaleDateString()
+                      ? new Date(order.soDate).toLocaleDateString("en-GB")
                       : "-"}
                   </td>
+
                   <td
                     style={{
                       padding: "15px",
