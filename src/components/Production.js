@@ -1393,7 +1393,7 @@ const Production = () => {
                           <div>
                             <strong>Unit Price:</strong>{" "}
                             {product.unitPrice
-                              ? `$${parseFloat(product.unitPrice).toFixed(2)}`
+                              ? `₹${parseFloat(product.unitPrice).toFixed(2)}`
                               : "N/A"}
                           </div>
                           <div>
