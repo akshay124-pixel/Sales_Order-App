@@ -1326,62 +1326,107 @@ const Production = () => {
                     fontSize: "1.3rem",
                     fontWeight: "600",
                     color: "#333",
-                    marginBottom: "15px",
+                    marginBottom: "20px",
                     textTransform: "uppercase",
+                    borderBottom: "2px solid #e0e0e0",
+                    paddingBottom: "10px",
                   }}
                 >
                   Product Information
                 </h3>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                    gap: "15px",
-                  }}
-                >
-                  {Array.isArray(viewOrder.products) &&
-                  viewOrder.products.length > 0 ? (
-                    viewOrder.products.map((product, index) => (
-                      <React.Fragment key={index}>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Product {index + 1} Type:</strong>{" "}
-                          {product.productType || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Serial Nos:</strong>{" "}
-                          {product.serialNos.length > 0
-                            ? product.serialNos.join(", ")
-                            : "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Model Nos:</strong>{" "}
-                          {product.modelNos.length > 0
-                            ? product.modelNos.join(", ")
-                            : "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Size:</strong> {product.size || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Spec:</strong> {product.spec || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Quantity:</strong> {product.qty || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Unit Price:</strong>{" "}
-                          {product.unitPrice
-                            ? `$${parseFloat(product.unitPrice).toFixed(2)}`
-                            : "N/A"}
-                        </span>
-                      </React.Fragment>
-                    ))
-                  ) : (
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Products:</strong> N/A
-                    </span>
-                  )}
-                </div>
+                {Array.isArray(viewOrder.products) &&
+                viewOrder.products.length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "20px",
+                    }}
+                  >
+                    {viewOrder.products.map((product, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          background: "#ffffff",
+                          borderRadius: "8px",
+                          padding: "15px",
+                          boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
+                          transition: "transform 0.2s ease",
+                          "&:hover": {
+                            transform: "translateY(-2px)",
+                          },
+                        }}
+                      >
+                        <h4
+                          style={{
+                            fontSize: "1.1rem",
+                            fontWeight: "600",
+                            color: "#2575fc",
+                            marginBottom: "15px",
+                          }}
+                        >
+                          Product {index + 1}
+                        </h4>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                              "repeat(auto-fit, minmax(180px, 1fr))",
+                            gap: "12px",
+                            fontSize: "1rem",
+                            color: "#555",
+                          }}
+                        >
+                          <div>
+                            <strong>Type:</strong>{" "}
+                            {product.productType || "N/A"}
+                          </div>
+                          <div>
+                            <strong>Quantity:</strong> {product.qty || "N/A"}
+                          </div>
+                          <div>
+                            <strong>Size:</strong> {product.size || "N/A"}
+                          </div>
+                          <div>
+                            <strong>Spec:</strong> {product.spec || "N/A"}
+                          </div>
+                          <div>
+                            <strong>Unit Price:</strong>{" "}
+                            {product.unitPrice
+                              ? `$${parseFloat(product.unitPrice).toFixed(2)}`
+                              : "N/A"}
+                          </div>
+                          <div>
+                            <strong>Serial Nos:</strong>{" "}
+                            {product.serialNos?.length > 0
+                              ? product.serialNos.join(", ")
+                              : "N/A"}
+                          </div>
+                          <div>
+                            <strong>Model Nos:</strong>{" "}
+                            {product.modelNos?.length > 0
+                              ? product.modelNos.join(", ")
+                              : "N/A"}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      fontSize: "1rem",
+                      color: "#555",
+                      textAlign: "center",
+                      padding: "20px",
+                      background: "#fff",
+                      borderRadius: "8px",
+                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
+                    }}
+                  >
+                    <strong>No Products Available</strong>
+                  </div>
+                )}
               </div>
               <div
                 style={{
