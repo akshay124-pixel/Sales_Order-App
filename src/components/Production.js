@@ -1271,7 +1271,7 @@ const Production = () => {
                     textTransform: "uppercase",
                   }}
                 >
-                  Product Info
+                  Order Information
                 </h3>
                 <div
                   style={{
@@ -1283,6 +1283,62 @@ const Production = () => {
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                   </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>SO Date:</strong>{" "}
+                    {viewOrder.soDate
+                      ? new Date(viewOrder.soDate).toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Customer Name:</strong>{" "}
+                    {viewOrder.customername || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Shipping Address:</strong>{" "}
+                    {viewOrder.shippingAddress || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Customer Email:</strong>{" "}
+                    {viewOrder.customerEmail || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Order Type:</strong> {viewOrder.orderType || "N/A"}
+                  </span>
+                </div>
+              </div>
+              <div
+                style={{
+                  background: "#f8f9fa",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: "1.3rem",
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: "15px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Product Information
+                </h3>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "15px",
+                  }}
+                >
                   {Array.isArray(viewOrder.products) &&
                   viewOrder.products.length > 0 ? (
                     viewOrder.products.map((product, index) => (
@@ -1310,7 +1366,13 @@ const Production = () => {
                           <strong>Spec:</strong> {product.spec || "N/A"}
                         </span>
                         <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Qty:</strong> {product.qty || "N/A"}
+                          <strong>Quantity:</strong> {product.qty || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Unit Price:</strong>{" "}
+                          {product.unitPrice
+                            ? `$${parseFloat(product.unitPrice).toFixed(2)}`
+                            : "N/A"}
                         </span>
                       </React.Fragment>
                     ))
@@ -1338,7 +1400,7 @@ const Production = () => {
                     textTransform: "uppercase",
                   }}
                 >
-                  Production Info
+                  Production Information
                 </h3>
                 <div
                   style={{
@@ -1354,6 +1416,15 @@ const Production = () => {
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Remarks:</strong>{" "}
                     {viewOrder.remarksByProduction || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Total Quantity:</strong>{" "}
+                    {Array.isArray(viewOrder.products)
+                      ? viewOrder.products.reduce(
+                          (sum, p) => sum + (p.qty || 0),
+                          0
+                        )
+                      : "N/A"}
                   </span>
                 </div>
               </div>
@@ -1384,7 +1455,6 @@ const Production = () => {
           )}
         </Modal.Body>
       </Modal>
-
       <footer
         className="footer-container"
         style={{
