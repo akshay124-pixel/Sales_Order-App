@@ -1294,7 +1294,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Abhay Pratap Singh",
     "Rajeev Kanda",
     "Abhayjit Sekhon",
-    "Hira Singh Daspa"
+    "Hira Singh Daspa",
     "Amarjeet Singh",
     "Arwinder Singh",
     "Bachan Pal",
