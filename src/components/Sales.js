@@ -751,921 +751,938 @@ const Sales = () => {
           }}
         >
           <table
-        style={{
-          width: "100%",
-          borderCollapse: "separate",
-          borderSpacing: "0",
-        }}
-      >
-        <thead
-          style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            color: "white",
-            position: "sticky",
-            top: 0,
-            zIndex: 2,
-            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
-          }}
-        >
-          <tr>
-            {[
-              "Seq No",
-              "Customer Name",
-              "Product Details",
-              "Unit Price",
-              "Qty",
-              "Freight Charges",
-              "GST",
-              "Total",
-              "Order ID",
-              "SO Date",
-              "Approval Status",
-              "City",
-              "State",
-              "Pin Code",
-              "Contact Person Name",
-              "Contact No",
-              "Customer Email",
-              "Order Type",
-              "Model Nos",
-              "Serial Nos",
-              "Product Type",
-              "Size",
-              "Spec",
-              "Payment Collected",
-              "Payment Method",
-              "Payment Due",
-              "Installation",
-              "Sales Person",
-              "Created By",
-              "Company",
-              "Transporter",
-              "Transporter Details",
-              "Shipping Address",
-              "Billing Address",
-              "Docket No",
-              "Dispatch From",
-              "Dispatch Date",
-              "Receipt Date",
-              "Invoice No",
-              "Invoice Date",
-              "Remarks",
-              "Actions",
-            ].map((header) => (
-              <th
-                key={header}
-                style={{
-                  padding: "18px 15px",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                  borderBottom: "2px solid rgba(255,255,255,0.2)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {filteredOrders.length > 0 ? (
-            filteredOrders.map((order, index) => {
-              const complete = isOrderComplete(order);
-              const firstProduct =
-                order.products && order.products[0] ? order.products[0] : {};
-              const productDetails = order.products
-                ? order.products
-                    .map((p) => `${p.productType} (${p.qty})`)
-                    .join(", ")
-                : "-";
-              const totalUnitPrice = order.products
-                ? order.products.reduce(
-                    (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-                    0
-                  )
-                : 0;
-              const totalQty = order.products
-                ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-                : 0;
-              const gstValues = order.products
-                ? order.products
-                    .map((p) => `${p.gst}%`)
-                    .filter(Boolean)
-                    .join(", ")
-                : "-";
-              const canEditDelete =
-                userRole === "Admin" ||
-                (userRole === "Sales" && order.createdBy?._id === userId);
+            style={{
+              width: "100%",
+              borderCollapse: "separate",
+              borderSpacing: "0",
+            }}
+          >
+            <thead
+              style={{
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                color: "white",
+                position: "sticky",
+                top: 0,
+                zIndex: 2,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+              }}
+            >
+              <tr>
+                {[
+                  "Seq No",
+                  "Customer Name",
+                  "Product Details",
+                  "Unit Price",
+                  "Qty",
+                  "Freight Charges",
+                  "Freight Status",
+                  "GST",
+                  "Total",
+                  "Order ID",
+                  "SO Date",
+                  "Approval Status",
+                  "City",
+                  "State",
+                  "Pin Code",
+                  "Contact Person Name",
+                  "Contact No",
+                  "Customer Email",
+                  "Order Type",
+                  "Model Nos",
+                  "Serial Nos",
+                  "Product Type",
+                  "Size",
+                  "Spec",
+                  "Payment Collected",
+                  "Payment Method",
+                  "Payment Due",
+                  "Installation",
+                  "Sales Person",
+                  "Created By",
+                  "Company",
+                  "Transporter",
+                  "Transporter Details",
+                  "Shipping Address",
+                  "Billing Address",
+                  "Docket No",
+                  "Dispatch From",
+                  "Dispatch Date",
+                  "Receipt Date",
+                  "Invoice No",
+                  "Invoice Date",
+                  "Remarks",
+                  "Actions",
+                ].map((header) => (
+                  <th
+                    key={header}
+                    style={{
+                      padding: "18px 15px",
+                      fontSize: "0.95rem",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      borderBottom: "2px solid rgba(255,255,255,0.2)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map((order, index) => {
+                  const complete = isOrderComplete(order);
+                  const firstProduct =
+                    order.products && order.products[0]
+                      ? order.products[0]
+                      : {};
+                  const productDetails = order.products
+                    ? order.products
+                        .map((p) => `${p.productType} (${p.qty})`)
+                        .join(", ")
+                    : "-";
+                  const totalUnitPrice = order.products
+                    ? order.products.reduce(
+                        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+                        0
+                      )
+                    : 0;
+                  const totalQty = order.products
+                    ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+                    : 0;
+                  const gstValues = order.products
+                    ? order.products
+                        .map((p) => `${p.gst}%`)
+                        .filter(Boolean)
+                        .join(", ")
+                    : "-";
+                  const canEditDelete =
+                    userRole === "Admin" ||
+                    (userRole === "Sales" && order.createdBy?._id === userId);
 
-              return (
-                <tr
-                  key={order._id || index}
-                  style={{
-                    backgroundColor: complete ? "#ffffff" : "#f3e8ff",
-                    transition: "all 0.3s ease",
-                    borderBottom: "1px solid #e6f0fa",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = complete
-                      ? "#f0f7ff"
-                      : "#ede4ff")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = complete
-                      ? "#ffffff"
-                      : "#f3e8ff")
-                  }
-                >
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      fontWeight: "500",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={`${index + 1}`}
-                  >
-                    {index + 1}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.customername || "-"}
-                  >
-                    {order.customername || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "200px",
-                    }}
-                    title={productDetails}
-                  >
-                    {productDetails}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={`₹${totalUnitPrice.toFixed(2) || "0.00"}`}
-                  >
-                    ₹{totalUnitPrice.toFixed(2) || "0.00"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={totalQty || "-"}
-                  >
-                    {totalQty || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.freightcs || "-"}
-                  >
-                    {order.freightcs || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={gstValues}
-                  >
-                    {gstValues}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={`₹${order.total?.toFixed(2) || "0.00"}`}
-                  >
-                    ₹{order.total?.toFixed(2) || "0.00"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.orderId || "-"}
-                  >
-                    {order.orderId || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={
-                      order.soDate
-                        ? new Date(order.soDate).toLocaleDateString("en-GB")
-                        : "-"
-                    }
-                  >
-                    {order.soDate
-                      ? new Date(order.soDate).toLocaleDateString("en-GB")
-                      : "-"}
-                  </td>
-
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.sostatus || "-"}
-                  >
-                    <Badge
-                      bg={
-                        order.sostatus === "Pending for Approval"
-                          ? "warning"
-                          : order.sostatus === "Approved"
-                          ? "success"
-                          : order.sostatus === "Accounts Approved"
-                          ? "info"
-                          : "secondary"
-                      }
+                  return (
+                    <tr
+                      key={order._id || index}
                       style={{
-                        padding: "6px 12px",
-                        fontSize: "0.9rem",
-                        display: "inline-block",
-                        width: "100%",
-                        textAlign: "center",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
+                        backgroundColor: complete ? "#ffffff" : "#f3e8ff",
+                        transition: "all 0.3s ease",
+                        borderBottom: "1px solid #e6f0fa",
                       }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = complete
+                          ? "#f0f7ff"
+                          : "#ede4ff")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = complete
+                          ? "#ffffff"
+                          : "#f3e8ff")
+                      }
                     >
-                      {order.sostatus || "-"}
-                    </Badge>
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.city || "-"}
-                  >
-                    {order.city || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.state || "-"}
-                  >
-                    {order.state || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.pinCode || "-"}
-                  >
-                    {order.pinCode || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.name || "-"}
-                  >
-                    {order.name || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.contactNo || "-"}
-                  >
-                    {order.contactNo || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.customerEmail || "-"}
-                  >
-                    {order.customerEmail || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.orderType || "-"}
-                  >
-                    {order.orderType || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={
-                      firstProduct.modelNos?.length > 0
-                        ? firstProduct.modelNos.join(", ")
-                        : "-"
-                    }
-                  >
-                    {firstProduct.modelNos?.length > 0
-                      ? firstProduct.modelNos.join(", ")
-                      : "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={
-                      firstProduct.serialNos?.length > 0
-                        ? firstProduct.serialNos.join(", ")
-                        : "-"
-                    }
-                  >
-                    {firstProduct.serialNos?.length > 0
-                      ? firstProduct.serialNos.join(", ")
-                      : "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={firstProduct.productType || "-"}
-                  >
-                    {firstProduct.productType || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={firstProduct.size || "-"}
-                  >
-                    {firstProduct.size || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={firstProduct.spec || "-"}
-                  >
-                    {firstProduct.spec || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={formatCurrency(order.paymentCollected) || "-"}
-                  >
-                    {formatCurrency(order.paymentCollected) || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.paymentMethod || "-"}
-                  >
-                    {order.paymentMethod || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={formatCurrency(order.paymentDue) || "-"}
-                  >
-                    {formatCurrency(order.paymentDue) || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.installation || "-"}
-                  >
-                    {order.installation || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.salesPerson || "-"}
-                  >
-                    {order.salesPerson || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={
-                      order.createdBy && typeof order.createdBy === "object"
-                        ? order.createdBy.username || "Unknown"
-                        : typeof order.createdBy === "string"
-                        ? order.createdBy
-                        : "-"
-                    }
-                  >
-                    {order.createdBy && typeof order.createdBy === "object"
-                      ? order.createdBy.username || "Unknown"
-                      : typeof order.createdBy === "string"
-                      ? order.createdBy
-                      : "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.company || "-"}
-                  >
-                    {order.company || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.transporter || "-"}
-                  >
-                    {order.transporter || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.transporterDetails || "-"}
-                  >
-                    {order.transporterDetails || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "200px",
-                    }}
-                    title={order.shippingAddress || "-"}
-                  >
-                    {order.shippingAddress || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "200px",
-                    }}
-                    title={order.billingAddress || "-"}
-                  >
-                    {order.billingAddress || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.docketNo || "-"}
-                  >
-                    {order.docketNo || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.dispatchFrom || "-"}
-                  >
-                    {order.dispatchFrom || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={
-                      order.dispatchDate
-                        ? new Date(order.dispatchDate).toLocaleDateString()
-                        : "-"
-                    }
-                  >
-                    {order.dispatchDate
-                      ? new Date(order.dispatchDate).toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={
-                      order.receiptDate
-                        ? new Date(order.receiptDate).toLocaleDateString()
-                        : "-"
-                    }
-                  >
-                    {order.receiptDate
-                      ? new Date(order.receiptDate).toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.invoiceNo || "-"}
-                  >
-                    {order.invoiceNo || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={
-                      order.invoiceDate
-                        ? new Date(order.invoiceDate).toLocaleDateString()
-                        : "-"
-                    }
-                  >
-                    {order.invoiceDate
-                      ? new Date(order.invoiceDate).toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.remarks || "-"}
-                  >
-                    {order.remarks || "-"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      height: "40px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <div style={{ display: "flex", gap: "10px" }}>
-                      <Button
-                        variant="primary"
-                        onClick={() => handleViewClick(order)}
+                      <td
                         style={{
-                          width: "40px",
+                          padding: "15px",
+                          textAlign: "center",
+                          fontWeight: "500",
                           height: "40px",
-                          borderRadius: "50%",
-                          padding: "0",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={`${index + 1}`}
+                      >
+                        {index + 1}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.customername || "-"}
+                      >
+                        {order.customername || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "200px",
+                        }}
+                        title={productDetails}
+                      >
+                        {productDetails}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={`₹${totalUnitPrice.toFixed(2) || "0.00"}`}
+                      >
+                        ₹{totalUnitPrice.toFixed(2) || "0.00"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={totalQty || "-"}
+                      >
+                        {totalQty || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.freightcs || "-"}
+                      >
+                        {order.freightcs || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.freightstatus || "-"}
+                      >
+                        {order.freightstatus || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={gstValues}
+                      >
+                        {gstValues}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={`₹${order.total?.toFixed(2) || "0.00"}`}
+                      >
+                        ₹{order.total?.toFixed(2) || "0.00"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.orderId || "-"}
+                      >
+                        {order.orderId || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={
+                          order.soDate
+                            ? new Date(order.soDate).toLocaleDateString("en-GB")
+                            : "-"
+                        }
+                      >
+                        {order.soDate
+                          ? new Date(order.soDate).toLocaleDateString("en-GB")
+                          : "-"}
+                      </td>
+
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.sostatus || "-"}
+                      >
+                        <Badge
+                          bg={
+                            order.sostatus === "Pending for Approval"
+                              ? "warning"
+                              : order.sostatus === "Approved"
+                              ? "success"
+                              : order.sostatus === "Accounts Approved"
+                              ? "info"
+                              : "secondary"
+                          }
+                          style={{
+                            padding: "6px 12px",
+                            fontSize: "0.9rem",
+                            display: "inline-block",
+                            width: "100%",
+                            textAlign: "center",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {order.sostatus || "-"}
+                        </Badge>
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.city || "-"}
+                      >
+                        {order.city || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.state || "-"}
+                      >
+                        {order.state || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.pinCode || "-"}
+                      >
+                        {order.pinCode || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.name || "-"}
+                      >
+                        {order.name || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.contactNo || "-"}
+                      >
+                        {order.contactNo || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.customerEmail || "-"}
+                      >
+                        {order.customerEmail || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.orderType || "-"}
+                      >
+                        {order.orderType || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={
+                          firstProduct.modelNos?.length > 0
+                            ? firstProduct.modelNos.join(", ")
+                            : "-"
+                        }
+                      >
+                        {firstProduct.modelNos?.length > 0
+                          ? firstProduct.modelNos.join(", ")
+                          : "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={
+                          firstProduct.serialNos?.length > 0
+                            ? firstProduct.serialNos.join(", ")
+                            : "-"
+                        }
+                      >
+                        {firstProduct.serialNos?.length > 0
+                          ? firstProduct.serialNos.join(", ")
+                          : "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={firstProduct.productType || "-"}
+                      >
+                        {firstProduct.productType || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={firstProduct.size || "-"}
+                      >
+                        {firstProduct.size || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={firstProduct.spec || "-"}
+                      >
+                        {firstProduct.spec || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={formatCurrency(order.paymentCollected) || "-"}
+                      >
+                        {formatCurrency(order.paymentCollected) || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.paymentMethod || "-"}
+                      >
+                        {order.paymentMethod || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={formatCurrency(order.paymentDue) || "-"}
+                      >
+                        {formatCurrency(order.paymentDue) || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.installation || "-"}
+                      >
+                        {order.installation || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.salesPerson || "-"}
+                      >
+                        {order.salesPerson || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={
+                          order.createdBy && typeof order.createdBy === "object"
+                            ? order.createdBy.username || "Unknown"
+                            : typeof order.createdBy === "string"
+                            ? order.createdBy
+                            : "-"
+                        }
+                      >
+                        {order.createdBy && typeof order.createdBy === "object"
+                          ? order.createdBy.username || "Unknown"
+                          : typeof order.createdBy === "string"
+                          ? order.createdBy
+                          : "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.company || "-"}
+                      >
+                        {order.company || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.transporter || "-"}
+                      >
+                        {order.transporter || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.transporterDetails || "-"}
+                      >
+                        {order.transporterDetails || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "200px",
+                        }}
+                        title={order.shippingAddress || "-"}
+                      >
+                        {order.shippingAddress || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "200px",
+                        }}
+                        title={order.billingAddress || "-"}
+                      >
+                        {order.billingAddress || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.docketNo || "-"}
+                      >
+                        {order.docketNo || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.dispatchFrom || "-"}
+                      >
+                        {order.dispatchFrom || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={
+                          order.dispatchDate
+                            ? new Date(order.dispatchDate).toLocaleDateString()
+                            : "-"
+                        }
+                      >
+                        {order.dispatchDate
+                          ? new Date(order.dispatchDate).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={
+                          order.receiptDate
+                            ? new Date(order.receiptDate).toLocaleDateString()
+                            : "-"
+                        }
+                      >
+                        {order.receiptDate
+                          ? new Date(order.receiptDate).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.invoiceNo || "-"}
+                      >
+                        {order.invoiceNo || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={
+                          order.invoiceDate
+                            ? new Date(order.invoiceDate).toLocaleDateString()
+                            : "-"
+                        }
+                      >
+                        {order.invoiceDate
+                          ? new Date(order.invoiceDate).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          height: "40px",
+                          lineHeight: "40px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "150px",
+                        }}
+                        title={order.remarks || "-"}
+                      >
+                        {order.remarks || "-"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "15px",
+                          textAlign: "center",
+                          height: "40px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <FaEye />
-                      </Button>
-                      {canEditDelete && (
-                        <>
-                          <button
-                            className="editBtn"
-                            onClick={() => handleEditClick(order)}
+                        <div style={{ display: "flex", gap: "10px" }}>
+                          <Button
+                            variant="primary"
+                            onClick={() => handleViewClick(order)}
                             style={{
                               width: "40px",
                               height: "40px",
                               borderRadius: "50%",
                               padding: "0",
-                              background: "#6b7280",
-                              border: "none",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              zIndex: "1",
-                            }}
-                          >
-                            <svg
-                              height="1em"
-                              viewBox="0 0 512 512"
-                              fill="#ffffff"
-                            >
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                            </svg>
-                          </button>
-                          <button
-                            className="bin-button"
-                            onClick={() => handleDeleteClick(order)}
-                            style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "50%",
-                              padding: "0",
-                              background: "#ef4444",
-                              border: "none",
-                              cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
                             }}
                           >
-                            <svg
-                              className="bin-top"
-                              viewBox="0 0 39 7"
-                              fill="none"
-                              style={{ width: "20px", height: "5px" }}
-                            >
-                              <line
-                                y1="5"
-                                x2="39"
-                                y2="5"
-                                stroke="white"
-                                strokeWidth="4"
-                              />
-                              <line
-                                x1="12"
-                                y1="1.5"
-                                x2="26.0357"
-                                y2="1.5"
-                                stroke="white"
-                                strokeWidth="3"
-                              />
-                            </svg>
-                            <svg
-                              className="bin-bottom"
-                              viewBox="0 0 33 39"
-                              fill="none"
-                              style={{ width: "20px", height: "20px" }}
-                            >
-                              <mask id="path-1-inside-1_8_19" fill="white">
-                                <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
-                              </mask>
-                              <path
-                                d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                                fill="white"
-                                mask="url(#path-1-inside-1_8_19)"
-                              />
-                              <path
-                                d="M12 6L12 29"
-                                stroke="white"
-                                strokeWidth="4"
-                              />
-                              <path
-                                d="M21 6V29"
-                                stroke="white"
-                                strokeWidth="4"
-                              />
-                            </svg>
-                          </button>
-                        </>
-                      )}
-                    </div>
+                            <FaEye />
+                          </Button>
+                          {canEditDelete && (
+                            <>
+                              <button
+                                className="editBtn"
+                                onClick={() => handleEditClick(order)}
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  borderRadius: "50%",
+                                  padding: "0",
+                                  background: "#6b7280",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  zIndex: "1",
+                                }}
+                              >
+                                <svg
+                                  height="1em"
+                                  viewBox="0 0 512 512"
+                                  fill="#ffffff"
+                                >
+                                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+                                </svg>
+                              </button>
+                              <button
+                                className="bin-button"
+                                onClick={() => handleDeleteClick(order)}
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  borderRadius: "50%",
+                                  padding: "0",
+                                  background: "#ef4444",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <svg
+                                  className="bin-top"
+                                  viewBox="0 0 39 7"
+                                  fill="none"
+                                  style={{ width: "20px", height: "5px" }}
+                                >
+                                  <line
+                                    y1="5"
+                                    x2="39"
+                                    y2="5"
+                                    stroke="white"
+                                    strokeWidth="4"
+                                  />
+                                  <line
+                                    x1="12"
+                                    y1="1.5"
+                                    x2="26.0357"
+                                    y2="1.5"
+                                    stroke="white"
+                                    strokeWidth="3"
+                                  />
+                                </svg>
+                                <svg
+                                  className="bin-bottom"
+                                  viewBox="0 0 33 39"
+                                  fill="none"
+                                  style={{ width: "20px", height: "20px" }}
+                                >
+                                  <mask id="path-1-inside-1_8_19" fill="white">
+                                    <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
+                                  </mask>
+                                  <path
+                                    d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                                    fill="white"
+                                    mask="url(#path-1-inside-1_8_19)"
+                                  />
+                                  <path
+                                    d="M12 6L12 29"
+                                    stroke="white"
+                                    strokeWidth="4"
+                                  />
+                                  <path
+                                    d="M21 6V29"
+                                    stroke="white"
+                                    strokeWidth="4"
+                                  />
+                                </svg>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td
+                    colSpan="40"
+                    style={{
+                      padding: "20px",
+                      textAlign: "center",
+                      fontStyle: "italic",
+                      color: "#6b7280",
+                      height: "40px",
+                      lineHeight: "40px",
+                    }}
+                  >
+                    No orders found.
                   </td>
                 </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td
-                colSpan="40"
-                style={{
-                  padding: "20px",
-                  textAlign: "center",
-                  fontStyle: "italic",
-                  color: "#6b7280",
-                  height: "40px",
-                  lineHeight: "40px",
-                }}
-              >
-                No orders found.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
       <footer
