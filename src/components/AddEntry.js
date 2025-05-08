@@ -1228,6 +1228,7 @@ function AddEntry({ onSubmit, onClose }) {
     "Sahil Kapoor",
     "Priya Sharma",
     "Aasim Musadiq",
+    "Susheel Kumar",
     "Abhay Pratap Singh",
     "Abhayjit Sekhon",
     "Ajay Kumar",
