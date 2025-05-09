@@ -5,6 +5,38 @@ import { FaEye } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import OutFinishedGoodModal from "./OutFinishedGoodModal";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import styled from "styled-components";
+
+// Styled Component for DatePicker
+const DatePickerWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  .react-datepicker-wrapper {
+    width: 150px;
+  }
+  .react-datepicker__input-container input {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
+    width: 100%;
+    &:focus {
+      border-color: #2575fc;
+      outline: none;
+    }
+  }
+  .react-datepicker {
+    z-index: 1000 !important;
+  }
+  .react-datepicker-popper {
+    z-index: 1000 !important;
+  }
+`;
 
 function Finish() {
   const [orders, setOrders] = useState([]);
@@ -18,6 +50,10 @@ function Finish() {
   const [freightStatusFilter, setFreightStatusFilter] = useState("");
   const [dispatchStatusFilter, setDispatchStatusFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [totalResults, setTotalResults] = useState(0);
+  const [productQuantity, setProductQuantity] = useState(0);
 
   const fetchFinishedGoods = useCallback(async () => {
     try {
@@ -33,8 +69,14 @@ function Finish() {
         const filteredData = response.data.data.filter(
           (order) => order.dispatchStatus !== "Delivered"
         );
-        setOrders(filteredData);
-        setFilteredOrders(filteredData);
+        // Sort by dispatchDate in descending order (newest first)
+        const sortedData = filteredData.sort((a, b) => {
+          const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
+          const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+          return dateB - dateA;
+        });
+        setOrders(sortedData);
+        setFilteredOrders(sortedData);
       } else {
         throw new Error(
           response.data.message || "Failed to fetch finished goods data"
@@ -60,9 +102,10 @@ function Finish() {
     fetchFinishedGoods();
   }, [fetchFinishedGoods]);
 
-  // Apply filters and search
+  // Apply filters, search, and calculate results
   useEffect(() => {
     let filtered = [...orders];
+    let totalProductQuantity = 0;
 
     // Apply freight status filter
     if (freightStatusFilter) {
@@ -78,9 +121,29 @@ function Finish() {
       );
     }
 
+    // Apply date range filter
+    if (startDate || endDate) {
+      filtered = filtered.filter((order) => {
+        const orderDate = order.dispatchDate
+          ? new Date(order.dispatchDate)
+          : null;
+        const startDateAdjusted = startDate
+          ? new Date(startDate.setHours(0, 0, 0, 0))
+          : null;
+        const endDateAdjusted = endDate
+          ? new Date(endDate.setHours(23, 59, 59, 999))
+          : null;
+        return (
+          (!startDateAdjusted ||
+            (orderDate && orderDate >= startDateAdjusted)) &&
+          (!endDateAdjusted || (orderDate && orderDate <= endDateAdjusted))
+        );
+      });
+    }
+
     // Apply search filter
     if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
+      const lowerSearch = searchTerm.toLowerCase().trim();
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
@@ -112,6 +175,17 @@ function Finish() {
             ? "Partial Dispatch"
             : "Complete";
 
+        // Check if search term matches product type for quantity counting
+        const matchingProducts = (order.products || []).filter((p) =>
+          p.productType?.toLowerCase().includes(lowerSearch)
+        );
+        if (matchingProducts.length > 0) {
+          totalProductQuantity += matchingProducts.reduce(
+            (sum, p) => sum + (p.qty || 0),
+            0
+          );
+        }
+
         return (
           (order.orderId || "N/A").toLowerCase().includes(lowerSearch) ||
           (order.customername || "N/A").toLowerCase().includes(lowerSearch) ||
@@ -134,10 +208,65 @@ function Finish() {
             .includes(lowerSearch)
         );
       });
+    } else {
+      totalProductQuantity = filtered.reduce((sum, order) => {
+        return (
+          sum +
+          (order.products
+            ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+            : 0)
+        );
+      }, 0);
     }
 
+    // Sort filtered orders by dispatchDate in descending order (newest first)
+    filtered = filtered.sort((a, b) => {
+      const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
+      const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+      return dateB - dateA;
+    });
+
     setFilteredOrders(filtered);
-  }, [freightStatusFilter, dispatchStatusFilter, searchTerm, orders]);
+    setTotalResults(filtered.length);
+    setProductQuantity(totalProductQuantity);
+  }, [
+    freightStatusFilter,
+    dispatchStatusFilter,
+    searchTerm,
+    startDate,
+    endDate,
+    orders,
+  ]);
+
+  const handleReset = () => {
+    setFreightStatusFilter("");
+    setDispatchStatusFilter("");
+    setSearchTerm("");
+    setStartDate(null);
+    setEndDate(null);
+    // Sort orders by dispatchDate in descending order
+    const sortedOrders = [...orders].sort((a, b) => {
+      const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
+      const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+      return dateB - dateA;
+    });
+    setFilteredOrders(sortedOrders);
+    setTotalResults(sortedOrders.length);
+    setProductQuantity(
+      sortedOrders.reduce((sum, order) => {
+        return (
+          sum +
+          (order.products
+            ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+            : 0)
+        );
+      }, 0)
+    );
+    toast.info("Filters reset!", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  };
 
   const handleEditClick = (order) => {
     setEditData({
@@ -159,11 +288,17 @@ function Finish() {
   };
 
   const handleModalSubmit = (updatedEntry) => {
-    setOrders((prevOrders) =>
-      prevOrders
+    setOrders((prevOrders) => {
+      const updatedOrders = prevOrders
         .map((order) => (order._id === updatedEntry._id ? updatedEntry : order))
-        .filter((order) => order.dispatchStatus !== "Delivered")
-    );
+        .filter((order) => order.dispatchStatus !== "Delivered");
+      // Sort updated orders by dispatchDate in descending order
+      return updatedOrders.sort((a, b) => {
+        const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
+        const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+        return dateB - dateA;
+      });
+    });
     setIsModalOpen(false);
     toast.success(
       `Order updated successfully! Status: ${updatedEntry.dispatchStatus}`,
@@ -245,6 +380,7 @@ function Finish() {
         ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
         : "N/A",
       "Sales Person": order.salesPerson || "N/A",
+      "Production Remarks": order.remarksByProduction || "N/A",
       "Dispatch Date": order.dispatchDate
         ? new Date(order.dispatchDate).toLocaleDateString()
         : "N/A",
@@ -364,6 +500,29 @@ function Finish() {
                 onBlur={(e) => (e.target.style.borderColor = "#ccc")}
               />
             </div>
+            <DatePickerWrapper>
+              <DatePicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                placeholderText="Start Date"
+                dateFormat="dd/MM/yyyy"
+                isClearable
+              />
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate}
+                placeholderText="End Date"
+                dateFormat="dd/MM/yyyy"
+                isClearable
+              />
+            </DatePickerWrapper>
             <div>
               <label
                 style={{
@@ -417,6 +576,19 @@ function Finish() {
               </select>
             </div>
             <Button
+              onClick={handleReset}
+              style={{
+                background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+                border: "none",
+                padding: "10px 20px",
+                borderRadius: "5px",
+                color: "#fff",
+                fontWeight: "600",
+              }}
+            >
+              Reset Filters
+            </Button>
+            <Button
               onClick={handleExportToXLSX}
               style={{
                 background: "linear-gradient(135deg, #28a745, #4cd964)",
@@ -429,6 +601,44 @@ function Finish() {
             >
               Export to XLSX
             </Button>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "15px",
+              marginBottom: "20px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={{
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                borderRadius: "10px",
+                padding: "12px 20px",
+                boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+                color: "#fff",
+                fontWeight: "700",
+                fontSize: "0.9rem",
+              }}
+              title="Total number of matching orders"
+            >
+              Total Orders: {totalResults}
+            </div>
+            <div
+              style={{
+                background: "linear-gradient(135deg, #28a745, #4cd964)",
+                borderRadius: "10px",
+                padding: "12px 20px",
+                boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+                color: "#fff",
+                fontWeight: "700",
+                fontSize: "0.9rem",
+              }}
+              title="Total quantity of matching products"
+            >
+              Total Product Quantity: {productQuantity}
+            </div>
           </div>
 
           {filteredOrders.length === 0 ? (
@@ -719,7 +929,7 @@ function Finish() {
                             whiteSpace: "nowrap",
                             maxWidth: "150px",
                           }}
-                          title={order.salesPerson || "N/A"}
+                          title={order.remarksByProduction || "N/A"}
                         >
                           {order.remarksByProduction || "N/A"}
                         </td>
@@ -949,6 +1159,14 @@ function Finish() {
         keyboard={false}
         size="lg"
       >
+        <style>
+          {`
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+    `}
+        </style>
         <Modal.Header
           closeButton
           style={{
@@ -983,16 +1201,19 @@ function Finish() {
             display: "flex",
             flexDirection: "column",
             gap: "20px",
+            animation: "fadeIn 0.5s ease-in-out",
           }}
         >
           {viewOrder && (
             <>
+              {/* Product Info Section */}
               <div
                 style={{
                   background: "#f8f9fa",
                   borderRadius: "10px",
                   padding: "20px",
                   boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                  animation: "fadeIn 0.5s ease-in-out",
                 }}
               >
                 <h3
@@ -1029,7 +1250,7 @@ function Finish() {
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Qty:</strong> {product.qty || "N/A"}
                       </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <span style={{ fontSize: "1rem", color: "555" }}>
                         <strong>Size:</strong> {product.size || "N/A"}
                       </span>
                       <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -1051,44 +1272,69 @@ function Finish() {
                   </span>
                 )}
               </div>
+
+              {/* Order Details Section */}
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "15px",
+                  background: "#f8f9fa",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                  animation: "fadeIn 0.5s ease-in-out",
                 }}
               >
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
-                </span>
-
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Dispatch Date:</strong>{" "}
-                  {viewOrder.dispatchDate
-                    ? new Date(viewOrder.dispatchDate).toLocaleDateString()
-                    : "N/A"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Customer:</strong> {viewOrder.customername || "N/A"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Address:</strong> {viewOrder.shippingAddress || "N/A"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Dispatch Status:</strong>{" "}
-                  {viewOrder.dispatchStatus || "Not Dispatched"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Transporter:</strong> {viewOrder.transporter || "N/A"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
-                </span>
-                <span style={{ fontSize: "1rem", color: "#555" }}>
-                  <strong>Sales Person:</strong>{" "}
-                  {viewOrder.salesPerson || "N/A"}
-                </span>
+                <h3
+                  style={{
+                    fontSize: "1.3rem",
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: "15px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Order Info
+                </h3>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "15px",
+                  }}
+                >
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Dispatch Date:</strong>{" "}
+                    {viewOrder.dispatchDate
+                      ? new Date(viewOrder.dispatchDate).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Customer:</strong> {viewOrder.customername || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Address:</strong>{" "}
+                    {viewOrder.shippingAddress || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Dispatch Status:</strong>{" "}
+                    {viewOrder.dispatchStatus || "Not Dispatched"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Transporter:</strong>{" "}
+                    {viewOrder.transporter || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Sales Person:</strong>{" "}
+                    {viewOrder.salesPerson || "N/A"}
+                  </span>
+                </div>
               </div>
+
               <Button
                 onClick={handleCopy}
                 style={{
@@ -1102,6 +1348,7 @@ function Finish() {
                   textTransform: "uppercase",
                   transition: "all 0.3s ease",
                   boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
+                  alignSelf: "flex-end",
                 }}
                 onMouseEnter={(e) =>
                   (e.target.style.transform = "translateY(-3px)")

@@ -547,6 +547,7 @@ const Production = () => {
                       "Spec",
                       "Serial Nos",
                       "Model Nos",
+                      "Remarks",
                       "Production Status",
                       "Quantity",
                       "Actions",
@@ -846,6 +847,24 @@ const Production = () => {
                           {firstProduct.modelNos?.length > 0
                             ? firstProduct.modelNos.join(", ")
                             : "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={order.remarks || "N/A"}
+                        >
+                          {order.remarks || "N/A"}
                         </td>
                         <td
                           style={{
@@ -1310,6 +1329,10 @@ const Production = () => {
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Order Type:</strong> {viewOrder.orderType || "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Sales Order Remarks:</strong>{" "}
+                    {viewOrder.remarks || "N/A"}
                   </span>
                 </div>
               </div>
