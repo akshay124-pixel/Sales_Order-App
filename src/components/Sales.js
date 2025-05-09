@@ -511,10 +511,19 @@ const Sales = () => {
   const handleExport = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/export",
+      const response = await axios.post(
+        "https://sales-order-server.onrender.com/api/export-filtered",
         {
-          headers: { Authorization: `Bearer ${token}` },
+          searchTerm: searchTerm || "",
+          approvalFilter: approvalFilter === "All" ? "" : approvalFilter,
+          startDate: startDate ? startDate.toISOString().slice(0, 10) : "",
+          endDate: endDate ? endDate.toISOString().slice(0, 10) : "",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
           responseType: "arraybuffer",
         }
       );
@@ -523,15 +532,17 @@ const Sales = () => {
       });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `orders_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      link.download = `filtered_orders_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      toast.success("Orders exported successfully!");
+      toast.success("Filtered orders exported successfully!");
     } catch (error) {
-      console.error("Error exporting orders:", error);
-      toast.error("Failed to export orders!");
+      console.error("Error exporting filtered orders:", error);
+      toast.error("Failed to export filtered orders!");
     }
   };
 
