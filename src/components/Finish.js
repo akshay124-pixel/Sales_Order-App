@@ -19,7 +19,7 @@ const DatePickerWrapper = styled.div`
   }
   .react-datepicker__input-container input {
     padding: 8px 12px;
-    border-radius: 5px;
+    border-radius: 25px;
     border: 1px solid #ccc;
     font-size: 1rem;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -614,7 +614,7 @@ function Finish() {
             <div
               style={{
                 background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                borderRadius: "10px",
+                borderRadius: "25px",
                 padding: "12px 20px",
                 boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
                 color: "#fff",
@@ -628,7 +628,7 @@ function Finish() {
             <div
               style={{
                 background: "linear-gradient(135deg, #28a745, #4cd964)",
-                borderRadius: "10px",
+                borderRadius: "25px",
                 padding: "12px 20px",
                 boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
                 color: "#fff",
