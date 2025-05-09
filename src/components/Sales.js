@@ -512,7 +512,7 @@ const Sales = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "https://sales-order-server.onrender.com/api/export-filtered",
+        "https://sales-order-server.onrender.com/api/export",
         {
           searchTerm: searchTerm || "",
           approvalFilter: approvalFilter === "All" ? "" : approvalFilter,
