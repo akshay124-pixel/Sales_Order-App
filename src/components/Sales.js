@@ -508,38 +508,117 @@ const Sales = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const handleExport = async () => {
+  const handleExport = () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "https://sales-order-server.onrender.com/api/export",
-        {
-          searchTerm: searchTerm || "",
-          approvalFilter: approvalFilter === "All" ? "" : approvalFilter,
-          startDate: startDate ? startDate.toISOString().slice(0, 10) : "",
-          endDate: endDate ? endDate.toISOString().slice(0, 10) : "",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          responseType: "arraybuffer",
-        }
-      );
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      // Prepare data for export based on filteredOrders
+      const exportData = filteredOrders.map((order, index) => {
+        const firstProduct =
+          order.products && order.products[0] ? order.products[0] : {};
+        const totalUnitPrice = order.products
+          ? order.products.reduce(
+              (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+              0
+            )
+          : 0;
+        const totalQty = order.products
+          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+          : 0;
+        const productDetails = order.products
+          ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
+          : "-";
+        const gstValues = order.products
+          ? order.products
+              .map((p) => `${p.gst}%`)
+              .filter(Boolean)
+              .join(", ")
+          : "-";
+
+        return {
+          "Seq No": index + 1,
+          "Customer Name": order.customername || "-",
+          "Product Details": productDetails,
+          "Unit Price": `₹${totalUnitPrice.toFixed(2) || "0.00"}`,
+          Qty: totalQty || "-",
+          "Freight Charges": order.freightcs || "-",
+          "Freight Status": order.freightstatus || "-",
+          GST: gstValues,
+          Total: `₹${order.total?.toFixed(2) || "0.00"}`,
+          "Order ID": order.orderId || "-",
+          "SO Date": order.soDate
+            ? new Date(order.soDate).toLocaleDateString("en-GB")
+            : "-",
+          "Approval Status": order.sostatus || "-",
+          City: order.city || "-",
+          State: order.state || "-",
+          "Pin Code": order.pinCode || "-",
+          "Contact Person Name": order.name || "-",
+          "Contact No": order.contactNo || "-",
+          "Customer Email": order.customerEmail || "-",
+          "Order Type": order.orderType || "-",
+          "Model Nos":
+            firstProduct.modelNos?.length > 0
+              ? firstProduct.modelNos.join(", ")
+              : "-",
+          "Serial Nos":
+            firstProduct.serialNos?.length > 0
+              ? firstProduct.serialNos.join(", ")
+              : "-",
+          "Product Type": firstProduct.productType || "-",
+          Size: firstProduct.size || "-",
+          Spec: firstProduct.spec || "-",
+          "Payment Collected": formatCurrency(order.paymentCollected) || "-",
+          "Payment Method": order.paymentMethod || "-",
+          "Payment Due": formatCurrency(order.paymentDue) || "-",
+          Installation: order.installation || "-",
+          "Sales Person": order.salesPerson || "-",
+          "Created By":
+            order.createdBy && typeof order.createdBy === "object"
+              ? order.createdBy.username || "Unknown"
+              : typeof order.createdBy === "string"
+              ? order.createdBy
+              : "-",
+          Company: order.company || "-",
+          Transporter: order.transporter || "-",
+          "Transporter Details": order.transporterDetails || "-",
+          "Shipping Address": order.shippingAddress || "-",
+          "Billing Address": order.billingAddress || "-",
+          "Docket No": order.docketNo || "-",
+          "Dispatch From": order.dispatchFrom || "-",
+          "Dispatch Date": order.dispatchDate
+            ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
+            : "-",
+          "Receipt Date": order.receiptDate
+            ? new Date(order.receiptDate).toLocaleDateString("en-GB")
+            : "-",
+          "Invoice No": order.invoiceNo || "-",
+          "Invoice Date": order.invoiceDate
+            ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
+            : "-",
+          Remarks: order.remarks || "-",
+        };
       });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `filtered_orders_${new Date()
-        .toISOString()
-        .slice(0, 10)}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-      toast.success("Filtered orders exported successfully!");
+
+      // Create worksheet from exportData
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Orders");
+
+      // Auto-size columns (approximate)
+      const colWidths = Object.keys(exportData[0] || {}).map((key, i) => {
+        const maxLength = Math.max(
+          key.length,
+          ...exportData.map((row) => String(row[key] || "").length)
+        );
+        return { wch: Math.min(maxLength + 2, 50) };
+      });
+      worksheet["!cols"] = colWidths;
+
+      // Generate Excel file and trigger download
+      XLSX.writeFile(
+        workbook,
+        `filtered_orders_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+      toast.success(`Successfully exported ${totalResults} filtered orders!`);
     } catch (error) {
       console.error("Error exporting filtered orders:", error);
       toast.error("Failed to export filtered orders!");
