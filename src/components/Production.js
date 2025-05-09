@@ -43,8 +43,14 @@ const Production = () => {
         }
       );
       if (response.data.success) {
-        setOrders(response.data.data);
-        setFilteredOrders(response.data.data);
+        // Sort orders by soDate in descending order (newest first)
+        const sortedOrders = response.data.data.sort((a, b) => {
+          const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+          const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+          return dateB - dateA;
+        });
+        setOrders(sortedOrders);
+        setFilteredOrders(sortedOrders);
       } else {
         throw new Error(response.data.message || "Failed to fetch orders");
       }
@@ -63,7 +69,7 @@ const Production = () => {
 
   // Filter orders based on search query and status
   useEffect(() => {
-    let filtered = orders;
+    let filtered = [...orders];
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
@@ -101,6 +107,12 @@ const Production = () => {
         (order) => order.fulfillingStatus === statusFilter
       );
     }
+    // Sort filtered orders by soDate in descending order (newest first)
+    filtered = filtered.sort((a, b) => {
+      const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+      const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+      return dateB - dateA;
+    });
     setFilteredOrders(filtered);
   }, [orders, searchQuery, statusFilter]);
 
@@ -201,17 +213,23 @@ const Production = () => {
         }
       );
       if (response.data.success) {
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
+        setOrders((prevOrders) => {
+          const updatedOrders = prevOrders.map((order) =>
             order._id === editOrder._id ? response.data.data : order
-          )
-        );
+          );
+          // Sort updated orders by soDate in descending order
+          return updatedOrders.sort((a, b) => {
+            const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+            const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+            return dateB - dateA;
+          });
+        });
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
-        await fetchOrders();
+        // No need to call fetchOrders since we update state directly
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }
