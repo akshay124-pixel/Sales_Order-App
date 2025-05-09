@@ -9,7 +9,38 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import { ArrowRight } from "lucide-react";
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import styled from "styled-components";
+
+// Styled Component for DatePicker
+const DatePickerWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  .react-datepicker-wrapper {
+    width: 150px;
+  }
+  .react-datepicker__input-container input {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
+    width: 100%;
+    &:focus {
+      border-color: #2575fc;
+      outline: none;
+    }
+  }
+  .react-datepicker {
+    z-index: 1000 !important;
+  }
+  .react-datepicker-popper {
+    z-index: 1000 !important;
+  }
+`;
 
 const Sales = () => {
   const [orders, setOrders] = useState([]);
@@ -23,6 +54,8 @@ const Sales = () => {
   const [approvalFilter, setApprovalFilter] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [totalResults, setTotalResults] = useState(0);
+  const [productQuantity, setProductQuantity] = useState(0);
   const userRole = localStorage.getItem("role"); // Get role from localStorage
   const userId = localStorage.getItem("userId"); // Get user ID from localStorage
 
@@ -43,7 +76,13 @@ const Sales = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setOrders(response.data);
+      // Sort orders by soDate in descending order (newest first)
+      const sortedOrders = response.data.sort((a, b) => {
+        const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+        const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+        return dateB - dateA;
+      });
+      setOrders(sortedOrders);
       toast.success("Orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -53,6 +92,9 @@ const Sales = () => {
 
   const filterOrders = () => {
     let filtered = [...orders];
+    let totalProductQuantity = 0;
+
+    // Apply search term filter
     if (searchTerm) {
       filtered = filtered.filter((order) => {
         const searchableFields = [
@@ -90,30 +132,66 @@ const Sales = () => {
             `${p.productType} ${p.size} ${p.spec} ${p.qty} ${p.unitPrice} ${p.gst}`.toLowerCase()
           ),
         ];
+        const lowerSearch = searchTerm.toLowerCase().trim();
+        // Check if search term matches product type for quantity counting
+        const matchingProducts = (order.products || []).filter((p) =>
+          p.productType?.toLowerCase().includes(lowerSearch)
+        );
+        if (matchingProducts.length > 0) {
+          totalProductQuantity += matchingProducts.reduce(
+            (sum, p) => sum + (p.qty || 0),
+            0
+          );
+        }
         return searchableFields.some(
           (value) =>
-            value &&
-            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            value && value.toString().toLowerCase().includes(lowerSearch)
         );
       });
+    } else {
+      totalProductQuantity = filtered.reduce((sum, order) => {
+        return (
+          sum +
+          (order.products
+            ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+            : 0)
+        );
+      }, 0);
     }
+
+    // Apply approval status filter
     if (approvalFilter !== "All") {
       filtered = filtered.filter((order) => order.sostatus === approvalFilter);
     }
 
+    // Apply date range filter
     if (startDate || endDate) {
       filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.soDate);
+        const orderDate = order.soDate ? new Date(order.soDate) : null;
+        const startDateAdjusted = startDate
+          ? new Date(startDate.setHours(0, 0, 0, 0))
+          : null;
+        const endDateAdjusted = endDate
+          ? new Date(endDate.setHours(23, 59, 59, 999))
+          : null;
         return (
-          (!startDate || orderDate >= startDate) &&
-          (!endDate || orderDate <= endDate)
+          (!startDateAdjusted ||
+            (orderDate && orderDate >= startDateAdjusted)) &&
+          (!endDateAdjusted || (orderDate && orderDate <= endDateAdjusted))
         );
       });
     }
 
-    filtered = filtered.sort((a, b) => new Date(b.soDate) - new Date(a.soDate));
+    // Sort filtered orders by soDate in descending order (newest first)
+    filtered = filtered.sort((a, b) => {
+      const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+      const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+      return dateB - dateA;
+    });
 
     setFilteredOrders(filtered);
+    setTotalResults(filtered.length);
+    setProductQuantity(totalProductQuantity);
   };
 
   const handleReset = () => {
@@ -121,11 +199,37 @@ const Sales = () => {
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
+    // Sort orders by soDate in descending order
+    const sortedOrders = [...orders].sort((a, b) => {
+      const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+      const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+      return dateB - dateA;
+    });
+    setFilteredOrders(sortedOrders);
+    setTotalResults(sortedOrders.length);
+    setProductQuantity(
+      sortedOrders.reduce((sum, order) => {
+        return (
+          sum +
+          (order.products
+            ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+            : 0)
+        );
+      }, 0)
+    );
     toast.info("Filters reset!");
   };
 
   const handleAddEntry = (newEntry) => {
-    setOrders((prevOrders) => [...prevOrders, newEntry]);
+    setOrders((prevOrders) => {
+      const updatedOrders = [...prevOrders, newEntry];
+      // Sort updated orders by soDate in descending order
+      return updatedOrders.sort((a, b) => {
+        const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+        const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+        return dateB - dateA;
+      });
+    });
     setIsAddModalOpen(false);
     toast.success("New order added!");
   };
@@ -146,9 +250,17 @@ const Sales = () => {
   };
 
   const handleDelete = (deletedIds) => {
-    setOrders((prevOrders) =>
-      prevOrders.filter((order) => !deletedIds.includes(order._id))
-    );
+    setOrders((prevOrders) => {
+      const updatedOrders = prevOrders.filter(
+        (order) => !deletedIds.includes(order._id)
+      );
+      // Sort updated orders by soDate in descending order
+      return updatedOrders.sort((a, b) => {
+        const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+        const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+        return dateB - dateA;
+      });
+    });
     setIsDeleteModalOpen(false);
     toast.success("Order deleted successfully!");
   };
@@ -162,11 +274,17 @@ const Sales = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const updatedOrder = response.data.data || response.data;
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
+      setOrders((prevOrders) => {
+        const updatedOrders = prevOrders.map((order) =>
           order._id === updatedOrder._id ? updatedOrder : order
-        )
-      );
+        );
+        // Sort updated orders by soDate in descending order
+        return updatedOrders.sort((a, b) => {
+          const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+          const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+          return dateB - dateA;
+        });
+      });
       setIsEditModalOpen(false);
       toast.success("Order updated successfully!");
     } catch (error) {
@@ -366,7 +484,15 @@ const Sales = () => {
           }
         );
 
-        setOrders((prevOrders) => [...prevOrders, ...response.data.data]);
+        setOrders((prevOrders) => {
+          const updatedOrders = [...prevOrders, ...response.data.data];
+          // Sort updated orders by soDate in descending order
+          return updatedOrders.sort((a, b) => {
+            const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+            const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+            return dateB - dateA;
+          });
+        });
         toast.success(
           `Successfully uploaded ${response.data.data.length} orders!`
         );
@@ -520,6 +646,30 @@ const Sales = () => {
         />
 
         <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+          <DatePickerWrapper>
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              placeholderText="Start Date"
+              dateFormat="dd/MM/yyyy"
+              isClearable
+            />
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              placeholderText="End Date"
+              dateFormat="dd/MM/yyyy"
+              isClearable
+            />
+          </DatePickerWrapper>
+
           <Dropdown>
             <Dropdown.Toggle
               style={{
@@ -607,6 +757,46 @@ const Sales = () => {
           fontFamily: "'Poppins', sans-serif",
         }}
       >
+        <div
+          style={{
+            display: "flex",
+            gap: "15px",
+            marginBottom: "40px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              borderRadius: "10px",
+              padding: "12px 20px",
+              boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+              color: "#fff",
+              fontWeight: "700",
+              fontSize: "0.9rem",
+            }}
+            title="Total number of matching orders"
+          >
+            Total Orders: {totalResults}
+          </div>
+          {userRole === "Admin" && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, #28a745, #4cd964)",
+                borderRadius: "10px",
+                padding: "12px 20px",
+                boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+                color: "#fff",
+                fontWeight: "700",
+                fontSize: "0.9rem",
+              }}
+              title="Total quantity of matching products"
+            >
+              Total Product Quantity: {productQuantity}
+            </div>
+          )}
+        </div>
+
         <div
           style={{
             display: "flex",
@@ -1043,7 +1233,6 @@ const Sales = () => {
                           ? new Date(order.soDate).toLocaleDateString("en-GB")
                           : "-"}
                       </td>
-
                       <td
                         style={{
                           padding: "15px",
@@ -1687,19 +1876,18 @@ const Sales = () => {
       </div>
       <footer
         style={{
-          margin: 0, // Remove all margins to eliminate gaps
+          margin: 0,
           textAlign: "center",
           color: "white",
           padding: "20px",
           background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-          width: "100vw", // Full viewport width
+          width: "100vw",
           boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
           fontSize: "1rem",
           fontWeight: "500",
-
-          bottom: 0, // Zero gap from bottom
-          left: 0, // Align to left edge
-          boxSizing: "border-box", // Ensure padding doesn't affect width
+          bottom: 0,
+          left: 0,
+          boxSizing: "border-box",
         }}
       >
         © 2025 Sales Order Management. All rights reserved.
