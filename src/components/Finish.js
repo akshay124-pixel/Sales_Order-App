@@ -373,15 +373,16 @@ function Finish() {
             .filter(Boolean)
             .join(", ") || "N/A"
         : "N/A",
+      Size: order.products
+        ? order.products.map((p) => p.size || "N/A").join(", ")
+        : "N/A",
       "Serial Nos": order.products
         ? order.products
             .flatMap((p) => p.serialNos || [])
             .filter(Boolean)
             .join(", ") || "N/A"
         : "N/A",
-      Size: order.products
-        ? order.products.map((p) => p.size || "N/A").join(", ")
-        : "N/A",
+
       Quantity: order.products
         ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
         : "N/A",
