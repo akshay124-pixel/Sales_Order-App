@@ -19,7 +19,7 @@ const OutFinishedGoodModal = ({
     billNumber: "",
     dispatchDate: new Date().toISOString().split("T")[0],
     docketNo: "",
-    receiptDate: "",
+
     dispatchStatus: "Not Dispatched",
   });
   const [loading, setLoading] = useState(false);
@@ -37,9 +37,7 @@ const OutFinishedGoodModal = ({
           ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
         docketNo: initialData.docketNo || "",
-        receiptDate: initialData.receiptDate
-          ? new Date(initialData.receiptDate).toISOString().split("T")[0]
-          : "",
+
         dispatchStatus: initialData.dispatchStatus || "Not Dispatched",
       });
     }
@@ -76,12 +74,9 @@ const OutFinishedGoodModal = ({
         return;
       }
       // Additional validation for "Delivered" status
-      if (
-        formData.dispatchStatus === "Delivered" &&
-        (!formData.receiptDate || !formData.docketNo)
-      ) {
+      if (formData.dispatchStatus === "Delivered" && !formData.docketNo) {
         setError(
-          "Receipt Date and Docket Number are required when setting status to Delivered!"
+          "Docket Number are required when setting status to Delivered!"
         );
         toast.error("Missing required fields for Delivered status!");
         return;
@@ -101,9 +96,7 @@ const OutFinishedGoodModal = ({
         billNumber: formData.billNumber || undefined,
         dispatchDate: new Date(formData.dispatchDate).toISOString(),
         docketNo: formData.docketNo || undefined,
-        receiptDate: formData.receiptDate
-          ? new Date(formData.receiptDate).toISOString()
-          : undefined,
+
         dispatchStatus: formData.dispatchStatus,
       };
 
@@ -217,7 +210,7 @@ const OutFinishedGoodModal = ({
         {[
           { key: "dispatchDate", label: "Dispatch Date", type: "date" },
           { key: "docketNo", label: "Docket No", type: "text" },
-          { key: "receiptDate", label: "Receipt Date", type: "date" },
+
           {
             key: "transporterDetails",
             label: "Transporter Remarks",
