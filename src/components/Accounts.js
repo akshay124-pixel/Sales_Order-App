@@ -608,7 +608,6 @@ function Accounts() {
               >
                 <tr>
                   {[
-                    "Bill Number",
                     "Date",
                     "Address",
                     "Email",
@@ -708,23 +707,6 @@ function Accounts() {
                             index % 2 === 0 ? "#f8f9fa" : "#fff")
                         }
                       >
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.billNumber || "N/A"}
-                        >
-                          {order.billNumber || "N/A"}
-                        </td>
                         <td
                           style={{
                             padding: "15px",
