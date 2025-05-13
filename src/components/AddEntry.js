@@ -1014,6 +1014,7 @@ function AddEntry({ onSubmit, onClose }) {
     ],
     "Uttar Pradesh": [
       "Shikohabad",
+      "Hardoi",
       "Baghpat",
       "Mahuwadabar",
       "Anandnagar Maharajganj",
