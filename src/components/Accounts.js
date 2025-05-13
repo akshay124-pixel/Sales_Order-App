@@ -613,8 +613,10 @@ function Accounts() {
                     "Address",
                     "Email",
                     "Mobile",
-                    "Total",
                     "Products",
+                    "Total",
+                    "Payment Collected",
+                    "Due Amount",
                     "Payment Received",
                     "Actions",
                   ].map((header, index) => (
@@ -812,11 +814,45 @@ function Accounts() {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
+                            maxWidth: "200px",
+                          }}
+                          title={productDetails}
+                        >
+                          {productDetails}
+                        </td>{" "}
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
                             maxWidth: "150px",
                           }}
                           title={order.total?.toString() || "N/A"}
                         >
                           {order.total || "N/A"}
+                        </td>{" "}
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={order.paymentCollected?.toString() || "N/A"}
+                        >
+                          {order.paymentCollected || "N/A"}
                         </td>
                         <td
                           style={{
@@ -829,11 +865,11 @@ function Accounts() {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            maxWidth: "200px",
+                            maxWidth: "150px",
                           }}
-                          title={productDetails}
+                          title={order.paymentDue?.toString() || "N/A"}
                         >
-                          {productDetails}
+                          {order.paymentDue || "N/A"}
                         </td>
                         <td
                           style={{
@@ -1081,18 +1117,7 @@ function Accounts() {
                         </Badge>
                       </span>
                       <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Remarks:</strong>{" "}
-                        {viewOrder.remarksByAccounts || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Invoice Number:</strong>{" "}
-                        {viewOrder.invoiceNo || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Invoice Date:</strong>{" "}
-                        {viewOrder.invoiceDate
-                          ? new Date(viewOrder.invoiceDate).toLocaleDateString()
-                          : "N/A"}
+                        <strong>Remarks:</strong> {viewOrder.remarks || "N/A"}
                       </span>
                     </div>
                   </div>
