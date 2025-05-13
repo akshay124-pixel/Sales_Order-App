@@ -497,7 +497,7 @@ function Installation() {
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
-                      "Installation Details",
+                      "Installation Charges",
                       "Installation Status",
                       "Actions",
                     ].map((header, index) => (
