@@ -609,6 +609,7 @@ function Accounts() {
                 <tr>
                   {[
                     "Date",
+                    "Customer Name",
                     "Address",
                     "Email",
                     "Mobile",
@@ -731,6 +732,23 @@ function Accounts() {
                           {order.dispatchDate
                             ? new Date(order.dispatchDate).toLocaleDateString()
                             : "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "200px",
+                          }}
+                          title={order.name || "N/A"}
+                        >
+                          {order.name || "N/A"}
                         </td>
                         <td
                           style={{
