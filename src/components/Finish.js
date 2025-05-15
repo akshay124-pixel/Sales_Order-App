@@ -151,6 +151,12 @@ function Finish() {
               .join(", ")
               .toLowerCase()
           : "";
+        const specDetails = order.products
+          ? order.products
+              .map((p) => p.spec || "N/A")
+              .join(", ")
+              .toLowerCase()
+          : "";
         const sizeDetails = order.products
           ? order.products
               .map((p) => p.size || "N/A")
@@ -196,6 +202,7 @@ function Finish() {
           productDetails.includes(lowerSearch) ||
           modelNos.includes(lowerSearch) ||
           sizeDetails.includes(lowerSearch) ||
+          specDetails.includes(lowerSearch) ||
           totalQty.includes(lowerSearch) ||
           (order.salesPerson || "N/A").toLowerCase().includes(lowerSearch) ||
           dispatchDate.includes(lowerSearch) ||
@@ -372,6 +379,9 @@ function Finish() {
             .flatMap((p) => p.modelNos || [])
             .filter(Boolean)
             .join(", ") || "N/A"
+        : "N/A",
+      Spec: order.products
+        ? order.products.map((p) => p.spec || "N/A").join(", ")
         : "N/A",
       Size: order.products
         ? order.products.map((p) => p.size || "N/A").join(", ")
@@ -699,6 +709,7 @@ function Finish() {
                       "Delivery Address",
                       "Product Name",
                       "Model Nos",
+                      "Spec",
                       "Size",
                       "Quantity",
                       "Sales Person",
@@ -734,6 +745,9 @@ function Finish() {
                       : "N/A";
                     const sizeDetails = order.products
                       ? order.products.map((p) => p.size || "N/A").join(", ")
+                      : "N/A";
+                    const specDetails = order.products
+                      ? order.products.map((p) => p.spec || "N/A").join(", ")
                       : "N/A";
                     const totalQty = order.products
                       ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
@@ -867,6 +881,24 @@ function Finish() {
                           title={modelNos}
                         >
                           {modelNos}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={specDetails}
+                        >
+                          {specDetails}
                         </td>
                         <td
                           style={{
