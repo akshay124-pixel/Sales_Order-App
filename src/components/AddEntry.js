@@ -68,7 +68,9 @@ function AddEntry({ onSubmit, onClose }) {
       sizes: ["N/A"],
       specs: [
         // i5 6th Gen
+        "i5 4th Gen , 8GB RAM, 256GB ROM",
         "i5 6th Gen, 8GB RAM, 256GB ROM",
+
         "i5 6th Gen, 8GB RAM, 512GB ROM",
         "i5 6th Gen, 8GB RAM, 1TB ROM",
         "i5 6th Gen, 16GB RAM, 256GB ROM",
