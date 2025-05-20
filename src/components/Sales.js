@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaEye, FaBell } from "react-icons/fa";
-import {
-  Button,
-  Form,
-  Dropdown,
-  Badge,
-  OverlayTrigger,
-  Popover,
-} from "react-bootstrap";
+import { Button, Badge, OverlayTrigger, Popover } from "react-bootstrap";
 import DatePicker from "react-datepicker";
+import FilterSection from "./FilterSection";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -34,8 +28,8 @@ const NotificationWrapper = styled.div`
 `;
 
 const NotificationIcon = styled(FaBell)`
-  font-size: 1.5rem;
-  color: white;
+  font-size: 1.9rem;
+  color: blue;
   cursor: pointer;
   transition: transform 0.3s ease, color 0.3s ease;
   &:hover {
@@ -189,10 +183,8 @@ body {
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   max-height: 600px;
-  overflow-y: auto;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #2575fc #e6f0fa;
+  overflow-y: auto; /* Vertical scroll only */
+  overflow-x: hidden; /* No horizontal scroll */
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -201,11 +193,9 @@ body {
 
 /* Sales table */
 .sales-table {
-  width: 100%;
-  min-width: ${totalTableWidth}px;
+  width: 100%; /* Fit container */
   table-layout: fixed;
   border-collapse: collapse;
-  overflow-x: hidden;
 }
 
 /* Table header */
@@ -296,7 +286,6 @@ body {
 
 /* Action buttons */
 .sales-table .actions-cell button {
-
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -309,20 +298,9 @@ body {
   z-index: 1;
 }
 
-// .sales-table .actions-cell button:hover {
-//   transform: scale(1.1);
-//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-// }
-
-/* Reserve space for scrollbar */
-.sales-table-container thead tr th:last-child {
-  padding-right: 20px;
-}
-
 /* Virtualized list container */
 .list-container {
-  width: 100%;
-  min-width: ${totalTableWidth}px;
+  width: 100%; /* Fit container */
 }
 `;
 
@@ -919,9 +897,12 @@ const Sales = () => {
   const fetchOrders = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("https://sales-order-server.onrender.com/api/get-orders", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "https://sales-order-server.onrender.com/api/get-orders",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setOrders(response.data);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -987,14 +968,15 @@ const Sales = () => {
     return () => socket.disconnect();
   }, [fetchOrders]);
 
-  // Calculate total results
   const calculateTotalResults = useMemo(() => {
-    return filteredOrders.reduce((total, order) => {
-      const orderQty = order.products
-        ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-        : 0;
-      return total + orderQty;
-    }, 0);
+    return Math.floor(
+      filteredOrders.reduce((total, order) => {
+        const orderQty = order.products
+          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+          : 0;
+        return total + orderQty;
+      }, 0)
+    );
   }, [filteredOrders]);
 
   // Filter orders
@@ -1850,7 +1832,7 @@ const Sales = () => {
       <style>{tableStyles}</style>
       <div
         style={{
-          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+          background: "rgb(230, 240, 250)",
           padding: "25px 40px",
           display: "flex",
           flexWrap: "wrap",
@@ -1859,260 +1841,23 @@ const Sales = () => {
           justifyContent: "space-between",
         }}
       >
-        <Form.Control
-          type="text"
-          placeholder="Search Orders..."
-          onChange={(e) => debouncedSetSearchTerm(e.target.value)}
-          style={{
-            maxWidth: "350px",
-            padding: "14px 25px",
-            borderRadius: "30px",
-            border: "none",
-            background: "rgba(255,255,255,0.95)",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-            fontSize: "1.1rem",
-            fontWeight: "500",
-            transition: "all 0.4s ease",
-          }}
-          onFocus={(e) => {
-            e.target.style.boxShadow = "0 0 20px rgba(255,255,255,0.8)";
-            e.target.style.transform = "scale(1.02)";
-          }}
-          onBlur={(e) => {
-            e.target.style.boxShadow = "0 5px 15px rgba(0,0,0,0.2)";
-            e.target.style.transform = "scale(1)";
-          }}
+        <FilterSection
+          debouncedSetSearchTerm={debouncedSetSearchTerm}
+          userRole={userRole}
+          notificationPopover={notificationPopover}
+          notifications={notifications}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          approvalFilter={approvalFilter}
+          setApprovalFilter={setApprovalFilter}
+          orderTypeFilter={orderTypeFilter}
+          setOrderTypeFilter={setOrderTypeFilter}
+          dispatchFilter={dispatchFilter}
+          setDispatchFilter={setDispatchFilter}
+          handleReset={handleReset}
         />
-        <div
-          style={{
-            display: "flex",
-            gap: "15px",
-            flexWrap: "wrap",
-            alignItems: "center",
-          }}
-        >
-          {userRole === "Admin" && (
-            <OverlayTrigger
-              trigger="click"
-              placement="bottom"
-              overlay={notificationPopover}
-              rootClose
-            >
-              <NotificationWrapper>
-                <NotificationIcon />
-                {notifications.filter((notif) => !notif.isRead).length > 0 && (
-                  <NotificationBadge>
-                    {notifications.filter((notif) => !notif.isRead).length}
-                  </NotificationBadge>
-                )}
-              </NotificationWrapper>
-            </OverlayTrigger>
-          )}
-          <DatePickerWrapper>
-            <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              selectsStart
-              startDate={startDate}
-              endDate={endDate}
-              placeholderText="Start Date"
-              dateFormat="dd/MM/yyyy"
-              isClearable
-            />
-            <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              selectsEnd
-              startDate={startDate}
-              endDate={endDate}
-              minDate={startDate}
-              placeholderText="End Date"
-              dateFormat="dd/MM/yyyy"
-              isClearable
-            />
-          </DatePickerWrapper>
-          <Dropdown>
-            <Dropdown.Toggle
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                border: "none",
-                padding: "12px 25px",
-                borderRadius: "30px",
-                color: "white",
-                fontWeight: "600",
-                fontSize: "1rem",
-                boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-                transition: "all 0.4s ease",
-              }}
-              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-            >
-              {approvalFilter === "All" ? "Approval Status" : approvalFilter}
-            </Dropdown.Toggle>
-            <Dropdown.Menu
-              style={{
-                borderRadius: "15px",
-                boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-                background: "white",
-                border: "none",
-                padding: "10px",
-              }}
-            >
-              {[
-                "All",
-                "Approved",
-                "Accounts Approved",
-                "Pending for Approval",
-              ].map((option) => (
-                <Dropdown.Item
-                  key={option}
-                  onClick={() => setApprovalFilter(option)}
-                  style={{
-                    padding: "10px 20px",
-                    color: "#1e3a8a",
-                    fontWeight: "500",
-                    transition: "background 0.3s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.background = "rgba(37,117,252,0.1)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.background = "transparent")
-                  }
-                >
-                  {option}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-          <Dropdown>
-            <Dropdown.Toggle
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                border: "none",
-                padding: "12px 25px",
-                borderRadius: "30px",
-                color: "white",
-                fontWeight: "600",
-                fontSize: "1rem",
-                boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-                transition: "all 0.4s ease",
-              }}
-              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-            >
-              {orderTypeFilter === "All" ? "Order Type" : orderTypeFilter}
-            </Dropdown.Toggle>
-            <Dropdown.Menu
-              style={{
-                borderRadius: "15px",
-                boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-                background: "white",
-                border: "none",
-                padding: "10px",
-              }}
-            >
-              {["All", "B2G", "B2C", "B2B", "Demo", "Replacement"].map(
-                (option) => (
-                  <Dropdown.Item
-                    key={option}
-                    onClick={() => setOrderTypeFilter(option)}
-                    style={{
-                      padding: "10px 20px",
-                      color: "#1e3a8a",
-                      fontWeight: "500",
-                      transition: "background 0.3s ease",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.target.style.background = "rgba(37,117,252,0.1)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.target.style.background = "transparent")
-                    }
-                  >
-                    {option}
-                  </Dropdown.Item>
-                )
-              )}
-            </Dropdown.Menu>
-          </Dropdown>
-          <Dropdown>
-            <Dropdown.Toggle
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                border: "none",
-                padding: "12px 25px",
-                borderRadius: "30px",
-                color: "white",
-                fontWeight: "600",
-                fontSize: "1rem",
-                boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-                transition: "all 0.4s ease",
-              }}
-              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-            >
-              {dispatchFilter === "All" ? "Dispatch Status" : dispatchFilter}
-            </Dropdown.Toggle>
-            <Dropdown.Menu
-              style={{
-                borderRadius: "15px",
-                boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-                background: "white",
-                border: "none",
-                padding: "10px",
-              }}
-            >
-              {[
-                "All",
-                "Not Dispatched",
-                "Docket Awaited Dispatched",
-                "Dispatched",
-                "Delivered",
-              ].map((option) => (
-                <Dropdown.Item
-                  key={option}
-                  onClick={() => setDispatchFilter(option)}
-                  style={{
-                    padding: "10px 20px",
-                    color: "#1e3a8a",
-                    fontWeight: "500",
-                    transition: "background 0.3s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.background = "rgba(37,117,252,0.1)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.background = "transparent")
-                  }
-                >
-                  {option}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-          <Button
-            onClick={handleReset}
-            style={{
-              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-              border: "none",
-              padding: "12px 25px",
-              borderRadius: "30px",
-              color: "white",
-              fontWeight: "600",
-              fontSize: "1rem",
-              boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              transition: "all 0.4s ease",
-            }}
-            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-          >
-            Reset <ArrowRight size={18} />
-          </Button>
-        </div>
       </div>
       <div
         style={{
@@ -2123,33 +1868,24 @@ const Sales = () => {
         }}
       >
         <div
+          className="my-4"
           style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            borderRadius: "25px",
-            padding: "12px 20px",
-            boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)", // Updated gradient
+            borderRadius: "20px", // Reduced from 25px
+            padding: "10px 16px", // Reduced from 12px 20px
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.18)", // Reduced from 0 5px 15px
             display: "inline-flex",
             alignItems: "center",
-            marginBottom: "20px",
             transition: "all 0.3s ease",
-            backgroundColor: "rgba(255, 255, 255, 0.95)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.3)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.2)";
           }}
         >
           <h4
             style={{
               color: "#ffffff",
               fontWeight: "700",
-              fontSize: "0.9rem",
+              fontSize: "0.85rem", // Reduced from 0.9rem
               margin: 0,
-              letterSpacing: "0.5px",
+              letterSpacing: "0.4px", // Reduced from 0.5px
             }}
             title="Total number of entries"
           >
@@ -2157,33 +1893,24 @@ const Sales = () => {
           </h4>
         </div>
         <div
-          className="mx-3"
+          className="mx-3 my-4"
           style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            borderRadius: "25px",
-            padding: "12px 20px",
-            boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)", // Updated gradient
+            borderRadius: "20px", // Reduced from 25px
+            padding: "10px 16px", // Reduced from 12px 20px
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.18)", // Reduced from 0 5px 15px
             display: "inline-flex",
             alignItems: "center",
             transition: "all 0.3s ease",
-            backgroundColor: "rgba(255, 255, 255, 0.95)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.3)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.2)";
           }}
         >
           <h4
             style={{
               color: "#ffffff",
               fontWeight: "700",
-              fontSize: "0.9rem",
+              fontSize: "0.85rem", // Reduced from 0.9rem
               margin: 0,
-              letterSpacing: "0.5px",
+              letterSpacing: "0.4px", // Reduced from 0.5px
             }}
             title="Total quantity of products"
           >
@@ -2194,8 +1921,8 @@ const Sales = () => {
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: "25px",
-            marginBottom: "40px",
+            gap: "20px", // Reduced from 25px
+            marginBottom: "30px", // Reduced from 40px
             flexWrap: "wrap",
           }}
         >
@@ -2204,27 +1931,29 @@ const Sales = () => {
               style={{
                 background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                 color: "white",
-                padding: "15px 30px",
-                borderRadius: "35px",
+                padding: "12px 24px", // Reduced from 15px 30px
+                borderRadius: "30px", // Reduced from 35px
                 fontWeight: "600",
-                fontSize: "1.1rem",
+                fontSize: "1rem", // Reduced from 1.1rem
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+                gap: "8px", // Reduced from 10px
+                boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
                 transition: "all 0.4s ease",
               }}
               onMouseEnter={(e) => {
                 e.target.style.transform = "scale(1.05)";
-                e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
+                e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
               }}
               onMouseLeave={(e) => {
                 e.target.style.transform = "scale(1)";
-                e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+                e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
               }}
             >
-              <span style={{ fontSize: "1.3rem" }}>⬅</span> Bulk Upload
+              <span style={{ fontSize: "1.2rem" }}>⬅</span>{" "}
+              {/* Reduced from 1.3rem */}
+              Bulk Upload
               <input
                 type="file"
                 accept=".xlsx, .xls"
@@ -2238,54 +1967,58 @@ const Sales = () => {
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               border: "none",
-              padding: "15px 30px",
-              borderRadius: "35px",
+              padding: "12px 24px", // Reduced from 15px 30px
+              borderRadius: "30px", // Reduced from 35px
               color: "white",
               fontWeight: "600",
-              fontSize: "1.1rem",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+              fontSize: "1rem", // Reduced from 1.1rem
+              boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
               display: "flex",
               alignItems: "center",
-              gap: "10px",
+              gap: "8px", // Reduced from 10px
               transition: "all 0.4s ease",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
+              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
             }}
             onMouseLeave={(e) => {
               e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
             }}
           >
-            <span style={{ fontSize: "1.3rem" }}>+</span> Add Entry
+            <span style={{ fontSize: "1.2rem" }}>+</span>{" "}
+            {/* Reduced from 1.3rem */}
+            Add Entry
           </Button>
           <Button
             onClick={handleExport}
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               border: "none",
-              padding: "15px 30px",
-              borderRadius: "35px",
+              padding: "12px 24px", // Reduced from 15px 30px
+              borderRadius: "30px", // Reduced from 35px
               color: "white",
               fontWeight: "600",
-              fontSize: "1.1rem",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+              fontSize: "1rem", // Reduced from 1.1rem
+              boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
               display: "flex",
               alignItems: "center",
-              gap: "10px",
+              gap: "8px", // Reduced from 10px
               transition: "all 0.4s ease",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 12px 30px rgba(0,0,0,0.3)";
+              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
             }}
             onMouseLeave={(e) => {
               e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)";
+              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
             }}
           >
-            <span style={{ fontSize: "1.3rem" }}>➔</span> Export Orders
+            <span style={{ fontSize: "1.2rem" }}>➔</span>{" "}
+            {/* Reduced from 1.3rem */}
+            Export Orders
           </Button>
         </div>
 
