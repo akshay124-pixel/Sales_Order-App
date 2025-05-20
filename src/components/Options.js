@@ -219,6 +219,14 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: ["Wireless", "Wired"],
   },
+  "LED Display Controller": {
+    sizes: ["N/A"],
+    specs: ["N/A"],
+  },
+  "Aluminium Profile Frame for LED Display": {
+    sizes: ["N/A"],
+    specs: ["N/A"],
+  },
   Mouse: {
     sizes: ["N/A"],
     specs: ["Wireless", "Wired"],
