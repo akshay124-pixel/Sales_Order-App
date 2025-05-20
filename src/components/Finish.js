@@ -49,11 +49,24 @@ function Finish() {
   const [editData, setEditData] = useState(null);
   const [freightStatusFilter, setFreightStatusFilter] = useState("");
   const [dispatchStatusFilter, setDispatchStatusFilter] = useState("");
+  const [orderTypeFilter, setOrderTypeFilter] = useState("");
+  const [dispatchFromFilter, setDispatchFromFilter] = useState("");
+  const [dispatchedFilter, setDispatchedFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [totalResults, setTotalResults] = useState(0);
   const [productQuantity, setProductQuantity] = useState(0);
+
+  const dispatchFromOptions = [
+    "",
+    "PMTS Patna",
+    "PMTS Bareilly",
+    "PMTS Ranchi",
+    "PMTS Morinda",
+    "PMTS Lucknow",
+    "PMTS Delhi",
+  ];
 
   const fetchFinishedGoods = useCallback(async () => {
     try {
@@ -66,13 +79,10 @@ function Finish() {
         }
       );
       if (response.data.success) {
-        const filteredData = response.data.data.filter(
-          (order) => order.dispatchStatus !== "Delivered"
-        );
-        // Sort by dispatchDate in descending order (newest first)
-        const sortedData = filteredData.sort((a, b) => {
-          const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
-          const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+        // Sort by soDate in descending order (newest first)
+        const sortedData = response.data.data.sort((a, b) => {
+          const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+          const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
           return dateB - dateA;
         });
         setOrders(sortedData);
@@ -121,12 +131,34 @@ function Finish() {
       );
     }
 
+    // Apply order type filter
+    if (orderTypeFilter) {
+      filtered = filtered.filter(
+        (order) => order.orderType === orderTypeFilter
+      );
+    }
+
+    // Apply dispatchFrom filter
+    if (dispatchFromFilter) {
+      filtered = filtered.filter(
+        (order) => order.dispatchFrom === dispatchFromFilter
+      );
+    }
+
+    // Apply dispatched filter
+    if (dispatchedFilter) {
+      filtered = filtered.filter((order) =>
+        dispatchedFilter === "Dispatched"
+          ? order.dispatchStatus === "Dispatched" ||
+            order.dispatchStatus === "Docket Awaited Dispatched"
+          : order.dispatchStatus === "Not Dispatched"
+      );
+    }
+
     // Apply date range filter
     if (startDate || endDate) {
       filtered = filtered.filter((order) => {
-        const orderDate = order.dispatchDate
-          ? new Date(order.dispatchDate)
-          : null;
+        const orderDate = order.soDate ? new Date(order.soDate) : null;
         const startDateAdjusted = startDate
           ? new Date(startDate.setHours(0, 0, 0, 0))
           : null;
@@ -173,13 +205,17 @@ function Finish() {
               .join(", ")
               .toLowerCase() || "N/A"
           : "";
-        const dispatchDate = order.dispatchDate
-          ? new Date(order.dispatchDate).toLocaleDateString().toLowerCase()
+        const soDate = order.soDate
+          ? new Date(order.soDate).toLocaleDateString().toLowerCase()
+          : "N/A";
+        const dispatchFrom = order.dispatchFrom
+          ? order.dispatchFrom.toLowerCase()
           : "N/A";
         const productStatus =
           order.fulfillingStatus === "Partial Dispatch"
             ? "Partial Dispatch"
             : "Complete";
+        const orderType = order.orderType || "N/A";
 
         // Check if search term matches product type for quantity counting
         const matchingProducts = (order.products || []).filter((p) =>
@@ -205,14 +241,16 @@ function Finish() {
           specDetails.includes(lowerSearch) ||
           totalQty.includes(lowerSearch) ||
           (order.salesPerson || "N/A").toLowerCase().includes(lowerSearch) ||
-          dispatchDate.includes(lowerSearch) ||
+          soDate.includes(lowerSearch) ||
+          dispatchFrom.includes(lowerSearch) ||
           (order.freightstatus || "To Pay")
             .toLowerCase()
             .includes(lowerSearch) ||
           productStatus.toLowerCase().includes(lowerSearch) ||
           (order.dispatchStatus || "Not Dispatched")
             .toLowerCase()
-            .includes(lowerSearch)
+            .includes(lowerSearch) ||
+          orderType.toLowerCase().includes(lowerSearch)
         );
       });
     } else {
@@ -226,10 +264,10 @@ function Finish() {
       }, 0);
     }
 
-    // Sort filtered orders by dispatchDate in descending order (newest first)
+    // Sort filtered orders by soDate in descending order (newest first)
     filtered = filtered.sort((a, b) => {
-      const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
-      const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+      const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+      const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
       return dateB - dateA;
     });
 
@@ -239,22 +277,32 @@ function Finish() {
   }, [
     freightStatusFilter,
     dispatchStatusFilter,
+    orderTypeFilter,
+    dispatchFromFilter,
+    dispatchedFilter,
     searchTerm,
     startDate,
     endDate,
     orders,
   ]);
 
+  const uniqueOrderTypes = [
+    "",
+    ...new Set(orders.map((order) => order.orderType || "N/A")),
+  ];
+
   const handleReset = () => {
     setFreightStatusFilter("");
     setDispatchStatusFilter("");
+    setOrderTypeFilter("");
+    setDispatchFromFilter("");
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
-    // Sort orders by dispatchDate in descending order
+    // Sort orders by soDate in descending order
     const sortedOrders = [...orders].sort((a, b) => {
-      const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
-      const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+      const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+      const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
       return dateB - dateA;
     });
     setFilteredOrders(sortedOrders);
@@ -276,6 +324,8 @@ function Finish() {
   };
 
   const handleEditClick = (order) => {
+    console.log("handleEditClick order:", JSON.stringify(order, null, 2));
+    console.log("order.billStatus:", order.billStatus);
     setEditData({
       dispatchFrom: order.dispatchFrom || "",
       transporter: order.transporter || "",
@@ -299,10 +349,10 @@ function Finish() {
       const updatedOrders = prevOrders
         .map((order) => (order._id === updatedEntry._id ? updatedEntry : order))
         .filter((order) => order.dispatchStatus !== "Delivered");
-      // Sort updated orders by dispatchDate in descending order
+      // Sort updated orders by soDate in descending order
       return updatedOrders.sort((a, b) => {
-        const dateA = a.dispatchDate ? new Date(a.dispatchDate) : new Date(0);
-        const dateB = b.dispatchDate ? new Date(b.dispatchDate) : new Date(0);
+        const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+        const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
         return dateB - dateA;
       });
     });
@@ -343,11 +393,17 @@ function Finish() {
       Model Nos: ${viewOrder.modelNos?.join(", ") || "N/A"}
       Bill No: ${viewOrder.billNumber || "N/A"}
       Products:\n${productsText}
+      SO Date: ${
+        viewOrder.soDate
+          ? new Date(viewOrder.soDate).toLocaleDateString()
+          : "N/A"
+      }
       Dispatch Date: ${
         viewOrder.dispatchDate
           ? new Date(viewOrder.dispatchDate).toLocaleDateString()
           : "N/A"
       }
+      Dispatch From: ${viewOrder.dispatchFrom || "N/A"}
       Customer: ${viewOrder.customername || "N/A"}
       Address: ${
         viewOrder.shippingAddress ||
@@ -392,15 +448,19 @@ function Finish() {
             .filter(Boolean)
             .join(", ") || "N/A"
         : "N/A",
-
       Quantity: order.products
         ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
         : "N/A",
       "Sales Person": order.salesPerson || "N/A",
       "Production Remarks": order.remarksByProduction || "N/A",
+      "SO Date": order.soDate
+        ? new Date(order.soDate).toLocaleDateString()
+        : "N/A",
       "Dispatch Date": order.dispatchDate
         ? new Date(order.dispatchDate).toLocaleDateString()
         : "N/A",
+      "Dispatch From": order.dispatchFrom || "N/A",
+      "Billing Status": order.billStatus || "Pending",
       "Freight Status": order.freightstatus || "To Pay",
       "Product Status":
         order.fulfillingStatus === "Partial Dispatch"
@@ -454,6 +514,14 @@ function Finish() {
 
   return (
     <>
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
       <div
         style={{
           width: "100%",
@@ -563,6 +631,58 @@ function Finish() {
                 <option value="To Pay">To Pay</option>
                 <option value="Including">Including</option>
                 <option value="Extra">Extra</option>
+              </select>
+            </div>
+            <div>
+              <label
+                style={{
+                  fontWeight: "600",
+                  marginRight: "10px",
+                  color: "#333",
+                }}
+              >
+                Order Type:
+              </label>
+              <select
+                value={orderTypeFilter}
+                onChange={(e) => setOrderTypeFilter(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                {uniqueOrderTypes.map((orderType) => (
+                  <option key={orderType} value={orderType}>
+                    {orderType || "All"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                style={{
+                  fontWeight: "600",
+                  marginRight: "10px",
+                  color: "#333",
+                }}
+              >
+                Dispatch From:
+              </label>
+              <select
+                value={dispatchFromFilter}
+                onChange={(e) => setDispatchFromFilter(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                {dispatchFromOptions.map((dispatchFrom) => (
+                  <option key={dispatchFrom} value={dispatchFrom}>
+                    {dispatchFrom || "All"}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -714,7 +834,10 @@ function Finish() {
                       "Quantity",
                       "Sales Person",
                       "Production Remarks",
+                      "SO Date",
                       "Dispatch Date",
+                      "Dispatch From",
+                      "Billing Status",
                       "Freight Status",
                       "Product Status",
                       "Dispatch Status",
@@ -987,6 +1110,30 @@ function Finish() {
                             maxWidth: "150px",
                           }}
                           title={
+                            order.soDate
+                              ? new Date(order.soDate).toLocaleDateString()
+                              : "N/A"
+                          }
+                        >
+                          {order.soDate
+                            ? new Date(order.soDate).toLocaleDateString()
+                            : "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={
                             order.dispatchDate
                               ? new Date(
                                   order.dispatchDate
@@ -997,6 +1144,61 @@ function Finish() {
                           {order.dispatchDate
                             ? new Date(order.dispatchDate).toLocaleDateString()
                             : "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={order.dispatchFrom || "N/A"}
+                        >
+                          {order.dispatchFrom || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            borderBottom: "1px solid #eee",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={order.billStatus || "Pending"}
+                        >
+                          <Badge
+                            style={{
+                              background:
+                                order.billStatus === "Pending"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  : order.billStatus === "Under Billing"
+                                  ? "linear-gradient(135deg, #ffc107, #ffca2c)"
+                                  : "linear-gradient(135deg, #28a745, #4cd964)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {order.billStatus || "Pending"}
+                          </Badge>
                         </td>
                         <td
                           style={{
@@ -1118,6 +1320,7 @@ function Finish() {
                             padding: "12px",
                             textAlign: "center",
                             height: "40px",
+                            marginTop: "15px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -1200,11 +1403,11 @@ function Finish() {
       >
         <style>
           {`
-      @keyframes fadeIn {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-    `}
+            @keyframes fadeIn {
+              0% { opacity: 0; transform: translateY(10px); }
+              100% { opacity: 1; transform: translateY(0); }
+            }
+          `}
         </style>
         <Modal.Header
           closeButton
@@ -1289,7 +1492,7 @@ function Finish() {
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Qty:</strong> {product.qty || "N/A"}
                       </span>
-                      <span style={{ fontSize: "1rem", color: "555" }}>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Size:</strong> {product.size || "N/A"}
                       </span>
                       <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -1301,7 +1504,7 @@ function Finish() {
                       </span>
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Model Nos:</strong>{" "}
-                        {product.modelNos?.join(", ") || "N/A"}
+                        {product.modelNos?.[0] || "N/A"}
                       </span>
                     </div>
                   ))
@@ -1344,10 +1547,20 @@ function Finish() {
                     <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>SO Date:</strong>{" "}
+                    {viewOrder.soDate
+                      ? new Date(viewOrder.soDate).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Dispatch Date:</strong>{" "}
                     {viewOrder.dispatchDate
                       ? new Date(viewOrder.dispatchDate).toLocaleDateString()
                       : "N/A"}
+                  </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Dispatch From:</strong>{" "}
+                    {viewOrder.dispatchFrom || "N/A"}
                   </span>
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Customer:</strong> {viewOrder.customername || "N/A"}
@@ -1408,19 +1621,14 @@ function Finish() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
         initialData={editData}
-        entryToEdit={editData}
+        entryToEdit={
+          editData
+            ? orders.find((o) => o._id === editData._id) || editData
+            : null
+        }
       />
     </>
   );
 }
-
-const keyframes = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-document.head.insertAdjacentHTML("beforeend", `<style>${keyframes}</style>`);
 
 export default Finish;

@@ -20,7 +20,7 @@ function Accounts() {
     dispatchDate: "",
     paymentReceived: "Not Received",
     remarksByAccounts: "",
-    invoiceNo: "",
+
     invoiceDate: "",
     paymentCollected: "",
     paymentMethod: "",
@@ -102,7 +102,6 @@ function Accounts() {
           (order.paymentDue?.toString() || "").toLowerCase().includes(query) ||
           (order.neftTransactionId || "").toLowerCase().includes(query) ||
           (order.chequeId || "").toLowerCase().includes(query) ||
-          (order.invoiceNo || "").toLowerCase().includes(query) ||
           (order.invoiceDate
             ? new Date(order.invoiceDate).toLocaleDateString()
             : ""
@@ -183,7 +182,7 @@ function Accounts() {
       Cheque ID: ${viewOrder.chequeId || "N/A"}
       Payment Received: ${viewOrder.paymentReceived || "Not Received"}
       Remarks: ${viewOrder.remarksByAccounts || "N/A"}
-      Invoice Number: ${viewOrder.invoiceNo || "N/A"}
+     
       Invoice Date: ${
         viewOrder.invoiceDate
           ? new Date(viewOrder.invoiceDate).toLocaleDateString()
@@ -219,7 +218,7 @@ function Accounts() {
         : "",
       paymentReceived: order.paymentReceived || "Not Received",
       remarksByAccounts: order.remarksByAccounts || "",
-      invoiceNo: order.invoiceNo || "",
+
       invoiceDate: order.invoiceDate
         ? new Date(order.invoiceDate).toISOString().split("T")[0]
         : "",
@@ -280,7 +279,7 @@ function Accounts() {
         dispatchDate: new Date(formData.dispatchDate).toISOString(),
         paymentReceived: formData.paymentReceived,
         remarksByAccounts: formData.remarksByAccounts,
-        invoiceNo: formData.invoiceNo || undefined,
+
         invoiceDate: formData.invoiceDate
           ? new Date(formData.invoiceDate).toISOString()
           : undefined,
@@ -608,17 +607,16 @@ function Accounts() {
               >
                 <tr>
                   {[
-                    "Date",
+                    "Bill Number",
+                    "PI Number",
+                    "Dispatch Date",
+                    "Customer Email",
                     "Customer Name",
-                    "Address",
-                    "Email",
-                    "Mobile",
-                    "Products",
                     "Total",
                     "Payment Collected",
-                    "Due Amount",
-                    "Payment Received",
                     "Actions",
+                    "Payment Method",
+                    "Payment Received",
                   ].map((header, index) => (
                     <th
                       key={index}
@@ -641,7 +639,7 @@ function Accounts() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan="9"
+                      colSpan="10"
                       style={{
                         padding: "20px",
                         textAlign: "center",
@@ -667,7 +665,7 @@ function Accounts() {
                 ) : filteredOrders.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="9"
+                      colSpan="10"
                       style={{
                         padding: "20px",
                         textAlign: "center",
@@ -685,16 +683,21 @@ function Accounts() {
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map((order, index) => {
-                    const productDetails = Array.isArray(order.products)
-                      ? order.products
-                          .map(
-                            (p) =>
-                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
-                          )
-                          .join(", ")
-                      : "N/A";
-                    return (
+                  filteredOrders
+                    .slice()
+                    .sort((a, b) => {
+                      const dateA = a.dispatchDate
+                        ? new Date(a.dispatchDate)
+                        : new Date(0);
+                      const dateB = b.dispatchDate
+                        ? new Date(b.dispatchDate)
+                        : new Date(0);
+                      if (dateA.getTime() === dateB.getTime()) {
+                        return b._id.localeCompare(a._id);
+                      }
+                      return dateB - dateA;
+                    })
+                    .map((order, index) => (
                       <tr
                         key={order._id}
                         style={{
@@ -721,7 +724,41 @@ function Accounts() {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            maxWidth: "150px",
+                            maxWidth: "120px",
+                          }}
+                          title={order.billNumber || "N/A"}
+                        >
+                          {order.billNumber || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
+                          }}
+                          title={order.piNumber || "N/A"}
+                        >
+                          {order.piNumber || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
                           }}
                           title={
                             order.dispatchDate
@@ -734,40 +771,6 @@ function Accounts() {
                           {order.dispatchDate
                             ? new Date(order.dispatchDate).toLocaleDateString()
                             : "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "200px",
-                          }}
-                          title={order.name || "N/A"}
-                        >
-                          {order.name || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "200px",
-                          }}
-                          title={order.shippingAddress || "N/A"}
-                        >
-                          {order.shippingAddress || "N/A"}
                         </td>
                         <td
                           style={{
@@ -799,9 +802,9 @@ function Accounts() {
                             whiteSpace: "nowrap",
                             maxWidth: "150px",
                           }}
-                          title={order.contactNo || "N/A"}
+                          title={order.customername || "N/A"}
                         >
-                          {order.contactNo || "N/A"}
+                          {order.customername || "N/A"}
                         </td>
                         <td
                           style={{
@@ -814,29 +817,12 @@ function Accounts() {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            maxWidth: "200px",
-                          }}
-                          title={productDetails}
-                        >
-                          {productDetails}
-                        </td>{" "}
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
+                            maxWidth: "100px",
                           }}
                           title={order.total?.toString() || "N/A"}
                         >
                           {order.total || "N/A"}
-                        </td>{" "}
+                        </td>
                         <td
                           style={{
                             padding: "15px",
@@ -848,65 +834,12 @@ function Accounts() {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            maxWidth: "150px",
+                            maxWidth: "100px",
                           }}
                           title={order.paymentCollected?.toString() || "N/A"}
                         >
                           {order.paymentCollected || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.paymentDue?.toString() || "N/A"}
-                        >
-                          {order.paymentDue || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.paymentReceived || "Not Received"}
-                        >
-                          <Badge
-                            style={{
-                              background:
-                                order.paymentReceived === "Received"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : order.paymentReceived === "Not Received"
-                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                              color: "#fff",
-                              padding: "5px 10px",
-                              borderRadius: "12px",
-                              display: "inline-block",
-                              width: "100%",
-                              textOverflow: "ellipsis",
-                              overflow: "hidden",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {order.paymentReceived || "Not Received"}
-                          </Badge>
-                        </td>
+                        </td>{" "}
                         <td
                           style={{
                             padding: "15px",
@@ -922,6 +855,7 @@ function Accounts() {
                               display: "flex",
                               gap: "10px",
                               justifyContent: "center",
+                              marginTop: "20px",
                               alignItems: "center",
                             }}
                           >
@@ -969,9 +903,61 @@ function Accounts() {
                             </button>
                           </div>
                         </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
+                          }}
+                          title={order.paymentMethod || "N/A"}
+                        >
+                          {order.paymentMethod || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
+                          }}
+                          title={order.paymentReceived || "Not Received"}
+                        >
+                          <Badge
+                            style={{
+                              background:
+                                order.paymentReceived === "Received"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                  : order.paymentReceived === "Not Received"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {order.paymentReceived || "Not Received"}
+                          </Badge>
+                        </td>
                       </tr>
-                    );
-                  })
+                    ))
                 )}
               </tbody>
             </table>
@@ -1053,6 +1039,10 @@ function Accounts() {
                       }}
                     >
                       <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Bill Number:</strong>{" "}
+                        {viewOrder.billNumber || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Date:</strong>{" "}
                         {viewOrder.dispatchDate
                           ? new Date(
@@ -1113,7 +1103,15 @@ function Accounts() {
                         </Badge>
                       </span>
                       <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Remarks:</strong> {viewOrder.remarks || "N/A"}
+                        <strong>Remarks:</strong>{" "}
+                        {viewOrder.remarksByAccounts || "N/A"}
+                      </span>
+
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Invoice Date:</strong>{" "}
+                        {viewOrder.invoiceDate
+                          ? new Date(viewOrder.invoiceDate).toLocaleDateString()
+                          : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -1179,7 +1177,7 @@ function Accounts() {
                               style={{ fontSize: "1rem", color: "#555" }}
                             >
                               <strong>Model Nos:</strong>{" "}
-                              {product.modelNos?.join(", ") || "N/A"}
+                              {product.modelNos?.[0] || "N/A"}
                             </span>
                           </React.Fragment>
                         ))
@@ -1542,32 +1540,6 @@ function Accounts() {
 
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Invoice Number
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.invoiceNo}
-                    onChange={(e) =>
-                      setFormData({ ...formData, invoiceNo: e.target.value })
-                    }
-                    placeholder="Enter invoice number"
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  />
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     Invoice Date
                   </Form.Label>
                   <Form.Control
@@ -1682,6 +1654,7 @@ function Accounts() {
           </Modal>
         </div>
       </div>
+
       <footer
         className="footer-container"
         style={{

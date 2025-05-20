@@ -74,16 +74,329 @@ const ProductHeader = styled.div`
   margin-bottom: 1rem;
 `;
 
+const productOptions = {
+  IFPD: {
+    sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
+    specs: [
+      "Android 9, 4GB RAM, 32GB ROM",
+      "Android 8, 4GB RAM, 32GB ROM",
+      "Android 11, 4GB RAM, 32GB ROM",
+      "Android 11, 8GB RAM, 128GB ROM",
+      "Android 13, 4GB RAM, 32GB ROM",
+      "Android 13, 8GB RAM, 128GB ROM",
+      "Android 13, 8GB RAM, 128GB ROM Inbuilt Camera",
+      "Android 14, 8GB RAM, 128GB ROM",
+      "Android 14, 8GB RAM, 128GB ROM Inbuilt Camera",
+    ],
+  },
+  OPS: {
+    sizes: ["N/A"],
+    specs: [
+      "i5 6th Gen, 8GB RAM, 256GB ROM",
+      "i5 6th Gen, 8GB RAM, 512GB ROM",
+      "i5 6th Gen, 8GB RAM, 1TB ROM",
+      "i5 6th Gen, 16GB RAM, 256GB ROM",
+      "i5 6th Gen, 16GB RAM, 512GB ROM",
+      "i5 6th Gen, 16GB RAM, 1TB ROM",
+      "i5 7th Gen, 8GB RAM, 256GB ROM",
+      "i5 7th Gen, 8GB RAM, 512GB ROM",
+      "i5 7th Gen, 8GB RAM, 1TB ROM",
+      "i5 7th Gen, 16GB RAM, 256GB ROM",
+      "i5 7th Gen, 16GB RAM, 512GB ROM",
+      "i5 7th Gen, 16GB RAM, 1TB ROM",
+      "i5 8th Gen, 8GB RAM, 256GB ROM",
+      "i5 8th Gen, 8GB RAM, 512GB ROM",
+      "i5 8th Gen, 8GB RAM, 1TB ROM",
+      "i5 8th Gen, 16GB RAM, 256GB ROM",
+      "i5 8th Gen, 16GB RAM, 512GB ROM",
+      "i5 8th Gen, 16GB RAM, 1TB ROM",
+      "i5 11th Gen, 8GB RAM, 256GB ROM",
+      "i5 11th Gen, 8GB RAM, 512GB ROM",
+      "i5 11th Gen, 8GB RAM, 1TB ROM",
+      "i5 11th Gen, 16GB RAM, 256GB ROM",
+      "i5 11th Gen, 16GB RAM, 512GB ROM",
+      "i5 11th Gen, 16GB RAM, 1TB ROM",
+      "i5 12th Gen, 8GB RAM, 256GB ROM",
+      "i5 12th Gen, 8GB RAM, 512GB ROM",
+      "i5 12th Gen, 8GB RAM, 1TB ROM",
+      "i5 12th Gen, 16GB RAM, 256GB ROM",
+      "i5 12th Gen, 16GB RAM, 512GB ROM",
+      "i5 12th Gen, 16GB RAM, 1TB ROM",
+      "i7 4th Gen, 8GB RAM, 256GB ROM",
+      "i7 4th Gen, 8GB RAM, 512GB ROM",
+      "i7 4th Gen, 8GB RAM, 1TB ROM",
+      "i7 4th Gen, 16GB RAM, 256GB ROM",
+      "i7 4th Gen, 16GB RAM, 512GB ROM",
+      "i7 4th Gen, 16GB RAM, 1TB ROM",
+      "i7 5th Gen, 8GB RAM, 256GB ROM",
+      "i7 5th Gen, 8GB RAM, 512GB ROM",
+      "i7 5th Gen, 8GB RAM, 1TB ROM",
+      "i7 5th Gen, 16GB RAM, 256GB ROM",
+      "i7 5th Gen, 16GB RAM, 512GB ROM",
+      "i7 5th Gen, 16GB RAM, 1TB ROM",
+      "i7 6th Gen, 8GB RAM, 256GB ROM",
+      "i7 6th Gen, 8GB RAM, 512GB ROM",
+      "i7 6th Gen, 8GB RAM, 1TB ROM",
+      "i7 6th Gen, 16GB RAM, 256GB ROM",
+      "i7 6th Gen, 16GB RAM, 512GB ROM",
+      "i7 6th Gen, 16GB RAM, 1TB ROM",
+      "i7 7th Gen, 8GB RAM, 256GB ROM",
+      "i7 7th Gen, 8GB RAM, 512GB ROM",
+      "i7 7th Gen, 8GB RAM, 1TB ROM",
+      "i7 7th Gen, 16GB RAM, 256GB ROM",
+      "i7 7th Gen, 16GB RAM, 512GB ROM",
+      "i7 7th Gen, 16GB RAM, 1TB ROM",
+      "i7 8th Gen, 8GB RAM, 256GB ROM",
+      "i7 8th Gen, 8GB RAM, 512GB ROM",
+      "i7 8th Gen, 8GB RAM, 1TB ROM",
+      "i7 8th Gen, 16GB RAM, 256GB ROM",
+      "i7 8th Gen, 16GB RAM, 512GB ROM",
+      "i7 8th Gen, 16GB RAM, 1TB ROM",
+      "i7 9th Gen, 8GB RAM, 256GB ROM",
+      "i7 9th Gen, 8GB RAM, 512GB ROM",
+      "i7 9th Gen, 8GB RAM, 1TB ROM",
+      "i7 9th Gen, 16GB RAM, 256GB ROM",
+      "i7 9th Gen, 16GB RAM, 512GB ROM",
+      "i7 9th Gen, 16GB RAM, 1TB ROM",
+      "i7 10th Gen, 8GB RAM, 256GB ROM",
+      "i7 10th Gen, 8GB RAM, 512GB ROM",
+      "i7 10th Gen, 8GB RAM, 1TB ROM",
+      "i7 10th Gen, 16GB RAM, 256GB ROM",
+      "i7 10th Gen, 16GB RAM, 512GB ROM",
+      "i7 10th Gen, 16GB RAM, 1TB ROM",
+      "i7 11th Gen, 8GB RAM, 256GB ROM",
+      "i7 11th Gen, 8GB RAM, 512GB ROM",
+      "i7 11th Gen, 8GB RAM, 1TB ROM",
+      "i7 11th Gen, 16GB RAM, 256GB ROM",
+      "i7 11th Gen, 16GB RAM, 512GB ROM",
+      "i7 11th Gen, 16GB RAM, 1TB ROM",
+      "i7 12th Gen, 8GB RAM, 256GB ROM",
+      "i7 12th Gen, 8GB RAM, 512GB ROM",
+      "i7 12th Gen, 8GB RAM, 1TB ROM",
+      "i7 12th Gen, 16GB RAM, 256GB ROM",
+      "i7 12th Gen, 16GB RAM, 512GB ROM",
+      "i7 12th Gen, 16GB RAM, 1TB ROM",
+    ],
+  },
+  "Digital Podium": {
+    sizes: ["Standard"],
+    specs: [
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 2 COOLER MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+    ],
+  },
+  "Advance Digital Podium": {
+    sizes: ["Front Display 32inch"],
+    specs: [
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 2 COOLER MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+      'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
+    ],
+  },
+  "Audio Podium": { sizes: ["Full"], specs: ["N/A"] },
+  Kiosk: {
+    sizes: ["32 inch,43 inch,55 inch,65 inch"],
+    specs: ["Touch Andriod 13/4/32", "Non-Touch Andriod 13/4/32"],
+  },
+  "PTZ Camera": {
+    sizes: ["N/A"],
+    specs: [
+      "Non-Voice Tracking-Full HD",
+      "UHD 20x",
+      "FHD Voice Tracking",
+      "4K Auto Tracking",
+      "4K 12x",
+      "HD 20x",
+    ],
+  },
+  "Document Camera": {
+    sizes: ["N/A"],
+    specs: [
+      "Hydraulic Wall Mount Visualizer",
+      "Non-Hydraulic Wall Mount Visualizer",
+      "Slim Portable Visualizer",
+      "Table Top Portable Visualizer",
+      "Visualizer",
+    ],
+  },
+  UPS: {
+    sizes: ["Standard"],
+    specs: [
+      "1 KVA",
+      "2 KVA",
+      "3 KVA",
+      "4 KVA",
+      "5 KVA",
+      "6 KVA",
+      "7 KVA",
+      "8 KVA",
+      "9 KVA",
+      "10 KVA",
+      "Offline UPS",
+      "Online UPS",
+    ],
+  },
+  "Wallmount Kit": {
+    sizes: ["55 inch", "65 inch", "75 inch", "86 inch", "98 inch"],
+    specs: ["Standard"],
+  },
+  "Stylus Pen": { sizes: ["N/A"], specs: ["N/A"] },
+  "Sliding Shutter": {
+    sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
+    specs: [
+      "Common",
+      "White & Red Dispaly Boards",
+      "White & Green Dispaly Boards",
+      "White & Blue Dispaly Boards",
+      "N/A",
+    ],
+  },
+  "3 Cup Speaker": { sizes: ["N/A"], specs: ["N/A"] },
+  Microphone: {
+    sizes: ["N/A"],
+    specs: ["Handheld Collar Mic", "Goose Neck Mic", "Collar/Lapel Mic"],
+  },
+  Keyboard: {
+    sizes: ["N/A"],
+    specs: ["Wireless", "Wired"],
+  },
+  Mouse: {
+    sizes: ["N/A"],
+    specs: ["Wireless", "Wired"],
+  },
+  "Interactive White Board": {
+    sizes: ["82 inch"],
+    specs: ["Ceramic", "Non-Ceramic"],
+  },
+  "Floor Stand": { sizes: ["N/A"], specs: ["N/A"] },
+  "Notice Board": { sizes: ["N/A"], specs: ["N/A"] },
+  Visualizer: { sizes: ["N/A"], specs: ["N/A"] },
+  "Web Cam": {
+    sizes: ["N/A"],
+    specs: ["Full HD Non-AI Featured", "4K AI Featured", "4K Auto Tracking"],
+  },
+  "Bluetooth Microphone": { sizes: ["N/A"], specs: ["N/A"] },
+  "UPS Cabinet": { sizes: ["N/A"], specs: ["N/A"] },
+  "SD Card": {
+    sizes: ["N/A"],
+    specs: ["8GB", "16GB", "32GB", "64GB", "128GB"],
+  },
+  Casing: { sizes: ["N/A"], specs: ["N/A"] },
+  "Fitting Accessories": { sizes: ["N/A"], specs: ["N/A"] },
+  "HDMI Cable": {
+    sizes: ["N/A"],
+    specs: ["Standard", "4K"],
+  },
+  "White Board": {
+    sizes: ["2x3", "3x4", "4x6", "4x5", "4x8", "4x10"],
+    specs: ["Non-Magnetic", "Magnetic", "RC Magnetic", "UM", "UG"],
+  },
+  "C-type Cable": { sizes: ["N/A"], specs: ["N/A"] },
+  "Fujifilm-Printer": {
+    sizes: ["N/A"],
+    specs: [
+      "Color Printer",
+      "Monochrome Printer",
+      "Black and White Printer",
+      "Multifunction Color Printer",
+      "Multifunction Monochrome Printer",
+      "Multifunction Black and White Printer",
+    ],
+  },
+  "Google TV": {
+    sizes: ["43 inch", "50 inch", "55 inch"],
+    specs: ["4GB RAM / 32GB ROM 4K"],
+  },
+  "Wriety Software": { sizes: ["N/A"], specs: ["N/A"] },
+  "Ceiling Mount Kit": {
+    sizes: ["Standard"],
+    specs: ["Projector Ceiling Mount", "PTZ Ceiling Mount"],
+  },
+  "Almirah Type Shutter": {
+    sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
+    specs: ["Plain", "White Boards", "Green Boards"],
+  },
+  Aicharya: {
+    sizes: ["N/A"],
+    specs: ["Standard"],
+  },
+  TripodStand: {
+    sizes: ["N/A"],
+    specs: ["Standard"],
+  },
+  Logo: { sizes: ["N/A"], specs: ["N/A"] },
+  Microphones: { sizes: ["N/A"], specs: ["N/A"] },
+  "E-Share License": { sizes: ["N/A"], specs: ["N/A"] },
+  "PRO Share Software": { sizes: ["N/A"], specs: ["N/A"] },
+  "E Share Software": { sizes: ["N/A"], specs: ["N/A"] },
+  "DMS Software": { sizes: ["N/A"], specs: ["N/A"] },
+  "Battery Bank": { sizes: ["N/A"], specs: ["N/A"] },
+  "Rack & Interlink": { sizes: ["N/A"], specs: ["N/A"] },
+  "Green Board": {
+    sizes: ["2x3", "3x4", "4x6", "4x5", "4x8", "4x10"],
+    specs: ["Non-Magnetic", "Magnetic", "RC Magnetic", "UM", "UG"],
+  },
+  "Wooden Podium": { sizes: ["N/A"], specs: ["N/A"] },
+  "Writing Board": { sizes: ["N/A"], specs: ["N/A"] },
+  "LED Video Wall": { sizes: ["N/A"], specs: ["N/A"] },
+  "4K Video Bar": { sizes: ["N/A"], specs: ["N/A"] },
+  "Microsoft Office 2016 Licensed": { sizes: ["N/A"], specs: ["N/A"] },
+  "Windows 11 Licensed": { sizes: ["N/A"], specs: ["N/A"] },
+  "Embibe Content": { sizes: ["N/A"], specs: ["N/A"] },
+  SSD: {
+    sizes: ["N/A"],
+    specs: ["256GB", "512GB", "1TB"],
+  },
+  RAM: {
+    sizes: ["N/A"],
+    specs: ["8GB", "16GB"],
+  },
+  "Video Conferencing Camera": { sizes: ["N/A"], specs: ["N/A"] },
+  "CBSE Content": { sizes: ["N/A"], specs: ["N/A"] },
+  "ICSE Content": { sizes: ["N/A"], specs: ["N/A"] },
+  "PA System Speakers": { sizes: ["N/A"], specs: ["N/A"] },
+  "Red Board": { sizes: ["N/A"], specs: ["N/A"] },
+  "Promark Stickers": { sizes: ["N/A"], specs: ["N/A"] },
+  "Bluetooth Speaker": { sizes: ["N/A"], specs: ["N/A"] },
+  "3 Cup Conference Speaker": { sizes: ["N/A"], specs: ["N/A"] },
+  "Conference Setup-Delegate Room": { sizes: ["N/A"], specs: ["N/A"] },
+  Content: { sizes: ["N/A"], specs: ["N/A"] },
+  Flex: { sizes: ["N/A"], specs: ["N/A"] },
+  "Wireless Speakerphone - Two Pair": { sizes: ["N/A"], specs: ["N/A"] },
+  Remote: { sizes: ["N/A"], specs: ["N/A"] },
+  "Educational Software": { sizes: ["N/A"], specs: ["N/A"] },
+  "Hydraulic Bracket": { sizes: ["N/A"], specs: ["N/A"] },
+  "Desktop PC Monitor": { sizes: ["N/A"], specs: ["N/A"] },
+  "Home Theatre": { sizes: ["N/A"], specs: ["N/A"] },
+  "Digital Audio Processor": { sizes: ["N/A"], specs: ["N/A"] },
+  Projector: {
+    sizes: ["N/A"],
+    specs: ["Long Throw", "Short Throw", "Ultra Long Throw"],
+  },
+  "LED TV": { sizes: ["N/A"], specs: ["N/A"] },
+  "Digital Podium Controller": { sizes: ["N/A"], specs: ["N/A"] },
+  "Amplifier Mic Receiver": { sizes: ["N/A"], specs: ["N/A"] },
+  "Wireless Mic Receiver": { sizes: ["N/A"], specs: ["N/A"] },
+  "Projector Screen": { sizes: ["N/A"], specs: ["N/A"] },
+  Speakerphone: { sizes: ["N/A"], specs: ["N/A"] },
+  "Bubble Roll": { sizes: ["N/A"], specs: ["N/A"] },
+  "Wrapping Roll": { sizes: ["N/A"], specs: ["N/A"] },
+};
+
 function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const initialFormData = useMemo(
     () => ({
       soDate: "",
-
       dispatchFrom: "",
-
       dispatchDate: "",
       name: "",
-
       city: "",
       state: "",
       pinCode: "",
@@ -91,6 +404,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       alterno: "",
       customerEmail: "",
       customername: "",
+      gstno: "",
       products: [
         {
           productType: "",
@@ -100,21 +414,27 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           unitPrice: "",
           serialNos: "",
           modelNos: "",
-          gst: "0",
+          gst: "18",
+          brand: "",
+          warranty: "",
         },
       ],
       total: "",
       paymentCollected: "",
-      report: "",
       paymentMethod: "",
       paymentDue: "",
+      paymentTerms: "",
+      creditDays: "",
       neftTransactionId: "",
       chequeId: "",
-      installchargesstatus: "",
       freightcs: "",
-      freightstatus: "",
-      orderType: "Private order",
-      installation: "N/A",
+      freightstatus: "Extra",
+      actualFreight: "",
+      installchargesstatus: "Extra",
+      orderType: "B2C",
+      gemOrderNumber: "",
+      deliveryDate: "",
+      installation: "",
       installationStatus: "Pending",
       remarksByInstallation: "",
       dispatchStatus: "Not Dispatched",
@@ -134,11 +454,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       remarksByAccounts: "",
       paymentReceived: "Not Received",
       billNumber: "",
+      piNumber: "",
+      remarksByBilling: "",
+      verificationRemarks: "",
+      billStatus: "Pending",
       completionStatus: "In Progress",
       fulfillmentDate: "",
       remarks: "",
-      gstno: "",
       sostatus: "Pending for Approval",
+      createdBy: "",
     }),
     []
   );
@@ -181,22 +505,19 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         soDate: entryToEdit.soDate
           ? new Date(entryToEdit.soDate).toISOString().split("T")[0]
           : "",
-
         dispatchFrom: entryToEdit.dispatchFrom || "",
-
         dispatchDate: entryToEdit.dispatchDate
           ? new Date(entryToEdit.dispatchDate).toISOString().split("T")[0]
           : "",
         name: entryToEdit.name || "",
-
         city: entryToEdit.city || "",
         state: entryToEdit.state || "",
         pinCode: entryToEdit.pinCode || "",
         contactNo: entryToEdit.contactNo || "",
-        alterno: entryToEdit.contactNo || "",
-        gstno: entryToEdit.gstno || "",
+        alterno: entryToEdit.alterno || "",
         customerEmail: entryToEdit.customerEmail || "",
         customername: entryToEdit.customername || "",
+        gstno: entryToEdit.gstno || "",
         products:
           entryToEdit.products && entryToEdit.products.length > 0
             ? entryToEdit.products.map((p) => ({
@@ -208,7 +529,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 serialNos:
                   p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
                 modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
-                gst: p.gst !== undefined ? String(p.gst) : "0",
+                gst: p.gst || "18",
+                brand: p.brand || "",
+                warranty: p.warranty || "",
               }))
             : [
                 {
@@ -219,27 +542,32 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   unitPrice: "",
                   serialNos: "",
                   modelNos: "",
-                  gst: "0",
+                  gst: "18",
+                  brand: "",
+                  warranty: "",
                 },
               ],
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
-        paymentCollected:
-          entryToEdit.paymentCollected !== undefined
-            ? String(entryToEdit.paymentCollected)
-            : "",
+        paymentCollected: entryToEdit.paymentCollected || "",
         paymentMethod: entryToEdit.paymentMethod || "",
-        paymentDue:
-          entryToEdit.paymentDue !== undefined
-            ? String(entryToEdit.paymentDue)
-            : "",
+        paymentDue: entryToEdit.paymentDue || "",
+        paymentTerms: entryToEdit.paymentTerms || "",
+        creditDays: entryToEdit.creditDays || "",
         neftTransactionId: entryToEdit.neftTransactionId || "",
         chequeId: entryToEdit.chequeId || "",
-
         freightcs: entryToEdit.freightcs || "",
-        freightstatus: entryToEdit.freightstatus || "",
-        installchargesstatus: entryToEdit.installchargesstatus || "",
-        orderType: entryToEdit.orderType || "Private order",
-        installation: entryToEdit.installation || "N/A",
+        freightstatus: entryToEdit.freightstatus || "Extra",
+        actualFreight:
+          entryToEdit.actualFreight !== undefined
+            ? String(entryToEdit.actualFreight)
+            : "",
+        installchargesstatus: entryToEdit.installchargesstatus || "Extra",
+        orderType: entryToEdit.orderType || "B2C",
+        gemOrderNumber: entryToEdit.gemOrderNumber || "",
+        deliveryDate: entryToEdit.deliveryDate
+          ? new Date(entryToEdit.deliveryDate).toISOString().split("T")[0]
+          : "",
+        installation: entryToEdit.installation || "",
         installationStatus: entryToEdit.installationStatus || "Pending",
         remarksByInstallation: entryToEdit.remarksByInstallation || "",
         dispatchStatus: entryToEdit.dispatchStatus || "Not Dispatched",
@@ -263,12 +591,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         remarksByAccounts: entryToEdit.remarksByAccounts || "",
         paymentReceived: entryToEdit.paymentReceived || "Not Received",
         billNumber: entryToEdit.billNumber || "",
+        piNumber: entryToEdit.piNumber || "",
+        remarksByBilling: entryToEdit.remarksByBilling || "",
+        verificationRemarks: entryToEdit.verificationRemarks || "",
+        billStatus: entryToEdit.billStatus || "Pending",
         completionStatus: entryToEdit.completionStatus || "In Progress",
         fulfillmentDate: entryToEdit.fulfillmentDate
           ? new Date(entryToEdit.fulfillmentDate).toISOString().split("T")[0]
           : "",
         remarks: entryToEdit.remarks || "",
         sostatus: entryToEdit.sostatus || "Pending for Approval",
+        createdBy:
+          entryToEdit.createdBy && typeof entryToEdit.createdBy === "object"
+            ? entryToEdit.createdBy.username || "Unknown"
+            : typeof entryToEdit.createdBy === "string"
+            ? entryToEdit.createdBy
+            : "",
       };
       setFormData(newFormData);
       setUpdateData({
@@ -326,9 +664,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         pinCode: data.pinCode || null,
         contactNo: data.contactNo || null,
         alterno: data.alterno || null,
-        gstno: data.gstno || null,
         customerEmail: data.customerEmail || null,
         customername: data.customername || null,
+        gstno: data.gstno || null,
         products: data.products.map((p) => ({
           productType: p.productType || undefined,
           size: p.size || "N/A",
@@ -347,23 +685,30 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 .map((m) => m.trim())
                 .filter(Boolean)
             : [],
-          gst: p.gst ? Number(p.gst) : 0,
+          gst: p.gst || "18",
+          brand: p.brand || null,
+          warranty: p.warranty || null,
         })),
         total: data.total ? Number(data.total) : undefined,
-        paymentCollected: data.paymentCollected
-          ? String(data.paymentCollected)
-          : null,
+        paymentCollected: data.paymentCollected || null,
         paymentMethod: data.paymentMethod || null,
-        paymentDue: data.paymentDue ? String(data.paymentDue) : null,
+        paymentDue: data.paymentDue || null,
+        paymentTerms: data.paymentTerms || null,
+        creditDays: data.creditDays || null,
         neftTransactionId: data.neftTransactionId || null,
         chequeId: data.chequeId || null,
         freightcs: data.freightcs || null,
-        freightstatus: data.freightstatus || null,
-        installchargesstatus: data.installchargesstatus || null,
-        orderType: data.orderType || "Private order",
-        installation: data.installation || "N/A",
+        freightstatus: data.freightstatus || "Extra",
+        actualFreight: data.actualFreight
+          ? Number(data.actualFreight)
+          : undefined,
+        installchargesstatus: data.installchargesstatus || "Extra",
+        orderType: data.orderType || "B2C",
+        gemOrderNumber: data.gemOrderNumber || null,
+        deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : null,
+        installation: data.installation || null,
         installationStatus: data.installationStatus || "Pending",
-        remarksByInstallation: data.remarksByInstallation || "",
+        remarksByInstallation: data.remarksByInstallation || null,
         dispatchStatus: data.dispatchStatus || "Not Dispatched",
         salesPerson: data.salesPerson || null,
         report: data.report || null,
@@ -372,25 +717,29 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         transporterDetails: data.transporterDetails || null,
         docketNo: data.docketNo || null,
         receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
-        shippingAddress: data.shippingAddress || "",
-        billingAddress: data.billingAddress || "",
+        shippingAddress: data.shippingAddress || null,
+        billingAddress: data.billingAddress || null,
         invoiceNo: data.invoiceNo || null,
         invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : null,
         fulfillingStatus: data.fulfillingStatus || "Pending",
         remarksByProduction: data.remarksByProduction || null,
         remarksByAccounts: data.remarksByAccounts || null,
         paymentReceived: data.paymentReceived || "Not Received",
-        billNumber: data.billNumber || "",
+        billNumber: data.billNumber || null,
+        piNumber: data.piNumber || null,
+        remarksByBilling: data.remarksByBilling || null,
+        verificationRemarks: data.verificationRemarks || null,
+        billStatus: data.billStatus || "Pending",
         completionStatus: data.completionStatus || "In Progress",
         fulfillmentDate: data.fulfillmentDate
           ? new Date(data.fulfillmentDate)
           : null,
-        remarks: data.remarks || "",
+        remarks: data.remarks || null,
         sostatus: data.sostatus || "Pending for Approval",
       };
 
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
+        `http://localhost:5000/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -434,7 +783,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
+        `http://localhost:5000/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -476,7 +825,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         unitPrice: "",
         serialNos: "",
         modelNos: "",
-        gst: "0",
+        gst: "18",
+        brand: "",
+        warranty: "",
       },
     ];
     setValue("products", newProducts);
@@ -498,7 +849,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               unitPrice: "",
               serialNos: "",
               modelNos: "",
-              gst: "0",
+              gst: "18",
+              brand: "",
+              warranty: "",
             },
           ]
     );
@@ -516,7 +869,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 unitPrice: "",
                 serialNos: "",
                 modelNos: "",
-                gst: "0",
+                gst: "18",
+                brand: "",
+                warranty: "",
               },
             ],
     }));
@@ -547,7 +902,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Rajasthan",
     "Sikkim",
     "Tamil Nadu",
-    "Jammu and Kashmir",
     "Telangana",
     "Tripura",
     "Uttar Pradesh",
@@ -1372,6 +1726,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     }),
     []
   );
+
   const salesPersonlist = [
     "PS Brar",
     "Ashwani Kumar",
@@ -1382,7 +1737,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Abhay Pratap Singh",
     "Abhayjit Sekhon",
     "Ajay Kumar",
-    "Rachit Arya",
     "Amarjeet Singh",
     "Aniket Singh",
     "Anil Kumar",
@@ -1435,6 +1789,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Varun Budhiraja",
     "Vaseem Khan",
   ];
+
   const Reportinglist = [
     "PS Brar",
     "Ashwani Kumar",
@@ -1467,6 +1822,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     "Varun Budhiraja",
     "Vaseem Khan",
   ];
+
   const renderOptions = () => (
     <div
       style={{
@@ -1487,6 +1843,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const renderEditForm = () => (
     <Form onSubmit={handleSubmit(onEditSubmit)}>
       <FormSection>
+        <Form.Group controlId="createdBy">
+          <Form.Label>👤 Created By</Form.Label>
+          <Form.Control
+            {...register("createdBy")}
+            readOnly
+            disabled
+            isInvalid={!!errors.createdBy}
+          />
+        </Form.Group>
         <Form.Group controlId="soDate">
           <Form.Label>📅 SO Date *</Form.Label>
           <Form.Control
@@ -1522,13 +1887,103 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.dispatchDate}
           />
         </Form.Group>
+        <Form.Group controlId="deliveryDate">
+          <Form.Label>📅 Delivery Date</Form.Label>
+          <Form.Control
+            type="date"
+            {...register("deliveryDate")}
+            onChange={(e) =>
+              debouncedHandleInputChange("deliveryDate", e.target.value)
+            }
+            isInvalid={!!errors.deliveryDate}
+          />
+        </Form.Group>
         <Form.Group controlId="name">
-          <Form.Label>👤 Name</Form.Label>
+          <Form.Label>👤 Contact Person</Form.Label>
           <Form.Control
             {...register("name")}
             onChange={(e) => debouncedHandleInputChange("name", e.target.value)}
             isInvalid={!!errors.name}
           />
+        </Form.Group>
+        <Form.Group controlId="customername">
+          <Form.Label>👤 Customer Name</Form.Label>
+          <Form.Control
+            {...register("customername")}
+            onChange={(e) =>
+              debouncedHandleInputChange("customername", e.target.value)
+            }
+            isInvalid={!!errors.customername}
+          />
+        </Form.Group>
+        <Form.Group controlId="customerEmail">
+          <Form.Label>📧 Customer Email</Form.Label>
+          <Form.Control
+            type="email"
+            {...register("customerEmail", {
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Invalid email format",
+              },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("customerEmail", e.target.value)
+            }
+            isInvalid={!!errors.customerEmail}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.customerEmail?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="contactNo">
+          <Form.Label>📱 Contact Number</Form.Label>
+          <Form.Control
+            {...register("contactNo", {
+              pattern: {
+                value: /^\d{10}$/,
+                message: "Contact number must be 10 digits",
+              },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("contactNo", e.target.value)
+            }
+            isInvalid={!!errors.contactNo}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.contactNo?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="alterno">
+          <Form.Label>📞 Alternate Contact Number</Form.Label>
+          <Form.Control
+            {...register("alterno", {
+              pattern: {
+                value: /^\d{10}$/,
+                message: "Alternate contact number must be 10 digits",
+              },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("alterno", e.target.value)
+            }
+            isInvalid={!!errors.alterno}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.alterno?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="gstno">
+          <Form.Label>📑 GST Number</Form.Label>
+          <Form.Control
+            {...register("gstno")}
+            onChange={(e) =>
+              debouncedHandleInputChange("gstno", e.target.value)
+            }
+            isInvalid={!!errors.gstno}
+            placeholder="e.g., 22AAAAA0000A1Z5"
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.gstno?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="state">
           <Form.Label>🗺️ State</Form.Label>
@@ -1598,70 +2053,29 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.pinCode?.message}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="contactNo">
-          <Form.Label>📱 Contact Number</Form.Label>
+        <Form.Group controlId="shippingAddress">
+          <Form.Label>📦 Shipping Address</Form.Label>
           <Form.Control
-            {...register("contactNo", {
-              pattern: {
-                value: /^\d{10}$/,
-                message: "Contact number must be 10 digits",
-              },
-            })}
+            as="textarea"
+            rows={2}
+            {...register("shippingAddress")}
             onChange={(e) =>
-              debouncedHandleInputChange("contactNo", e.target.value)
+              debouncedHandleInputChange("shippingAddress", e.target.value)
             }
-            isInvalid={!!errors.contactNo}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.contactNo?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="alternateContactNo">
-          <Form.Label>📞 Alternate Contact Number</Form.Label>
-          <Form.Control
-            {...register("alterno", {
-              pattern: {
-                value: /^\d{10}$/,
-                message: "Alternate contact number must be 10 digits",
-              },
-            })}
-            onChange={(e) =>
-              debouncedHandleInputChange("alterno", e.target.value)
-            }
-            isInvalid={!!errors.alternateContactNo}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.alternateContactNo?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="customername">
-          <Form.Label>👤 Customer Name</Form.Label>
-          <Form.Control
-            {...register("customername")}
-            onChange={(e) =>
-              debouncedHandleInputChange("customername", e.target.value)
-            }
-            isInvalid={!!errors.customername}
+            isInvalid={!!errors.shippingAddress}
           />
         </Form.Group>
-        <Form.Group controlId="customerEmail">
-          <Form.Label>📧 Customer Email</Form.Label>
+        <Form.Group controlId="billingAddress">
+          <Form.Label>🏠 Billing Address</Form.Label>
           <Form.Control
-            type="email"
-            {...register("customerEmail", {
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: "Invalid email format",
-              },
-            })}
+            as="textarea"
+            rows={2}
+            {...register("billingAddress")}
             onChange={(e) =>
-              debouncedHandleInputChange("customerEmail", e.target.value)
+              debouncedHandleInputChange("billingAddress", e.target.value)
             }
-            isInvalid={!!errors.customerEmail}
+            isInvalid={!!errors.billingAddress}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.customerEmail?.message}
-          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="orderType">
           <Form.Label>📦 Order Type</Form.Label>
@@ -1677,180 +2091,300 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 }}
                 isInvalid={!!errors.orderType}
               >
-                <option value="GEM">GEM</option>
-                <option value="Goverment">Goverment</option>
-                <option value="Private">Private</option>
+                <option value="B2G">B2G</option>
+                <option value="B2C">B2C</option>
+                <option value="B2B">B2B</option>
                 <option value="Demo">Demo</option>
                 <option value="Replacement">Replacement</option>
-                <option value="Repair">repair</option>
               </Form.Select>
             )}
+          />
+        </Form.Group>
+        <Form.Group controlId="stockStatus">
+          <Form.Label>📦 Stock Status</Form.Label>
+          <Controller
+            name="stockStatus"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("stockStatus", e.target.value);
+                }}
+                isInvalid={!!errors.stockStatus}
+              >
+                <option value="">-- Select Stock Status --</option>
+                <option value="In Stock">In Stock</option>
+                <option value="Not in Stock">Not in Stock</option>
+              </Form.Select>
+            )}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.stockStatus?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="gemOrderNumber">
+          <Form.Label>📄 GEM Order Number</Form.Label>
+          <Form.Control
+            {...register("gemOrderNumber")}
+            onChange={(e) =>
+              debouncedHandleInputChange("gemOrderNumber", e.target.value)
+            }
+            isInvalid={!!errors.gemOrderNumber}
           />
         </Form.Group>
         {/* Products Section */}
         <div>
           <Form.Label>📦 Products *</Form.Label>
-          {products.map((product, index) => (
-            <ProductContainer key={index}>
-              <ProductHeader>
-                <h5>Product {index + 1}</h5>
-                {products.length > 1 && (
-                  <StyledButton
-                    variant="danger"
-                    onClick={() => removeProduct(index)}
-                    style={{ padding: "5px 10px", fontSize: "0.9rem" }}
+          {products.map((product, index) => {
+            const selectedProductType = watch(`products.${index}.productType`);
+            const availableSizes = selectedProductType
+              ? productOptions[selectedProductType]?.sizes || ["N/A"]
+              : ["N/A"];
+            const availableSpecs = selectedProductType
+              ? productOptions[selectedProductType]?.specs || ["N/A"]
+              : ["N/A"];
+
+            return (
+              <ProductContainer key={index}>
+                <ProductHeader>
+                  <h5>Product {index + 1}</h5>
+                  {products.length > 1 && (
+                    <StyledButton
+                      variant="danger"
+                      onClick={() => removeProduct(index)}
+                      style={{ padding: "5px 10px", fontSize: "0.9rem" }}
+                    >
+                      Remove
+                    </StyledButton>
+                  )}
+                </ProductHeader>
+                <Form.Group controlId={`products.${index}.productType`}>
+                  <Form.Label>📦 Product Type *</Form.Label>
+                  <Controller
+                    name={`products.${index}.productType`}
+                    control={control}
+                    rules={{ required: "Product Type is required" }}
+                    render={({ field }) => (
+                      <Form.Select
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          debouncedHandleInputChange(
+                            `products.${index}.productType`,
+                            e.target.value,
+                            index
+                          );
+                          // Reset size and spec when product type changes
+                          setValue(`products.${index}.size`, "N/A");
+                          setValue(`products.${index}.spec`, "N/A");
+                        }}
+                        isInvalid={!!errors.products?.[index]?.productType}
+                      >
+                        <option value="">-- Select Product Type --</option>
+                        {Object.keys(productOptions).map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    )}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.products?.[index]?.productType?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.size`}>
+                  <Form.Label>📏 Size</Form.Label>
+                  <Controller
+                    name={`products.${index}.size`}
+                    control={control}
+                    render={({ field }) => (
+                      <Form.Select
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          debouncedHandleInputChange(
+                            `products.${index}.size`,
+                            e.target.value,
+                            index
+                          );
+                        }}
+                        isInvalid={!!errors.products?.[index]?.size}
+                        disabled={!selectedProductType}
+                      >
+                        <option value="N/A">N/A</option>
+                        {availableSizes.map((size) => (
+                          <option key={size} value={size}>
+                            {size}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    )}
+                  />
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.spec`}>
+                  <Form.Label>📋 Specification</Form.Label>
+                  <Controller
+                    name={`products.${index}.spec`}
+                    control={control}
+                    render={({ field }) => (
+                      <Form.Select
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          debouncedHandleInputChange(
+                            `products.${index}.spec`,
+                            e.target.value,
+                            index
+                          );
+                        }}
+                        isInvalid={!!errors.products?.[index]?.spec}
+                        disabled={!selectedProductType}
+                      >
+                        <option value="N/A">N/A</option>
+                        {availableSpecs.map((spec) => (
+                          <option key={spec} value={spec}>
+                            {spec}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    )}
+                  />
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.qty`}>
+                  <Form.Label>🔢 Quantity *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    {...register(`products.${index}.qty`, {
+                      required: "Quantity is required",
+                      min: {
+                        value: 1,
+                        message: "Quantity must be at least 1",
+                      },
+                    })}
+                    onChange={(e) =>
+                      debouncedHandleInputChange(
+                        `products.${index}.qty`,
+                        e.target.value,
+                        index
+                      )
+                    }
+                    isInvalid={!!errors.products?.[index]?.qty}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.products?.[index]?.qty?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.unitPrice`}>
+                  <Form.Label>💰 Unit Price *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    {...register(`products.${index}.unitPrice`, {
+                      required: "Unit Price is required",
+                      min: {
+                        value: 0,
+                        message: "Unit Price cannot be negative",
+                      },
+                    })}
+                    onChange={(e) =>
+                      debouncedHandleInputChange(
+                        `products.${index}.unitPrice`,
+                        e.target.value,
+                        index
+                      )
+                    }
+                    isInvalid={!!errors.products?.[index]?.unitPrice}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.products?.[index]?.unitPrice?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.gst`}>
+                  <Form.Label>📊 GST</Form.Label>
+                  <Form.Select
+                    {...register(`products.${index}.gst`)}
+                    onChange={(e) =>
+                      debouncedHandleInputChange(
+                        `products.${index}.gst`,
+                        e.target.value,
+                        index
+                      )
+                    }
+                    isInvalid={!!errors.products?.[index]?.gst}
                   >
-                    Remove
-                  </StyledButton>
-                )}
-              </ProductHeader>
-              <Form.Group controlId={`products.${index}.productType`}>
-                <Form.Label>📦 Product Type *</Form.Label>
-                <Form.Control
-                  {...register(`products.${index}.productType`, {
-                    required: "Product Type is required",
-                  })}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.productType`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.productType}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.products?.[index]?.productType?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-              <Form.Group controlId={`products.${index}.size`}>
-                <Form.Label>📏 Size</Form.Label>
-                <Form.Control
-                  {...register(`products.${index}.size`)}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.size`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.size}
-                />
-              </Form.Group>
-              <Form.Group controlId={`products.${index}.spec`}>
-                <Form.Label>📋 Specification</Form.Label>
-                <Form.Control
-                  {...register(`products.${index}.spec`)}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.spec`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.spec}
-                />
-              </Form.Group>
-              <Form.Group controlId={`products.${index}.qty`}>
-                <Form.Label>🔢 Quantity *</Form.Label>
-                <Form.Control
-                  type="number"
-                  {...register(`products.${index}.qty`, {
-                    required: "Quantity is required",
-                    min: { value: 1, message: "Quantity must be at least 1" },
-                  })}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.qty`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.qty}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.products?.[index]?.qty?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-              <Form.Group controlId={`products.${index}.unitPrice`}>
-                <Form.Label>💰 Unit Price *</Form.Label>
-                <Form.Control
-                  type="number"
-                  step="0.01"
-                  {...register(`products.${index}.unitPrice`, {
-                    required: "Unit Price is required",
-                    min: {
-                      value: 0,
-                      message: "Unit Price cannot be negative",
-                    },
-                  })}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.unitPrice`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.unitPrice}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.products?.[index]?.unitPrice?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-              <Form.Group controlId={`products.${index}.serialNos`}>
-                <Form.Label>🔢 Serial Nos (comma-separated)</Form.Label>
-                <Form.Control
-                  {...register(`products.${index}.serialNos`)}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.serialNos`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.serialNos}
-                  placeholder="e.g., SN1, SN2, SN3"
-                />
-              </Form.Group>
-              <Form.Group controlId={`products.${index}.modelNos`}>
-                <Form.Label>🔢 Model Nos (comma-separated)</Form.Label>
-                <Form.Control
-                  {...register(`products.${index}.modelNos`)}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.modelNos`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.modelNos}
-                  placeholder="e.g., MN1, MN2, MN3"
-                />
-              </Form.Group>
-              <Form.Group controlId={`products.${index}.gst`}>
-                <Form.Label>📊 GST (%)</Form.Label>
-                <Form.Control
-                  type="number"
-                  step="0.01"
-                  {...register(`products.${index}.gst`, {
-                    min: { value: 0, message: "GST cannot be negative" },
-                    max: { value: 100, message: "GST cannot exceed 100%" },
-                  })}
-                  onChange={(e) =>
-                    debouncedHandleInputChange(
-                      `products.${index}.gst`,
-                      e.target.value,
-                      index
-                    )
-                  }
-                  isInvalid={!!errors.products?.[index]?.gst}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.products?.[index]?.gst?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </ProductContainer>
-          ))}
+                    <option value="18">18%</option>
+                    <option value="including">Including</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.products?.[index]?.gst?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.brand`}>
+                  <Form.Label>🏷️ Brand</Form.Label>
+                  <Form.Control
+                    {...register(`products.${index}.brand`)}
+                    onChange={(e) =>
+                      debouncedHandleInputChange(
+                        `products.${index}.brand`,
+                        e.target.value,
+                        index
+                      )
+                    }
+                    isInvalid={!!errors.products?.[index]?.brand}
+                    placeholder="e.g., Samsung, Dell"
+                  />
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.warranty`}>
+                  <Form.Label>🛡️ Warranty</Form.Label>
+                  <Form.Control
+                    {...register(`products.${index}.warranty`)}
+                    onChange={(e) =>
+                      debouncedHandleInputChange(
+                        `products.${index}.warranty`,
+                        e.target.value,
+                        index
+                      )
+                    }
+                    isInvalid={!!errors.products?.[index]?.warranty}
+                    placeholder="e.g., 1 Year, 2 Years"
+                  />
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.serialNos`}>
+                  <Form.Label>🔢 Serial Nos (comma-separated)</Form.Label>
+                  <Form.Control
+                    {...register(`products.${index}.serialNos`)}
+                    onChange={(e) =>
+                      debouncedHandleInputChange(
+                        `products.${index}.serialNos`,
+                        e.target.value,
+                        index
+                      )
+                    }
+                    isInvalid={!!errors.products?.[index]?.serialNos}
+                    placeholder="e.g., SN1, SN2, SN3"
+                  />
+                </Form.Group>
+                <Form.Group controlId={`products.${index}.modelNos`}>
+                  <Form.Label>🔢 Model Nos (comma-separated)</Form.Label>
+                  <Form.Control
+                    {...register(`products.${index}.modelNos`)}
+                    onChange={(e) =>
+                      debouncedHandleInputChange(
+                        `products.${index}.modelNos`,
+                        e.target.value,
+                        index
+                      )
+                    }
+                    isInvalid={!!errors.products?.[index]?.modelNos}
+                    placeholder="e.g., MN1, MN2, MN3"
+                  />
+                </Form.Group>
+              </ProductContainer>
+            );
+          })}
           <StyledButton
             variant="primary"
             onClick={addProduct}
@@ -1880,18 +2414,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="paymentCollected">
           <Form.Label>💰 Payment Collected</Form.Label>
           <Form.Control
-            type="number"
-            step="0.01"
-            {...register("paymentCollected", {
-              min: {
-                value: 0,
-                message: "Payment Collected cannot be negative",
-              },
-            })}
+            {...register("paymentCollected")}
             onChange={(e) =>
               debouncedHandleInputChange("paymentCollected", e.target.value)
             }
             isInvalid={!!errors.paymentCollected}
+            placeholder="e.g., 5000"
           />
           <Form.Control.Feedback type="invalid">
             {errors.paymentCollected?.message}
@@ -1916,29 +2444,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="NEFT">NEFT</option>
                 <option value="RTGS">RTGS</option>
                 <option value="Cheque">Cheque</option>
-                <option value="UPI">UPI</option>
-                <option value="Credit Card">Credit Card</option>
               </Form.Select>
             )}
           />
-        </Form.Group>
-        <Form.Group controlId="paymentDue">
-          <Form.Label>💰 Payment Due</Form.Label>
-          <Form.Control
-            type="number"
-            step="0.01"
-            {...register("paymentDue", {
-              min: { value: 0, message: "Payment Due cannot be negative" },
-            })}
-            onChange={(e) =>
-              debouncedHandleInputChange("paymentDue", e.target.value)
-            }
-            isInvalid={!!errors.paymentDue}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.paymentDue?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
+        </Form.Group>{" "}
         <Form.Group controlId="neftTransactionId">
           <Form.Label>📄 NEFT/RTGS Transaction ID</Form.Label>
           <Form.Control
@@ -1967,6 +2476,61 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.chequeId?.message}
           </Form.Control.Feedback>
         </Form.Group>
+        <Form.Group controlId="paymentDue">
+          <Form.Label>💰 Payment Due</Form.Label>
+          <Form.Control
+            {...register("paymentDue")}
+            onChange={(e) =>
+              debouncedHandleInputChange("paymentDue", e.target.value)
+            }
+            isInvalid={!!errors.paymentDue}
+            placeholder="e.g., 2000"
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.paymentDue?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="paymentTerms">
+          <Form.Label>📝 Payment Terms</Form.Label>
+          <Controller
+            name="paymentTerms"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("paymentTerms", e.target.value);
+                }}
+                isInvalid={!!errors.paymentTerms}
+              >
+                <option value="">-- Select Payment Terms --</option>
+                <option value="100% Advance">100% Advance</option>
+                <option value="Partial Advance">Partial Advance</option>
+                <option value="Credit">Credit</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+        <Form.Group controlId="creditDays">
+          <Form.Label>⏳ Credit Days</Form.Label>
+          <Form.Control
+            type="number"
+            {...register("creditDays", {
+              min: {
+                value: 0,
+                message: "Credit Days cannot be negative",
+              },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("creditDays", e.target.value)
+            }
+            isInvalid={!!errors.creditDays}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.creditDays?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
@@ -1975,9 +2539,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("freightcs", e.target.value)
             }
             isInvalid={!!errors.freightcs}
+            placeholder="e.g., 1000"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.freightcs?.message}
+          </Form.Control.Feedback>
         </Form.Group>
-
         <Form.Group controlId="freightstatus">
           <Form.Label>🚚 Freight Status</Form.Label>
           <Form.Select
@@ -1986,7 +2553,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("freightstatus", e.target.value)
             }
             isInvalid={!!errors.freightstatus}
-            defaultValue="To Pay"
+            defaultValue="Extra"
           >
             <option value="To Pay">To Pay</option>
             <option value="Including">Including</option>
@@ -1994,6 +2561,26 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Select>
           <Form.Control.Feedback type="invalid">
             {errors.freightstatus?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="actualFreight">
+          <Form.Label>🚚 Actual Freight</Form.Label>
+          <Form.Control
+            type="number"
+            step="0.01"
+            {...register("actualFreight", {
+              min: {
+                value: 0,
+                message: "Actual Freight cannot be negative",
+              },
+            })}
+            onChange={(e) =>
+              debouncedHandleInputChange("actualFreight", e.target.value)
+            }
+            isInvalid={!!errors.actualFreight}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.actualFreight?.message}
           </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="installchargesstatus">
@@ -2004,7 +2591,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("installchargesstatus", e.target.value)
             }
             isInvalid={!!errors.installchargesstatus}
-            defaultValue="To Pay"
+            defaultValue="Extra"
           >
             <option value="To Pay">To Pay</option>
             <option value="Including">Including</option>
@@ -2012,20 +2599,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Select>
           <Form.Control.Feedback type="invalid">
             {errors.installchargesstatus?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="gstno">
-          <Form.Label>📑 GST Number</Form.Label>
-          <Form.Control
-            {...register("gstno")}
-            onChange={(e) =>
-              debouncedHandleInputChange("gstno", e.target.value)
-            }
-            isInvalid={!!errors.gstno}
-            placeholder="Enter GST Number"
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.gstno?.message}
           </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="installation">
@@ -2036,7 +2609,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("installation", e.target.value)
             }
             isInvalid={!!errors.installation}
+            placeholder="e.g., 500"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.installation?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="installationStatus">
           <Form.Label>🛠️ Installation Status</Form.Label>
@@ -2125,7 +2702,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             </Form.Control.Feedback>
           )}
         </Form.Group>
-        <Form.Group controlId="reportingManager">
+        <Form.Group controlId="report">
           <Form.Label>👤 Reporting Manager</Form.Label>
           <Form.Control
             as="select"
@@ -2133,7 +2710,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             onChange={(e) =>
               debouncedHandleInputChange("report", e.target.value)
             }
-            isInvalid={!!errors.reportingManager}
+            isInvalid={!!errors.report}
           >
             <option value="">Select Reporting Manager</option>
             {Reportinglist.map((manager) => (
@@ -2142,9 +2719,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               </option>
             ))}
           </Form.Control>
-          {errors.reportingManager && (
+          {errors.report && (
             <Form.Control.Feedback type="invalid">
-              {errors.reportingManager.message}
+              {errors.report.message}
             </Form.Control.Feedback>
           )}
         </Form.Group>
@@ -2163,8 +2740,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 isInvalid={!!errors.company}
               >
                 <option value="Promark">Promark</option>
+                <option value="Foxmate">Foxmate</option>
                 <option value="Promine">Promine</option>
-                <option value="Others">Others</option>
+                <option value="Primus">Primus</option>
               </Form.Select>
             )}
           />
@@ -2212,30 +2790,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.receiptDate}
           />
         </Form.Group>
-        <Form.Group controlId="shippingAddress">
-          <Form.Label>📦 Shipping Address</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            {...register("shippingAddress")}
-            onChange={(e) =>
-              debouncedHandleInputChange("shippingAddress", e.target.value)
-            }
-            isInvalid={!!errors.shippingAddress}
-          />
-        </Form.Group>
-        <Form.Group controlId="billingAddress">
-          <Form.Label>🏠 Billing Address</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            {...register("billingAddress")}
-            onChange={(e) =>
-              debouncedHandleInputChange("billingAddress", e.target.value)
-            }
-            isInvalid={!!errors.billingAddress}
-          />
-        </Form.Group>
         <Form.Group controlId="invoiceNo">
           <Form.Label>📄 Invoice No</Form.Label>
           <Form.Control
@@ -2257,14 +2811,124 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.invoiceDate}
           />
         </Form.Group>
+        <Form.Group controlId="piNumber">
+          <Form.Label>📄 PI Number</Form.Label>
+          <Form.Control
+            {...register("piNumber")}
+            onChange={(e) =>
+              debouncedHandleInputChange("piNumber", e.target.value)
+            }
+            isInvalid={!!errors.piNumber}
+          />
+        </Form.Group>
+        <Form.Group controlId="billNumber">
+          <Form.Label>📄 Bill Number</Form.Label>
+          <Form.Control
+            {...register("billNumber")}
+            onChange={(e) =>
+              debouncedHandleInputChange("billNumber", e.target.value)
+            }
+            isInvalid={!!errors.billNumber}
+          />
+        </Form.Group>
+        <Form.Group controlId="billStatus">
+          <Form.Label>📋 Bill Status</Form.Label>
+          <Controller
+            name="billStatus"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("billStatus", e.target.value);
+                }}
+                isInvalid={!!errors.billStatus}
+              >
+                <option value="Pending">Pending</option>
+                <option value="Under Billing">Under Billing</option>
+                <option value="Billing Complete">Billing Complete</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+        <Form.Group controlId="paymentReceived">
+          <Form.Label>💰 Payment Received</Form.Label>
+          <Controller
+            name="paymentReceived"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("paymentReceived", e.target.value);
+                }}
+                isInvalid={!!errors.paymentReceived}
+              >
+                <option value="Not Received">Not Received</option>
+                <option value="Received">Received</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+        <Form.Group controlId="completionStatus">
+          <Form.Label>📋 Completion Status</Form.Label>
+          <Controller
+            name="completionStatus"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange(
+                    "completionStatus",
+                    e.target.value
+                  );
+                }}
+                isInvalid={!!errors.completionStatus}
+              >
+                <option value="In Progress">In Progress</option>
+                <option value="Complete">Complete</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
         <Form.Group controlId="fulfillingStatus">
           <Form.Label>📋 Production Status</Form.Label>
+          <Controller
+            name="fulfillingStatus"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange(
+                    "fulfillingStatus",
+                    e.target.value
+                  );
+                }}
+                isInvalid={!!errors.fulfillingStatus}
+              >
+                <option value="Pending">Pending</option>
+                <option value="Under Process">Under Process</option>
+                <option value="Partial Dispatch">Partial Dispatch</option>
+                <option value="Fulfilled">Fulfilled</option>
+              </Form.Select>
+            )}
+          />
+        </Form.Group>
+        <Form.Group controlId="fulfillmentDate">
+          <Form.Label>📅 Production Date</Form.Label>
           <Form.Control
-            {...register("fulfillingStatus")}
+            type="date"
+            {...register("fulfillmentDate")}
             onChange={(e) =>
-              debouncedHandleInputChange("fulfillingStatus", e.target.value)
+              debouncedHandleInputChange("fulfillmentDate", e.target.value)
             }
-            isInvalid={!!errors.fulfillingStatus}
+            isInvalid={!!errors.fulfillmentDate}
           />
         </Form.Group>
         <Form.Group controlId="remarksByProduction">
@@ -2291,68 +2955,40 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.remarksByAccounts}
           />
         </Form.Group>
-        <Form.Group controlId="paymentReceived">
-          <Form.Label>💰 Payment Received</Form.Label>
-          <Controller
-            name="paymentReceived"
-            control={control}
-            render={({ field }) => (
-              <Form.Select
-                {...field}
-                onChange={(e) => {
-                  field.onChange(e);
-                  debouncedHandleInputChange("paymentReceived", e.target.value);
-                }}
-                isInvalid={!!errors.paymentReceived}
-              >
-                <option value="Not Received">Not Received</option>
-                <option value="Received">Received</option>
-              </Form.Select>
-            )}
-          />
-        </Form.Group>
-        <Form.Group controlId="billNumber">
-          <Form.Label>📄 Bill Number</Form.Label>
+        <Form.Group controlId="remarksByBilling">
+          <Form.Label>✏️ Remarks by Billing</Form.Label>
           <Form.Control
-            {...register("billNumber")}
+            as="textarea"
+            rows={2}
+            {...register("remarksByBilling")}
             onChange={(e) =>
-              debouncedHandleInputChange("billNumber", e.target.value)
+              debouncedHandleInputChange("remarksByBilling", e.target.value)
             }
-            isInvalid={!!errors.billNumber}
+            isInvalid={!!errors.remarksByBilling}
           />
         </Form.Group>
-        <Form.Group controlId="completionStatus">
-          <Form.Label>📋 Completion Status</Form.Label>
-          <Controller
-            name="completionStatus"
-            control={control}
-            render={({ field }) => (
-              <Form.Select
-                {...field}
-                onChange={(e) => {
-                  field.onChange(e);
-                  debouncedHandleInputChange(
-                    "completionStatus",
-                    e.target.value
-                  );
-                }}
-                isInvalid={!!errors.completionStatus}
-              >
-                <option value="In Progress">In Progress</option>
-                <option value="Complete">Complete</option>
-              </Form.Select>
-            )}
-          />
-        </Form.Group>
-        <Form.Group controlId="fulfillmentDate">
-          <Form.Label>📅 Production Date</Form.Label>
+        <Form.Group controlId="verificationRemarks">
+          <Form.Label>✏️ Verification Remarks</Form.Label>
           <Form.Control
-            type="date"
-            {...register("fulfillmentDate")}
+            as="textarea"
+            rows={2}
+            {...register("verificationRemarks")}
             onChange={(e) =>
-              debouncedHandleInputChange("fulfillmentDate", e.target.value)
+              debouncedHandleInputChange("verificationRemarks", e.target.value)
             }
-            isInvalid={!!errors.fulfillmentDate}
+            isInvalid={!!errors.verificationRemarks}
+          />
+        </Form.Group>
+        <Form.Group controlId="remarks">
+          <Form.Label>✏️ Remarks</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            {...register("remarks")}
+            onChange={(e) =>
+              debouncedHandleInputChange("remarks", e.target.value)
+            }
+            isInvalid={!!errors.remarks}
           />
         </Form.Group>
       </FormSection>
@@ -2374,7 +3010,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Approved">Approved</option>
           </Form.Select>
         </Form.Group>
-
         <Form.Group controlId="remarks">
           <Form.Label>✏️ Remarks</Form.Label>
           <Form.Control

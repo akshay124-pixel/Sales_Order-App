@@ -58,7 +58,7 @@ function Signup() {
           })
         );
 
-        toast.success("Signup successful! Redirecting to login...", {
+        toast.success("Signup successful! Redirecting...", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -67,7 +67,26 @@ function Signup() {
           draggable: true,
           theme: "colored",
         });
-        navigate("/login");
+
+        // Redirect based on role
+        const role = user.role;
+        if (role === "Production") {
+          navigate("/production");
+        } else if (role === "Finish") {
+          navigate("/finish");
+        } else if (role === "Installation") {
+          navigate("/installation");
+        } else if (role === "Accounts") {
+          navigate("/accounts");
+        } else if (role === "Verification") {
+          navigate("/verification");
+        } else if (role === "Bill") {
+          navigate("/bill");
+        } else if (role === "ProductionApproval") {
+          navigate("/production-approval");
+        } else {
+          navigate("/sales"); // Sales or Admin
+        }
       } else {
         toast.error("Unexpected response. Please try again.", {
           position: "top-right",
@@ -181,6 +200,9 @@ function Signup() {
               <option value="Installation">Installation</option>
               <option value="Accounts">Accounts</option>
               <option value="Admin">Admin</option>
+              <option value="Verification">Verification</option>
+              <option value="Bill">Bill</option>
+              <option value="ProductionApproval">Production Approval</option>
             </select>
           </div>
           <button

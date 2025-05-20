@@ -15,6 +15,9 @@ import SignUp from "./Auth/SignUp";
 import Navbar from "./components/Navbar";
 import Installation from "./components/installation";
 import Accounts from "./components/Accounts";
+import Verification from "./components/Verification";
+import Bill from "./components/BillGeneration";
+import ProductionApproval from "./components/ProductionApproval";
 
 const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
   const location = useLocation();
@@ -47,7 +50,7 @@ const AppContent = () => {
   const navigate = useNavigate();
 
   const handleLogin = ({ token, userId, role }) => {
-    console.log("Login successful in App.js:", { token, userId, role });
+    console.log("Login successful in App.jsx:", { token, userId, role });
     localStorage.setItem("token", token);
     localStorage.setItem("userId", userId);
     localStorage.setItem("role", role);
@@ -73,6 +76,12 @@ const AppContent = () => {
         navigate("/installation");
       } else if (role === "Accounts") {
         navigate("/accounts");
+      } else if (role === "Verification") {
+        navigate("/verification");
+      } else if (role === "Bill") {
+        navigate("/bill");
+      } else if (role === "ProductionApproval") {
+        navigate("/production-approval");
       } else if (role === "Sales" || role === "Admin") {
         navigate("/sales");
       } else {
@@ -142,6 +151,36 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/verification"
+          element={
+            <PrivateRoute
+              element={<Verification />}
+              isAuthenticated={isAuthenticated}
+              allowedRoles={["Verification"]}
+            />
+          }
+        />
+        <Route
+          path="/bill"
+          element={
+            <PrivateRoute
+              element={<Bill />}
+              isAuthenticated={isAuthenticated}
+              allowedRoles={["Bill"]}
+            />
+          }
+        />
+        <Route
+          path="/production-approval"
+          element={
+            <PrivateRoute
+              element={<ProductionApproval />}
+              isAuthenticated={isAuthenticated}
+              allowedRoles={["ProductionApproval"]}
+            />
+          }
+        />
+        <Route
           path="/"
           element={
             isAuthenticated ? (
@@ -155,6 +194,12 @@ const AppContent = () => {
                     ? "/installation"
                     : localStorage.getItem("role") === "Accounts"
                     ? "/accounts"
+                    : localStorage.getItem("role") === "Verification"
+                    ? "/verification"
+                    : localStorage.getItem("role") === "Bill"
+                    ? "/bill"
+                    : localStorage.getItem("role") === "ProductionApproval"
+                    ? "/production-approval"
                     : "/sales"
                 }
                 replace

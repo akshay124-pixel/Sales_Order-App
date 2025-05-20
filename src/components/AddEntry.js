@@ -2,6 +2,19 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Spinner } from "react-bootstrap";
+import {
+  productOptions,
+  statesAndCities,
+  orderTypeOptions,
+  companyOptions,
+  paymentMethodOptions,
+  paymentTermsOptions,
+  salesPersonlist,
+  Reportinglist,
+  modelNoOptions,
+  brandOptions,
+  dispatchFromOptions,
+} from "./Options";
 function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
@@ -15,13 +28,14 @@ function AddEntry({ onSubmit, onClose }) {
     qty: "",
     unitPrice: "",
     gst: "",
+    modelNos: "",
+    brand: "",
+    warranty: "", // New warranty field
   });
 
   const [formData, setFormData] = useState({
     soDate: new Date().toISOString().split("T")[0],
-
     name: "",
-
     city: "",
     state: "",
     pinCode: "",
@@ -31,8 +45,8 @@ function AddEntry({ onSubmit, onClose }) {
     customername: "",
     report: "",
     freightcs: "",
-    freightstatus: "To Pay",
-    installchargesstatus: "To Pay",
+    freightstatus: "Extra",
+    installchargesstatus: "Extra",
     gstno: "",
     installation: "",
     remarks: "",
@@ -41,1328 +55,21 @@ function AddEntry({ onSubmit, onClose }) {
     shippingAddress: "",
     billingAddress: "",
     sameAddress: false,
-    orderType: "Private",
+    orderType: "B2C",
     paymentCollected: "",
     paymentMethod: "",
     paymentDue: "",
     neftTransactionId: "",
     chequeId: "",
+    gemOrderNumber: "",
+    deliveryDate: "",
+    demoDate: "",
+    paymentTerms: "",
+    creditDays: "",
+    dispatchFrom: "", // New field for dropdown
   });
-
-  const productOptions = {
-    IFPD: {
-      sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
-      specs: [
-        "Android 9, 4GB RAM, 32GB ROM",
-        "Android 8, 4GB RAM, 32GB ROM",
-        "Android 11, 4GB RAM, 32GB ROM",
-        "Android 11, 8GB RAM, 128GB ROM",
-        "Android 13, 4GB RAM, 32GB ROM",
-        "Android 13, 8GB RAM, 128GB ROM",
-        "Android 13, 8GB RAM, 128GB ROM  Inbuilt Camera",
-        "Android 14, 8GB RAM, 128GB ROM",
-        "Android 14, 8GB RAM, 128GB ROM Inbuilt Camera",
-      ],
-    },
-    OPS: {
-      sizes: ["N/A"],
-      specs: [
-        // i5 6th Gen
-        "i5 4th Gen , 8GB RAM, 256GB ROM",
-        "i5 6th Gen, 8GB RAM, 256GB ROM",
-
-        "i5 6th Gen, 8GB RAM, 512GB ROM",
-        "i5 6th Gen, 8GB RAM, 1TB ROM",
-        "i5 6th Gen, 16GB RAM, 256GB ROM",
-        "i5 6th Gen, 16GB RAM, 512GB ROM",
-        "i5 6th Gen, 16GB RAM, 1TB ROM",
-
-        // i5 7th Gen
-        "i5 7th Gen, 8GB RAM, 256GB ROM",
-        "i5 7th Gen, 8GB RAM, 512GB ROM",
-        "i5 7th Gen, 8GB RAM, 1TB ROM",
-        "i5 7th Gen, 16GB RAM, 256GB ROM",
-        "i5 7th Gen, 16GB RAM, 512GB ROM",
-        "i5 7th Gen, 16GB RAM, 1TB ROM",
-
-        // i5 8th Gen
-        "i5 8th Gen, 8GB RAM, 256GB ROM",
-        "i5 8th Gen, 8GB RAM, 512GB ROM",
-        "i5 8th Gen, 8GB RAM, 1TB ROM",
-        "i5 8th Gen, 16GB RAM, 256GB ROM",
-        "i5 8th Gen, 16GB RAM, 512GB ROM",
-        "i5 8th Gen, 16GB RAM, 1TB ROM",
-
-        // i5 11th Gen
-        "i5 11th Gen, 8GB RAM, 256GB ROM",
-        "i5 11th Gen, 8GB RAM, 512GB ROM",
-        "i5 11th Gen, 8GB RAM, 1TB ROM",
-        "i5 11th Gen, 16GB RAM, 256GB ROM",
-        "i5 11th Gen, 16GB RAM, 512GB ROM",
-        "i5 11th Gen, 16GB RAM, 1TB ROM",
-
-        // i5 12th Gen
-        "i5 12th Gen, 8GB RAM, 256GB ROM",
-        "i5 12th Gen, 8GB RAM, 512GB ROM",
-        "i5 12th Gen, 8GB RAM, 1TB ROM",
-        "i5 12th Gen, 16GB RAM, 256GB ROM",
-        "i5 12th Gen, 16GB RAM, 512GB ROM",
-        "i5 12th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 4th Gen
-        "i7 4th Gen, 8GB RAM, 256GB ROM",
-        "i7 4th Gen, 8GB RAM, 512GB ROM",
-        "i7 4th Gen, 8GB RAM, 1TB ROM",
-        "i7 4th Gen, 16GB RAM, 256GB ROM",
-        "i7 4th Gen, 16GB RAM, 512GB ROM",
-        "i7 4th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 5th Gen
-        "i7 5th Gen, 8GB RAM, 256GB ROM",
-        "i7 5th Gen, 8GB RAM, 512GB ROM",
-        "i7 5th Gen, 8GB RAM, 1TB ROM",
-        "i7 5th Gen, 16GB RAM, 256GB ROM",
-        "i7 5th Gen, 16GB RAM, 512GB ROM",
-        "i7 5th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 6th Gen
-        "i7 6th Gen, 8GB RAM, 256GB ROM",
-        "i7 6th Gen, 8GB RAM, 512GB ROM",
-        "i7 6th Gen, 8GB RAM, 1TB ROM",
-        "i7 6th Gen, 16GB RAM, 256GB ROM",
-        "i7 6th Gen, 16GB RAM, 512GB ROM",
-        "i7 6th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 7th Gen
-        "i7 7th Gen, 8GB RAM, 256GB ROM",
-        "i7 7th Gen, 8GB RAM, 512GB ROM",
-        "i7 7th Gen, 8GB RAM, 1TB ROM",
-        "i7 7th Gen, 16GB RAM, 256GB ROM",
-        "i7 7th Gen, 16GB RAM, 512GB ROM",
-        "i7 7th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 8th Gen
-        "i7 8th Gen, 8GB RAM, 256GB ROM",
-        "i7 8th Gen, 8GB RAM, 512GB ROM",
-        "i7 8th Gen, 8GB RAM, 1TB ROM",
-        "i7 8th Gen, 16GB RAM, 256GB ROM",
-        "i7 8th Gen, 16GB RAM, 512GB ROM",
-        "i7 8th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 9th Gen
-        "i7 9th Gen, 8GB RAM, 256GB ROM",
-        "i7 9th Gen, 8GB RAM, 512GB ROM",
-        "i7 9th Gen, 8GB RAM, 1TB ROM",
-        "i7 9th Gen, 16GB RAM, 256GB ROM",
-        "i7 9th Gen, 16GB RAM, 512GB ROM",
-        "i7 9th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 10th Gen
-        "i7 10th Gen, 8GB RAM, 256GB ROM",
-        "i7 10th Gen, 8GB RAM, 512GB ROM",
-        "i7 10th Gen, 8GB RAM, 1TB ROM",
-        "i7 10th Gen, 16GB RAM, 256GB ROM",
-        "i7 10th Gen, 16GB RAM, 512GB ROM",
-        "i7 10th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 11th Gen
-        "i7 11th Gen, 8GB RAM, 256GB ROM",
-        "i7 11th Gen, 8GB RAM, 512GB ROM",
-        "i7 11th Gen, 8GB RAM, 1TB ROM",
-        "i7 11th Gen, 16GB RAM, 256GB ROM",
-        "i7 11th Gen, 16GB RAM, 512GB ROM",
-        "i7 11th Gen, 16GB RAM, 1TB ROM",
-
-        // i7 12th Gen
-        "i7 12th Gen, 8GB RAM, 256GB ROM",
-        "i7 12th Gen, 8GB RAM, 512GB ROM",
-        "i7 12th Gen, 8GB RAM, 1TB ROM",
-        "i7 12th Gen, 16GB RAM, 256GB ROM",
-        "i7 12th Gen, 16GB RAM, 512GB ROM",
-        "i7 12th Gen, 16GB RAM, 1TB ROM",
-      ],
-    },
-
-    "Digital Podium": {
-      sizes: ["Standard"],
-      specs: [
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 2 COOLER MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
-      ],
-    },
-    "Advance Digital Podium": {
-      sizes: ["Front Display 32inch"],
-      specs: [
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 2 COOLER MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
-        'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC, VISUALIZER',
-      ],
-    },
-    "Audio Podium": { sizes: ["Full"], specs: ["N/A"] },
-    Kiosk: {
-      sizes: ["32 inch", "43 inch", "55 inch", "65 inch"],
-      specs: ["Touch Andriod 13/4/32", "Non-Touch Andriod 13/4/32"],
-    },
-    "PTZ Camera": {
-      sizes: ["N/A"],
-      specs: [
-        "Non-Voice Tracking-Full HD",
-        "UHD 20x",
-        "FHD Voice Tracking",
-        "4K Auto Tracking",
-        "4K 12x",
-        "HD 20x",
-      ],
-    },
-    "Document Camera": {
-      sizes: ["N/A"],
-      specs: [
-        "Hydraulic Wall Mount Visualizer",
-        "Non-Hydraulic Wall Mount Visualizer",
-        "Slim Portable Visualizer",
-        "Table Top Portable Visualizer",
-        "Visualizer",
-      ],
-    },
-    UPS: {
-      sizes: ["Standard"],
-      specs: [
-        "1 KVA",
-        "2 KVA",
-        "3 KVA",
-        "4 KVA",
-        "5 KVA",
-        "6 KVA",
-        "7 KVA",
-        "8 KVA",
-        "9 KVA",
-        "10 KVA",
-        "Offline UPS",
-        "Online UPS",
-      ],
-    },
-    "Wallmount Kit": {
-      sizes: ["55 inch", "65 inch", "75 inch", "86 inch", "98 inch"],
-      specs: ["Standard"],
-    },
-    "Stylus Pen": { sizes: ["N/A"], specs: ["N/A"] },
-    "Sliding Shutter": {
-      sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
-      specs: [
-        "Common",
-        "White & Red Dispaly Boards",
-        "White & Green Dispaly Boards",
-        "White & Blue Dispaly Boards",
-        "N/A",
-      ],
-    },
-    "3 Cup Speaker": { sizes: ["N/A"], specs: ["N/A"] },
-    Microphone: {
-      sizes: ["N/A"],
-      specs: ["Handheld Collar Mic", "Goose Neck Mic", "Collar/Lapel Mic"],
-    },
-    Keyboard: {
-      sizes: ["N/A"],
-      specs: ["Wireless", "Wired"],
-    },
-    Mouse: {
-      sizes: ["N/A"],
-      specs: ["Wireless", "Wired"],
-    },
-    "Interactive White Board": {
-      sizes: ["82 inch"],
-      specs: ["Ceramic", "Non-Ceramic"],
-    },
-    "Floor Stand": { sizes: ["N/A"], specs: ["N/A"] },
-    "Notice Board": { sizes: ["N/A"], specs: ["N/A"] },
-    Visualizer: { sizes: ["N/A"], specs: ["N/A"] },
-    "Web Cam": {
-      sizes: ["N/A"],
-      specs: ["Full HD Non-AI Featured", "4K AI Featured", "4K Auto Tracking"],
-    },
-    "Bluetooth Microphone": { sizes: ["N/A"], specs: ["N/A"] },
-    "UPS Cabinet": { sizes: ["N/A"], specs: ["N/A"] },
-    "SD Card": {
-      sizes: ["N/A"],
-      specs: ["8GB", "16GB", "32GB", "64GB", "128GB"],
-    },
-    Casing: { sizes: ["N/A"], specs: ["N/A"] },
-    "Fitting Accessories": { sizes: ["N/A"], specs: ["N/A"] },
-    "HDMI Cable": {
-      sizes: ["N/A"],
-      specs: ["Standard", "4K"],
-    },
-    "White Board": {
-      sizes: ["2x3", "3x4", "4x6", "4x5", "4x8", "4x10"],
-      specs: ["Non-Magnetic", "Magnetic", "RC Magnetic", "UM", "UG"],
-    },
-    "C-type Cable": { sizes: ["N/A"], specs: ["N/A"] },
-    "Fujifilm-Printer": {
-      sizes: ["N/A"],
-      specs: [
-        "Color Printer",
-        "Monochrome Printer",
-        "Black and White Printer",
-        "Multifunction Color Printer",
-        "Multifunction Monochrome Printer",
-        "Multifunction Black and White Printer",
-      ],
-    },
-    "Google TV": {
-      sizes: ["43 inch", "50 inch", "55 inch"],
-      specs: ["4GB RAM / 32GB ROM 4K"],
-    },
-    "Wriety Software": { sizes: ["N/A"], specs: ["N/A"] },
-    "Ceiling Mount Kit": {
-      sizes: ["Standard"],
-      specs: ["Projector Ceiling Mount", "PTZ Ceiling Mount"],
-    },
-    "Almirah Type Shutter": {
-      sizes: ["65 inch", "75 inch", "86 inch", "98  inch"],
-      specs: ["Plain", "White Boards", "Green Boards"],
-    },
-    Aicharya: {
-      sizes: ["N/A"],
-      specs: ["Standard"],
-    },
-    TripodStand: {
-      sizes: ["N/A"],
-      specs: ["Standard"],
-    },
-    Logo: { sizes: ["N/A"], specs: ["N/A"] },
-    Microphones: { sizes: ["N/A"], specs: ["N/A"] },
-    "E-Share License": { sizes: ["N/A"], specs: ["N/A"] },
-    "PRO Share Software": { sizes: ["N/A"], specs: ["N/A"] },
-    "E Share Software": { sizes: ["N/A"], specs: ["N/A"] },
-    "DMS Software": { sizes: ["N/A"], specs: ["N/A"] },
-    "Battery Bank": { sizes: ["N/A"], specs: ["N/A"] },
-    "Rack & Interlink": { sizes: ["N/A"], specs: ["N/A"] },
-    "Green Board": {
-      sizes: ["2x3", "3x4", "4x6", "4x5", "4x8", "4x10"],
-      specs: ["Non-Magnetic", "Magnetic", "RC Magnetic", "UM", "UG"],
-    },
-    "Wooden Podium": { sizes: ["N/A"], specs: ["N/A"] },
-    "Writing Board": { sizes: ["N/A"], specs: ["N/A"] },
-    "LED Video Wall": { sizes: ["N/A"], specs: ["N/A"] },
-    "4K Video Bar": { sizes: ["N/A"], specs: ["N/A"] },
-    "Microsoft Office 2016 Licensed": { sizes: ["N/A"], specs: ["N/A"] },
-    "Windows 11 Licensed": { sizes: ["N/A"], specs: ["N/A"] },
-    "Embibe Content": { sizes: ["N/A"], specs: ["N/A"] },
-    SSD: {
-      sizes: ["N/A"],
-      specs: ["256GB", "512GB", "1TB"],
-    },
-    RAM: {
-      sizes: ["N/A"],
-      specs: ["8GB", "16GB"],
-    },
-    "Video Conferencing Camera": { sizes: ["N/A"], specs: ["N/A"] },
-    "CBSE Content": { sizes: ["N/A"], specs: ["N/A"] },
-    "ICSE Content": { sizes: ["N/A"], specs: ["N/A"] },
-    "PA System Speakers": { sizes: ["N/A"], specs: ["N/A"] },
-    "Red Board": { sizes: ["N/A"], specs: ["N/A"] },
-    "Promark Stickers": { sizes: ["N/A"], specs: ["N/A"] },
-    "Bluetooth Speaker": { sizes: ["N/A"], specs: ["N/A"] },
-    "3 Cup Conference Speaker": { sizes: ["N/A"], specs: ["N/A"] },
-    "Conference Setup-Delegate Room": { sizes: ["N/A"], specs: ["N/A"] },
-    Content: { sizes: ["N/A"], specs: ["N/A"] },
-    Flex: { sizes: ["N/A"], specs: ["N/A"] },
-    "Wireless Speakerphone - Two Pair": { sizes: ["N/A"], specs: ["N/A"] },
-    Remote: { sizes: ["N/A"], specs: ["N/A"] },
-    "Educational Software": { sizes: ["N/A"], specs: ["N/A"] },
-    "Hydraulic Bracket": { sizes: ["N/A"], specs: ["N/A"] },
-    "Desktop PC Monitor": { sizes: ["N/A"], specs: ["N/A"] },
-    "Home Theatre": { sizes: ["N/A"], specs: ["N/A"] },
-    "Digital Audio Processor": { sizes: ["N/A"], specs: ["N/A"] },
-    Projector: {
-      sizes: ["N/A"],
-      specs: ["Long Throw", "Short Throw", "Ultra Long Throw"],
-    },
-    "LED TV": { sizes: ["N/A"], specs: ["N/A"] },
-    "Digital Podium Controller": { sizes: ["N/A"], specs: ["N/A"] },
-    "Amplifier Mic Receiver": { sizes: ["N/A"], specs: ["N/A"] },
-    "Wireless Mic Receiver": { sizes: ["N/A"], specs: ["N/A"] },
-    "Projector Screen": { sizes: ["N/A"], specs: ["N/A"] },
-    Speakerphone: { sizes: ["N/A"], specs: ["N/A"] },
-
-    "Bubble Roll": { sizes: ["N/A"], specs: ["N/A"] },
-    "Wrapping Roll": { sizes: ["N/A"], specs: ["N/A"] },
-  };
-  const statesAndCities = {
-    "Andhra Pradesh": [
-      "Visakhapatnam",
-      "Jaganathpuram",
-      "Vijayawada",
-      "Guntur",
-      "Tirupati",
-      "Kurnool",
-      "Rajahmundry",
-      "Nellore",
-      "Anantapur",
-      "Kadapa",
-      "Srikakulam",
-      "Eluru",
-      "Ongole",
-      "Chittoor",
-      "Proddatur",
-      "Machilipatnam",
-    ],
-    "Arunachal Pradesh": [
-      "Itanagar",
-      "Tawang",
-      "Ziro",
-      "Pasighat",
-      "Bomdila",
-      "Naharlagun",
-      "Roing",
-      "Aalo",
-      "Tezu",
-      "Changlang",
-      "Khonsa",
-      "Yingkiong",
-      "Daporijo",
-      "Seppa",
-    ],
-    Assam: [
-      "Agartala",
-      "Tripura",
-      "Guwahati",
-      "Dibrugarh",
-      "Jorhat",
-      "Silchar",
-      "Tezpur",
-      "Tinsukia",
-      "Nagaon",
-      "Sivasagar",
-      "Barpeta",
-      "Goalpara",
-      "Karimganj",
-      "Lakhimpur",
-      "Diphu",
-      "Golaghat",
-      "Kamrup",
-    ],
-    Bihar: [
-      "Araria",
-      "Arwal",
-      "Aurangabad",
-      "Banka",
-      "Begusarai",
-      "Bhagalpur",
-      "Bhojpur",
-      "Buxar",
-      "Darbhanga",
-      "East Champaran",
-      "Gaya",
-      "Gopalganj",
-      "Jamui",
-      "Jehanabad",
-      "Khagaria",
-      "Kishanganj",
-      "Kaimur",
-      "Katihar",
-      "Lakhisarai",
-      "Madhubani",
-      "Munger",
-      "Madhepura",
-      "Muzaffarpur",
-      "Nalanda",
-      "Nawada",
-
-      "Purnia",
-      "Rohtas",
-      "Saharsa",
-      "Samastipur",
-      "Sheohar",
-      "Sheikhpura",
-      "Saran",
-      "Sitamarhi",
-      "Supaul",
-      "Siwan",
-      "Vaishali",
-      "West Champaran",
-      "Patna",
-      "Mirzapur",
-      "Jehanabad",
-      "Mithapur",
-      "Gaya",
-      "Bhagalpur",
-      "Muzaffarpur",
-      "Darbhanga",
-      "Purnia",
-      "Ara",
-      "Begusarai",
-      "Katihar",
-      "Munger",
-      "Chapra",
-      "Sasaram",
-      "Hajipur",
-      "Bihar Sharif",
-      "Sitamarhi",
-    ],
-    Chhattisgarh: [
-      "Raipur",
-      "Bilaspur",
-      "Durg",
-      "Korba",
-      "Bhilai",
-      "Rajnandgaon",
-      "Jagdalpur",
-      "Ambikapur",
-      "Raigarh",
-      "Dhamtari",
-      "Kawardha",
-      "Mahasamund",
-      "Kondagaon",
-      "Bijapur",
-    ],
-    Goa: [
-      "Panaji",
-      "Margao",
-      "Vasco da Gama",
-      "Mapusa",
-      "Ponda",
-      "Bicholim",
-      "Sanguem",
-      "Canacona",
-      "Quepem",
-      "Valpoi",
-      "Sanquelim",
-      "Curchorem",
-    ],
-    Gujarat: [
-      "Ahmedabad",
-      "Surat",
-      "Vadodara",
-      "Rajkot",
-      "Bhavnagar",
-      "Jamnagar",
-      "Junagadh",
-      "Gandhinagar",
-      "Anand",
-      "Morbi",
-      "Nadiad",
-      "Porbandar",
-      "Mehsana",
-      "Bharuch",
-      "Navsari",
-      "Surendranagar",
-    ],
-    Haryana: [
-      "Bahadurgarh",
-      "Charkhi Dadri",
-      "Gurugram",
-      "Faridabad",
-      "Panipat",
-      "Ambala",
-      "Hisar",
-      "Rohtak",
-      "Karnal",
-      "Bhiwani",
-      "Kaithal",
-      "Kurukshetra",
-      "Sonipat",
-      "Jhajjar",
-      "Jind",
-      "Fatehabad",
-      "Pehowa",
-      "Pinjore",
-      "Rewari",
-      "Yamunanagar",
-      "Sirsa",
-      "Dabwali",
-      "Narwana",
-    ],
-    "Himachal Pradesh": [
-      "Nagrota Surian",
-      "Shimla",
-      "Dharamshala",
-      "Solan",
-      "Mandi",
-      "Hamirpur",
-      "Kullu",
-      "Manali",
-      "Nahan",
-      "Palampur",
-      "Baddi",
-      "Sundarnagar",
-      "Paonta Sahib",
-      "Bilaspur",
-      "Chamba",
-      "Una",
-      "Kangra",
-      "Parwanoo",
-      "Nalagarh",
-      "Rohru",
-      "Keylong",
-    ],
-    Jharkhand: [
-      "Ranchi",
-      "Jamshedpur",
-      "Dhanbad",
-      "Bokaro",
-      "Deoghar",
-      "Hazaribagh",
-      "Giridih",
-      "Ramgarh",
-      "Chaibasa",
-      "Palamu",
-      "Gumla",
-      "Lohardaga",
-      "Dumka",
-      "Chatra",
-      "Pakur",
-      "Jamtara",
-      "Simdega",
-      "Sahibganj",
-      "Godda",
-      "Latehar",
-      "Khunti",
-    ],
-    Karnataka: [
-      "Bengaluru",
-      "Mysuru",
-      "Mangaluru",
-      "Hubballi",
-      "Belagavi",
-      "Kalaburagi",
-      "Ballari",
-      "Davangere",
-      "Shivamogga",
-      "Tumakuru",
-      "Udupi",
-      "Vijayapura",
-      "Chikkamagaluru",
-      "Hassan",
-      "Mandya",
-      "Raichur",
-      "Bidar",
-      "Bagalkot",
-      "Chitradurga",
-      "Kolar",
-      "Gadag",
-      "Yadgir",
-      "Haveri",
-      "Dharwad",
-      "Ramanagara",
-      "Chikkaballapur",
-      "Kodagu",
-      "Koppal",
-    ],
-    Kerala: [
-      "Thiruvananthapuram",
-      "Kochi",
-      "Kozhikode",
-      "Kannur",
-      "Alappuzha",
-      "Thrissur",
-      "Kottayam",
-      "Palakkad",
-      "Ernakulam",
-      "Malappuram",
-      "Pathanamthitta",
-      "Idukki",
-      "Wayanad",
-      "Kollam",
-      "Kasaragod",
-      "Punalur",
-      "Varkala",
-      "Changanassery",
-      "Kayani",
-      "Kizhakkambalam",
-      "Perumbavoor",
-      "Muvattupuzha",
-      "Attingal",
-      "Vypin",
-      "North Paravur",
-      "Adoor",
-      "Cherthala",
-      "Mattancherry",
-      "Fort Kochi",
-      "Munroe Island",
-    ],
-    "Madhya Pradesh": [
-      "Bhopal",
-      "Indore",
-      "Gwalior",
-      "Jabalpur",
-      "Ujjain",
-      "Sagar",
-      "Ratlam",
-      "Satna",
-      "Dewas",
-      "Murwara (Katni)",
-      "Chhindwara",
-      "Rewa",
-      "Burhanpur",
-      "Khandwa",
-      "Bhind",
-      "Shivpuri",
-      "Vidisha",
-      "Sehore",
-      "Hoshangabad",
-      "Itarsi",
-      "Neemuch",
-      "Chhatarpur",
-      "Betul",
-      "Mandsaur",
-      "Damoh",
-      "Singrauli",
-      "Guna",
-      "Ashok Nagar",
-      "Datia",
-      "Mhow",
-      "Pithampur",
-      "Shahdol",
-      "Seoni",
-      "Mandla",
-      "Tikamgarh",
-      "Raisen",
-      "Narsinghpur",
-      "Morena",
-      "Barwani",
-      "Rajgarh",
-      "Khargone",
-      "Anuppur",
-      "Umaria",
-      "Dindori",
-      "Sheopur",
-      "Alirajpur",
-      "Jhabua",
-      "Sidhi",
-      "Harda",
-      "Balaghat",
-      "Agar Malwa",
-    ],
-    Maharashtra: [
-      "Mumbai",
-      "Pune",
-      "Nagpur",
-      "Nashik",
-      "Aurangabad",
-      "Solapur",
-      "Kolhapur",
-      "Thane",
-      "Satara",
-      "Latur",
-      "Chandrapur",
-      "Jalgaon",
-      "Bhiwandi",
-      "Shirdi",
-      "Akola",
-      "Parbhani",
-      "Raigad",
-      "Washim",
-      "Buldhana",
-      "Nanded",
-      "Yavatmal",
-      "Beed",
-      "Amravati",
-      "Kalyan",
-      "Dombivli",
-      "Ulhasnagar",
-      "Nagothane",
-      "Vasai",
-      "Virar",
-      "Mira-Bhayandar",
-      "Dhule",
-      "Sangli",
-      "Wardha",
-      "Ahmednagar",
-      "Pandharpur",
-      "Malegaon",
-      "Osmanabad",
-      "Gondia",
-      "Baramati",
-      "Jalna",
-      "Hingoli",
-      "Sindhudurg",
-      "Ratnagiri",
-      "Palghar",
-      "Ambarnath",
-      "Badlapur",
-      "Taloja",
-      "Alibaug",
-      "Murbad",
-      "Karjat",
-      "Pen",
-      "Newasa",
-    ],
-    Manipur: [
-      "Imphal",
-      "Churachandpur",
-      "Thoubal",
-      "Bishnupur",
-      "Kakching",
-      "Senapati",
-      "Ukhrul",
-      "Tamenglong",
-      "Jiribam",
-      "Moreh",
-      "Noney",
-      "Pherzawl",
-      "Kangpokpi",
-    ],
-    Meghalaya: [
-      "Shillong",
-      "Tura",
-      "Nongpoh",
-      "Cherrapunjee",
-      "Jowai",
-      "Baghmara",
-      "Williamnagar",
-      "Mawkyrwat",
-      "Resubelpara",
-      "Mairang",
-    ],
-    Mizoram: [
-      "Aizawl",
-      "Lunglei",
-      "Champhai",
-      "Serchhip",
-      "Kolasib",
-      "Saiha",
-      "Lawngtlai",
-      "Mamit",
-      "Hnahthial",
-      "Khawzawl",
-      "Saitual",
-    ],
-    Nagaland: [
-      "Kohima",
-      "Dimapur",
-      "Mokokchung",
-      "Tuensang",
-      "Wokha",
-      "Mon",
-      "Zunheboto",
-      "Phek",
-      "Longleng",
-      "Kiphire",
-      "Peren",
-    ],
-    Odisha: [
-      "Bhubaneswar",
-      "Cuttack",
-      "Rourkela",
-      "Puri",
-      "Sambalpur",
-      "Berhampur",
-      "Balasore",
-      "Baripada",
-      "Bhadrak",
-      "Jeypore",
-      "Angul",
-      "Dhenkanal",
-      "Keonjhar",
-      "Kendrapara",
-      "Jagatsinghpur",
-      "Paradeep",
-      "Bargarh",
-      "Rayagada",
-      "Koraput",
-      "Nabarangpur",
-      "Kalahandi",
-      "Nuapada",
-      "Phulbani",
-      "Balangir",
-      "Sundargarh",
-    ],
-    Punjab: [
-      "Amritsar",
-      "Ludhiana",
-      "Jalandhar",
-      "Nabha",
-      "Patiala",
-      "Bathinda",
-      "Mohali",
-      "Hoshiarpur",
-      "Gurdaspur",
-      "Ferozepur",
-      "Sangrur",
-      "Moga",
-      "Rupnagar",
-      "Kapurthala",
-      "Faridkot",
-      "Muktsar",
-      "Fazilka",
-      "Barnala",
-      "Mansa",
-      "Tarn Taran",
-      "Nawanshahr",
-      "Pathankot",
-      "Zirakpur",
-      "Khanna",
-      "Malerkotla",
-      "Abohar",
-      "Rajpura",
-      "Phagwara",
-      "Batala",
-      "Samrala",
-      "Anandpur Sahib",
-      "Sirhind",
-      "Kharar",
-      "Morinda",
-      "Bassi Pathana",
-      "Khamanon",
-      "Chunni Kalan",
-      "Balachaur",
-      "Dinanagar",
-      "Dasuya",
-      "Nakodar",
-      "Jagraon",
-      "Sunam",
-      "Dhuri",
-      "Lehragaga",
-      "Rampura Phul",
-    ],
-    Rajasthan: [
-      "Baran",
-      "Newai",
-      "Gaganagar",
-      "Suratgarh",
-      "Jaipur",
-      "Udaipur",
-      "Jodhpur",
-      "Kota",
-      "Ajmer",
-      "Bikaner",
-      "Alwar",
-      "Bharatpur",
-      "Sikar",
-      "Pali",
-      "Nagaur",
-      "Jhunjhunu",
-      "Chittorgarh",
-      "Tonk",
-      "Barmer",
-      "Jaisalmer",
-      "Dholpur",
-      "Bhilwara",
-      "Hanumangarh",
-      "Sawai Madhopur",
-    ],
-    Sikkim: [
-      "Gangtok",
-      "Namchi",
-      "Pelling",
-      "Geyzing",
-      "Mangan",
-      "Rangpo",
-      "Jorethang",
-      "Yuksom",
-      "Ravangla",
-      "Lachen",
-      "Lachung",
-    ],
-    "Tamil Nadu": [
-      "Chennai",
-      "Coimbatore",
-      "Madurai",
-      "Tiruchirappalli",
-      "Salem",
-      "Erode",
-      "Tirunelveli",
-      "Vellore",
-      "Thanjavur",
-      "Tuticorin",
-      "Dindigul",
-      "Cuddalore",
-      "Kancheepuram",
-      "Nagercoil",
-      "Kumbakonam",
-      "Karur",
-      "Sivakasi",
-      "Namakkal",
-      "Tiruppur",
-    ],
-    Telangana: [
-      "Hyderabad",
-      "Warangal",
-      "Nizamabad",
-      "Karimnagar",
-      "Khammam",
-      "Mahbubnagar",
-      "Ramagundam",
-      "Siddipet",
-      "Adilabad",
-      "Nalgonda",
-      "Mancherial",
-      "Kothagudem",
-      "Zaheerabad",
-      "Miryalaguda",
-      "Bhongir",
-      "Jagtial",
-    ],
-    Tripura: [
-      "Agartala",
-      "Udaipur",
-      "Dharmanagar",
-      "Kailashahar",
-      "Belonia",
-      "Kamalpur",
-      "Ambassa",
-      "Khowai",
-      "Sabroom",
-      "Sonamura",
-      "Melaghar",
-    ],
-    "Uttar Pradesh": [
-      "Shikohabad",
-      "Hardoi",
-      "Baghpat",
-      "Mahuwadabar",
-      "Anandnagar Maharajganj",
-      "Badhnan",
-      "Khalilabad",
-      "Lucknow",
-      "Matbarganj",
-      "Kasganj",
-      "Kanpur",
-      "Varanasi",
-      "Agra",
-      "Prayagraj (Allahabad)",
-      "Ghaziabad",
-      "Noida",
-      "Meerut",
-      "Aligarh",
-      "Bareilly",
-      "Moradabad",
-      "Saharanpur",
-      "Gorakhpur",
-      "Firozabad",
-      "Jhansi",
-      "Muzaffarnagar",
-      "Mathura-Vrindavan",
-      "Budaun",
-      "Rampur",
-      "Shahjahanpur",
-      "Farrukhabad-Fatehgarh",
-      "Ayodhya",
-      "Unnao",
-      "Jaunpur",
-      "Lakhimpur",
-      "Hathras",
-      "Banda",
-      "Pilibhit",
-      "Barabanki",
-      "Khurja",
-      "Gonda",
-      "Mainpuri",
-      "Lalitpur",
-      "Sitapur",
-      "Etah",
-      "Deoria",
-      "Ghazipur",
-    ],
-    Uttarakhand: [
-      "Dehradun",
-      "Haridwar",
-      "Nainital",
-      "Rishikesh",
-      "Mussoorie",
-      "Almora",
-      "Pithoragarh",
-      "Haldwani",
-      "Rudrapur",
-      "Bageshwar",
-      "Champawat",
-      "Uttarkashi",
-      "Roorkee",
-      "Tehri",
-      "Lansdowne",
-    ],
-    "West Bengal": [
-      "Kolkata",
-      "Garia",
-      "Darjeeling",
-      "Siliguri",
-      "Howrah",
-      "Asansol",
-      "Durgapur",
-      "Malda",
-      "Cooch Behar",
-      "Haldia",
-      "Kharagpur",
-      "Raiganj",
-      "Bardhaman",
-      "Jalpaiguri",
-      "Chandannagar",
-      "Kalimpong",
-      "Alipurduar",
-    ],
-    "Andaman and Nicobar Islands": [
-      "Port Blair",
-      "Havelock Island",
-      "Diglipur",
-      "Neil Island",
-      "Car Nicobar",
-      "Little Andaman",
-      "Long Island",
-      "Mayabunder",
-      "Campbell Bay",
-      "Rangat",
-      "Wandoor",
-    ],
-    Chandigarh: [
-      "Sector 1",
-      "Sector 2",
-      "Sector 3",
-      "Sector 4",
-      "Sector 5",
-      "Sector 6",
-      "Sector 7",
-      "Sector 8",
-      "Sector 9",
-      "Sector 10",
-      "Sector 11",
-      "Sector 12",
-      "Sector 14",
-      "Sector 15",
-      "Sector 16",
-      "Sector 17",
-      "Sector 18",
-      "Sector 19",
-      "Sector 20",
-      "Sector 21",
-      "Sector 22",
-      "Sector 23",
-      "Sector 24",
-      "Sector 25",
-      "Sector 26",
-      "Sector 27",
-      "Sector 28",
-      "Sector 29",
-      "Sector 30",
-      "Sector 31",
-      "Sector 32",
-      "Sector 33",
-      "Sector 34",
-      "Sector 35",
-      "Sector 36",
-      "Sector 37",
-      "Sector 38",
-      "Sector 39",
-      "Sector 40",
-      "Sector 41",
-      "Sector 42",
-      "Sector 43",
-      "Sector 44",
-      "Sector 45",
-      "Sector 46",
-      "Sector 47",
-    ],
-    "Dadra and Nagar Haveli and Daman and Diu": [
-      "Daman",
-      "Diu",
-      "Silvassa",
-      "Amli",
-      "Kachigam",
-      "Naroli",
-      "Vapi",
-      "Marwad",
-      "Samarvarni",
-      "Kawant",
-    ],
-    Delhi: [
-      "New Delhi",
-      "Rani Bagh",
-      "Shalimar Bagh",
-      "Tilak Nagar",
-      "Hari Nagar Dadb",
-      "Hari Nagar",
-      "Maya Puri",
-      "Alaknanda",
-      "Old Delhi",
-      "Dwarka",
-      "Rohini",
-      "Karol Bagh",
-      "Lajpat Nagar",
-      "Saket",
-      "Vasant Kunj",
-      "Janakpuri",
-      "Mayur Vihar",
-      "Shahdara",
-      "Preet Vihar",
-      "Pitampura",
-      "Chanakyapuri",
-      "Narela",
-      "Mehrauli",
-      "Najafgarh",
-      "Okhla",
-      "Tilak Nagar",
-    ],
-    "Jammu and Kashmir": [
-      "Srinagar",
-      "Jammu",
-      "Anantnag",
-      "Baramulla",
-      "Pulwama",
-      "Kupwara",
-      "Udhampur",
-      "Kathua",
-      "Poonch",
-      "Kulgam",
-      "Budgam",
-      "Bandipora",
-      "Ganderbal",
-      "Rajouri",
-      "Reasi",
-      "Doda",
-      "Miran sahib",
-    ],
-    Ladakh: [
-      "Leh",
-      "Kargil",
-      "Diskit",
-      "Padum",
-      "Nubra",
-      "Tangtse",
-      "Sankoo",
-      "Zanskar",
-      "Nyoma",
-      "Turtuk",
-      "Hanle",
-    ],
-    Lakshadweep: [
-      "Kavaratti",
-      "Agatti",
-      "Minicoy",
-      "Amini",
-      "Andrott",
-      "Kalpeni",
-      "Kadmat",
-      "Chetlat",
-      "Bitra",
-      "Bangaram",
-    ],
-    Puducherry: [
-      "Puducherry",
-      "Karaikal",
-      "Mahe",
-      "Yanam",
-      "Villianur",
-      "Bahour",
-      "Oulgaret",
-      "Ariyankuppam",
-      "Nettapakkam",
-    ],
-  };
-  const orderTypeOptions = [
-    "GEM",
-    "Goverment",
-    "Private",
-    "Demo",
-    "Replacement",
-    "Repair",
-  ];
-  const salesPersonlist = [
-    "PS Brar",
-    "Ashwani Kumar",
-    "Sahil Kapoor",
-    "Priya Sharma",
-    "Aasim Musadiq",
-    "Susheel Kumar",
-    "Abhay Pratap Singh",
-    "Abhayjit Sekhon",
-    "Ajay Kumar",
-    "Rachit Arya",
-    "Amarjeet Singh",
-    "Aniket Singh",
-    "Ranbeer Kaur",
-    "Anil Kumar",
-    "Animesh Trivedi",
-    "Anirban Syam",
-    "Sahiba",
-    "Ankit Sharma",
-    "Anup Panday",
-    "Arif Khan",
-    "Arwinder Singh",
-    "Awadesh Kumar Srivastav",
-    "Bachan Pal",
-    "Barjesh Singh",
-    "Gursewak Singh",
-    "Harish Kumar",
-    "Harpeet Singh",
-    "J P Sharma",
-    "Jagan Lal",
-    "Javvad Akram",
-    "Kulwinder Singh",
-    "Manish CS Lange",
-    "Manjit Singh Chowhan",
-    "Mayank Goutam",
-    "Mayank Prasad",
-    "Nikhil Sharma",
-    "Parmjeet Singh",
-    "Pitamber Sharma",
-    "Purnendu Kumar",
-    "Raj Bahadur Singh",
-    "Rajeev Kanda",
-    "Rajeev Kumar Singh",
-    "Rajeev Pal Singh",
-    "Rajesh Kumar",
-    "Rakesh Kumar",
-    "Ramkumar Singh",
-    "Rohit Kumar Tiwari",
-    "Sahil Gupta",
-    "Savir Khan",
-    "Shri Kant",
-    "Siddhartha Kumar",
-    "Sidhant Oberai",
-    "Sidhant Prajapati",
-    "Sukhjinder Pal Singh",
-    "Sumit Kushwaha",
-    "Sunil Kukkar",
-    "Surbhi Chugh",
-    "Sushil Kumar",
-    "Vageesh Bhardwaj",
-    "Vaibhav Mishra",
-    "Varun Budhiraja",
-    "Vaseem Khan",
-  ];
-  const Reportinglist = [
-    "PS Brar",
-    "Ashwani Kumar",
-    "Sahil Kapoor",
-    "Priya Sharma",
-    "Abhay Pratap Singh",
-    "Rajeev Kanda",
-    "Abhayjit Sekhon",
-    "Hira Singh Daspa",
-    "Amarjeet Singh",
-    "Arwinder Singh",
-    "Bachan Pal",
-    "Harpeet Singh",
-    "J P Sharma",
-    "Manish CS Lange",
-    "Manjit Singh Chowhan",
-    "Mayank Prasad",
-    "Nikhil Sharma",
-    "Purnendu Kumar",
-    "Raj Bahadur Singh",
-    "Rajeev Kumar Singh",
-    "Rajeev Pal Singh",
-    "Sahil Gupta",
-    "Savir Khan",
-    "Siddhartha Kumar",
-    "Sukhjinder Pal Singh",
-    "Sumit Kushwaha",
-    "Sunil Kukkar",
-    "Surbhi Chugh",
-    "Sushil Kumar",
-    "Varun Budhiraja",
-    "Vaseem Khan",
-  ];
-
-  const paymentMethodOptions = ["Cash", "NEFT", "RTGS", "Cheque"];
-
+  const gstOptions =
+    formData.orderType === "B2G" ? ["18", "26", "including"] : ["18", "26"];
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -1390,21 +97,53 @@ function AddEntry({ onSubmit, onClose }) {
         ...(name === "installchargesstatus" && value !== "Extra"
           ? { installation: "" }
           : {}),
+        ...(name === "orderType" && value !== "B2G"
+          ? { gemOrderNumber: "", deliveryDate: "" }
+          : {}),
+        ...(name === "paymentTerms" && value !== "Credit"
+          ? { creditDays: "" }
+          : {}),
       }));
     }
   };
 
   const handleProductChange = (e) => {
     const { name, value } = e.target;
-    setCurrentProduct((prev) => ({
-      ...prev,
-      [name]: value,
-      ...(name === "productType"
-        ? { size: "", spec: "", gst: "" }
-        : name === "size"
-        ? { spec: "", gst: "" }
-        : {}),
-    }));
+    setCurrentProduct((prev) => {
+      const newProduct = {
+        ...prev,
+        [name]: value,
+        ...(name === "productType"
+          ? {
+              size: "",
+              spec: "",
+              gst: "",
+              modelNos: "",
+              brand: "",
+              warranty:
+                formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+            }
+          : name === "size"
+          ? {
+              spec: "",
+              gst: "",
+              modelNos: "",
+              brand: "",
+              warranty:
+                formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+            }
+          : name === "brand" &&
+            prev.productType === "IFPD" &&
+            value === "Promark"
+          ? { warranty: "3 Years" }
+          : name === "brand" &&
+            prev.productType === "IFPD" &&
+            value !== "Promark"
+          ? { warranty: "1 Year" }
+          : {}),
+      };
+      return newProduct;
+    });
   };
 
   const addProduct = () => {
@@ -1412,20 +151,36 @@ function AddEntry({ onSubmit, onClose }) {
       !currentProduct.productType ||
       !currentProduct.qty ||
       !currentProduct.unitPrice ||
-      currentProduct.gst === ""
+      currentProduct.gst === "" ||
+      !currentProduct.warranty
     ) {
-      toast.error("Please fill all required product fields including GST (%)");
+      toast.error(
+        "Please fill all required product fields including GST and Warranty"
+      );
+      return;
+    }
+    if (
+      currentProduct.productType === "IFPD" &&
+      (!currentProduct.modelNos || !currentProduct.brand)
+    ) {
+      toast.error("Model Numbers and Brand are required for IFPD products");
       return;
     }
     if (isNaN(Number(currentProduct.qty)) || Number(currentProduct.qty) <= 0) {
       toast.error("Quantity must be a positive number");
       return;
     }
-    if (isNaN(Number(currentProduct.gst)) || Number(currentProduct.gst) < 0) {
-      toast.error("GST (%) must be a non-negative number");
+    if (
+      isNaN(Number(currentProduct.gst)) &&
+      currentProduct.gst !== "including"
+    ) {
+      toast.error("GST must be a valid number or 'including'");
       return;
     }
-    setProducts([...products, { ...currentProduct }]);
+    setProducts([
+      ...products,
+      { ...currentProduct, modelNos: currentProduct.modelNos },
+    ]);
     setCurrentProduct({
       productType: "",
       size: "",
@@ -1433,6 +188,9 @@ function AddEntry({ onSubmit, onClose }) {
       qty: "",
       unitPrice: "",
       gst: "",
+      modelNos: "",
+      brand: "",
+      warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
     });
     setFormData((prev) => ({
       ...prev,
@@ -1472,7 +230,8 @@ function AddEntry({ onSubmit, onClose }) {
     const subtotalWithGST = products.reduce((sum, product) => {
       const qty = Number(product.qty) || 0;
       const unitPrice = Number(product.unitPrice) || 0;
-      const gstRate = Number(product.gst) || 0;
+      const gstRate =
+        product.gst === "including" ? 0 : Number(product.gst) || 0;
 
       const base = qty * unitPrice;
       const gst = base * (gstRate / 100);
@@ -1483,20 +242,22 @@ function AddEntry({ onSubmit, onClose }) {
     const installation = Number(formData.installation) || 0;
     const freight = Number(formData.freightcs) || 0;
 
-    return Math.round(subtotalWithGST + freight + installation); // Round to whole number
+    return Math.round(subtotalWithGST + freight + installation);
   };
 
   const calculatePaymentDue = (paymentCollected) => {
     const total = calculateTotal();
     const due = total - paymentCollected;
-    return Number(due.toFixed(2)); // Keep 2 decimal places for due
+    return Number(due.toFixed(2));
   };
+
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
       paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
     }));
   }, [products]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -1506,16 +267,20 @@ function AddEntry({ onSubmit, onClose }) {
       return;
     }
 
-    if (products.length === 0) {
-      toast.error("Please add at least one product");
-      return;
-    }
     if (formData.paymentMethod === "NEFT" && !formData.neftTransactionId) {
       toast.error("Please provide NEFT Transaction ID");
       return;
     }
     if (formData.paymentMethod === "Cheque" && !formData.chequeId) {
       toast.error("Please provide Cheque ID");
+      return;
+    }
+    if (formData.orderType === "B2G" && !formData.gemOrderNumber) {
+      toast.error("Please provide GEM Order Number for B2G orders");
+      return;
+    }
+    if (formData.paymentTerms === "Credit" && !formData.creditDays) {
+      toast.error("Please specify number of credit days");
       return;
     }
 
@@ -1525,16 +290,20 @@ function AddEntry({ onSubmit, onClose }) {
 
     const newEntry = {
       ...formData,
-      createdBy: userId, // Added createdBy field
+      createdBy: userId,
       products: products.map((p) => ({
         productType: p.productType,
         size: p.size || "N/A",
         spec: p.spec || "N/A",
-        qty: Number(p.qty),
-        unitPrice: Number(p.unitPrice),
-        gst: Number(p.gst),
+        qty: Number(p.qty) || 0,
+        unitPrice: Number(p.unitPrice) || 0,
+        gst: p.gst === "including" ? "including" : Number(p.gst) || 0,
         serialNos: [],
-        modelNos: [],
+        modelNos: p.modelNos ? p.modelNos.split(",").map((m) => m.trim()) : [],
+        brand: p.brand || "",
+        warranty:
+          p.warranty ||
+          (formData.orderType === "B2G" ? "As Per Tender" : "1 Year"),
       })),
       soDate: formData.soDate,
       total,
@@ -1547,6 +316,12 @@ function AddEntry({ onSubmit, onClose }) {
       neftTransactionId: formData.neftTransactionId || "",
       chequeId: formData.chequeId || "",
       remarks: formData.remarks || "",
+      gemOrderNumber: formData.gemOrderNumber || "",
+      deliveryDate: formData.deliveryDate || "",
+      demoDate: formData.demoDate || "",
+      paymentTerms: formData.paymentTerms || "",
+      creditDays: formData.creditDays || "",
+      dispatchFrom: formData.dispatchFrom || "",
     };
 
     try {
@@ -1572,6 +347,11 @@ function AddEntry({ onSubmit, onClose }) {
       toast.error(errorMessage);
       if (error.response?.status === 403) {
         toast.error("Unauthorized: Insufficient permissions or invalid token");
+      } else if (error.response?.status === 400) {
+        console.error("Validation Error Details:", error.response?.data);
+        toast.error(
+          `Validation Error: ${JSON.stringify(error.response?.data)}`
+        );
       }
     } finally {
       setLoading(false);
@@ -1645,6 +425,7 @@ function AddEntry({ onSubmit, onClose }) {
               border: "none",
               cursor: "pointer",
               color: "#64748b",
+              zIndex: 1001,
             }}
           >
             <svg
@@ -1731,9 +512,44 @@ function AddEntry({ onSubmit, onClose }) {
                   label: "Company",
                   name: "company",
                   type: "select",
-                  options: ["Promark", "Promine", "Others"],
+                  options: companyOptions,
                   placeholder: "Select Company",
                 },
+                {
+                  label: "Dispatch From *",
+                  name: "dispatchFrom",
+                  type: "select",
+                  options: dispatchFromOptions,
+                  required: true,
+                  placeholder: "Select Dispatch Location",
+                },
+                ...(formData.orderType === "B2G"
+                  ? [
+                      {
+                        label: "GEM Order Number *",
+                        name: "gemOrderNumber",
+                        type: "text",
+                        required: true,
+                        placeholder: "Enter GEM Order Number",
+                      },
+                      {
+                        label: "Delivery Date",
+                        name: "deliveryDate",
+                        type: "date",
+                        placeholder: "Select Delivery Date",
+                      },
+                    ]
+                  : []),
+                ...(formData.orderType === "Demo"
+                  ? [
+                      {
+                        label: "Demo Date *",
+                        name: "demoDate",
+                        type: "Date",
+                        required: true,
+                      },
+                    ]
+                  : []),
               ].map((field) => (
                 <div
                   key={field.name}
@@ -1817,6 +633,7 @@ function AddEntry({ onSubmit, onClose }) {
                 fontWeight: "700",
                 marginBottom: "1rem",
                 letterSpacing: "1px",
+                fontFamily: "'Poppins', sans-serif",
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
             >
@@ -1919,6 +736,7 @@ function AddEntry({ onSubmit, onClose }) {
                 fontWeight: "700",
                 marginBottom: "1rem",
                 letterSpacing: "1px",
+                fontFamily: "'Poppins', sans-serif",
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
             >
@@ -2092,6 +910,7 @@ function AddEntry({ onSubmit, onClose }) {
                 fontWeight: "700",
                 marginBottom: "1rem",
                 letterSpacing: "1px",
+                fontFamily: "'Poppins', sans-serif",
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
             >
@@ -2101,7 +920,10 @@ function AddEntry({ onSubmit, onClose }) {
               className="product-grid"
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr auto",
+                gridTemplateColumns:
+                  currentProduct.productType === "IFPD"
+                    ? "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto"
+                    : "1fr 1fr 1fr 1fr 1fr 1fr 1fr auto",
                 gap: "1rem",
                 marginBottom: "1rem",
               }}
@@ -2114,7 +936,7 @@ function AddEntry({ onSubmit, onClose }) {
                     color: "#475569",
                   }}
                 >
-                  Product Type *
+                  Product
                 </label>
                 <select
                   name="productType"
@@ -2125,6 +947,7 @@ function AddEntry({ onSubmit, onClose }) {
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
                   }}
                 >
                   <option value="">Select Product</option>
@@ -2155,6 +978,9 @@ function AddEntry({ onSubmit, onClose }) {
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
+                    backgroundColor: !currentProduct.productType
+                      ? "#e5e7eb"
+                      : "#f8fafc",
                   }}
                 >
                   <option value="">Select Size</option>
@@ -2188,6 +1014,9 @@ function AddEntry({ onSubmit, onClose }) {
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
+                    backgroundColor: !currentProduct.productType
+                      ? "#e5e7eb"
+                      : "#f8fafc",
                   }}
                 >
                   <option value="">Select Spec</option>
@@ -2221,6 +1050,7 @@ function AddEntry({ onSubmit, onClose }) {
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
                   }}
                 />
               </div>
@@ -2244,6 +1074,7 @@ function AddEntry({ onSubmit, onClose }) {
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
                   }}
                 />
               </div>
@@ -2255,10 +1086,9 @@ function AddEntry({ onSubmit, onClose }) {
                     color: "#475569",
                   }}
                 >
-                  GST (%) *
+                  GST *
                 </label>
-                <input
-                  type="number"
+                <select
                   name="gst"
                   value={currentProduct.gst}
                   onChange={handleProductChange}
@@ -2267,9 +1097,107 @@ function AddEntry({ onSubmit, onClose }) {
                     padding: "0.75rem",
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                  }}
+                >
+                  <option value="">Select GST</option>
+                  {gstOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                  }}
+                >
+                  Warranty *
+                </label>
+                <input
+                  type="text"
+                  name="warranty"
+                  value={currentProduct.warranty}
+                  onChange={handleProductChange}
+                  placeholder="Enter Warranty (e.g., 1 Year)"
+                  readOnly
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
                   }}
                 />
               </div>
+              {currentProduct.productType === "IFPD" && (
+                <>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        color: "#475569",
+                      }}
+                    >
+                      Model No *
+                    </label>
+                    <select
+                      name="modelNos"
+                      value={currentProduct.modelNos}
+                      onChange={handleProductChange}
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                      }}
+                    >
+                      <option value="">Select Model No</option>
+                      {modelNoOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        color: "#475569",
+                      }}
+                    >
+                      Brand *
+                    </label>
+                    <select
+                      name="brand"
+                      value={currentProduct.brand}
+                      onChange={handleProductChange}
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                      }}
+                    >
+                      <option value="">Select Brand</option>
+                      {brandOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
               <button
                 type="button"
                 onClick={addProduct}
@@ -2354,7 +1282,10 @@ function AddEntry({ onSubmit, onClose }) {
                       <span>
                         {product.productType} | {product.size} | {product.spec}{" "}
                         | Qty: {product.qty} | Price: ₹{product.unitPrice} |
-                        GST: {product.gst}%
+                        GST: {product.gst} | Warranty: {product.warranty}
+                        {product.productType === "IFPD" &&
+                          product.modelNos &&
+                          ` | Model No: ${product.modelNos} | Brand: ${product.brand}`}
                       </span>
                       <button
                         type="button"
@@ -2385,6 +1316,7 @@ function AddEntry({ onSubmit, onClose }) {
                 fontWeight: "700",
                 marginBottom: "1rem",
                 letterSpacing: "1px",
+                fontFamily: "'Poppins', sans-serif",
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
             >
@@ -2421,7 +1353,7 @@ function AddEntry({ onSubmit, onClose }) {
                   label: "Freight Status",
                   name: "freightstatus",
                   type: "select",
-                  options: ["To Pay", "Including", "Extra"],
+                  options: ["Self-Pickup", "To Pay", "Including", "Extra"],
                   placeholder: "Select status",
                 },
                 {
@@ -2449,7 +1381,7 @@ function AddEntry({ onSubmit, onClose }) {
                   {field.type === "select" ? (
                     <select
                       name={field.name}
-                      value={formData[field.name] || "To Pay"}
+                      value={formData[field.name] || "Extra"}
                       onChange={handleChange}
                       style={{
                         padding: "0.75rem",
@@ -2517,6 +1449,7 @@ function AddEntry({ onSubmit, onClose }) {
                 fontWeight: "700",
                 marginBottom: "1rem",
                 letterSpacing: "1px",
+                fontFamily: "'Poppins', sans-serif",
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
             >
@@ -2578,12 +1511,14 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentCollected"
                     value={formData.paymentCollected}
                     onChange={handleChange}
+                    disabled={formData.orderType === "Demo"}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
                       border: "1px solid #e2e8f0",
                       borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
+                      backgroundColor:
+                        formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
                       fontSize: "1rem",
                       color: "#1e293b",
                     }}
@@ -2605,6 +1540,7 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentDue"
                     value={formData.paymentDue}
                     readOnly
+                    disabled={formData.orderType === "Demo"}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -2639,20 +1575,59 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentMethod"
                     value={formData.paymentMethod}
                     onChange={handleChange}
+                    disabled={formData.orderType === "Demo"}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
                       border: "1px solid #e2e8f0",
                       borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
+                      backgroundColor:
+                        formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
                       fontSize: "1rem",
                       color: "#1e293b",
+                      appearance: "auto",
                     }}
                   >
                     <option value="">Select Method</option>
                     {paymentMethodOptions.map((method) => (
                       <option key={method} value={method}>
                         {method}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Payment Terms *
+                  </label>
+                  <select
+                    name="paymentTerms"
+                    value={formData.paymentTerms}
+                    onChange={handleChange}
+                    disabled={formData.orderType === "Demo"}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor:
+                        formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                      appearance: "auto",
+                    }}
+                  >
+                    <option value="">Select Terms</option>
+                    {paymentTermsOptions.map((term) => (
+                      <option key={term} value={term}>
+                        {term}
                       </option>
                     ))}
                   </select>
@@ -2675,12 +1650,14 @@ function AddEntry({ onSubmit, onClose }) {
                       value={formData.neftTransactionId}
                       onChange={handleChange}
                       placeholder="Enter NEFT Transaction ID"
+                      disabled={formData.orderType === "Demo"}
                       style={{
                         width: "100%",
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
                         borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
+                        backgroundColor:
+                          formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
                       }}
@@ -2705,16 +1682,54 @@ function AddEntry({ onSubmit, onClose }) {
                       value={formData.chequeId}
                       onChange={handleChange}
                       placeholder="Enter Cheque ID"
+                      disabled={formData.orderType === "Demo"}
                       style={{
                         width: "100%",
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
                         borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
+                        backgroundColor:
+                          formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
                       }}
                     />
+                  </div>
+                )}
+                {formData.paymentTerms === "Credit" && (
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        color: "#475569",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      No. of Credit Days *
+                    </label>
+                    <select
+                      name="creditDays"
+                      value={formData.creditDays}
+                      onChange={handleChange}
+                      disabled={formData.orderType === "Demo"}
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor:
+                          formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                        fontSize: "1rem",
+                        color: "#1e293b",
+                        appearance: "auto",
+                      }}
+                    >
+                      <option value="">-- Select Credit Days --</option>
+                      <option value="7">7 Days</option>
+                      <option value="15">15 Days</option>
+                      <option value="30">30 Days</option>
+                    </select>
                   </div>
                 )}
               </div>
@@ -2818,26 +1833,26 @@ function AddEntry({ onSubmit, onClose }) {
           }
 
           h2 {
-            font-size: 1.8rem;
+            fontsize: 1.8rem;
           }
 
           h3 {
-            font-size: 1.2rem;
+            fontsize: 1.2rem;
           }
 
           label {
-            font-size: 0.85rem;
+            fontsize: 0.85rem;
           }
 
           input,
           select {
-            font-size: 0.9rem;
+            fontsize: 0.9rem;
             padding: 0.6rem;
           }
 
           button {
             padding: 0.6rem 1.2rem;
-            font-size: 0.9rem;
+            fontsize: 0.9rem;
           }
 
           .modal-container::-webkit-scrollbar {

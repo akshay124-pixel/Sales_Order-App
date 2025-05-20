@@ -497,7 +497,7 @@ function Installation() {
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
-                      "Installation Charges",
+                      "Installation Details",
                       "Installation Status",
                       "Actions",
                     ].map((header, index) => (
@@ -518,245 +518,257 @@ function Installation() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.map((order, index) => {
-                    const productDetails = Array.isArray(order.products)
-                      ? order.products
-                          .map(
-                            (p) =>
-                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
-                          )
-                          .join(", ")
-                      : "N/A";
-                    return (
-                      <tr
-                        key={order._id}
-                        style={{
-                          background: index % 2 === 0 ? "#f8f9fa" : "#fff",
-                          transition: "all 0.3s ease",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = "#e9ecef")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background =
-                            index % 2 === 0 ? "#f8f9fa" : "#fff")
-                        }
-                      >
-                        <td
+                  {filteredOrders
+                    .slice()
+                    .sort((a, b) => {
+                      const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+                      const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+                      // If dates are equal or unavailable, sort by _id descending
+                      if (dateA.getTime() === dateB.getTime()) {
+                        return b._id.localeCompare(a._id);
+                      }
+                      return dateB - dateA;
+                    })
+                    .map((order, index) => {
+                      const productDetails = Array.isArray(order.products)
+                        ? order.products
+                            .map(
+                              (p) =>
+                                `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                            )
+                            .join(", ")
+                        : "N/A";
+                      return (
+                        <tr
+                          key={order._id}
                           style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
+                            background: index % 2 === 0 ? "#f8f9fa" : "#fff",
+                            transition: "all 0.3s ease",
                           }}
-                          title={order.orderId || "N/A"}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background = "#e9ecef")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.background =
+                              index % 2 === 0 ? "#f8f9fa" : "#fff")
+                          }
                         >
-                          {order.orderId || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "200px",
-                          }}
-                          title={productDetails}
-                        >
-                          {productDetails}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.name || "N/A"}
-                        >
-                          {order.name || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.contactNo || "N/A"}
-                        >
-                          {order.contactNo || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "200px",
-                          }}
-                          title={order.shippingAddress || "N/A"}
-                        >
-                          {order.shippingAddress || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.installation || "N/A"}
-                        >
-                          {order.installation || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            borderBottom: "1px solid #eee",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.installationStatus || "Pending"}
-                        >
-                          <Badge
+                          <td
                             style={{
-                              background:
-                                order.installationStatus === "Pending"
-                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                  : order.installationStatus === "In Progress"
-                                  ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                                  : order.installationStatus === "Completed"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : order.installationStatus === "Failed"
-                                  ? "linear-gradient(135deg, #6c757d, #5a6268)"
-                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                              color: "#fff",
-                              padding: "5px 10px",
-                              borderRadius: "12px",
-                              display: "inline-block",
-                              width: "100%",
-                              textOverflow: "ellipsis",
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
                               overflow: "hidden",
+                              textOverflow: "ellipsis",
                               whiteSpace: "nowrap",
+                              maxWidth: "150px",
                             }}
+                            title={order.orderId || "N/A"}
                           >
-                            {order.installationStatus || "Pending"}
-                          </Badge>
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            height: "40px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderBottom: "1px solid #eee",
-                          }}
-                        >
-                          <div
+                            {order.orderId || "N/A"}
+                          </td>
+                          <td
                             style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "200px",
+                            }}
+                            title={productDetails}
+                          >
+                            {productDetails}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.name || "N/A"}
+                          >
+                            {order.name || "N/A"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.contactNo || "N/A"}
+                          >
+                            {order.contactNo || "N/A"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "200px",
+                            }}
+                            title={order.shippingAddress || "N/A"}
+                          >
+                            {order.shippingAddress || "N/A"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.installation || "N/A"}
+                          >
+                            {order.installation || "N/A"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.installationStatus || "Pending"}
+                          >
+                            <Badge
+                              style={{
+                                background:
+                                  order.installationStatus === "Pending"
+                                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                    : order.installationStatus === "In Progress"
+                                    ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                                    : order.installationStatus === "Completed"
+                                    ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                    : order.installationStatus === "Failed"
+                                    ? "linear-gradient(135deg, #6c757d, #5a6268)"
+                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                                color: "#fff",
+                                padding: "5px 10px",
+                                borderRadius: "12px",
+                                display: "inline-block",
+                                width: "100%",
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {order.installationStatus || "Pending"}
+                            </Badge>
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              height: "40px",
                               display: "flex",
-                              gap: "10px",
-                              justifyContent: "center",
                               alignItems: "center",
+                              justifyContent: "center",
+                              borderBottom: "1px solid #eee",
                             }}
                           >
-                            <Button
-                              variant="primary"
-                              onClick={() => handleView(order)}
+                            <div
                               style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "22px",
-                                padding: "0",
                                 display: "flex",
-                                alignItems: "center",
+                                gap: "10px",
+                                marginTop: "20px",
                                 justifyContent: "center",
-                              }}
-                              aria-label="View order details"
-                            >
-                              <FaEye style={{ marginBottom: "3px" }} />
-                            </Button>
-                            <button
-                              className="editBtn"
-                              onClick={() => handleEdit(order)}
-                              style={{
-                                minWidth: "40px",
-                                width: "40px",
-                                height: "40px",
-                                padding: "0",
-                                border: "none",
-                                background:
-                                  "linear-gradient(135deg, #6c757d, #5a6268)",
-                                borderRadius: "22px",
-                                cursor: "pointer",
-                                display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center",
                               }}
                             >
-                              <svg
-                                height="1em"
-                                viewBox="0 0 512 512"
-                                fill="#fff"
+                              <Button
+                                variant="primary"
+                                onClick={() => handleView(order)}
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  borderRadius: "22px",
+                                  padding: "0",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                                aria-label="View order details"
                               >
-                                <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                                <FaEye style={{ marginBottom: "3px" }} />
+                              </Button>
+                              <button
+                                className="editBtn"
+                                onClick={() => handleEdit(order)}
+                                style={{
+                                  minWidth: "40px",
+                                  width: "40px",
+                                  height: "40px",
+                                  padding: "0",
+                                  border: "none",
+                                  background:
+                                    "linear-gradient(135deg, #6c757d, #5a6268)",
+                                  borderRadius: "22px",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <svg
+                                  height="1em"
+                                  viewBox="0 0 512 512"
+                                  fill="#fff"
+                                >
+                                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
@@ -945,7 +957,7 @@ function Installation() {
                         </span>
                         <span style={{ fontSize: "1rem", color: "#555" }}>
                           <strong>Model Nos:</strong>{" "}
-                          {product.modelNos?.join(", ") || "N/A"}
+                          {product.modelNos?.[0] || "N/A"}
                         </span>
                       </React.Fragment>
                     ))
