@@ -69,7 +69,7 @@ function AddEntry({ onSubmit, onClose }) {
     dispatchFrom: "", // New field for dropdown
   });
   const gstOptions =
-    formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
+    formData.orderType === "B2G" ? ["18", "26", "including"] : ["18", "26"];
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -267,20 +267,8 @@ function AddEntry({ onSubmit, onClose }) {
       return;
     }
 
-    if (formData.paymentMethod === "NEFT" && !formData.neftTransactionId) {
-      toast.error("Please provide NEFT Transaction ID");
-      return;
-    }
-    if (formData.paymentMethod === "Cheque" && !formData.chequeId) {
-      toast.error("Please provide Cheque ID");
-      return;
-    }
     if (formData.orderType === "B2G" && !formData.gemOrderNumber) {
       toast.error("Please provide GEM Order Number for B2G orders");
-      return;
-    }
-    if (formData.paymentTerms === "Credit" && !formData.creditDays) {
-      toast.error("Please specify number of credit days");
       return;
     }
 
@@ -357,7 +345,6 @@ function AddEntry({ onSubmit, onClose }) {
       setLoading(false);
     }
   };
-
   return (
     <>
       <div
@@ -1504,7 +1491,7 @@ function AddEntry({ onSubmit, onClose }) {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    Payment Collected *
+                    Payment Collected
                   </label>
                   <input
                     type="number"
@@ -1569,7 +1556,7 @@ function AddEntry({ onSubmit, onClose }) {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    Payment Method *
+                    Payment Method
                   </label>
                   <select
                     name="paymentMethod"
@@ -1605,7 +1592,7 @@ function AddEntry({ onSubmit, onClose }) {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    Payment Terms *
+                    Payment Terms
                   </label>
                   <select
                     name="paymentTerms"
@@ -1642,7 +1629,7 @@ function AddEntry({ onSubmit, onClose }) {
                         marginBottom: "0.5rem",
                       }}
                     >
-                      NEFT Transaction ID *
+                      NEFT Transaction ID
                     </label>
                     <input
                       type="text"
@@ -1674,7 +1661,7 @@ function AddEntry({ onSubmit, onClose }) {
                         marginBottom: "0.5rem",
                       }}
                     >
-                      Cheque ID *
+                      Cheque ID
                     </label>
                     <input
                       type="text"
@@ -1706,7 +1693,7 @@ function AddEntry({ onSubmit, onClose }) {
                         marginBottom: "0.5rem",
                       }}
                     >
-                      No. of Credit Days *
+                      No. of Credit Days
                     </label>
                     <select
                       name="creditDays"
