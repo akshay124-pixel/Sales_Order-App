@@ -1600,6 +1600,44 @@ function Accounts() {
                     </Form.Text>
                   )}
                 </Form.Group>
+                <Form.Group style={{ marginBottom: "20px" }}>
+                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                    Installation Status
+                  </Form.Label>
+                  <Form.Select
+                    value={formData.installationStatus}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        installationStatus: e.target.value,
+                      })
+                    }
+                    style={{
+                      borderRadius: "10px",
+                      border: errors.installationStatus
+                        ? "1px solid red"
+                        : "1px solid #ced4da",
+                      padding: "12px",
+                      fontSize: "1rem",
+                      transition: "all 0.3s ease",
+                    }}
+                    onFocus={(e) =>
+                      (e.target.style.boxShadow =
+                        "0 0 10px rgba(37, 117, 252, 0.5)")
+                    }
+                    onBlur={(e) => (e.target.style.boxShadow = "none")}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Failed">Failed</option>
+                  </Form.Select>
+                  {errors.installationStatus && (
+                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                      {errors.installationStatus}
+                    </Form.Text>
+                  )}
+                </Form.Group>
 
                 <div
                   style={{
