@@ -28,7 +28,7 @@ function Installation() {
     setError(null);
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/installation-orders",
+        "http://localhost:5000/api/installation-orders",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -202,7 +202,7 @@ function Installation() {
 
     try {
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
+        `http://localhost:5000/api/edit/${editOrder?._id}`,
         formData,
         {
           headers: {
@@ -497,8 +497,9 @@ function Installation() {
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
-                      "Installation Details",
+                      "Installation Charges",
                       "Installation Status",
+                      "Installation",
                       "Actions",
                     ].map((header, index) => (
                       <th
@@ -657,9 +658,27 @@ function Installation() {
                               whiteSpace: "nowrap",
                               maxWidth: "150px",
                             }}
-                            title={order.installation || "N/A"}
+                            title={order.installation || "0"}
                           >
-                            {order.installation || "N/A"}
+                            {order.installation || "0"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.installchargesstatus || "N/A"}
+                          >
+                            {order.installchargesstatus || "N/A"}
                           </td>
                           <td
                             style={{
