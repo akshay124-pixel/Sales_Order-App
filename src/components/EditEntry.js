@@ -739,7 +739,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `http://localhost:5000/api/edit/${entryToEdit._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -783,7 +783,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `http://localhost:5000/api/edit/${entryToEdit._id}`,
+        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
