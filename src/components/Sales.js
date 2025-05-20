@@ -358,13 +358,17 @@ const Row = React.memo(({ index, style, data }) => {
     (userRole === "Sales" && order.createdBy?._id === userId);
 
   const getRowBackground = () => {
-    if (order.sostatus === "Approved") return "#e6ffed";
-    return complete ? "#ffffff" : "#f3e8ff";
+    if (isOrderComplete(order)) return "#ffffff"; // White for complete orders
+    if (order.sostatus === "Approved") return "#e6ffed"; // Light green for Approved
+    if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
+    return "#f3e8ff"; // Light purple for incomplete/others
   };
 
   const getHoverBackground = () => {
+    if (isOrderComplete(order)) return "#f0f7ff";
     if (order.sostatus === "Approved") return "#d1f7dc";
-    return complete ? "#f0f7ff" : "#ede4ff";
+    if (order.sostatus === "Accounts Approved") return "#d1e4ff";
+    return "#ede4ff";
   };
 
   return (
@@ -1632,51 +1636,90 @@ const Sales = () => {
   }, [filteredOrders, formatCurrency]);
 
   const isOrderComplete = useCallback((order) => {
+    // List of fields corresponding to table headers
     const requiredFields = [
+      "orderId",
       "soDate",
-      "dispatchFrom",
+      "customername",
       "name",
+      "contactNo",
+      "customerEmail",
+      "sostatus",
+      "alterno",
       "city",
       "state",
       "pinCode",
-      "contactNo",
-      "customername",
-      "customerEmail",
+      "gstno",
+      "shippingAddress",
+      "billingAddress",
+      "products", // We'll check products separately
       "total",
       "paymentCollected",
       "paymentMethod",
       "paymentDue",
+      "paymentTerms",
+      "creditDays",
+      "paymentReceived",
       "freightcs",
-      "orderType",
+      "freightstatus",
+      "actualFreight",
+      "installchargesstatus",
       "installation",
-      "salesPerson",
-      "report",
-      "shippingAddress",
-      "billingAddress",
-      "company",
+      "installationStatus",
       "transporter",
       "transporterDetails",
-
-      "sostatus",
-      "invoiceNo",
-      "invoiceDate",
-      "gstno",
-      "freightstatus",
-      "remarks",
-      "fulfillingStatus",
-      "remarksByProduction",
-      "remarksByAccounts",
-      "billNumber",
-      "completionStatus",
-      "paymentReceived",
-      "installationStatus",
+      "dispatchFrom",
+      "dispatchDate",
       "dispatchStatus",
-      "paymentTerms",
+      "orderType",
+      "report",
+      "stockStatus",
       "billStatus",
+      "fulfillingStatus",
+      "billNumber",
+      "piNumber",
+      "salesPerson",
+      "company",
+      "createdBy",
+      "remarks",
     ];
 
+    // Check if all required fields are filled
     const areFieldsComplete = requiredFields.every((field) => {
       const value = order[field];
+      if (field === "products") {
+        return (
+          Array.isArray(value) &&
+          value.length > 0 &&
+          value.every(
+            (product) =>
+              product.productType &&
+              product.productType.trim() !== "" &&
+              product.qty !== undefined &&
+              product.qty > 0 &&
+              product.unitPrice !== undefined &&
+              product.unitPrice >= 0 &&
+              product.size &&
+              product.size.trim() !== "" &&
+              product.spec &&
+              product.spec.trim() !== "" &&
+              product.gst !== undefined &&
+              product.gst.trim() !== "" &&
+              product.brand &&
+              product.brand.trim() !== "" &&
+              product.warranty &&
+              product.warranty.trim() !== ""
+          )
+        );
+      }
+      if (field === "createdBy") {
+        return (
+          value &&
+          (typeof value === "string"
+            ? value.trim() !== ""
+            : value.username && value.username.trim() !== "")
+        );
+      }
       return (
         value !== undefined &&
         value !== null &&
@@ -1684,24 +1727,7 @@ const Sales = () => {
       );
     });
 
-    const areProductsComplete =
-      order.products &&
-      order.products.length > 0 &&
-      order.products.every((product) => {
-        return (
-          product.productType &&
-          product.productType.trim() !== "" &&
-          product.qty !== undefined &&
-          product.qty > 0 &&
-          product.unitPrice !== undefined &&
-          product.unitPrice >= 0 &&
-          product.size &&
-          product.spec &&
-          product.gst !== undefined
-        );
-      });
-
-    return areFieldsComplete && areProductsComplete;
+    return areFieldsComplete;
   }, []);
 
   const isBillingComplete = useCallback((order) => {
