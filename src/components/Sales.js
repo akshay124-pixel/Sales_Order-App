@@ -183,8 +183,10 @@ body {
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   max-height: 600px;
-  overflow-y: auto; /* Vertical scroll only */
-  overflow-x: hidden; /* No horizontal scroll */
+  overflow-y: auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #2575fc #e6f0fa;
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -193,9 +195,11 @@ body {
 
 /* Sales table */
 .sales-table {
-  width: 100%; /* Fit container */
+  width: 100%;
+  min-width: ${totalTableWidth}px;
   table-layout: fixed;
   border-collapse: collapse;
+  overflow-x: hidden;
 }
 
 /* Table header */
@@ -286,6 +290,7 @@ body {
 
 /* Action buttons */
 .sales-table .actions-cell button {
+
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -298,9 +303,20 @@ body {
   z-index: 1;
 }
 
+// .sales-table .actions-cell button:hover {
+//   transform: scale(1.1);
+//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+// }
+
+/* Reserve space for scrollbar */
+.sales-table-container thead tr th:last-child {
+  padding-right: 20px;
+}
+
 /* Virtualized list container */
 .list-container {
-  width: 100%; /* Fit container */
+  width: 100%;
+  min-width: ${totalTableWidth}px;
 }
 `;
 
