@@ -69,7 +69,7 @@ function AddEntry({ onSubmit, onClose }) {
     dispatchFrom: "", // New field for dropdown
   });
   const gstOptions =
-    formData.orderType === "B2G" ? ["18", "26", "including"] : ["18", "26"];
+    formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "26"];
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
