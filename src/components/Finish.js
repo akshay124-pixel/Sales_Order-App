@@ -223,7 +223,7 @@ function Finish() {
         );
         if (matchingProducts.length > 0) {
           totalProductQuantity += matchingProducts.reduce(
-            (sum, p) => sum + (p.qty || 0),
+            (sum, p) => sum + Math.floor(p.qty || 0), // Ensure integer quantity
             0
           );
         }
@@ -258,7 +258,10 @@ function Finish() {
         return (
           sum +
           (order.products
-            ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+            ? order.products.reduce(
+                (sum, p) => sum + Math.floor(p.qty || 0), // Ensure integer quantity
+                0
+              )
             : 0)
         );
       }, 0);
@@ -273,7 +276,7 @@ function Finish() {
 
     setFilteredOrders(filtered);
     setTotalResults(filtered.length);
-    setProductQuantity(totalProductQuantity);
+    setProductQuantity(totalProductQuantity); // No need to floor here as it's already an integer
   }, [
     freightStatusFilter,
     dispatchStatusFilter,
@@ -312,7 +315,10 @@ function Finish() {
         return (
           sum +
           (order.products
-            ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+            ? order.products.reduce(
+                (sum, p) => sum + Math.floor(p.qty || 0), // Ensure integer quantity
+                0
+              )
             : 0)
         );
       }, 0)
@@ -322,7 +328,6 @@ function Finish() {
       autoClose: 3000,
     });
   };
-
   const handleEditClick = (order) => {
     console.log("handleEditClick order:", JSON.stringify(order, null, 2));
     console.log("order.billStatus:", order.billStatus);
