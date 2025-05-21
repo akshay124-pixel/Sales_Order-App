@@ -20,7 +20,7 @@ function Accounts() {
     dispatchDate: "",
     paymentReceived: "Not Received",
     remarksByAccounts: "",
-
+    installationStatus: "Pending",
     invoiceDate: "",
     paymentCollected: "",
     paymentMethod: "",
@@ -227,6 +227,7 @@ function Accounts() {
       paymentDue: order.paymentDue || "",
       neftTransactionId: order.neftTransactionId || "",
       chequeId: order.chequeId || "",
+      installationStatus: order.installationStatus || "Pending",
     });
     setErrors({});
     setShowEditModal(true);
@@ -288,6 +289,7 @@ function Accounts() {
         paymentDue: formData.paymentDue || undefined,
         neftTransactionId: formData.neftTransactionId || undefined,
         chequeId: formData.chequeId || undefined,
+        installationStatus: formData.installationStatus || undefined,
       };
 
       const response = await axios.put(
