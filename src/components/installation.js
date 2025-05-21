@@ -497,7 +497,7 @@ function Installation() {
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
-                      "Installation Charges",
+
                       "Installation Status",
                       "Installation",
                       "Actions",
@@ -644,24 +644,7 @@ function Installation() {
                           >
                             {order.shippingAddress || "N/A"}
                           </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.installation || "0"}
-                          >
-                            {order.installation || "0"}
-                          </td>
+
                           <td
                             style={{
                               padding: "15px",
