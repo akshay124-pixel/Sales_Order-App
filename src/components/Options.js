@@ -1284,7 +1284,7 @@ export const Reportinglist = [
   "Varun Budhiraja",
   "Vaseem Khan",
 ];
-export const modelNoOptions = ["AT", "RX", "RSP", "QSeries", "T9H", "NT"];
+export const modelNoOptions = ["AT"];
 export const brandOptions = ["Promark", "White Label"];
 export const dispatchFromOptions = [
   "PMTS Patna",
