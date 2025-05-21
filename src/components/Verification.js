@@ -218,6 +218,7 @@ const Verification = () => {
                   "Contact No",
                   "SO Date",
                   "Total",
+                  "PaymentTerms",
                   "Payment Collected",
                   "Payment Due",
                   "Actions",
@@ -270,7 +271,10 @@ const Verification = () => {
                     </td>
                     <td style={{ padding: "15px" }}>
                       ₹{order.total?.toFixed(2) || "0.00"}
-                    </td>
+                    </td>{" "}
+                    <td style={{ padding: "15px" }}>
+                      {order.paymentTerms || "N/A"}
+                    </td>{" "}
                     <td style={{ padding: "15px" }}>
                       {order.paymentCollected || "-"}
                     </td>

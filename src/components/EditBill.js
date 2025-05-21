@@ -34,9 +34,7 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
     if (!formData.billNumber || formData.billNumber.trim() === "") {
       newErrors.billNumber = "Bill Number is required";
     }
-    if (!formData.remarksByBilling || formData.remarksByBilling.trim() === "") {
-      newErrors.remarksByBilling = "Remarks are required";
-    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
