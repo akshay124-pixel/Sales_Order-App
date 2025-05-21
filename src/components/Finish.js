@@ -779,7 +779,7 @@ function Finish() {
               }}
               title="Total quantity of matching products"
             >
-              Total Product Quantity: {productQuantity}
+              Total Product Quantity: {Math.floor(productQuantity)}
             </div>
           </div>
 
