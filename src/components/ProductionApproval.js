@@ -238,18 +238,21 @@ const ProductionApproval = () => {
             e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.2)";
           }}
         >
-          <h4
+          <div
+            className="total-results"
             style={{
-              color: "#ffffff",
-              fontWeight: "700",
-              fontSize: "0.9rem",
-              margin: 0,
-              letterSpacing: "0.5px",
+              fontSize: "1.1rem",
+              fontWeight: "500",
+              color: "#333",
+              marginBottom: "15px",
+              padding: "10px",
+              background: "#f8f9fa",
+              borderRadius: "8px",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
             }}
-            title="Total number of matching results"
           >
-            Total Results: {productMatchCount}
-          </h4>
+            Total Orders: {productMatchCount}
+          </div>
         </div>
         <div
           style={{
