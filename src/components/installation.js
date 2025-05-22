@@ -241,6 +241,11 @@ function Installation() {
       });
     }
   };
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("All");
+    setSalesPersonFilter("All");
+  };
 
   const exportToExcel = () => {
     const exportData = filteredOrders.map((order) => {
@@ -427,6 +432,24 @@ function Installation() {
           onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
         >
           Export to Excel
+        </Button>{" "}
+        <Button
+          onClick={handleClearFilters}
+          style={{
+            background: "linear-gradient(135deg, #28a745, #4cd964)",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "20px",
+            color: "#fff",
+            fontWeight: "600",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.transform = "translateY(-2px)")}
+          onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+        >
+          Clear Filters
         </Button>
       </div>
       <div style={{ padding: "20px", flex: 1 }}>
