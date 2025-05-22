@@ -52,6 +52,7 @@ function Finish() {
   const [orderTypeFilter, setOrderTypeFilter] = useState("");
   const [dispatchFromFilter, setDispatchFromFilter] = useState("");
   const [dispatchedFilter, setDispatchedFilter] = useState("");
+  const [productionStatusFilter, setProductionStatusFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -79,12 +80,20 @@ function Finish() {
         }
       );
       if (response.data.success) {
-        // Sort by soDate in descending order (newest first)
-        const sortedData = response.data.data.sort((a, b) => {
-          const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
-          const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
-          return dateB - dateA;
-        });
+        // Map backend 'Fulfilled' to frontend 'Completed'
+        const sortedData = response.data.data
+          .map((order) => ({
+            ...order,
+            fulfillingStatus:
+              order.fulfillingStatus === "Fulfilled"
+                ? "Completed"
+                : order.fulfillingStatus,
+          }))
+          .sort((a, b) => {
+            const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+            const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+            return dateB - dateA;
+          });
         setOrders(sortedData);
         setFilteredOrders(sortedData);
       } else {
@@ -155,6 +164,13 @@ function Finish() {
       );
     }
 
+    // Apply production status filter
+    if (productionStatusFilter) {
+      filtered = filtered.filter(
+        (order) => order.fulfillingStatus === productionStatusFilter
+      );
+    }
+
     // Apply date range filter
     if (startDate || endDate) {
       filtered = filtered.filter((order) => {
@@ -211,10 +227,7 @@ function Finish() {
         const dispatchFrom = order.dispatchFrom
           ? order.dispatchFrom.toLowerCase()
           : "N/A";
-        const productStatus =
-          order.fulfillingStatus === "Partial Dispatch"
-            ? "Partial Dispatch"
-            : "Complete";
+        const productStatus = order.fulfillingStatus || "N/A";
         const orderType = order.orderType || "N/A";
 
         // Check if search term matches product type for quantity counting
@@ -223,7 +236,7 @@ function Finish() {
         );
         if (matchingProducts.length > 0) {
           totalProductQuantity += matchingProducts.reduce(
-            (sum, p) => sum + Math.floor(p.qty || 0), // Ensure integer quantity
+            (sum, p) => sum + Math.floor(p.qty || 0),
             0
           );
         }
@@ -258,10 +271,7 @@ function Finish() {
         return (
           sum +
           (order.products
-            ? order.products.reduce(
-                (sum, p) => sum + Math.floor(p.qty || 0), // Ensure integer quantity
-                0
-              )
+            ? order.products.reduce((sum, p) => sum + Math.floor(p.qty || 0), 0)
             : 0)
         );
       }, 0);
@@ -276,13 +286,14 @@ function Finish() {
 
     setFilteredOrders(filtered);
     setTotalResults(filtered.length);
-    setProductQuantity(totalProductQuantity); // No need to floor here as it's already an integer
+    setProductQuantity(totalProductQuantity);
   }, [
     freightStatusFilter,
     dispatchStatusFilter,
     orderTypeFilter,
     dispatchFromFilter,
     dispatchedFilter,
+    productionStatusFilter,
     searchTerm,
     startDate,
     endDate,
@@ -299,6 +310,8 @@ function Finish() {
     setDispatchStatusFilter("");
     setOrderTypeFilter("");
     setDispatchFromFilter("");
+    setDispatchedFilter("");
+    setProductionStatusFilter("");
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
@@ -315,10 +328,7 @@ function Finish() {
         return (
           sum +
           (order.products
-            ? order.products.reduce(
-                (sum, p) => sum + Math.floor(p.qty || 0), // Ensure integer quantity
-                0
-              )
+            ? order.products.reduce((sum, p) => sum + Math.floor(p.qty || 0), 0)
             : 0)
         );
       }, 0)
@@ -328,6 +338,7 @@ function Finish() {
       autoClose: 3000,
     });
   };
+
   const handleEditClick = (order) => {
     console.log("handleEditClick order:", JSON.stringify(order, null, 2));
     console.log("order.billStatus:", order.billStatus);
@@ -467,10 +478,7 @@ function Finish() {
       "Dispatch From": order.dispatchFrom || "N/A",
       "Billing Status": order.billStatus || "Pending",
       "Freight Status": order.freightstatus || "To Pay",
-      "Product Status":
-        order.fulfillingStatus === "Partial Dispatch"
-          ? "Partial Dispatch"
-          : "Complete",
+      "Product Status": order.fulfillingStatus || "N/A",
       "Dispatch Status": order.dispatchStatus || "Not Dispatched",
     }));
 
@@ -715,6 +723,32 @@ function Finish() {
                 <option value="Docket Awaited Dispatched">
                   Docket Awaited Dispatched
                 </option>
+              </select>
+            </div>
+            <div>
+              <label
+                style={{
+                  fontWeight: "600",
+                  marginRight: "10px",
+                  color: "#333",
+                }}
+              >
+                Production Status:
+              </label>
+              <select
+                value={productionStatusFilter}
+                onChange={(e) => setProductionStatusFilter(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                <option value="">All</option>
+                <option value="Under Process">Under Process</option>
+                <option value="Pending">Pending</option>
+                <option value="Partial Dispatch">Partial Dispatch</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
             <Button
