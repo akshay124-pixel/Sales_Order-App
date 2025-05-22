@@ -341,7 +341,7 @@ function Installation() {
           display: "flex",
           flexWrap: "wrap",
           gap: "15px",
-          marginBottom: "20px",
+          marginTop: " 20px",
           alignItems: "center",
         }}
       >
