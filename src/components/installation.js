@@ -191,13 +191,6 @@ function Installation() {
     ) {
       newErrors.remarksByInstallation = "Remarks are required";
     }
-    if (
-      !["Pending", "In Progress", "Completed", "Failed"].includes(
-        formData.installationStatus
-      )
-    ) {
-      newErrors.installationStatus = "Invalid installation status";
-    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
