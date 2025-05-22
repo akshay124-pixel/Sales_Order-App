@@ -335,8 +335,100 @@ function Installation() {
         >
           Installation Dashboard
         </h1>
-      </header>
-
+      </header>{" "}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "15px",
+          marginBottom: "20px",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ position: "relative", flex: "1 1 300px" }}>
+          <Form.Control
+            type="text"
+            placeholder="Search orders..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              borderRadius: "20px",
+              padding: "10px 40px 10px 15px",
+              border: "1px solid #ced4da",
+              fontSize: "1rem",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+            }}
+          />
+          {searchQuery && (
+            <FaTimes
+              style={{
+                position: "absolute",
+                right: "15px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#6c757d",
+              }}
+              onClick={() => setSearchQuery("")}
+            />
+          )}
+        </div>
+        <Form.Select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            flex: "0 1 200px",
+            borderRadius: "20px",
+            padding: "10px",
+            border: "1px solid #ced4da",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          {uniqueStatuses.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </Form.Select>
+        <Form.Select
+          value={salesPersonFilter}
+          onChange={(e) => setSalesPersonFilter(e.target.value)}
+          style={{
+            flex: "0 1 200px",
+            borderRadius: "20px",
+            padding: "10px",
+            border: "1px solid #ced4da",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <option value="All">All Sales Persons</option>
+          {salesPersonlist.map((salesPerson) => (
+            <option key={salesPerson} value={salesPerson}>
+              {salesPerson}
+            </option>
+          ))}
+        </Form.Select>
+        <Button
+          onClick={exportToExcel}
+          style={{
+            background: "linear-gradient(135deg, #28a745, #4cd964)",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "20px",
+            color: "#fff",
+            fontWeight: "600",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.transform = "translateY(-2px)")}
+          onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+        >
+          Export to Excel
+        </Button>
+      </div>
       <div style={{ padding: "20px", flex: 1 }}>
         {error && (
           <div
@@ -391,103 +483,6 @@ function Installation() {
           </div>
         ) : (
           <>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "15px",
-                marginBottom: "20px",
-                alignItems: "center",
-              }}
-            >
-              <div style={{ position: "relative", flex: "1 1 300px" }}>
-                <Form.Control
-                  type="text"
-                  placeholder="Search orders..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    borderRadius: "20px",
-                    padding: "10px 40px 10px 15px",
-                    border: "1px solid #ced4da",
-                    fontSize: "1rem",
-                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                  }}
-                />
-                {searchQuery && (
-                  <FaTimes
-                    style={{
-                      position: "absolute",
-                      right: "15px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      cursor: "pointer",
-                      color: "#6c757d",
-                    }}
-                    onClick={() => setSearchQuery("")}
-                  />
-                )}
-              </div>
-              <Form.Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                style={{
-                  flex: "0 1 200px",
-                  borderRadius: "20px",
-                  padding: "10px",
-                  border: "1px solid #ced4da",
-                  fontSize: "1rem",
-                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                {uniqueStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </Form.Select>
-              <Form.Select
-                value={salesPersonFilter}
-                onChange={(e) => setSalesPersonFilter(e.target.value)}
-                style={{
-                  flex: "0 1 200px",
-                  borderRadius: "20px",
-                  padding: "10px",
-                  border: "1px solid #ced4da",
-                  fontSize: "1rem",
-                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <option value="All">All Sales Persons</option>
-                {salesPersonlist.map((salesPerson) => (
-                  <option key={salesPerson} value={salesPerson}>
-                    {salesPerson}
-                  </option>
-                ))}
-              </Form.Select>
-              <Button
-                onClick={exportToExcel}
-                style={{
-                  background: "linear-gradient(135deg, #28a745, #4cd964)",
-                  border: "none",
-                  padding: "10px 20px",
-                  borderRadius: "20px",
-                  color: "#fff",
-                  fontWeight: "600",
-                  fontSize: "1rem",
-                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                  transition: "all 0.3s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.transform = "translateY(-2px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.transform = "translateY(0)")
-                }
-              >
-                Export to Excel
-              </Button>
-            </div>
             <div
               style={{
                 overflowX: "auto",
@@ -802,7 +797,6 @@ function Installation() {
           </>
         )}
       </div>
-
       <footer
         style={{
           padding: "15px",
@@ -817,7 +811,6 @@ function Installation() {
           © 2025 Sales Order Management. All rights reserved.
         </p>
       </footer>
-
       {/* View Modal */}
       <Modal
         show={showViewModal}
@@ -1022,7 +1015,6 @@ function Installation() {
           )}
         </Modal.Body>
       </Modal>
-
       {/* Edit Modal */}
       <Modal
         show={showEditModal}
