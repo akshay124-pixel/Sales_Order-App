@@ -67,6 +67,7 @@ function AddEntry({ onSubmit, onClose }) {
     paymentTerms: "",
     creditDays: "",
     dispatchFrom: "", // New field for dropdown
+    fulfillingStatus: "Not Fulfilled",
   });
   const gstOptions =
     formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
@@ -102,6 +103,12 @@ function AddEntry({ onSubmit, onClose }) {
           : {}),
         ...(name === "paymentTerms" && value !== "Credit"
           ? { creditDays: "" }
+          : {}),
+        ...(name === "dispatchFrom"
+          ? {
+              fulfillingStatus:
+                value === "PMTS Morinda" ? "Not Fulfilled" : "Fulfilled",
+            }
           : {}),
       }));
     }
@@ -310,6 +317,7 @@ function AddEntry({ onSubmit, onClose }) {
       paymentTerms: formData.paymentTerms || "",
       creditDays: formData.creditDays || "",
       dispatchFrom: formData.dispatchFrom || "",
+      fulfillingStatus: formData.fulfillingStatus,
     };
 
     try {
