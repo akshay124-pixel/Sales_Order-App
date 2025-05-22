@@ -1594,6 +1594,10 @@ const Production = () => {
                       <strong>Sales Order Remarks:</strong>{" "}
                       {viewOrder.remarks || "N/A"}
                     </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Dispatch From:</strong>{" "}
+                      {viewOrder.dispatchFrom || "N/A"}
+                    </span>
                   </div>
                 </div>
                 <div
