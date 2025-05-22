@@ -460,9 +460,14 @@ function Finish() {
         : "N/A",
       "Serial Nos": order.products
         ? order.products
-            .flatMap((p) => p.serialNos || [])
+            .map((p) => {
+              const serials = (p.serialNos || []).filter(Boolean);
+              return serials.length > 0
+                ? `${p.productType}: ${serials.join(", ")}`
+                : null;
+            })
             .filter(Boolean)
-            .join(", ") || "N/A"
+            .join("; ") || "N/A"
         : "N/A",
       Quantity: order.products
         ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
