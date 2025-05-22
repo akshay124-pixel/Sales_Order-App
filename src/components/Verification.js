@@ -113,6 +113,7 @@ const Verification = () => {
         ? new Date(order.soDate).toLocaleDateString("en-GB")
         : "-",
       Total: order.total ? `₹${order.total.toFixed(2)}` : "₹0.00",
+      "Payment Terms": order.paymentTerms || "-",
       "Payment Collected": order.paymentCollected || "-",
       "Payment Due": order.paymentDue || "-",
       "Verification Remarks": order.verificationRemarks || "-",
@@ -130,6 +131,38 @@ const Verification = () => {
 
   return (
     <>
+      <style>
+        {`
+          .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #2575fc #e6f0fa;
+          }
+          table thead {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+          }
+          table tbody {
+            background: white;
+          }
+          .total-results {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          }
+        `}
+      </style>
       <div
         style={{
           background: "linear-gradient(135deg, #2575fc, #6a11cb)",
@@ -182,15 +215,26 @@ const Verification = () => {
         }}
       >
         <div
+          className="total-results"
+          style={{
+            fontSize: "1.1rem",
+            fontWeight: "500",
+            color: "#333",
+            marginBottom: "15px",
+            padding: "10px",
+            background: "#f8f9fa",
+            borderRadius: "8px",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+          }}
+        >
+          Total Orders: {filteredOrders.length}
+        </div>
+        <div
+          className="table-container"
           style={{
             background: "white",
             borderRadius: "12px",
             boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-            maxHeight: "600px",
-            overflowY: "auto",
-            overflowX: "auto",
-            scrollbarWidth: "thin",
-            scrollbarColor: "#2575fc #e6f0fa",
           }}
         >
           <table
@@ -198,34 +242,26 @@ const Verification = () => {
               width: "100%",
               borderCollapse: "separate",
               borderSpacing: "0",
+              tableLayout: "fixed",
             }}
           >
-            <thead
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                color: "white",
-                position: "sticky",
-                top: 0,
-                zIndex: 2,
-                boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
-              }}
-            >
+            <thead>
               <tr>
                 {[
-                  "Seq No",
-                  "Order ID",
-                  "Customer Name",
-                  "Contact No",
-                  "SO Date",
-                  "Total",
-                  "PaymentTerms",
-                  "Payment Collected",
-                  "Payment Due",
-                  "Actions",
-                  "Approval Status",
-                  "Product Details",
-                  "Verification Remarks",
-                ].map((header) => (
+                  { header: "Seq No", width: "80px" },
+                  { header: "Order ID", width: "120px" },
+                  { header: "Customer Name", width: "150px" },
+                  { header: "Contact No", width: "120px" },
+                  { header: "SO Date", width: "100px" },
+                  { header: "Total", width: "100px" },
+                  { header: "Payment Terms", width: "120px" },
+                  { header: "Payment Collected", width: "120px" },
+                  { header: "Payment Due", width: "120px" },
+                  { header: "Actions", width: "120px" },
+                  { header: "Approval Status", width: "120px" },
+                  { header: "Product Details", width: "200px" },
+                  { header: "Verification Remarks", width: "150px" },
+                ].map(({ header, width }) => (
                   <th
                     key={header}
                     style={{
@@ -236,6 +272,11 @@ const Verification = () => {
                       letterSpacing: "0.5px",
                       borderBottom: "2px solid rgba(255,255,255,0.2)",
                       whiteSpace: "nowrap",
+                      width,
+                      minWidth: width,
+                      maxWidth: width,
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
                     }}
                   >
                     {header}
@@ -254,34 +295,135 @@ const Verification = () => {
                       borderBottom: "1px solid #e6f0fa",
                     }}
                   >
-                    <td style={{ padding: "15px", textAlign: "center" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        textAlign: "center",
+                        width: "80px",
+                        minWidth: "80px",
+                        maxWidth: "80px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {index + 1}
                     </td>
-                    <td style={{ padding: "15px" }}>{order.orderId || "-"}</td>
-                    <td style={{ padding: "15px" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "120px",
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {order.orderId || "-"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "150px",
+                        minWidth: "150px",
+                        maxWidth: "150px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {order.customername || "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "120px",
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {order.contactNo || "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "100px",
+                        minWidth: "100px",
+                        maxWidth: "100px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {order.soDate
                         ? new Date(order.soDate).toLocaleDateString("en-GB")
                         : "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "100px",
+                        minWidth: "100px",
+                        maxWidth: "100px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       ₹{order.total?.toFixed(2) || "0.00"}
-                    </td>{" "}
-                    <td style={{ padding: "15px" }}>
-                      {order.paymentTerms || "N/A"}
-                    </td>{" "}
-                    <td style={{ padding: "15px" }}>
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "120px",
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {order.paymentTerms || "-"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "120px",
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {order.paymentCollected || "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "120px",
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {order.paymentDue || "-"}
-                    </td>{" "}
-                    <td style={{ padding: "15px", textAlign: "center" }}>
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px",
+                        textAlign: "center",
+                        width: "120px",
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                      }}
+                    >
                       <div style={{ display: "flex", gap: "10px" }}>
                         <Button
                           variant="primary"
@@ -323,8 +465,18 @@ const Verification = () => {
                           </svg>
                         </button>
                       </div>
-                    </td>{" "}
-                    <td style={{ padding: "15px" }}>
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "120px",
+                        minWidth: "120px",
+                        maxWidth: "120px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       <Badge
                         bg={
                           order.sostatus === "Pending for Approval"
@@ -336,14 +488,34 @@ const Verification = () => {
                         {order.sostatus || "-"}
                       </Badge>
                     </td>
-                    <td style={{ padding: "15px" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "200px",
+                        minWidth: "200px",
+                        maxWidth: "200px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {order.products
                         ? order.products
                             .map((p) => `${p.productType} (${p.qty})`)
                             .join(", ")
                         : "-"}
                     </td>
-                    <td style={{ padding: "15px" }}>
+                    <td
+                      style={{
+                        padding: "15px",
+                        width: "150px",
+                        minWidth: "150px",
+                        maxWidth: "150px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {order.verificationRemarks || "-"}
                     </td>
                   </tr>
@@ -351,7 +523,7 @@ const Verification = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="12"
+                    colSpan="13"
                     style={{
                       padding: "20px",
                       textAlign: "center",
