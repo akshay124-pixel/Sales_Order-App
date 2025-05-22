@@ -104,7 +104,7 @@ function AddEntry({ onSubmit, onClose }) {
         ...(name === "paymentTerms" && value !== "Credit"
           ? { creditDays: "" }
           : {}),
-        ...(name === "dispatchFrom"
+        ...(name === "dispatchFrom" && prev.orderType !== "Demo"
           ? {
               fulfillingStatus:
                 value === "PMTS Morinda" ? "Not Fulfilled" : "Fulfilled",
