@@ -21,10 +21,13 @@ const OutFinishedGoodModal = ({
     docketNo: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
+    modelNos: "", // New field
+    serialNos: "", // New field
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+
   useEffect(() => {
     console.log("entryToEdit:", JSON.stringify(entryToEdit, null, 2));
     console.log("billStatus:", entryToEdit?.billStatus);
@@ -56,6 +59,8 @@ const OutFinishedGoodModal = ({
         docketNo: initialData.docketNo || "",
         actualFreight: initialData.actualFreight || "",
         dispatchStatus: validDispatchStatus,
+        modelNos: initialData.modelNos || "", // Initialize from initialData
+        serialNos: initialData.serialNos || "", // Initialize from initialData
       });
     }
   }, [initialData, entryToEdit]);
@@ -72,7 +77,13 @@ const OutFinishedGoodModal = ({
   };
 
   const handleDispatchFromChange = (value) => {
-    setFormData((prev) => ({ ...prev, dispatchFrom: value }));
+    setFormData((prev) => ({
+      ...prev,
+      dispatchFrom: value,
+      // Reset modelNos and serialNos when dispatchFrom is PMTS Morinda
+      modelNos: value === "PMTS Morinda" ? "" : prev.modelNos,
+      serialNos: value === "PMTS Morinda" ? "" : prev.serialNos,
+    }));
   };
 
   const handleTransporterChange = (value) => {
@@ -85,6 +96,7 @@ const OutFinishedGoodModal = ({
 
   const handleSubmit = async () => {
     if (!showConfirm) {
+      // Validation
       if (
         !formData.dispatchFrom ||
         !formData.transporter ||
@@ -115,6 +127,16 @@ const OutFinishedGoodModal = ({
         toast.error("Billing Status must be Billing Complete!");
         return;
       }
+      if (
+        formData.dispatchFrom !== "PMTS Morinda" &&
+        (!formData.modelNos || !formData.serialNos)
+      ) {
+        setError(
+          "Model Numbers and Serial Numbers are required when Dispatch From is not PMTS Morinda!"
+        );
+        toast.error("Model Numbers and Serial Numbers are required!");
+        return;
+      }
       setShowConfirm(true);
       return;
     }
@@ -135,6 +157,11 @@ const OutFinishedGoodModal = ({
             ? Number(formData.actualFreight)
             : undefined,
         dispatchStatus: formData.dispatchStatus,
+        // Include modelNos and serialNos only if dispatchFrom is not PMTS Morinda
+        ...(formData.dispatchFrom !== "PMTS Morinda" && {
+          modelNos: formData.modelNos,
+          serialNos: formData.serialNos,
+        }),
       };
 
       const response = await axios.put(
@@ -255,6 +282,12 @@ const OutFinishedGoodModal = ({
             label: "Transporter Remarks",
             type: "text",
           },
+          ...(formData.dispatchFrom !== "PMTS Morinda"
+            ? [
+                { key: "modelNos", label: "Model Numbers *", type: "text" },
+                { key: "serialNos", label: "Serial Numbers *", type: "text" },
+              ]
+            : []),
         ].map((field) => (
           <div key={field.key}>
             <label
@@ -267,9 +300,6 @@ const OutFinishedGoodModal = ({
               }}
             >
               {field.label}
-              {["dispatchFrom", "transporter", "dispatchDate"].includes(
-                field.key
-              ) && " *"}
             </label>
             <Input
               placeholder={`Enter ${field.label.toLowerCase()}`}
