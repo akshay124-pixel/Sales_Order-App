@@ -1336,10 +1336,22 @@ function Finish() {
                             style={{
                               background:
                                 order.dispatchStatus === "Not Dispatched"
-                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Not Dispatched
+                                  : order.dispatchStatus ===
+                                    "Docket Awaited Dispatched"
+                                  ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for Docket Awaited Dispatched
                                   : order.dispatchStatus === "Dispatched"
-                                  ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                  : "linear-gradient(135deg, #28a745, #4cd964)",
+                                  ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue for Dispatched
+                                  : order.dispatchStatus === "Delivered"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Delivered
+                                  : order.dispatchStatus ===
+                                    "Hold by Salesperson"
+                                  ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue (lighter) for Hold by Salesperson
+                                  : order.dispatchStatus === "Hold by Customer"
+                                  ? "linear-gradient(135deg, #8e44ad, #be94e6)" // Purple for Hold by Customer
+                                  : order.dispatchStatus === "Order Cancelled"
+                                  ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Order Cancelled
+                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
                               color: "#fff",
                               padding: "5px 10px",
                               borderRadius: "12px",
@@ -1431,7 +1443,6 @@ function Finish() {
           © 2025 Sales Order Management. All rights reserved.
         </p>
       </footer>
-
       <Modal
         show={showViewModal}
         onHide={() => setShowViewModal(false)}
@@ -1441,11 +1452,28 @@ function Finish() {
       >
         <style>
           {`
-            @keyframes fadeIn {
-              0% { opacity: 0; transform: translateY(10px); }
-              100% { opacity: 1; transform: translateY(0); }
-            }
-          `}
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .serial-nos-container {
+        max-height: 100px;
+        overflow-y: auto;
+        padding: 5px 10px;
+        background: #fff;
+        border-radius: 5px;
+        border: 1px solid #eee;
+      }
+      .serial-nos-container ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .serial-nos-container li {
+        font-size: 0.95rem;
+        color: #555;
+        line-height: 1.4;
+      }
+    `}
         </style>
         <Modal.Header
           closeButton
@@ -1512,15 +1540,16 @@ function Finish() {
                     <div
                       key={index}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "1.5rem",
-                        flexWrap: "wrap",
-                        padding: "0.5rem 0",
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: "10px",
+                        padding: "10px 0",
                         borderBottom:
                           index < viewOrder.products.length - 1
                             ? "1px solid #eee"
                             : "none",
+                        alignItems: "start",
                       }}
                     >
                       <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -1537,8 +1566,18 @@ function Finish() {
                         <strong>Spec:</strong> {product.spec || "N/A"}
                       </span>
                       <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Serial Nos:</strong>{" "}
-                        {product.serialNos?.join(", ") || "N/A"}
+                        <strong>Serial Nos:</strong>
+                        <div className="serial-nos-container">
+                          {product.serialNos && product.serialNos.length > 0 ? (
+                            <ul>
+                              {product.serialNos.map((serial, idx) => (
+                                <li key={idx}>{serial}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            "N/A"
+                          )}
+                        </div>
                       </span>
                       <span style={{ fontSize: "1rem", color: "#555" }}>
                         <strong>Model Nos:</strong>{" "}

@@ -340,6 +340,9 @@ const OutFinishedGoodModal = ({
             <Option value="Docket Awaited Dispatched">
               Docket-Awaited-Dispatched
             </Option>
+            <Option value="Hold by Salesperson">Hold by Salesperson</Option>
+            <Option value="Hold by Customer">Hold by Customer</Option>
+            <Option value="Order Cancelled">Order Cancelled</Option>
             {(entryToEdit?.billStatus || "Pending").trim().toLowerCase() ===
               "billing complete" && (
               <>

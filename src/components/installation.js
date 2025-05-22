@@ -929,14 +929,22 @@ function Installation() {
                       style={{
                         background:
                           viewOrder.installationStatus === "Pending"
-                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Pending
                             : viewOrder.installationStatus === "In Progress"
-                            ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                            ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for In Progress
                             : viewOrder.installationStatus === "Completed"
-                            ? "linear-gradient(135deg, #28a745, #4cd964)"
+                            ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Completed
                             : viewOrder.installationStatus === "Failed"
-                            ? "linear-gradient(135deg, #6c757d, #5a6268)"
-                            : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                            ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Failed
+                            : viewOrder.installationStatus ===
+                              "Hold by Salesperson"
+                            ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue for Hold by Salesperson
+                            : viewOrder.installationStatus ===
+                              "Hold by Customer"
+                            ? "linear-gradient(135deg, #8e44ad, #be94e6)" // Purple for Hold by Customer
+                            : viewOrder.installationStatus === "Site Not Ready"
+                            ? "linear-gradient(135deg, #e84393, #ff6b9b)" // Pink/Magenta for Site Not Ready
+                            : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
                         color: "#fff",
                         padding: "5px 10px",
                         borderRadius: "12px",
@@ -1105,6 +1113,9 @@ function Installation() {
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
                 <option value="Failed">Failed</option>
+                <option value="Hold by Salesperson">Hold by Salesperson</option>
+                <option value="Hold by Customer">Hold by Customer</option>
+                <option value="Site Not Ready">Site Not Ready</option>
               </Form.Select>
               {errors.installationStatus && (
                 <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>

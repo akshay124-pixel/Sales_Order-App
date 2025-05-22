@@ -706,14 +706,20 @@ const Row = React.memo(({ index, style, data }) => {
             <Badge
               bg={
                 order.installationStatus === "Pending"
-                  ? "warning"
+                  ? "warning" // Yellow for Pending
                   : order.installationStatus === "In Progress"
-                  ? "info"
+                  ? "info" // Light blue for In Progress
                   : order.installationStatus === "Completed"
-                  ? "success"
+                  ? "success" // Green for Completed
                   : order.installationStatus === "Failed"
-                  ? "danger"
-                  : "secondary"
+                  ? "danger" // Red for Failed
+                  : order.installationStatus === "Hold by Salesperson"
+                  ? "primary" // Blue for Hold by Salesperson
+                  : order.installationStatus === "Hold by Customer"
+                  ? "dark" // Dark gray for Hold by Customer
+                  : order.installationStatus === "Site Not Ready"
+                  ? "light" // Light gray for Site Not Ready
+                  : "secondary" // Default gray
               }
             >
               {order.installationStatus || "-"}
@@ -751,12 +757,20 @@ const Row = React.memo(({ index, style, data }) => {
             <Badge
               bg={
                 order.dispatchStatus === "Not Dispatched"
-                  ? "warning"
+                  ? "warning" // Yellow for Not Dispatched
+                  : order.dispatchStatus === "Docket Awaited Dispatched"
+                  ? "info" // Light blue for Docket Awaited Dispatched
                   : order.dispatchStatus === "Dispatched"
-                  ? "info"
+                  ? "primary" // Blue for Dispatched
                   : order.dispatchStatus === "Delivered"
-                  ? "success"
-                  : "secondary"
+                  ? "success" // Green for Delivered
+                  : order.dispatchStatus === "Hold by Salesperson"
+                  ? "dark" // Dark gray for Hold by Salesperson
+                  : order.dispatchStatus === "Hold by Customer"
+                  ? "light" // Light gray for Hold by Customer
+                  : order.dispatchStatus === "Order Cancelled"
+                  ? "danger" // Red for Order Cancelled
+                  : "secondary" // Default gray
               }
             >
               {order.dispatchStatus || "-"}
