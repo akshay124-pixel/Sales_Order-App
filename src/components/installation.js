@@ -4,7 +4,7 @@ import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
-
+import { salesPersonlist } from "./Options";
 function Installation() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -22,6 +22,7 @@ function Installation() {
   const [errors, setErrors] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [salesPersonFilter, setSalesPersonFilter] = useState("All");
 
   const fetchInstallationOrders = useCallback(async () => {
     setLoading(true);
@@ -99,8 +100,13 @@ function Installation() {
         (order) => order.installationStatus === statusFilter
       );
     }
+    if (salesPersonFilter !== "All") {
+      filtered = filtered.filter(
+        (order) => order.salesPerson === salesPersonFilter
+      );
+    }
     setFilteredOrders(filtered);
-  }, [orders, searchQuery, statusFilter]);
+  }, [orders, searchQuery, statusFilter, salesPersonFilter]);
 
   // Get unique statuses for filter dropdown
   const uniqueStatuses = [
@@ -437,6 +443,25 @@ function Installation() {
                 {uniqueStatuses.map((status) => (
                   <option key={status} value={status}>
                     {status}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Select
+                value={salesPersonFilter}
+                onChange={(e) => setSalesPersonFilter(e.target.value)}
+                style={{
+                  flex: "0 1 200px",
+                  borderRadius: "20px",
+                  padding: "10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "1rem",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <option value="All">All Sales Persons</option>
+                {salesPersonlist.map((salesPerson) => (
+                  <option key={salesPerson} value={salesPerson}>
+                    {salesPerson}
                   </option>
                 ))}
               </Form.Select>
