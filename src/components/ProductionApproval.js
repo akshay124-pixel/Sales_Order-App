@@ -218,42 +218,21 @@ const ProductionApproval = () => {
         }}
       >
         <div
+          className="total-results"
           style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            borderRadius: "25px",
-            padding: "12px 20px",
-            boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
-            display: "inline-flex",
-            alignItems: "center",
-            marginBottom: "20px",
-            transition: "all 0.3s ease",
-            backgroundColor: "rgba(255, 255, 255, 0.95)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.3)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.2)";
+            fontSize: "1.1rem",
+            fontWeight: "500",
+            color: "#333",
+            marginBottom: "15px",
+            padding: "10px",
+            background: "#f8f9fa",
+            borderRadius: "8px",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
           }}
         >
-          <div
-            className="total-results"
-            style={{
-              fontSize: "1.1rem",
-              fontWeight: "500",
-              color: "#333",
-              marginBottom: "15px",
-              padding: "10px",
-              background: "#f8f9fa",
-              borderRadius: "8px",
-              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-            }}
-          >
-            Total Orders: {productMatchCount}
-          </div>
+          Total Orders: {productMatchCount}
         </div>
+
         <div
           style={{
             background: "white",

@@ -133,6 +133,11 @@ const BillGeneration = () => {
     XLSX.writeFile(wb, "Bill_Orders.xlsx");
   };
 
+  // Calculate total pending orders (billStatus === "Pending")
+  const totalPending = filteredOrders.filter(
+    (order) => order.billStatus === "Pending"
+  ).length;
+
   return (
     <>
       <style>
@@ -164,6 +169,11 @@ const BillGeneration = () => {
             background: #f8f9fa;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
           }
         `}
       </style>
@@ -218,20 +228,9 @@ const BillGeneration = () => {
           fontFamily: "'Poppins', sans-serif",
         }}
       >
-        <div
-          className="total-results"
-          style={{
-            fontSize: "1.1rem",
-            fontWeight: "500",
-            color: "#333",
-            marginBottom: "15px",
-            padding: "10px",
-            background: "#f8f9fa",
-            borderRadius: "8px",
-            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-          }}
-        >
-          Total Orders: {filteredOrders.length}
+        <div className="total-results">
+          <span>Total Orders: {filteredOrders.length}</span>
+          <span>Total Pending: {totalPending}</span>
         </div>
         <div
           className="table-container"
