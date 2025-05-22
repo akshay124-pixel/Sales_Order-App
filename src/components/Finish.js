@@ -1256,16 +1256,17 @@ function Finish() {
                             whiteSpace: "nowrap",
                             maxWidth: "150px",
                           }}
-                          title={
-                            order.fulfillingStatus === "Partial Dispatch"
-                              ? "Partial Dispatch"
-                              : "Complete"
-                          }
+                          title={order.fulfillingStatus}
                         >
                           <Badge
                             style={{
                               background:
-                                order.fulfillingStatus === "Partial Dispatch"
+                                order.fulfillingStatus === "Under Process"
+                                  ? "linear-gradient(135deg, #ff9800, #f44336)"
+                                  : order.fulfillingStatus === "Pending"
+                                  ? "linear-gradient(135deg, #ffeb3b, #ff9800)"
+                                  : order.fulfillingStatus ===
+                                    "Partial Dispatch"
                                   ? "linear-gradient(135deg, #00c6ff, #0072ff)"
                                   : "linear-gradient(135deg, #28a745, #4cd964)",
                               color: "#fff",
@@ -1278,9 +1279,7 @@ function Finish() {
                               whiteSpace: "nowrap",
                             }}
                           >
-                            {order.fulfillingStatus === "Partial Dispatch"
-                              ? "Partial Dispatch"
-                              : "Complete"}
+                            {order.fulfillingStatus}
                           </Badge>
                         </td>
                         <td
