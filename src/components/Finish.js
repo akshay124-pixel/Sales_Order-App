@@ -844,7 +844,7 @@ function Finish() {
                       "Dispatch From",
                       "Billing Status",
                       "Freight Status",
-                      "Product Status",
+                      "Production Status",
                       "Dispatch Status",
                       "Actions",
                     ].map((header, index) => (
