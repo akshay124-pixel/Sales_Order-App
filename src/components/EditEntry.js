@@ -2998,7 +2998,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const renderUpdateForm = () => (
     <Form onSubmit={handleSubmit(onUpdateSubmit)}>
       <FormSection>
-        {/* <Form.Group controlId="sostatus">
+        <Form.Group controlId="sostatus">
           <Form.Label>📊 SO Status</Form.Label>
           <Form.Select
             value={updateData.sostatus}
@@ -3009,7 +3009,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Accounts Approved">Accounts Approved</option>
             <option value="Approved">Approved</option>
           </Form.Select>
-        </Form.Group> */}
+        </Form.Group>
         <Form.Group controlId="remarks">
           <Form.Label>✏️ Remarks</Form.Label>
           <Form.Control

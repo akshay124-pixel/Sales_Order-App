@@ -1592,13 +1592,17 @@ function AddEntry({ onSubmit, onClose }) {
                       marginBottom: "0.5rem",
                     }}
                   >
-                    Payment Terms
+                    Payment Terms{" "}
+                    {formData.orderType !== "Demo" && (
+                      <span style={{ color: "#dc2626" }}>*</span>
+                    )}
                   </label>
                   <select
                     name="paymentTerms"
                     value={formData.paymentTerms}
                     onChange={handleChange}
                     disabled={formData.orderType === "Demo"}
+                    required={formData.orderType !== "Demo"}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -1611,7 +1615,9 @@ function AddEntry({ onSubmit, onClose }) {
                       appearance: "auto",
                     }}
                   >
-                    <option value="">Select Terms</option>
+                    <option value="" disabled>
+                      Select Terms
+                    </option>
                     {paymentTermsOptions.map((term) => (
                       <option key={term} value={term}>
                         {term}
@@ -1683,7 +1689,8 @@ function AddEntry({ onSubmit, onClose }) {
                     />
                   </div>
                 )}
-                {formData.paymentTerms === "Credit" && (
+                {(formData.paymentTerms === "Credit" ||
+                  formData.paymentTerms === "Partial Advance") && (
                   <div>
                     <label
                       style={{
@@ -1693,13 +1700,15 @@ function AddEntry({ onSubmit, onClose }) {
                         marginBottom: "0.5rem",
                       }}
                     >
-                      No. of Credit Days
+                      No. of Credit Days{" "}
+                      <span style={{ color: "#dc2626" }}>*</span>
                     </label>
                     <select
                       name="creditDays"
                       value={formData.creditDays}
                       onChange={handleChange}
                       disabled={formData.orderType === "Demo"}
+                      required
                       style={{
                         width: "100%",
                         padding: "0.75rem",
@@ -1712,7 +1721,9 @@ function AddEntry({ onSubmit, onClose }) {
                         appearance: "auto",
                       }}
                     >
-                      <option value="">-- Select Credit Days --</option>
+                      <option value="" disabled>
+                        -- Select Credit Days --
+                      </option>
                       <option value="7">7 Days</option>
                       <option value="15">15 Days</option>
                       <option value="30">30 Days</option>
