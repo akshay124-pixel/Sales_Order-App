@@ -269,6 +269,25 @@ function Installation() {
       `Installation_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
     );
   };
+  <style>
+    {`
+  .total-results {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+`}
+  </style>;
 
   if (loading) {
     return (
