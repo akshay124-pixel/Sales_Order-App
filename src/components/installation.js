@@ -835,6 +835,31 @@ function Installation() {
         keyboard={false}
         size="lg"
       >
+        <style>
+          {`
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .serial-nos-container {
+        max-height: 100px;
+        overflow-y: auto;
+        padding: 5px 10px;
+        background: #fff;
+        border-radius: 5px;
+        border: 1px solid #eee;
+      }
+      .serial-nos-container ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .serial-nos-container li {
+        font-size: 0.95rem;
+        color: #555;
+        line-height: 1.4;
+      }
+    `}
+        </style>
         <Modal.Header
           closeButton
           style={{
@@ -869,6 +894,7 @@ function Installation() {
             display: "flex",
             flexDirection: "column",
             gap: "20px",
+            animation: "fadeIn 0.5s ease-in-out",
           }}
         >
           {viewOrder && (
@@ -879,6 +905,7 @@ function Installation() {
                   borderRadius: "10px",
                   padding: "20px",
                   boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                  animation: "fadeIn 0.5s ease-in-out",
                 }}
               >
                 <h3
@@ -958,6 +985,7 @@ function Installation() {
                   borderRadius: "10px",
                   padding: "20px",
                   boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                  animation: "fadeIn 0.5s ease-in-out",
                 }}
               >
                 <h3
@@ -971,46 +999,62 @@ function Installation() {
                 >
                   Product Info
                 </h3>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                    gap: "15px",
-                  }}
-                >
-                  {Array.isArray(viewOrder.products) &&
-                  viewOrder.products.length > 0 ? (
-                    viewOrder.products.map((product, index) => (
-                      <React.Fragment key={index}>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Product {index + 1} Type:</strong>{" "}
-                          {product.productType || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Size:</strong> {product.size || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Spec:</strong> {product.spec || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Qty:</strong> {product.qty || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Serial Nos:</strong>{" "}
-                          {product.serialNos?.join(", ") || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Model Nos:</strong>{" "}
-                          {product.modelNos?.[0] || "N/A"}
-                        </span>
-                      </React.Fragment>
-                    ))
-                  ) : (
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Products:</strong> N/A
-                    </span>
-                  )}
-                </div>
+                {Array.isArray(viewOrder.products) &&
+                viewOrder.products.length > 0 ? (
+                  viewOrder.products.map((product, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: "10px",
+                        padding: "10px 0",
+                        borderBottom:
+                          index < viewOrder.products.length - 1
+                            ? "1px solid #eee"
+                            : "none",
+                        alignItems: "start",
+                      }}
+                    >
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Product {index + 1} Type:</strong>{" "}
+                        {product.productType || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Qty:</strong> {product.qty || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Size:</strong> {product.size || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Spec:</strong> {product.spec || "N/A"}
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Serial Nos:</strong>
+                        <div className="serial-nos-container">
+                          {product.serialNos && product.serialNos.length > 0 ? (
+                            <ul>
+                              {product.serialNos.map((serial, idx) => (
+                                <li key={idx}>{serial}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            "N/A"
+                          )}
+                        </div>
+                      </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Model Nos:</strong>{" "}
+                        {product.modelNos?.[0] || "N/A"}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Products:</strong> N/A
+                  </span>
+                )}
               </div>
               <Button
                 onClick={handleCopy}
@@ -1025,6 +1069,7 @@ function Installation() {
                   textTransform: "uppercase",
                   transition: "all 0.3s ease",
                   boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
+                  alignSelf: "flex-end",
                 }}
                 onMouseEnter={(e) =>
                   (e.target.style.transform = "translateY(-3px)")
