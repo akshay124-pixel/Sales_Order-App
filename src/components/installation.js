@@ -108,6 +108,10 @@ function Installation() {
     setFilteredOrders(filtered);
   }, [orders, searchQuery, statusFilter, salesPersonFilter]);
 
+  // Calculate total pending orders (billStatus === "Pending")
+  const totalPending = filteredOrders.filter(
+    (order) => order.installationStatus === "Pending"
+  ).length;
   // Get unique statuses for filter dropdown
   const uniqueStatuses = [
     "All",
@@ -444,6 +448,10 @@ function Installation() {
         >
           Clear Filters
         </Button>
+      </div>
+      <div className="total-results">
+        <span>Total Orders: {filteredOrders.length}</span>
+        <span>Total Pending: {totalPending}</span>
       </div>
       <div style={{ padding: "20px", flex: 1 }}>
         {error && (
