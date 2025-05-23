@@ -2316,6 +2316,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                     isInvalid={!!errors.products?.[index]?.gst}
                   >
                     <option value="18">18%</option>
+                    <option value="28">28%</option>
                     <option value="including">Including</option>
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">
