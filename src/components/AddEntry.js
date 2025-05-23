@@ -67,7 +67,7 @@ function AddEntry({ onSubmit, onClose }) {
     paymentTerms: "",
     creditDays: "",
     dispatchFrom: "", // New field for dropdown
-    fulfillingStatus: "Not Fulfilled",
+    fulfillingStatus: "Pending",
   });
   const gstOptions =
     formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
@@ -107,7 +107,7 @@ function AddEntry({ onSubmit, onClose }) {
         ...(name === "dispatchFrom" && prev.orderType !== "Demo"
           ? {
               fulfillingStatus:
-                value === "PMTS Morinda" ? "Not Fulfilled" : "Fulfilled",
+                value === "PMTS Morinda" ? "Pending" : "Fulfilled",
             }
           : {}),
       }));
