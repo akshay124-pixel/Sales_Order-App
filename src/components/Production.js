@@ -350,7 +350,9 @@ const Production = () => {
       `Production_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
     );
   };
-
+  const totalPending = filteredOrders.filter(
+    (order) => order.fulfillingStatus === "Pending"
+  ).length;
   return (
     <>
       <div
@@ -751,20 +753,9 @@ const Production = () => {
                 </Button>
               </div>
 
-              <div
-                className="total-results"
-                style={{
-                  fontSize: "1.1rem",
-                  fontWeight: "500",
-                  color: "#333",
-                  marginBottom: "15px",
-                  padding: "10px",
-                  background: "#f8f9fa",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                }}
-              >
-                Total Orders: {filteredOrders.length}
+              <div className="total-results">
+                <span>Total Orders: {filteredOrders.length}</span>
+                <span>Total Pending: {totalPending}</span>
               </div>
               <div
                 style={{
