@@ -302,9 +302,7 @@ Created By: ${
                   <strong>GEM Order Number:</strong>{" "}
                   {entry.gemOrderNumber || "N/A"}
                 </div>
-                <div>
-                  <strong>Dispatch From:</strong> {entry.dispatchFrom || "N/A"}
-                </div>
+
                 <div>
                   <strong>Dispatch Date:</strong>{" "}
                   {entry.dispatchDate
@@ -902,6 +900,9 @@ Created By: ${
                   >
                     {entry.company || "N/A"}
                   </Badge>
+                </div>
+                <div>
+                  <strong>Dispatch From:</strong> {entry.dispatchFrom || "N/A"}
                 </div>
                 <div>
                   <strong>Transporter:</strong> {entry.transporter || "N/A"}

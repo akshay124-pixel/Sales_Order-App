@@ -219,12 +219,12 @@ const OutFinishedGoodModal = ({
             disabled={loading}
           >
             <Option value="">Select Dispatch From</Option>
-            <Option value="PMTS Patna">PMTS Patna</Option>
-            <Option value="PMTS Bareilly">PMTS Bareilly</Option>
-            <Option value="PMTS Ranchi">PMTS Ranchi</Option>
-            <Option value="PMTS Morinda">PMTS Morinda</Option>
-            <Option value="PMTS Lucknow">PMTS Lucknow</Option>
-            <Option value="PMTS Delhi">PMTS Delhi</Option>
+            <Option value="Patna">Patna</Option>
+            <Option value="Bareilly">Bareilly</Option>
+            <Option value="Ranchi">Ranchi</Option>
+            <Option value="Morinda">Morinda</Option>
+            <Option value="Lucknow">Lucknow</Option>
+            <Option value="Delhi">Delhi</Option>
           </Select>
         </div>
         {[

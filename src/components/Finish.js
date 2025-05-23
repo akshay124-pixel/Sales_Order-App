@@ -61,12 +61,12 @@ function Finish() {
 
   const dispatchFromOptions = [
     "",
-    "PMTS Patna",
-    "PMTS Bareilly",
-    "PMTS Ranchi",
-    "PMTS Morinda",
-    "PMTS Lucknow",
-    "PMTS Delhi",
+    "Patna",
+    "Bareilly",
+    "Ranchi",
+    "Morinda",
+    "Lucknow",
+    "Delhi",
   ];
 
   const fetchFinishedGoods = useCallback(async () => {

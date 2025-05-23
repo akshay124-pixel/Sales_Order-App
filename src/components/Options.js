@@ -1287,10 +1287,10 @@ export const Reportinglist = [
 export const modelNoOptions = ["AT"];
 export const brandOptions = ["Promark", "White Label"];
 export const dispatchFromOptions = [
-  "PMTS Patna",
-  "PMTS Bareilly",
-  "PMTS Ranchi",
-  "PMTS Morinda",
-  "PMTS Lucknow",
-  "PMTS Delhi",
+  "Patna",
+  "Bareilly",
+  "Ranchi",
+  "Morinda",
+  "Lucknow",
+  "Delhi",
 ];

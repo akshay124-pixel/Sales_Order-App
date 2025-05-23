@@ -106,8 +106,7 @@ function AddEntry({ onSubmit, onClose }) {
           : {}),
         ...(name === "dispatchFrom" && prev.orderType !== "Demo"
           ? {
-              fulfillingStatus:
-                value === "PMTS Morinda" ? "Pending" : "Fulfilled",
+              fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled",
             }
           : {}),
       }));
