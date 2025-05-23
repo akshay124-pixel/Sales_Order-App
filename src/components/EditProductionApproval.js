@@ -38,7 +38,7 @@ const EditProductionApproval = ({
         ...prev,
         [name]: type === "checkbox" ? checked : value,
       };
-      // If stockStatus changes to "Not in Stock", lock sostatus and clear deliveryDate
+      // If stockStatus is "Not in Stock", lock sostatus to "Pending for Approval" and clear deliveryDate
       if (name === "stockStatus" && value === "Not in Stock") {
         newFormData.sostatus = "Pending for Approval";
         newFormData.deliveryDate = "";
@@ -51,8 +51,20 @@ const EditProductionApproval = ({
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.sostatus) {
-      newErrors.sostatus = "Approval status is required";
+    const validStatuses = [
+      "Pending for Approval",
+      "Accounts Approved",
+      "Approved",
+    ];
+    if (!formData.sostatus || !validStatuses.includes(formData.sostatus)) {
+      newErrors.sostatus = "Please select a valid approval status";
+    }
+    if (
+      formData.stockStatus !== "Not in Stock" &&
+      formData.sostatus === "Pending for Approval"
+    ) {
+      newErrors.sostatus =
+        "Pending for Approval is only allowed when stock status is Not in Stock";
     }
     return newErrors;
   };
@@ -72,7 +84,8 @@ const EditProductionApproval = ({
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      onEntryUpdated(response.data.data);
+      console.log("Updated order:", response.data.data);
+      onEntryUpdated(response.data.data); // Pass updated order to parent
       toast.success("Verification order updated successfully!", {
         position: "top-right",
         autoClose: 3000,
@@ -93,7 +106,7 @@ const EditProductionApproval = ({
     <Modal
       show={isOpen}
       onHide={onClose}
-      size="xs"
+      size="sm"
       centered
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
