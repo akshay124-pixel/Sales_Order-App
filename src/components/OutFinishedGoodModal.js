@@ -86,25 +86,6 @@ const OutFinishedGoodModal = ({
   const handleSubmit = async () => {
     if (!showConfirm) {
       if (
-        !formData.dispatchFrom ||
-        !formData.transporter ||
-        !formData.dispatchDate
-      ) {
-        setError(
-          "Please fill all required fields: Dispatch From, Transporter, and Dispatch Date!"
-        );
-        toast.error("Missing required fields!");
-        return;
-      }
-      if (
-        formData.actualFreight &&
-        (isNaN(formData.actualFreight) || Number(formData.actualFreight) < 0)
-      ) {
-        setError("Actual Freight must be a non-negative number!");
-        toast.error("Invalid Actual Freight!");
-        return;
-      }
-      if (
         (formData.dispatchStatus === "Dispatched" ||
           formData.dispatchStatus === "Delivered") &&
         entryToEdit?.billStatus !== "Billing Complete"
