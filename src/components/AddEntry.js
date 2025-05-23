@@ -123,7 +123,7 @@ function AddEntry({ onSubmit, onClose }) {
           ? {
               size: "",
               spec: "",
-              gst: "",
+              gst: value === "IFPD" || value === "Projector" ? "28" : "",
               modelNos: "",
               brand: "",
               warranty:
@@ -132,7 +132,10 @@ function AddEntry({ onSubmit, onClose }) {
           : name === "size"
           ? {
               spec: "",
-              gst: "",
+              gst:
+                prev.productType === "IFPD" || prev.productType === "Projector"
+                  ? "28"
+                  : "",
               modelNos: "",
               brand: "",
               warranty:
