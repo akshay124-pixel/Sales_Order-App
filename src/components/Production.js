@@ -753,7 +753,7 @@ const Production = () => {
                 </Button>
               </div>
 
-              <div className="total-results">
+              <div className="total-results " style={{ marginBottom: "20px" }}>
                 <span>Total Orders: {filteredOrders.length}</span>
                 <span>Total Pending: {totalPending}</span>
               </div>
