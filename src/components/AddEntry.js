@@ -104,10 +104,8 @@ function AddEntry({ onSubmit, onClose }) {
         ...(name === "paymentTerms" && value !== "Credit"
           ? { creditDays: "" }
           : {}),
-        ...(name === "dispatchFrom" && prev.orderType !== "Demo"
-          ? {
-              fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled",
-            }
+        ...(name === "dispatchFrom"
+          ? { fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled" }
           : {}),
       }));
     }
