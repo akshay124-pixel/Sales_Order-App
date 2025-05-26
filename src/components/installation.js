@@ -538,11 +538,11 @@ function Installation() {
                   <tr>
                     {[
                       "Order ID",
+                      "SO Date",
                       "Product Details",
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
-
                       "Installation Status",
                       "Installation",
                       "Actions",
@@ -616,6 +616,24 @@ function Installation() {
                             title={order.orderId || "N/A"}
                           >
                             {order.orderId || "N/A"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.orderId || "N/A"}
+                          >
+                            {order.soDate || "N/A"}
                           </td>
                           <td
                             style={{
