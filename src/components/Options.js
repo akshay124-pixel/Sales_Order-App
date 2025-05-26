@@ -1210,6 +1210,7 @@ export const salesPersonlist = [
   "Ekant Yati",
   "Gursewak Singh",
   "Harish Kumar",
+  "Heera Singh Daspa",
   "Harpeet Singh",
   "J P Sharma",
   "Jagan Lal",
