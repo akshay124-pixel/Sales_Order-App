@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Button } from "react-bootstrap";
 import { X } from "lucide-react";
 
-// Styled Components for the Drawer
+// Styled Components remain unchanged
 const DrawerOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -29,9 +29,11 @@ const DrawerContainer = styled.div`
   z-index: 1000;
   transform: translateY(${(props) => (props.isOpen ? "0" : "100%")});
   transition: transform 0.4s ease-in-out;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 20px;
   font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
 `;
 
 const DrawerHeader = styled.div`
@@ -64,23 +66,52 @@ const CloseButton = styled(Button)`
   }
 `;
 
+const TableContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+`;
+
 const DashboardTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  table-layout: fixed;
+`;
+
+const TableHeaderRow = styled.tr`
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 `;
 
 const TableHeader = styled.th`
   padding: 12px 15px;
-  background: linear-gradient(135deg, #2575fc, #6a11cb);
   color: white;
   font-weight: 600;
   font-size: 0.95rem;
   text-transform: uppercase;
   text-align: left;
+  &:nth-child(1) {
+    width: 20%;
+  }
+  &:nth-child(2) {
+    width: 15%;
+  }
+  &:nth-child(3) {
+    width: 20%;
+  }
+  &:nth-child(4) {
+    width: 20%;
+  }
+  &:nth-child(5) {
+    width: 20%;
+  }
+  &:nth-child(6) {
+    width: 15%;
+  }
 `;
 
 const TableCell = styled.td`
@@ -89,6 +120,27 @@ const TableCell = styled.td`
   font-size: 0.9rem;
   color: #1e3a8a;
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  &:nth-child(1) {
+    width: 20%;
+  }
+  &:nth-child(2) {
+    width: 15%;
+  }
+  &:nth-child(3) {
+    width: 20%;
+  }
+  &:nth-child(4) {
+    width: 20%;
+  }
+  &:nth-child(5) {
+    width: 20%;
+  }
+  &:nth-child(6) {
+    width: 15%;
+  }
 `;
 
 const TableRow = styled.tr`
@@ -98,6 +150,9 @@ const TableRow = styled.tr`
 `;
 
 const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
+  // Get current date for comparison
+  const currentDate = new Date();
+
   // Compute analytics per salesperson
   const salesAnalytics = orders.reduce((acc, order) => {
     const salesPerson = order.salesPerson || "Unknown";
@@ -107,8 +162,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
         totalAmount: 0,
         totalPaymentCollected: 0,
         totalPaymentDue: 0,
-        creditDaysSum: 0,
-        creditDaysCount: 0,
+        dueOver30Days: 0,
       };
     }
     acc[salesPerson].totalOrders += 1;
@@ -116,10 +170,16 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
     acc[salesPerson].totalPaymentCollected +=
       Number(order.paymentCollected) || 0;
     acc[salesPerson].totalPaymentDue += Number(order.paymentDue) || 0;
-    if (order.creditDays && !isNaN(Number(order.creditDays))) {
-      acc[salesPerson].creditDaysSum += Number(order.creditDays);
-      acc[salesPerson].creditDaysCount += 1;
+
+    // Calculate due amount over 30 days
+    const soDate = new Date(order.soDate);
+    const daysSinceOrder = Math.floor(
+      (currentDate - soDate) / (1000 * 60 * 60 * 24)
+    );
+    if (daysSinceOrder > 30 && Number(order.paymentDue) > 0) {
+      acc[salesPerson].dueOver30Days += Number(order.paymentDue) || 0;
     }
+
     return acc;
   }, {});
 
@@ -131,10 +191,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
       totalAmount: data.totalAmount.toFixed(2),
       totalPaymentCollected: data.totalPaymentCollected.toFixed(2),
       totalPaymentDue: data.totalPaymentDue.toFixed(2),
-      averageCreditDays:
-        data.creditDaysCount > 0
-          ? (data.creditDaysSum / data.creditDaysCount).toFixed(1)
-          : "-",
+      dueOver30Days: data.dueOver30Days.toFixed(2),
     })
   );
 
@@ -143,44 +200,46 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
       <DrawerOverlay isOpen={isOpen} onClick={onClose} />
       <DrawerContainer isOpen={isOpen}>
         <DrawerHeader>
-          <DrawerTitle>Salesperson Dashboard</DrawerTitle>
+          <DrawerTitle>Salesperson Analytics</DrawerTitle>
           <CloseButton onClick={onClose}>
             <X size={18} />
             Close
           </CloseButton>
         </DrawerHeader>
-        <DashboardTable>
-          <thead>
-            <tr>
-              <TableHeader>Salesperson</TableHeader>
-              <TableHeader>Total Orders</TableHeader>
-              <TableHeader>Total Amount (₹)</TableHeader>
-              <TableHeader>Payment Collected (₹)</TableHeader>
-              <TableHeader>Payment Due (₹)</TableHeader>
-              <TableHeader>Avg Credit Days</TableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {analyticsData.length > 0 ? (
-              analyticsData.map((data, index) => (
-                <TableRow key={index}>
-                  <TableCell>{data.salesPerson}</TableCell>
-                  <TableCell>{data.totalOrders}</TableCell>
-                  <TableCell>₹{data.totalAmount}</TableCell>
-                  <TableCell>₹{data.totalPaymentCollected}</TableCell>
-                  <TableCell>₹{data.totalPaymentDue}</TableCell>
-                  <TableCell>{data.averageCreditDays}</TableCell>
+        <TableContainer>
+          <DashboardTable>
+            <thead>
+              <TableHeaderRow>
+                <TableHeader>Salesperson</TableHeader>
+                <TableHeader>Total Orders</TableHeader>
+                <TableHeader>Total Amount (₹)</TableHeader>
+                <TableHeader>Payment Collected (₹)</TableHeader>
+                <TableHeader>Payment Due (₹)</TableHeader>
+                <TableHeader>Due Over 30 Days </TableHeader>
+              </TableHeaderRow>
+            </thead>
+            <tbody>
+              {analyticsData.length > 0 ? (
+                analyticsData.map((data, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{data.salesPerson}</TableCell>
+                    <TableCell>{data.totalOrders}</TableCell>
+                    <TableCell>₹{data.totalAmount}</TableCell>
+                    <TableCell>₹{data.totalPaymentCollected}</TableCell>
+                    <TableCell>₹{data.totalPaymentDue}</TableCell>
+                    <TableCell>₹{data.dueOver30Days}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} style={{ textAlign: "center" }}>
+                    No data available
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} style={{ textAlign: "center" }}>
-                  No data available
-                </TableCell>
-              </TableRow>
-            )}
-          </tbody>
-        </DashboardTable>
+              )}
+            </tbody>
+          </DashboardTable>
+        </TableContainer>
       </DrawerContainer>
     </>
   );

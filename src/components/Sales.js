@@ -2098,7 +2098,7 @@ const Sales = () => {
               onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
             >
               <ArrowRight size={18} />
-              View Dashboard
+              View Analytics
             </Button>
           )}
         </div>
