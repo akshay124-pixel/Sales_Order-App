@@ -1004,6 +1004,10 @@ function Installation() {
                     <strong>Remarks By Installation:</strong>{" "}
                     {viewOrder.remarksByInstallation || "N/A"}
                   </span>
+                  <span style={{ fontSize: "1rem", color: "#555" }}>
+                    <strong>Dispatch Status:</strong>{" "}
+                    {viewOrder.dispatchStatus || "N/A"}
+                  </span>
                 </div>
               </div>
               <div
