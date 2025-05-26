@@ -22,6 +22,8 @@ function Installation() {
   });
   const [errors, setErrors] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
 
@@ -67,6 +69,7 @@ function Installation() {
   }, [fetchInstallationOrders]);
 
   // Filter orders based on search query and status
+  // Update the useEffect for filtering orders to include date range
   useEffect(() => {
     let filtered = orders;
     if (searchQuery) {
@@ -106,8 +109,27 @@ function Installation() {
         (order) => order.salesPerson === salesPersonFilter
       );
     }
+    if (startDate) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.soDate);
+        return orderDate >= new Date(startDate);
+      });
+    }
+    if (endDate) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.soDate);
+        return orderDate <= new Date(endDate);
+      });
+    }
     setFilteredOrders(filtered);
-  }, [orders, searchQuery, statusFilter, salesPersonFilter]);
+  }, [
+    orders,
+    searchQuery,
+    statusFilter,
+    salesPersonFilter,
+    startDate,
+    endDate,
+  ]);
 
   // Calculate total pending orders (billStatus === "Pending")
   const totalPending = filteredOrders.filter(
@@ -243,6 +265,8 @@ function Installation() {
     setSearchQuery("");
     setStatusFilter("All");
     setSalesPersonFilter("All");
+    setStartDate("");
+    setEndDate("");
   };
 
   const exportToExcel = () => {
@@ -344,7 +368,7 @@ function Installation() {
           display: "flex",
           flexWrap: "wrap",
           gap: "15px",
-          marginTop: " 20px",
+          marginTop: "20px",
           alignItems: "center",
         }}
       >
@@ -376,6 +400,34 @@ function Installation() {
             />
           )}
         </div>
+        <Form.Control
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          placeholder="Start Date"
+          style={{
+            flex: "0 1 200px",
+            borderRadius: "20px",
+            padding: "10px",
+            border: "1px solid #ced4da",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          }}
+        />
+        <Form.Control
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          placeholder="End Date"
+          style={{
+            flex: "0 1 200px",
+            borderRadius: "20px",
+            padding: "10px",
+            border: "1px solid #ced4da",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          }}
+        />
         <Form.Select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -430,7 +482,7 @@ function Installation() {
           onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
         >
           Export to Excel
-        </Button>{" "}
+        </Button>
         <Button
           onClick={handleClearFilters}
           style={{
