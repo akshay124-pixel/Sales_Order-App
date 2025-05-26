@@ -13,7 +13,7 @@ import styled from "styled-components";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import debounce from "lodash/debounce";
-
+import SalesDashboardDrawer from "../Dashbords/SalesDashboardDrawer";
 // Lazy load modals
 const ViewEntry = React.lazy(() => import("./ViewEntry"));
 const DeleteModal = React.lazy(() => import("./Delete"));
@@ -911,6 +911,7 @@ const Sales = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("All");
   const [orderTypeFilter, setOrderTypeFilter] = useState("All");
@@ -2077,7 +2078,33 @@ const Sales = () => {
             Export Orders
           </Button>
         </div>
-
+        <Button
+          variant="primary"
+          onClick={() => setIsDashboardOpen(true)}
+          style={{
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "30px",
+            fontSize: "1rem",
+            fontWeight: "600",
+            marginLeft: "10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+          onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+        >
+          <ArrowRight size={18} />
+          View Dashboard
+        </Button>
+        <SalesDashboardDrawer
+          isOpen={isDashboardOpen}
+          onClose={() => setIsDashboardOpen(false)}
+          orders={orders}
+        />
         {isAddModalOpen && (
           <AddEntry
             onSubmit={handleAddEntry}
