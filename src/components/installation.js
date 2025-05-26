@@ -633,7 +633,15 @@ function Installation() {
                             }}
                             title={order.orderId || "N/A"}
                           >
-                            {order.soDate || "N/A"}
+                            {order.soDate
+                              ? new Date(order.soDate)
+                                  .toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })
+                                  .replace(/\//g, "/")
+                              : "N/A"}
                           </td>
                           <td
                             style={{
