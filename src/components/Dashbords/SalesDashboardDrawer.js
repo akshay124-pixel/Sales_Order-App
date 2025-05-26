@@ -1,101 +1,5 @@
 import React from "react";
-import styled from "styled-components";
-import { Button } from "react-bootstrap";
 import { X } from "lucide-react";
-
-// Styled Components for the Drawer
-const DrawerOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  display: ${(props) => (props.isOpen ? "block" : "none")};
-`;
-
-const DrawerContainer = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80vh;
-  max-height: 80vh;
-  background: linear-gradient(135deg, #e6f0fa, #f3e8ff);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  transform: translateY(${(props) => (props.isOpen ? "0" : "100%")});
-  transition: transform 0.4s ease-in-out;
-  overflow-y: auto;
-  padding: 20px;
-  font-family: "Poppins", sans-serif;
-`;
-
-const DrawerHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #2575fc, #6a11cb);
-  border-radius: 12px;
-  margin-bottom: 20px;
-`;
-
-const DrawerTitle = styled.h3`
-  color: white;
-  font-weight: 700;
-  font-size: 1.2rem;
-  margin: 0;
-`;
-
-const CloseButton = styled(Button)`
-  background: #dc3545;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  &:hover {
-    background: #b02a37;
-  }
-`;
-
-const DashboardTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-`;
-
-const TableHeader = styled.th`
-  padding: 12px 15px;
-  background: linear-gradient(135deg, #2575fc, #6a11cb);
-  color: white;
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  text-align: left;
-`;
-
-const TableCell = styled.td`
-  padding: 12px 15px;
-  border-bottom: 1px solid #e6f0fa;
-  font-size: 0.9rem;
-  color: #1e3a8a;
-  text-align: left;
-`;
-
-const TableRow = styled.tr`
-  &:hover {
-    background-color: #f0f7ff;
-  }
-`;
 
 const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
   // Compute analytics per salesperson
@@ -140,48 +44,94 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
 
   return (
     <>
-      <DrawerOverlay isOpen={isOpen} onClick={onClose} />
-      <DrawerContainer isOpen={isOpen}>
-        <DrawerHeader>
-          <DrawerTitle>Salesperson Dashboard</DrawerTitle>
-          <CloseButton onClick={onClose}>
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+      />
+      <div
+        className={`fixed bottom-0 left-0 right-0 max-h-[80vh] h-[80vh] bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-t-3xl shadow-2xl z-[1000] transform transition-transform duration-500 ease-in-out overflow-y-auto p-6 font-poppins ${
+          isOpen ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl mb-6 shadow-lg">
+          <h3 className="text-white text-lg font-bold tracking-tight">
+            Salesperson Dashboard
+          </h3>
+          <button
+            className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-md"
+            onClick={onClose}
+          >
             <X size={18} />
             Close
-          </CloseButton>
-        </DrawerHeader>
-        <DashboardTable>
-          <thead>
-            <tr>
-              <TableHeader>Salesperson</TableHeader>
-              <TableHeader>Total Orders</TableHeader>
-              <TableHeader>Total Amount (₹)</TableHeader>
-              <TableHeader>Payment Collected (₹)</TableHeader>
-              <TableHeader>Payment Due (₹)</TableHeader>
-              <TableHeader>Avg Credit Days</TableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {analyticsData.length > 0 ? (
-              analyticsData.map((data, index) => (
-                <TableRow key={index}>
-                  <TableCell>{data.salesPerson}</TableCell>
-                  <TableCell>{data.totalOrders}</TableCell>
-                  <TableCell>₹{data.totalAmount}</TableCell>
-                  <TableCell>₹{data.totalPaymentCollected}</TableCell>
-                  <TableCell>₹{data.totalPaymentDue}</TableCell>
-                  <TableCell>{data.averageCreditDays}</TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} style={{ textAlign: "center" }}>
-                  No data available
-                </TableCell>
-              </TableRow>
-            )}
-          </tbody>
-        </DashboardTable>
-      </DrawerContainer>
+          </button>
+        </div>
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gradient-to-r from-indigo-600 to-purple-600">
+                <th className="p-4 text-white font-semibold text-sm uppercase text-left">
+                  Salesperson
+                </th>
+                <th className="p-4 text-white font-semibold text-sm uppercase text-left">
+                  Total Orders
+                </th>
+                <th className="p-4 text-white font-semibold text-sm uppercase text-left">
+                  Total Amount (₹)
+                </th>
+                <th className="p-4 text-white font-semibold text-sm uppercase text-left">
+                  Payment Collected (₹)
+                </th>
+                <th className="p-4 text-white font-semibold text-sm uppercase text-left">
+                  Payment Due (₹)
+                </th>
+                <th className="p-4 text-white font-semibold text-sm uppercase text-left">
+                  Avg Credit Days
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {analyticsData.length > 0 ? (
+                analyticsData.map((data, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-indigo-50 transition-colors duration-150"
+                  >
+                    <td className="p-4 text-indigo-900 font-medium text-sm">
+                      {data.salesPerson}
+                    </td>
+                    <td className="p-4 text-indigo-900 text-sm">
+                      {data.totalOrders}
+                    </td>
+                    <td className="p-4 text-indigo-900 text-sm">
+                      ₹{data.totalAmount}
+                    </td>
+                    <td className="p-4 text-indigo-900 text-sm">
+                      ₹{data.totalPaymentCollected}
+                    </td>
+                    <td className="p-4 text-indigo-900 text-sm">
+                      ₹{data.totalPaymentDue}
+                    </td>
+                    <td className="p-4 text-indigo-900 text-sm">
+                      {data.averageCreditDays}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="p-4 text-center text-indigo-900 text-sm"
+                  >
+                    No data available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </>
   );
 };

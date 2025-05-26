@@ -2077,29 +2077,30 @@ const Sales = () => {
             {/* Reduced from 1.3rem */}
             Export Orders
           </Button>
+          <Button
+            variant="primary"
+            onClick={() => setIsDashboardOpen(true)}
+            style={{
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "30px",
+              fontSize: "1rem",
+              fontWeight: "600",
+              marginLeft: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+          >
+            <ArrowRight size={18} />
+            View Dashboard
+          </Button>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setIsDashboardOpen(true)}
-          style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "30px",
-            fontSize: "1rem",
-            fontWeight: "600",
-            marginLeft: "10px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            transition: "all 0.3s ease",
-          }}
-          onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-          onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-        >
-          <ArrowRight size={18} />
-          View Dashboard
-        </Button>
+
         <SalesDashboardDrawer
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
