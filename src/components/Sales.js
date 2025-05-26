@@ -13,7 +13,7 @@ import styled from "styled-components";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import debounce from "lodash/debounce";
-import SalesDashboardDrawer from "../Dashbords/SalesDashboardDrawer";
+import SalesDashboardDrawer from "./Dashbords/SalesDashboardDrawer";
 // Lazy load modals
 const ViewEntry = React.lazy(() => import("./ViewEntry"));
 const DeleteModal = React.lazy(() => import("./Delete"));
