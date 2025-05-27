@@ -106,7 +106,7 @@ const EditProductionApproval = ({
     <Modal
       show={isOpen}
       onHide={onClose}
-      size="sm"
+      size="mt"
       centered
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
