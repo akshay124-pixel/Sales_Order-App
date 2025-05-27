@@ -1868,13 +1868,23 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
         <Form.Group controlId="dispatchFrom">
           <Form.Label>📍 Dispatch From</Form.Label>
-          <Form.Control
+          <Form.Select
             {...register("dispatchFrom")}
             onChange={(e) =>
               debouncedHandleInputChange("dispatchFrom", e.target.value)
             }
             isInvalid={!!errors.dispatchFrom}
-          />
+            aria-label="Dispatch From"
+          >
+            <option value="" disabled>
+              -- Select Dispatch Location --
+            </option>
+            <option value="Patna">Patna</option>
+            <option value="Bareilly">Bareilly</option>
+            <option value="Ranchi">Ranchi</option>
+            <option value="Lucknow">Lucknow</option>
+            <option value="Delhi">Delhi</option>
+          </Form.Select>
         </Form.Group>
         <Form.Group controlId="dispatchDate">
           <Form.Label>📅 Dispatch Date</Form.Label>
