@@ -461,6 +461,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       completionStatus: "In Progress",
       fulfillmentDate: "",
       remarks: "",
+      stockStatus: "In Stock",
       sostatus: "Pending for Approval",
       createdBy: "",
     }),
@@ -595,6 +596,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         remarksByBilling: entryToEdit.remarksByBilling || "",
         verificationRemarks: entryToEdit.verificationRemarks || "",
         billStatus: entryToEdit.billStatus || "Pending",
+        stockStatus: entryToEdit.stockStatus || "In Stock",
+
         completionStatus: entryToEdit.completionStatus || "In Progress",
         fulfillmentDate: entryToEdit.fulfillmentDate
           ? new Date(entryToEdit.fulfillmentDate).toISOString().split("T")[0]
@@ -736,6 +739,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
         remarks: data.remarks || null,
         sostatus: data.sostatus || "Pending for Approval",
+        stockStatus: data.stockStatus || "In Stock",
       };
 
       const response = await axios.put(
@@ -1881,6 +1885,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             </option>
             <option value="Patna">Patna</option>
             <option value="Bareilly">Bareilly</option>
+            <option value="Morinda">Morinda</option>
             <option value="Ranchi">Ranchi</option>
             <option value="Lucknow">Lucknow</option>
             <option value="Delhi">Delhi</option>
