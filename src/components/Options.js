@@ -1263,6 +1263,7 @@ export const Reportinglist = [
   "Ashwani Kumar",
   "Bachan Pal",
   "Harpeet Singh",
+  "Harsimran",
   "J P Sharma",
   "Manish CS Lange",
   "Manjit Singh Chowhan",
