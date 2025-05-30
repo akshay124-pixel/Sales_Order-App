@@ -778,13 +778,6 @@ function AddEntry({ onSubmit, onClose }) {
                   pattern: "[0-9]*",
                 },
                 {
-                  label: "Shipping Address",
-                  required: true,
-                  name: "shippingAddress",
-                  type: "text",
-                  placeholder: "Enter Shipping Address",
-                },
-                {
                   label: "Billing Address",
                   name: "billingAddress",
                   type: "text",
@@ -795,6 +788,13 @@ function AddEntry({ onSubmit, onClose }) {
                   label: "📝 Same as Shipping",
                   name: "sameAddress",
                   type: "checkbox",
+                },
+                {
+                  label: "Shipping Address",
+                  required: true,
+                  name: "shippingAddress",
+                  type: "text",
+                  placeholder: "Enter Shipping Address",
                 },
               ].map((field) => (
                 <div
