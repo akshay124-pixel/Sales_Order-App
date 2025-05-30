@@ -77,14 +77,14 @@ function AddEntry({ onSubmit, onClose }) {
       setFormData((prev) => ({
         ...prev,
         sameAddress: checked,
-        billingAddress: checked ? prev.shippingAddress : prev.billingAddress,
+        shippingAddress: checked ? prev.billingAddress : prev.shippingAddress,
       }));
     } else {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        ...(name === "shippingAddress" && prev.sameAddress
-          ? { billingAddress: value }
+        ...(name === "billingAddress" && prev.sameAddress
+          ? { shippingAddress: value }
           : {}),
         ...(name === "paymentCollected"
           ? { paymentDue: calculatePaymentDue(Number(value) || 0) }
@@ -781,11 +781,10 @@ function AddEntry({ onSubmit, onClose }) {
                   label: "Billing Address",
                   name: "billingAddress",
                   type: "text",
-                  disabled: formData.sameAddress,
                   placeholder: "Enter Billing Address",
                 },
                 {
-                  label: "📝 Same as Shipping",
+                  label: "📝 Same as Billing",
                   name: "sameAddress",
                   type: "checkbox",
                 },
@@ -793,6 +792,7 @@ function AddEntry({ onSubmit, onClose }) {
                   label: "Shipping Address",
                   required: true,
                   name: "shippingAddress",
+                  disabled: formData.sameAddress,
                   type: "text",
                   placeholder: "Enter Shipping Address",
                 },
