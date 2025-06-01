@@ -231,6 +231,60 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: ["N/A"],
   },
+  "NVR 16 CHANNEL": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "2 MP CAMERA IP CP PLUS": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "BULLET/DOM": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "8 Port POE SWITCH": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "HARD DISK": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  BOX: {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "Cat6e CABLE": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "PVC RACK": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "POWER CABLE": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  RACK: {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+  "Conduit PIPE": {
+    sizes: ["N/A"],
+    specs: ["AS PER SPEC"],
+  },
+
+  "White board": {
+    sizes: ["3x4"],
+    specs: ["AS PER SPEC"],
+  },
+  "FABRIC pin up board": {
+    sizes: ["3x4"],
+    specs: ["AS PER SPEC"],
+  },
+
   Mouse: {
     sizes: ["N/A"],
     specs: ["Wireless", "Wired"],
