@@ -215,6 +215,10 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: ["Handheld Collar Mic", "Goose Neck Mic", "Collar/Lapel Mic"],
   },
+  CCTV: {
+    sizes: ["N/A"],
+    specs: ["N/A"],
+  },
   Keyboard: {
     sizes: ["N/A"],
     specs: ["Wireless", "Wired"],
@@ -785,6 +789,8 @@ export const statesAndCities = {
     "Sundargarh",
   ],
   Punjab: [
+    "Amritsar",
+    "Bathinda",
     "Barnala",
     "Faridkot",
     "Fatehgarh Sahib",
