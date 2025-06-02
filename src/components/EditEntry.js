@@ -1482,6 +1482,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Ranchi">Ranchi</option>
             <option value="Lucknow">Lucknow</option>
             <option value="Delhi">Delhi</option>
+            <option value="Jaipur">Jaipur</option>
+            <option value="Rajasthan">Rajasthan</option>
           </Form.Select>
         </Form.Group>
         <Form.Group controlId="dispatchDate">

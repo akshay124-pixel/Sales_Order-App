@@ -1328,4 +1328,6 @@ export const dispatchFromOptions = [
   "Morinda",
   "Lucknow",
   "Delhi",
+  "Jaipur",
+  "Rajasthan",
 ];
