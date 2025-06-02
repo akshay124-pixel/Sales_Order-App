@@ -156,7 +156,7 @@ const DatePickerWrapper = styled.div`
 `;
 
 const columnWidths = [
-  80, 130, 130, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
+  80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
   300, 150, 130, 130, 100, 150, 100, 130, 130, 150, 150, 150, 150, 150, 130,
   150, 150, 150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150,
   150, 150, 150, 150, 150, 150, 150, 200,
@@ -395,10 +395,24 @@ const Row = React.memo(({ index, style, data }) => {
         {
           width: columnWidths[2],
           content: order.soDate
-            ? new Date(order.soDate).toLocaleDateString("en-GB")
+            ? new Date(order.soDate).toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
             : "-",
           title: order.soDate
-            ? new Date(order.soDate).toLocaleDateString("en-GB")
+            ? new Date(order.soDate).toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
             : "-",
         },
         {
