@@ -275,9 +275,16 @@ Created By: ${
                   <strong>Order ID:</strong> {entry.orderId || "N/A"}
                 </div>
                 <div>
-                  <strong>SO Date:</strong>{" "}
+                  <strong>SO Date & Time:</strong>{" "}
                   {entry.soDate
-                    ? new Date(entry.soDate).toLocaleDateString("en-GB")
+                    ? new Date(entry.soDate).toLocaleString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
                     : "N/A"}
                 </div>
                 <div>
