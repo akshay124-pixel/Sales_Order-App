@@ -470,6 +470,8 @@ const Row = React.memo(({ index, style, data }) => {
                   ? "info"
                   : order.sostatus === "Approved"
                   ? "success"
+                  : order.sostatus === "On Hold Due to Low Price"
+                  ? "danger"
                   : "secondary"
               }
             >

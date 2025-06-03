@@ -341,6 +341,8 @@ Created By: ${
                         ? "info"
                         : entry.sostatus === "Approved"
                         ? "success"
+                        : entry.sostatus === "On Hold Due to Low Price"
+                        ? "danger"
                         : "secondary"
                     }
                   >
