@@ -402,7 +402,7 @@ const Row = React.memo(({ index, style, data }) => {
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: true,
-              })
+              }) // e.g., 03/06/2025, 01:21 PM
             : "-",
           title: order.soDate
             ? new Date(order.soDate).toLocaleString("en-GB", {
@@ -412,7 +412,7 @@ const Row = React.memo(({ index, style, data }) => {
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: true,
-              })
+              }) // e.g., 03/06/2025, 01:21 PM
             : "-",
         },
         {
