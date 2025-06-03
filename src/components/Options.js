@@ -154,7 +154,7 @@ export const productOptions = {
   },
   "Audio Podium": { sizes: ["Full"], specs: ["N/A"] },
   Kiosk: {
-    sizes: ["32 inch,43 inch,55 inch,65 inch"],
+    sizes: ["32 inch", "43 inch", "55 inch", "65 inch"],
     specs: ["Touch Andriod 13/4/32", "Non-Touch Andriod 13/4/32"],
   },
   "PTZ Camera": {
