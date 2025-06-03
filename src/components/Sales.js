@@ -398,18 +398,17 @@ const Row = React.memo(({ index, style, data }) => {
             if (!order.soDate) return "-";
 
             const date = new Date(order.soDate);
+            if (isNaN(date.getTime())) return "-"; // Handle invalid date
+
             const hours = date.getHours();
             const minutes = date.getMinutes();
 
-            // Hide if before 5:30 AM
-            if (hours < 5 || (hours === 5 && minutes < 30)) {
+            // Hide if before 5:30 AM or exactly at 5:30 AM
+            if (hours < 5 || (hours === 5 && minutes <= 30)) {
               return "-";
             }
 
             return date.toLocaleString("en-GB", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
@@ -419,18 +418,17 @@ const Row = React.memo(({ index, style, data }) => {
             if (!order.soDate) return "-";
 
             const date = new Date(order.soDate);
+            if (isNaN(date.getTime())) return "-"; // Handle invalid date
+
             const hours = date.getHours();
             const minutes = date.getMinutes();
 
-            // Hide if before 5:30 AM
-            if (hours < 5 || (hours === 5 && minutes < 30)) {
+            // Hide if before 5:30 AM or exactly at 5:30 AM
+            if (hours < 5 || (hours === 5 && minutes <= 30)) {
               return "-";
             }
 
             return date.toLocaleString("en-GB", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
