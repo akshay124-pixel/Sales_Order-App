@@ -495,20 +495,6 @@ const Production = () => {
                 (e.target.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)")
               }
             />
-            {searchQuery && (
-              <FaTimes
-                style={{
-                  position: "absolute",
-                  right: "15px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  cursor: "pointer",
-                  color: "#6c757d",
-                  fontSize: "1.2rem",
-                }}
-                onClick={() => setSearchQuery("")}
-              />
-            )}
           </div>
           <Form.Group style={{ flex: "0 1 200px" }}>
             <Form.Label
