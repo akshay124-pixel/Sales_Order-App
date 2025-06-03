@@ -2619,6 +2619,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Pending for Approval">Pending for Approval</option>
             <option value="Accounts Approved">Accounts Approved</option>
             <option value="Approved">Approved</option>
+            <option value="Order on Hold Due to Low Price">
+              Order on Hold Due to Low Price
+            </option>
           </Form.Select>
         </Form.Group>
         <Form.Group controlId="remarks">
