@@ -394,26 +394,48 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[2],
-          content: order.soDate
-            ? new Date(order.soDate).toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              }) // e.g., 03/06/2025, 01:21 PM
-            : "-",
-          title: order.soDate
-            ? new Date(order.soDate).toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              }) // e.g., 03/06/2025, 01:21 PM
-            : "-",
+          content: (() => {
+            if (!order.soDate) return "-";
+
+            const date = new Date(order.soDate);
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+
+            // Hide if before 5:30 AM
+            if (hours < 5 || (hours === 5 && minutes < 30)) {
+              return "-";
+            }
+
+            return date.toLocaleString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            });
+          })(),
+          title: (() => {
+            if (!order.soDate) return "-";
+
+            const date = new Date(order.soDate);
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+
+            // Hide if before 5:30 AM
+            if (hours < 5 || (hours === 5 && minutes < 30)) {
+              return "-";
+            }
+
+            return date.toLocaleString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            });
+          })(),
         },
         {
           width: columnWidths[3],

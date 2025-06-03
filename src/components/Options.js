@@ -1319,7 +1319,7 @@ export const Reportinglist = [
   "Vaseem Khan",
 ];
 
-export const modelNoOptions = ["AT"];
+export const modelNoOptions = ["AT", "PRO MR PC"];
 export const brandOptions = ["Promark", "White Label"];
 export const dispatchFromOptions = [
   "Patna",
