@@ -387,7 +387,276 @@ const Production = () => {
             Production Team Dashboard
           </h1>
         </header>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "15px",
+            marginBottom: "20px",
+            alignItems: "flex-start",
+          }}
+        >
+          <div style={{ position: "relative", flex: "1 1 300px" }}>
+            <Form.Label
+              style={{
+                fontWeight: "700",
+                fontSize: "0.95rem",
+                color: "transparent",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                letterSpacing: "0.5px",
+                padding: "5px 10px",
+                borderRadius: "8px",
+                display: "inline-block",
+                transition: "transform 0.2s ease, opacity 0.2s ease",
+                cursor: "default",
+                position: "relative",
+                overflow: "hidden",
+              }}
+              title="Filter by production status"
+            >
+              <span style={{ marginRight: "5px" }}>📊</span> Search
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "2px",
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                  transform: "scaleX(0)",
+                  transformOrigin: "left",
+                  transition: "transform 0.3s ease",
+                }}
+              />
+            </Form.Label>
+            <Form.Label
+              style={{
+                fontWeight: "700",
+                fontSize: "0.95rem",
+                color: "transparent",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                letterSpacing: "0.5px",
+                padding: "5px 10px",
+                borderRadius: "8px",
+                display: "inline-block",
+                transition: "transform 0.2s ease, opacity 0.2s ease",
+                cursor: "default",
+                position: "relative",
+                overflow: "hidden",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+                e.target.style.opacity = "0.9";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+                e.target.style.opacity = "1";
+              }}
+              title="Filter by production status"
+            >
+              <span style={{ marginRight: "5px" }}></span>
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "80%",
+                  height: "2px",
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                  transform: "scaleX(0)",
+                  transformOrigin: "left",
+                  transition: "transform 0.3s ease",
+                }}
+              />
+            </Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                borderRadius: "20px",
+                maxWidth: "700px",
+                padding: "10px 40px 10px 15px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                transition: "all 0.3s ease",
+              }}
+              onFocus={(e) =>
+                (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
+              }
+              onBlur={(e) =>
+                (e.target.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)")
+              }
+            />
+            {searchQuery && (
+              <FaTimes
+                style={{
+                  position: "absolute",
+                  right: "15px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "#6c757d",
+                  fontSize: "1.2rem",
+                }}
+                onClick={() => setSearchQuery("")}
+              />
+            )}
+          </div>
+          <Form.Group style={{ flex: "0 1 200px" }}>
+            <Form.Label
+              style={{
+                fontWeight: "700",
+                fontSize: "0.95rem",
+                color: "transparent",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                letterSpacing: "0.5px",
+                padding: "5px 10px",
+                borderRadius: "8px",
+                display: "inline-block",
+                transition: "transform 0.2s ease, opacity 0.2s ease",
+                cursor: "default",
+                position: "relative",
+                overflow: "hidden",
+              }}
+              title="Filter by production status"
+            >
+              <span style={{ marginRight: "5px" }}>📊</span> Production Status
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "2px",
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                  transform: "scaleX(0)",
+                  transformOrigin: "left",
+                  transition: "transform 0.3s ease",
+                }}
+              />
+            </Form.Label>
+            <Form.Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                borderRadius: "20px",
+                padding: "10px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                background: "#fff",
+                transition: "all 0.3s ease",
+              }}
+              onFocus={(e) =>
+                (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
+              }
+              onBlur={(e) =>
+                (e.target.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)")
+              }
+            >
+              {uniqueStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+          <Form.Group style={{ flex: "0 1 200px" }}>
+            <Form.Label
+              style={{
+                fontWeight: "700",
+                fontSize: "0.95rem",
+                color: "transparent",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                letterSpacing: "0.5px",
+                padding: "5px 10px",
+                borderRadius: "8px",
+                display: "inline-block",
+                transition: "transform 0.2s ease, opacity 0.2s ease",
+                cursor: "default",
+                position: "relative",
+                overflow: "hidden",
+              }}
+              title="Filter by order type"
+            >
+              <span style={{ marginRight: "5px" }}>📋</span> Order Type
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "2px",
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                  transform: "scaleX(0)",
+                  transformOrigin: "left",
+                  transition: "transform 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.target.style.transform = "scaleX(1)")}
+                onMouseLeave={(e) => (e.target.style.transform = "scaleX(0)")}
+              />
+            </Form.Label>
+            <Form.Select
+              value={orderTypeFilter}
+              onChange={(e) => setOrderTypeFilter(e.target.value)}
+              style={{
+                borderRadius: "20px",
+                padding: "10px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                background: "#fff",
+                transition: "all 0.3s ease",
+              }}
+              onFocus={(e) =>
+                (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
+              }
+              onBlur={(e) =>
+                (e.target.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)")
+              }
+            >
+              {uniqueOrderTypes.map((orderType) => (
+                <option key={orderType} value={orderType}>
+                  {orderType}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
 
+          <Button
+            onClick={exportToExcel}
+            style={{
+              background: "linear-gradient(135deg, #28a745, #4cd964)",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "20px",
+              color: "#fff",
+              fontWeight: "600",
+              marginBottom: "-45px",
+              fontSize: "1rem",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              transition: "all 0.3s ease",
+              alignSelf: "center",
+            }}
+            onMouseEnter={(e) =>
+              (e.target.style.transform = "translateY(-2px)")
+            }
+            onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+          >
+            Export to Excel
+          </Button>
+        </div>
         <div style={{ padding: "20px", flex: 1 }}>
           {error && (
             <div
@@ -469,290 +738,6 @@ const Production = () => {
             </div>
           ) : (
             <>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "15px",
-                  marginBottom: "20px",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div style={{ position: "relative", flex: "1 1 300px" }}>
-                  <Form.Label
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "0.95rem",
-                      color: "transparent",
-                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      letterSpacing: "0.5px",
-                      padding: "5px 10px",
-                      borderRadius: "8px",
-                      display: "inline-block",
-                      transition: "transform 0.2s ease, opacity 0.2s ease",
-                      cursor: "default",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                    title="Filter by production status"
-                  >
-                    <span style={{ marginRight: "5px" }}>📊</span> Search
-                    <span
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "2px",
-                        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                        transform: "scaleX(0)",
-                        transformOrigin: "left",
-                        transition: "transform 0.3s ease",
-                      }}
-                    />
-                  </Form.Label>
-                  <Form.Label
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "0.95rem",
-                      color: "transparent",
-                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      letterSpacing: "0.5px",
-                      padding: "5px 10px",
-                      borderRadius: "8px",
-                      display: "inline-block",
-                      transition: "transform 0.2s ease, opacity 0.2s ease",
-                      cursor: "default",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = "scale(1.05)";
-                      e.target.style.opacity = "0.9";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = "scale(1)";
-                      e.target.style.opacity = "1";
-                    }}
-                    title="Filter by production status"
-                  >
-                    <span style={{ marginRight: "5px" }}></span>
-                    <span
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        width: "80%",
-                        height: "2px",
-                        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                        transform: "scaleX(0)",
-                        transformOrigin: "left",
-                        transition: "transform 0.3s ease",
-                      }}
-                    />
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Search orders..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      borderRadius: "20px",
-                      maxWidth: "700px",
-                      padding: "10px 40px 10px 15px",
-                      border: "1px solid #ced4da",
-                      fontSize: "1rem",
-                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 2px 5px rgba(0, 0, 0, 0.1)")
-                    }
-                  />
-                  {searchQuery && (
-                    <FaTimes
-                      style={{
-                        position: "absolute",
-                        right: "15px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        cursor: "pointer",
-                        color: "#6c757d",
-                        fontSize: "1.2rem",
-                      }}
-                      onClick={() => setSearchQuery("")}
-                    />
-                  )}
-                </div>
-                <Form.Group style={{ flex: "0 1 200px" }}>
-                  <Form.Label
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "0.95rem",
-                      color: "transparent",
-                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      letterSpacing: "0.5px",
-                      padding: "5px 10px",
-                      borderRadius: "8px",
-                      display: "inline-block",
-                      transition: "transform 0.2s ease, opacity 0.2s ease",
-                      cursor: "default",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                    title="Filter by production status"
-                  >
-                    <span style={{ marginRight: "5px" }}>📊</span> Production
-                    Status
-                    <span
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "2px",
-                        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                        transform: "scaleX(0)",
-                        transformOrigin: "left",
-                        transition: "transform 0.3s ease",
-                      }}
-                    />
-                  </Form.Label>
-                  <Form.Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    style={{
-                      borderRadius: "20px",
-                      padding: "10px",
-                      border: "1px solid #ced4da",
-                      fontSize: "1rem",
-                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                      background: "#fff",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 2px 5px rgba(0, 0, 0, 0.1)")
-                    }
-                  >
-                    {uniqueStatuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-                <Form.Group style={{ flex: "0 1 200px" }}>
-                  <Form.Label
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "0.95rem",
-                      color: "transparent",
-                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      letterSpacing: "0.5px",
-                      padding: "5px 10px",
-                      borderRadius: "8px",
-                      display: "inline-block",
-                      transition: "transform 0.2s ease, opacity 0.2s ease",
-                      cursor: "default",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                    title="Filter by order type"
-                  >
-                    <span style={{ marginRight: "5px" }}>📋</span> Order Type
-                    <span
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "2px",
-                        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                        transform: "scaleX(0)",
-                        transformOrigin: "left",
-                        transition: "transform 0.3s ease",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.target.style.transform = "scaleX(1)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.target.style.transform = "scaleX(0)")
-                      }
-                    />
-                  </Form.Label>
-                  <Form.Select
-                    value={orderTypeFilter}
-                    onChange={(e) => setOrderTypeFilter(e.target.value)}
-                    style={{
-                      borderRadius: "20px",
-                      padding: "10px",
-                      border: "1px solid #ced4da",
-                      fontSize: "1rem",
-                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                      background: "#fff",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 2px 5px rgba(0, 0, 0, 0.1)")
-                    }
-                  >
-                    {uniqueOrderTypes.map((orderType) => (
-                      <option key={orderType} value={orderType}>
-                        {orderType}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-
-                <Button
-                  onClick={exportToExcel}
-                  style={{
-                    background: "linear-gradient(135deg, #28a745, #4cd964)",
-                    border: "none",
-                    padding: "10px 20px",
-                    borderRadius: "20px",
-                    color: "#fff",
-                    fontWeight: "600",
-                    marginBottom: "-45px",
-                    fontSize: "1rem",
-                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                    transition: "all 0.3s ease",
-                    alignSelf: "center",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "translateY(-2px)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.transform = "translateY(0)")
-                  }
-                >
-                  Export to Excel
-                </Button>
-              </div>
-
               <div className="total-results " style={{ marginBottom: "20px" }}>
                 <span>Total Orders: {filteredOrders.length}</span>
                 <span>Total Pending: {totalPending}</span>
