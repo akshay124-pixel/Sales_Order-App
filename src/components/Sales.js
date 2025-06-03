@@ -403,16 +403,25 @@ const Row = React.memo(({ index, style, data }) => {
             const hours = date.getHours();
             const minutes = date.getMinutes();
 
-            // Hide if before 5:30 AM or exactly at 5:30 AM
+            // Always show the date
+            const dateStr = date.toLocaleString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            });
+
+            // Show time only if after 5:30 AM
             if (hours < 5 || (hours === 5 && minutes <= 30)) {
-              return "-";
+              return dateStr; // Show only date
             }
 
-            return date.toLocaleString("en-GB", {
+            const timeStr = date.toLocaleString("en-GB", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
             });
+
+            return `${dateStr} ${timeStr}`; // Show date and time
           })(),
           title: (() => {
             if (!order.soDate) return "-";
@@ -423,16 +432,25 @@ const Row = React.memo(({ index, style, data }) => {
             const hours = date.getHours();
             const minutes = date.getMinutes();
 
-            // Hide if before 5:30 AM or exactly at 5:30 AM
+            // Always show the date
+            const dateStr = date.toLocaleString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            });
+
+            // Show time only if after 5:30 AM
             if (hours < 5 || (hours === 5 && minutes <= 30)) {
-              return "-";
+              return dateStr; // Show only date
             }
 
-            return date.toLocaleString("en-GB", {
+            const timeStr = date.toLocaleString("en-GB", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
             });
+
+            return `${dateStr} ${timeStr}`; // Show date and time
           })(),
         },
         {
