@@ -149,6 +149,19 @@ const TableRow = styled.tr`
   }
 `;
 
+const TableFooterRow = styled.tr`
+  background: #e6f0fa;
+  font-weight: 700;
+  color: #1e3a8a;
+`;
+
+const TableFooterCell = styled.td`
+  padding: 12px 15px;
+  border-top: 2px solid #d1d9e6;
+  font-size: 0.95rem;
+  text-align: left;
+`;
+
 const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
   // Get current date for comparison
   const currentDate = new Date();
@@ -195,6 +208,30 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
     })
   );
 
+  // Calculate overall totals
+  const overallTotals = analyticsData.reduce(
+    (acc, data) => ({
+      totalOrders: acc.totalOrders + data.totalOrders,
+      totalAmount: (acc.totalAmount + Number(data.totalAmount)).toFixed(2),
+      totalPaymentCollected: (
+        acc.totalPaymentCollected + Number(data.totalPaymentCollected)
+      ).toFixed(2),
+      totalPaymentDue: (
+        acc.totalPaymentDue + Number(data.totalPaymentDue)
+      ).toFixed(2),
+      dueOver30Days: (acc.dueOver30Days + Number(data.dueOver30Days)).toFixed(
+        2
+      ),
+    }),
+    {
+      totalOrders: 0,
+      totalAmount: 0,
+      totalPaymentCollected: 0,
+      totalPaymentDue: 0,
+      dueOver30Days: 0,
+    }
+  );
+
   return (
     <>
       <DrawerOverlay isOpen={isOpen} onClick={onClose} />
@@ -215,7 +252,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
                 <TableHeader>Total Amount (₹)</TableHeader>
                 <TableHeader>Payment Collected (₹)</TableHeader>
                 <TableHeader>Payment Due (₹)</TableHeader>
-                <TableHeader>Due Over 30 Days </TableHeader>
+                <TableHeader>Due Over 30 Days</TableHeader>
               </TableHeaderRow>
             </thead>
             <tbody>
@@ -238,6 +275,26 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
                 </TableRow>
               )}
             </tbody>
+            <tfoot>
+              {analyticsData.length > 0 && (
+                <TableFooterRow>
+                  <TableFooterCell>Overall Totals</TableFooterCell>
+                  <TableFooterCell>{overallTotals.totalOrders}</TableFooterCell>
+                  <TableFooterCell>
+                    ₹{overallTotals.totalAmount}
+                  </TableFooterCell>
+                  <TableFooterCell>
+                    ₹{overallTotals.totalPaymentCollected}
+                  </TableFooterCell>
+                  <TableFooterCell>
+                    ₹{overallTotals.totalPaymentDue}
+                  </TableFooterCell>
+                  <TableFooterCell>
+                    ₹{overallTotals.dueOver30Days}
+                  </TableFooterCell>
+                </TableFooterRow>
+              )}
+            </tfoot>
           </DashboardTable>
         </TableContainer>
       </DrawerContainer>
