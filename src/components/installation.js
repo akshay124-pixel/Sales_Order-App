@@ -68,6 +68,11 @@ function Installation() {
     };
   }, [fetchInstallationOrders]);
 
+  const uniqueSalesPersons = [
+    "All",
+    ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
+  ];
+
   // Filter orders based on search query and status
   // Update the useEffect for filtering orders to include date range
   useEffect(() => {
@@ -459,11 +464,13 @@ function Installation() {
           }}
         >
           <option value="All">All Sales Persons</option>
-          {salesPersonlist.map((salesPerson) => (
-            <option key={salesPerson} value={salesPerson}>
-              {salesPerson}
-            </option>
-          ))}
+          {uniqueSalesPersons
+            .filter((salesPerson) => salesPerson !== "All")
+            .map((salesPerson) => (
+              <option key={salesPerson} value={salesPerson}>
+                {salesPerson}
+              </option>
+            ))}
         </Form.Select>
         <Button
           onClick={exportToExcel}
