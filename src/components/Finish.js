@@ -67,6 +67,8 @@ function Finish() {
     "Morinda",
     "Lucknow",
     "Delhi",
+    "Jaipur",
+    "Rajisthan",
   ];
 
   const fetchFinishedGoods = useCallback(async () => {
