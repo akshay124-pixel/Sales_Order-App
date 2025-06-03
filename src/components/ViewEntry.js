@@ -277,14 +277,33 @@ Created By: ${
                 <div>
                   <strong>SO Date & Time:</strong>{" "}
                   {entry.soDate
-                    ? new Date(entry.soDate).toLocaleString("en-GB", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
+                    ? (() => {
+                        const date = new Date(entry.soDate);
+                        if (isNaN(date.getTime())) return "N/A"; // Handle invalid date
+
+                        const hours = date.getHours();
+                        const minutes = date.getMinutes();
+
+                        // Always show the date
+                        const dateStr = date.toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        });
+
+                        // Show time only if after 5:30 AM
+                        if (hours < 5 || (hours === 5 && minutes <= 30)) {
+                          return dateStr; // Show only date
+                        }
+
+                        const timeStr = date.toLocaleString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        });
+
+                        return `${dateStr} ${timeStr}`; // Show date and time
+                      })()
                     : "N/A"}
                 </div>
                 <div>
