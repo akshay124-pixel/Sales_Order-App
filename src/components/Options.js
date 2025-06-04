@@ -277,7 +277,7 @@ export const productOptions = {
   },
 
   "White board": {
-    sizes: ["3x4"],
+    sizes: ["3x4", "6x4"],
     specs: ["AS PER SPEC"],
   },
   "FABRIC pin up board": {
