@@ -772,6 +772,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       ],
       Jharkhand: [
         "Ranchi",
+        "Koderma",
         "Jamshedpur",
         "Dhanbad",
         "Bokaro",
