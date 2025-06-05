@@ -1236,7 +1236,10 @@ const Sales = () => {
   }, [filterOrders, orders]);
 
   const handleAddEntry = useCallback(
-    (newEntry) => {
+    async (newEntry) => {
+      setIsAddModalOpen(false);
+      toast.success("New order added!");
+      await fetchOrders();
       setOrders((prev) => {
         const updatedOrders = [...prev, newEntry];
         filterOrders(
