@@ -6,12 +6,129 @@ import { FaEye, FaTimes } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import * as XLSX from "xlsx";
 import "../App.css";
+import styled from "styled-components";
+import DatePicker from "react-datepicker";
+
+const DatePickerWrapper = styled.div`
+  display: flex;
+
+  gap: 10px;
+  align-items: center;
+  .react-datepicker-wrapper {
+    width: 150px;
+  }
+  .react-datepicker__input-container input {
+    padding: 8px 12px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
+    width: 100%;
+    &:focus {
+      border-color: #2575fc;
+      outline: none;
+    }
+  }
+  .react-datepicker {
+    z-index: 1000 !important;
+  }
+  .react-datepicker-popper {
+    z-index: 1000 !important;
+  }
+`;
+
+const FilterLabel = styled(Form.Label)`
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: transparent;
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  display: inline-block;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+
+  span.underline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(135deg, #2575fc, #6a11cb);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover span.underline {
+    transform: scaleX(1);
+  }
+`;
+
+const FilterInput = styled(Form.Control)`
+  border-radius: 20px;
+  padding: 10px 15px;
+  border: 1px solid #ced4da;
+  font-size: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:focus {
+    box-shadow: 0 0 10px rgba(37, 117, 252, 0.5);
+  }
+`;
+
+const FilterSelect = styled(Form.Select)`
+  border-radius: 20px;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  font-size: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  transition: all 0.3s ease;
+
+  &:focus {
+    box-shadow: 0 0 10px rgba(37, 117, 252, 0.5);
+  }
+`;
+
+const FilterButton = styled(Button)`
+  background: ${({ variant }) =>
+    variant === "clear"
+      ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+      : "linear-gradient(135deg, #28a745, #4cd964)"};
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+`;
 const Production = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [editOrder, setEditOrder] = useState(null);
   const [formData, setFormData] = useState({
     fulfillingStatus: "Pending",
@@ -70,6 +187,23 @@ const Production = () => {
     let filtered = orders.filter(
       (order) => order.fulfillingStatus !== "Fulfilled"
     );
+    // Apply date range filter
+    if (startDate || endDate) {
+      filtered = filtered.filter((order) => {
+        const orderDate = order.soDate ? new Date(order.soDate) : null;
+        const startDateAdjusted = startDate
+          ? new Date(startDate.setHours(0, 0, 0, 0))
+          : null;
+        const endDateAdjusted = endDate
+          ? new Date(endDate.setHours(23, 59, 59, 999))
+          : null;
+        return (
+          (!startDateAdjusted ||
+            (orderDate && orderDate >= startDateAdjusted)) &&
+          (!endDateAdjusted || (orderDate && orderDate <= endDateAdjusted))
+        );
+      });
+    }
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
@@ -119,7 +253,7 @@ const Production = () => {
       return dateB - dateA;
     });
     setFilteredOrders(filtered);
-  }, [orders, searchQuery, statusFilter, orderTypeFilter]);
+  }, [orders, searchQuery, statusFilter, orderTypeFilter, startDate, endDate]);
   // Get unique statuses for filter dropdown
   const uniqueStatuses = [
     "All",
@@ -141,6 +275,13 @@ const Production = () => {
         )
     ),
   ];
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStartDate(null);
+    setEndDate(null);
+    setStatusFilter("All");
+    setOrderTypeFilter("All");
+  };
   const uniqueOrderTypes = [
     "All",
     ...new Set(orders.map((order) => order.orderType || "N/A")),
@@ -431,7 +572,7 @@ const Production = () => {
                   transition: "transform 0.3s ease",
                 }}
               />
-            </Form.Label>
+            </Form.Label>{" "}
             <Form.Label
               style={{
                 fontWeight: "700",
@@ -495,6 +636,56 @@ const Production = () => {
                 (e.target.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)")
               }
             />
+          </div>{" "}
+          <div
+            style={{
+              flex: "1 1 300px",
+              maxWidth: "400px",
+              display: "flex",
+              gap: "10px",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <FilterLabel title="Select start date">
+                <span style={{ marginRight: "5px" }}>📅</span> Start Date
+                <span className="underline" />
+              </FilterLabel>
+              <DatePickerWrapper>
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  placeholderText="Start Date"
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                  className="form-control"
+                  wrapperClassName="w-100"
+                />{" "}
+              </DatePickerWrapper>
+            </div>
+            <div style={{ flex: 1 }}>
+              <FilterLabel title="Select end date">
+                <span style={{ marginRight: "5px" }}>📅</span> End Date
+                <span className="underline" />
+              </FilterLabel>{" "}
+              <DatePickerWrapper>
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  placeholderText="End Date"
+                  dateFormat="dd/MM/yyyy"
+                  isClearable
+                  className="form-control"
+                  wrapperClassName="w-100"
+                />{" "}
+              </DatePickerWrapper>
+            </div>
           </div>
           <Form.Group style={{ flex: "0 1 200px" }}>
             <Form.Label
@@ -620,7 +811,6 @@ const Production = () => {
               ))}
             </Form.Select>
           </Form.Group>
-
           <Button
             onClick={exportToExcel}
             style={{
@@ -643,7 +833,31 @@ const Production = () => {
           >
             Export to Excel
           </Button>
-        </div>
+          {""}
+          <Button
+            onClick={clearFilters}
+            style={{
+              background:
+                "linear-gradient(135deg,rgb(167, 110, 40),rgb(217, 159, 41))",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "20px",
+              color: "#fff",
+              fontWeight: "600",
+              marginBottom: "-45px",
+              fontSize: "1rem",
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              transition: "all 0.3s ease",
+              alignSelf: "center",
+            }}
+            onMouseEnter={(e) =>
+              (e.target.style.transform = "translateY(-2px)")
+            }
+            onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+          >
+            Clear Filters
+          </Button>
+        </div>{" "}
         <div style={{ padding: "20px", flex: 1 }}>
           {error && (
             <div
@@ -1225,7 +1439,6 @@ const Production = () => {
             </>
           )}
         </div>
-
         {/* Edit Modal */}
         <Modal
           show={showEditModal}
@@ -1457,7 +1670,6 @@ const Production = () => {
             </Form>
           </Modal.Body>
         </Modal>
-
         {/* View Modal */}
         <Modal
           show={showViewModal}
