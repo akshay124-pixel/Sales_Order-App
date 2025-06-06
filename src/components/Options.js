@@ -465,6 +465,7 @@ export const statesAndCities = {
   ],
   Bihar: [
     "Patna",
+    "Koderma",
     "Mirzapur",
     "Jehanabad",
     "Mithapur",
