@@ -138,7 +138,11 @@ function Finish() {
         (order) => order.freightstatus === freightStatusFilter
       );
     }
-
+    if (salesPersonFilter !== "All") {
+      filtered = filtered.filter(
+        (order) => order.salesPerson === salesPersonFilter
+      );
+    }
     // Apply dispatch status filter
     if (dispatchStatusFilter) {
       filtered = filtered.filter(
