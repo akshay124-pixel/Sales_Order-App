@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { Button, Modal, Badge } from "react-bootstrap";
+import { Button, Modal, Badge, Form } from "react-bootstrap";
 import { FaEye } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
@@ -58,6 +58,7 @@ function Finish() {
   const [endDate, setEndDate] = useState(null);
   const [totalResults, setTotalResults] = useState(0);
   const [productQuantity, setProductQuantity] = useState(0);
+  const [salesPersonFilter, setSalesPersonFilter] = useState("All");
 
   const dispatchFromOptions = [
     "",
@@ -122,7 +123,10 @@ function Finish() {
   useEffect(() => {
     fetchFinishedGoods();
   }, [fetchFinishedGoods]);
-
+  const uniqueSalesPersons = [
+    "All",
+    ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
+  ];
   // Apply filters, search, and calculate results
   useEffect(() => {
     let filtered = [...orders];
@@ -757,7 +761,28 @@ function Finish() {
                 <option value="Partial Dispatch">Partial Dispatch</option>
                 <option value="Completed">Completed</option>
               </select>
-            </div>
+            </div>{" "}
+            <Form.Select
+              value={salesPersonFilter}
+              onChange={(e) => setSalesPersonFilter(e.target.value)}
+              style={{
+                flex: "0 1 200px",
+                borderRadius: "20px",
+                padding: "10px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <option value="All">All Sales Persons</option>
+              {uniqueSalesPersons
+                .filter((salesPerson) => salesPerson !== "All")
+                .map((salesPerson) => (
+                  <option key={salesPerson} value={salesPerson}>
+                    {salesPerson}
+                  </option>
+                ))}
+            </Form.Select>
             <Button
               onClick={handleReset}
               style={{

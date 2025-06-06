@@ -5,7 +5,7 @@ import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import "../App.css";
-import { salesPersonlist } from "./Options";
+
 function Installation() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
