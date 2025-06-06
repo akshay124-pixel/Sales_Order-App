@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Button } from "react-bootstrap";
 import { X } from "lucide-react";
 
-// Styled Components remain unchanged
+// Styled Components
 const DrawerOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -87,12 +87,45 @@ const TableHeaderRow = styled.tr`
   z-index: 10;
 `;
 
+const TotalHeaderRow = styled.tr`
+  background: linear-gradient(135deg, #1e3a8a, #4b0082);
+  position: sticky;
+  top: 0;
+  z-index: 11;
+`;
+
 const TableHeader = styled.th`
   padding: 12px 15px;
   color: white;
   font-weight: 600;
   font-size: 0.95rem;
   text-transform: uppercase;
+  text-align: left;
+  &:nth-child(1) {
+    width: 20%;
+  }
+  &:nth-child(2) {
+    width: 15%;
+  }
+  &:nth-child(3) {
+    width: 20%;
+  }
+  &:nth-child(4) {
+    width: 20%;
+  }
+  &:nth-child(5) {
+    width: 20%;
+  }
+  &:nth-child(6) {
+    width: 15%;
+  }
+`;
+
+const TotalHeader = styled.th`
+  padding: 12px 15px;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
   text-align: left;
   &:nth-child(1) {
     width: 20%;
@@ -155,7 +188,9 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
 
   // Compute analytics per salesperson
   const salesAnalytics = orders.reduce((acc, order) => {
-    const salesPerson = order.salesPerson || "Unknown";
+    const salesPerson = order.salesPerson?.trim() || "Unknown";
+
+    // Initialize salesperson data if not exists
     if (!acc[salesPerson]) {
       acc[salesPerson] = {
         totalOrders: 0,
@@ -165,33 +200,71 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
         dueOver30Days: 0,
       };
     }
-    acc[salesPerson].totalOrders += 1;
-    acc[salesPerson].totalAmount += Number(order.total) || 0;
-    acc[salesPerson].totalPaymentCollected +=
-      Number(order.paymentCollected) || 0;
-    acc[salesPerson].totalPaymentDue += Number(order.paymentDue) || 0;
+
+    // Parse and validate values
+    const total = Number(order.total) || 0;
+    const paymentCollected = parseFloat(order.paymentCollected) || 0;
+    const paymentDue = parseFloat(order.paymentDue) || 0;
+
+    // Increment totals with validation
+    if (isFinite(total)) {
+      acc[salesPerson].totalOrders += 1;
+      acc[salesPerson].totalAmount += total;
+    }
+    if (isFinite(paymentCollected)) {
+      acc[salesPerson].totalPaymentCollected += paymentCollected;
+    }
+    if (isFinite(paymentDue)) {
+      acc[salesPerson].totalPaymentDue += paymentDue;
+    }
 
     // Calculate due amount over 30 days
-    const soDate = new Date(order.soDate);
-    const daysSinceOrder = Math.floor(
-      (currentDate - soDate) / (1000 * 60 * 60 * 24)
-    );
-    if (daysSinceOrder > 30 && Number(order.paymentDue) > 0) {
-      acc[salesPerson].dueOver30Days += Number(order.paymentDue) || 0;
+    const soDate = order.soDate ? new Date(order.soDate) : null;
+    if (
+      soDate &&
+      !isNaN(soDate.getTime()) &&
+      isFinite(paymentDue) &&
+      paymentDue > 0
+    ) {
+      const daysSinceOrder = Math.floor(
+        (currentDate - soDate) / (1000 * 60 * 60 * 24)
+      );
+      if (daysSinceOrder > 30) {
+        acc[salesPerson].dueOver30Days += paymentDue;
+      }
     }
 
     return acc;
   }, {});
+
+  // Calculate overall totals
+  const overallTotals = Object.values(salesAnalytics).reduce(
+    (acc, data) => ({
+      totalOrders: acc.totalOrders + data.totalOrders,
+      totalAmount: acc.totalAmount + data.totalAmount,
+      totalPaymentCollected:
+        acc.totalPaymentCollected + data.totalPaymentCollected,
+      totalPaymentDue: acc.totalPaymentDue + data.totalPaymentDue,
+      dueOver30Days: acc.dueOver30Days + data.dueOver30Days,
+    }),
+    {
+      totalOrders: 0,
+      totalAmount: 0,
+      totalPaymentCollected: 0,
+      totalPaymentDue: 0,
+      dueOver30Days: 0,
+    }
+  );
 
   // Convert to array for table rendering
   const analyticsData = Object.entries(salesAnalytics).map(
     ([salesPerson, data]) => ({
       salesPerson,
       totalOrders: data.totalOrders,
-      totalAmount: data.totalAmount.toFixed(2),
-      totalPaymentCollected: data.totalPaymentCollected.toFixed(2),
-      totalPaymentDue: data.totalPaymentDue.toFixed(2),
-      dueOver30Days: data.dueOver30Days.toFixed(2),
+      totalAmount: Number(data.totalAmount.toFixed(2)),
+      totalPaymentCollected: Number(data.totalPaymentCollected.toFixed(2)),
+      totalPaymentDue: Number(data.totalPaymentDue.toFixed(2)),
+      dueOver30Days: Number(data.dueOver30Days.toFixed(2)),
     })
   );
 
@@ -209,13 +282,29 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
         <TableContainer>
           <DashboardTable>
             <thead>
+              <TotalHeaderRow>
+                <TotalHeader>Overall Totals</TotalHeader>
+                <TotalHeader>{overallTotals.totalOrders}</TotalHeader>
+                <TotalHeader>
+                  ₹{overallTotals.totalAmount.toLocaleString("en-IN")}
+                </TotalHeader>
+                <TotalHeader>
+                  ₹{overallTotals.totalPaymentCollected.toLocaleString("en-IN")}
+                </TotalHeader>
+                <TotalHeader>
+                  ₹{overallTotals.totalPaymentDue.toLocaleString("en-IN")}
+                </TotalHeader>
+                <TotalHeader>
+                  ₹{overallTotals.dueOver30Days.toLocaleString("en-IN")}
+                </TotalHeader>
+              </TotalHeaderRow>
               <TableHeaderRow>
                 <TableHeader>Salesperson</TableHeader>
                 <TableHeader>Total Orders</TableHeader>
                 <TableHeader>Total Amount (₹)</TableHeader>
                 <TableHeader>Payment Collected (₹)</TableHeader>
                 <TableHeader>Payment Due (₹)</TableHeader>
-                <TableHeader>Due Over 30 Days </TableHeader>
+                <TableHeader>Due Over 30 Days (₹)</TableHeader>
               </TableHeaderRow>
             </thead>
             <tbody>
@@ -224,10 +313,18 @@ const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
                   <TableRow key={index}>
                     <TableCell>{data.salesPerson}</TableCell>
                     <TableCell>{data.totalOrders}</TableCell>
-                    <TableCell>₹{data.totalAmount}</TableCell>
-                    <TableCell>₹{data.totalPaymentCollected}</TableCell>
-                    <TableCell>₹{data.totalPaymentDue}</TableCell>
-                    <TableCell>₹{data.dueOver30Days}</TableCell>
+                    <TableCell>
+                      ₹{data.totalAmount.toLocaleString("en-IN")}
+                    </TableCell>
+                    <TableCell>
+                      ₹{data.totalPaymentCollected.toLocaleString("en-IN")}
+                    </TableCell>
+                    <TableCell>
+                      ₹{data.totalPaymentDue.toLocaleString("en-IN")}
+                    </TableCell>
+                    <TableCell>
+                      ₹{data.dueOver30Days.toLocaleString("en-IN")}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
