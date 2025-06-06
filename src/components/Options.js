@@ -534,6 +534,7 @@ export const statesAndCities = {
   Haryana: [
     "Bahadurgarh",
     "Charkhi Dadri",
+    "Panchkula",
     "Gurugram",
     "Faridabad",
     "Panipat",
