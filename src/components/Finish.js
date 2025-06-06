@@ -303,6 +303,7 @@ function Finish() {
     orderTypeFilter,
     dispatchFromFilter,
     dispatchedFilter,
+    salesPersonFilter,
     productionStatusFilter,
     searchTerm,
     startDate,
