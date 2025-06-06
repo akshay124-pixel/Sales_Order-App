@@ -353,9 +353,6 @@ const Row = React.memo(({ index, style, data }) => {
         .filter(Boolean)
         .join(", ")
     : "-";
-  const canEditDelete =
-    userRole === "Admin" ||
-    (userRole === "Sales" && order.createdBy?._id === userId);
 
   const getRowBackground = () => {
     if (isOrderComplete(order)) return "#ffffff"; // White for complete orders
@@ -516,7 +513,7 @@ const Row = React.memo(({ index, style, data }) => {
               >
                 <FaEye />
               </Button>
-              {canEditDelete && (
+              {userRole == "Admin" && (
                 <>
                   <button
                     className="editBtn"
