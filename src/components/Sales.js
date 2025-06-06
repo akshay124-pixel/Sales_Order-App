@@ -995,64 +995,98 @@ const Sales = () => {
       toast.error("Failed to fetch orders!");
     }
   }, []);
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token for notifications request:", token); // Log token
+      if (!token) {
+        throw new Error("No token found in localStorage");
+      }
+      const response = await axios.get(
+        "https://sales-order-server.onrender.com/api/notifications",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setNotifications(response.data.data);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      toast.error("Failed to fetch notifications!");
+    }
+  }, []);
+  // Mark all notifications as read
+  const markAllRead = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "https://sales-order-server.onrender.com/api/mark-read",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, isRead: true }))
+      );
+      toast.success("All notifications marked as read!");
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+      toast.error("Failed to mark notifications as read!");
+    }
+  }, []);
+
+  // Clear all notifications
+  const clearNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete("https://sales-order-server.onrender.com/api/clear", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications([]);
+      toast.success("All notifications cleared!");
+    } catch (error) {
+      console.error("Error clearing notifications:", error);
+      toast.error("Failed to clear notifications!");
+    }
+  }, []);
 
   // WebSocket setup
   useEffect(() => {
     const socket = io("https://sales-order-server.onrender.com");
 
-    socket.on("newOrder", (order) => {
+    // Join global room for all notifications
+    socket.emit("join", { userId, role: userRole });
+
+    socket.on("newOrder", ({ notification }) => {
       setOrders((prev) => {
-        if (prev.some((o) => o._id === order._id)) return prev;
-        return [order, ...prev];
+        if (prev.some((o) => o._id === notification._id)) return prev;
+        return [notification, ...prev];
       });
-      const notification = {
-        id: `${order._id}-${Date.now()}`,
-        message: `New sales order created for ${
-          order.customername || "Unknown"
-        } (Order ID: ${order.orderId || "N/A"})`,
-        timestamp: new Date().toISOString(),
-        isRead: false,
-      };
       setNotifications((prev) => {
         const updated = [notification, ...prev].slice(0, 50);
-        localStorage.setItem("notifications", JSON.stringify(updated));
         return updated;
       });
       toast.info(notification.message);
     });
 
-    socket.on("updateOrder", (updatedOrder) => {
+    socket.on("updateOrder", ({ notification }) => {
       setOrders((prev) => {
         const updatedOrders = prev.map((order) =>
-          order._id === updatedOrder._id ? updatedOrder : order
+          order._id === notification._id ? notification : order
         );
         return updatedOrders;
       });
-      const notification = {
-        id: `${updatedOrder._id}-${Date.now()}`,
-        message: `Order updated for ${
-          updatedOrder.customername || "Unknown"
-        } (Order ID: ${updatedOrder.orderId || "N/A"})`,
-        timestamp: new Date().toISOString(),
-        isRead: false,
-      };
       setNotifications((prev) => {
         const updated = [notification, ...prev].slice(0, 50);
-        localStorage.setItem("notifications", JSON.stringify(updated));
         return updated;
       });
       toast.info(notification.message);
     });
 
-    const storedNotifications = localStorage.getItem("notifications");
-    if (storedNotifications) {
-      setNotifications(JSON.parse(storedNotifications));
-    }
-
+    // Initial fetch
     fetchOrders();
+    fetchNotifications();
 
     return () => socket.disconnect();
-  }, [fetchOrders]);
+  }, [fetchOrders, fetchNotifications, userRole, userId]);
 
   const calculateTotalResults = useMemo(() => {
     return Math.floor(
@@ -1804,22 +1838,6 @@ const Sales = () => {
       order.billStatus === "Completed" ||
       (order.invoiceNo && order.invoiceDate && order.billNumber)
     );
-  }, []);
-
-  const markAllRead = useCallback(() => {
-    const updatedNotifications = notifications.map((notif) => ({
-      ...notif,
-      isRead: true,
-    }));
-    setNotifications(updatedNotifications);
-    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
-    toast.success("All notifications marked as read!");
-  }, [notifications]);
-
-  const clearNotifications = useCallback(() => {
-    setNotifications([]);
-    localStorage.setItem("notifications", JSON.stringify([]));
-    toast.success("All notifications cleared!");
   }, []);
 
   const formatTimestamp = useCallback((timestamp) => {
