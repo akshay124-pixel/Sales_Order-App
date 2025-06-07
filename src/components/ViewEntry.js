@@ -2,11 +2,48 @@ import React, { useState, useCallback } from "react";
 import { Modal, Button, Badge, Accordion, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
-import { Copy } from "lucide-react";
+import { Copy, Download } from "lucide-react";
 
 function ViewEntry({ isOpen, onClose, entry }) {
   const [copied, setCopied] = useState(false);
+  const handleDownload = useCallback(async () => {
+    if (!entry?.poFilePath) {
+      toast.error("No PO file available to download!");
+      return;
+    }
 
+    try {
+      const fileUrl = `http://localhost:4000${
+        entry.poFilePath.startsWith("/") ? "" : "/"
+      }${entry.poFilePath}`;
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/pdf,image/*",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const blob = await response.blob();
+      const fileName = entry.poFilePath.split("/").pop() || "downloaded-file";
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+      toast.success("File download started!");
+    } catch (err) {
+      toast.error("Failed to download file! Check server or file path.");
+      console.error("Download error:", err);
+    }
+  }, [entry]);
   const handleCopy = useCallback(() => {
     if (!entry) return;
 
@@ -328,7 +365,6 @@ Created By: ${
                   <strong>GEM Order Number:</strong>{" "}
                   {entry.gemOrderNumber || "N/A"}
                 </div>
-
                 <div>
                   <strong>Dispatch Date:</strong>{" "}
                   {entry.dispatchDate
@@ -433,6 +469,66 @@ Created By: ${
                 </div>
                 <div>
                   <strong>Reporting Person:</strong> {entry.report || "N/A"}
+                </div>{" "}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <strong>PO File:</strong>{" "}
+                  {entry.poFilePath ? (
+                    <>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={handleDownload}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #2575fc, #6a11cb)",
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          fontSize: "0.85rem",
+                          fontWeight: "600",
+                          color: "#ffffff",
+                          border: "1px solid #ffffff22",
+                          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+                          transition:
+                            "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "scale(1.05)";
+                          e.target.style.boxShadow =
+                            "0 4px 12px rgba(106, 17, 203, 0.4)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #3b82f6, #7e22ce)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "scale(1)";
+                          e.target.style.boxShadow =
+                            "0 2px 6px rgba(0, 0, 0, 0.15)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #2575fc, #6a11cb)";
+                        }}
+                        onMouseDown={(e) => {
+                          e.target.style.transform = "scale(0.95)";
+                        }}
+                        onMouseUp={(e) => {
+                          e.target.style.transform = "scale(1.05)";
+                        }}
+                      >
+                        <Download size={14} />
+                        Download
+                      </Button>
+                    </>
+                  ) : (
+                    "N/A"
+                  )}
                 </div>
               </div>
             </Accordion.Body>

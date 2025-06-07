@@ -19,7 +19,7 @@ function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [poFile, setPoFile] = useState(null); //
   const [products, setProducts] = useState([]);
   const [currentProduct, setCurrentProduct] = useState({
     productType: "",
@@ -71,6 +71,36 @@ function AddEntry({ onSubmit, onClose }) {
   });
   const gstOptions =
     formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please upload a PDF, PNG, JPG, or DOCX file");
+        e.target.value = null;
+        setPoFile(null);
+        return;
+      }
+      // Validate file size (e.g., max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        e.target.value = null;
+        setPoFile(null);
+        return;
+      }
+      setPoFile(file);
+    } else {
+      setPoFile(null);
+    }
+  };
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -328,6 +358,7 @@ function AddEntry({ onSubmit, onClose }) {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -517,6 +548,14 @@ function AddEntry({ onSubmit, onClose }) {
                   options: dispatchFromOptions,
                   required: true,
                   placeholder: "Select Dispatch Location",
+                },
+                {
+                  label: "PO Attach",
+                  name: "poFile",
+                  type: "file",
+                  accept: ".pdf,.png,.jpg,.jpeg,.docx",
+                  placeholder: "Upload PO (PDF, PNG, JPG, DOCX)",
+                  onChange: handleFileChange,
                 },
                 ...(formData.orderType === "B2G"
                   ? [
