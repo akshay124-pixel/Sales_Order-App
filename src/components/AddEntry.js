@@ -562,16 +562,7 @@ function AddEntry({ onSubmit, onClose }) {
                   required: true,
                   placeholder: "Select Dispatch Location",
                 },
-                {
-                  /* {
-                  label: "PO Attach",
-                  name: "poFile",
-                  type: "file",
-                  accept: ".pdf,.png,.jpg,.jpeg,.doc,.docx",
-                  placeholder: "Upload PO (PDF, PNG, JPG, DOCX)",
-                  onChange: handleFileChange,
-                }, */
-                },
+               
                 ...(formData.orderType === "B2G"
                   ? [
                       {
