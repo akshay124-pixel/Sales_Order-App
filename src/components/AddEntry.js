@@ -185,18 +185,20 @@ function AddEntry({ onSubmit, onClose }) {
   };
 
   const addProduct = () => {
+    // Ensure all required fields are present and valid
     if (
       !currentProduct.productType ||
       !currentProduct.qty ||
       !currentProduct.unitPrice ||
-      currentProduct.gst === "" ||
+      !currentProduct.gst ||
       !currentProduct.warranty
     ) {
       toast.error(
-        "Please fill all required product fields including GST and Warranty"
+        "Please fill all required product fields: Product Type, Quantity, Unit Price, GST, and Warranty"
       );
       return;
     }
+
     if (
       currentProduct.productType === "IFPD" &&
       (!currentProduct.modelNos || !currentProduct.brand)
@@ -204,21 +206,41 @@ function AddEntry({ onSubmit, onClose }) {
       toast.error("Model Numbers and Brand are required for IFPD products");
       return;
     }
-    if (isNaN(Number(currentProduct.qty)) || Number(currentProduct.qty) <= 0) {
+
+    const qty = Number(currentProduct.qty);
+    if (isNaN(qty) || qty <= 0) {
       toast.error("Quantity must be a positive number");
       return;
     }
-    if (
-      isNaN(Number(currentProduct.gst)) &&
-      currentProduct.gst !== "including"
-    ) {
+
+    const gst = currentProduct.gst;
+    if (gst !== "including" && (isNaN(Number(gst)) || Number(gst) <= 0)) {
       toast.error("GST must be a valid number or 'including'");
       return;
     }
+
+    // Ensure warranty is a non-empty string
+    if (
+      typeof currentProduct.warranty !== "string" ||
+      currentProduct.warranty.trim() === ""
+    ) {
+      toast.error(
+        "Warranty must be a valid string (e.g., '1 Year' or 'As Per Tender')"
+      );
+      return;
+    }
+
     setProducts([
       ...products,
-      { ...currentProduct, modelNos: currentProduct.modelNos },
+      {
+        ...currentProduct,
+        qty: qty, // Ensure qty is stored as a number
+        unitPrice: Number(currentProduct.unitPrice) || 0, // Ensure unitPrice is a number
+        gst: gst === "including" ? "including" : Number(gst), // Ensure gst is correct type
+        modelNos: currentProduct.modelNos ? currentProduct.modelNos : "",
+      },
     ]);
+
     setCurrentProduct({
       productType: "",
       size: "",
@@ -230,12 +252,12 @@ function AddEntry({ onSubmit, onClose }) {
       brand: "",
       warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
     });
+
     setFormData((prev) => ({
       ...prev,
       paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
     }));
   };
-
   const removeProduct = (index) => {
     setProducts(products.filter((_, i) => i !== index));
     setFormData((prev) => ({
