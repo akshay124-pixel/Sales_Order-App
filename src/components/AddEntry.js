@@ -298,100 +298,195 @@ function AddEntry({ onSubmit, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent multiple submissions
+    if (loading) return;
+
+    // Validate user role
     const userRole = localStorage.getItem("role");
     if (!["Sales", "Admin"].includes(userRole)) {
       toast.error("Only Sales or Admin users can create orders");
       return;
     }
 
-    if (formData.orderType === "B2G" && !formData.gemOrderNumber) {
-      toast.error("Please provide GEM Order Number for B2G orders");
+    // Validate token
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Session expired. Please log in again.");
       return;
     }
 
-    const total = calculateTotal();
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
+    // Validate form data
+    const validateForm = () => {
+      if (!formData.customername?.trim()) {
+        return "Customer name is required";
+      }
+      if (!formData.soDate) {
+        return "SO date is required";
+      }
+      if (!formData.orderType) {
+        return "Order type is required";
+      }
+      if (formData.orderType === "B2G" && !formData.gemOrderNumber?.trim()) {
+        return "GEM Order Number is required for B2G orders";
+      }
+      if (!products?.length) {
+        return "At least one product is required";
+      }
+      for (const [index, p] of products.entries()) {
+        if (!p.productType?.trim()) {
+          return `Product ${index + 1}: Product type is required`;
+        }
+        if (!p.qty || p.qty <= 0) {
+          return `Product ${index + 1}: Quantity must be greater than 0`;
+        }
+        if (!p.unitPrice || p.unitPrice < 0) {
+          return `Product ${index + 1}: Unit price must be non-negative`;
+        }
+      }
+      if (poFile) {
+        const allowedTypes = [
+          "application/pdf",
+          "image/png",
+          "image/jpeg",
+          "image/jpg",
+        ];
+        if (!allowedTypes.includes(poFile.type)) {
+          return "PO file must be a PDF or image (PNG/JPEG)";
+        }
+        if (poFile.size > 5 * 1024 * 1024) {
+          // 5MB limit
+          return "PO file size must be less than 5MB";
+        }
+      }
+      return null;
+    };
 
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    // Calculate total
+    const total = calculateTotal();
+
+    // Build new entry
+    const userId = localStorage.getItem("userId");
     const newEntry = {
       ...formData,
-      createdBy: userId,
+      createdBy: userId || "unknown", // Fallback for missing userId
       products: products.map((p) => ({
-        productType: p.productType,
-        size: p.size || "N/A",
-        spec: p.spec || "N/A",
-        qty: Number(p.qty) || 0,
+        productType: p.productType?.trim() || "N/A",
+        size: p.size?.trim() || "N/A",
+        spec: p.spec?.trim() || "N/A",
+        qty: Number(p.qty) || 1,
         unitPrice: Number(p.unitPrice) || 0,
         gst: p.gst === "including" ? "including" : Number(p.gst) || 0,
         serialNos: [],
-        modelNos: p.modelNos ? p.modelNos.split(",").map((m) => m.trim()) : [],
-        brand: p.brand || "",
+        modelNos: p.modelNos
+          ? p.modelNos
+              .split(",")
+              .map((m) => m.trim())
+              .filter((m) => m)
+          : [],
+        brand: p.brand?.trim() || "",
         warranty:
-          p.warranty ||
+          p.warranty?.trim() ||
           (formData.orderType === "B2G" ? "As Per Tender" : "1 Year"),
       })),
-      soDate: formData.soDate,
-      total,
-      freightcs: formData.freightcs || "",
-      installation: formData.installation || "N/A",
-      orderType: formData.orderType,
+      soDate: formData.soDate || new Date().toISOString(),
+      total: Number(total) || 0,
+      freightcs: formData.freightcs?.trim() || "",
+      installation: formData.installation?.trim() || "N/A",
+      orderType: formData.orderType || "B2C",
       paymentCollected: String(formData.paymentCollected || ""),
       paymentMethod: formData.paymentMethod || "",
       paymentDue: String(formData.paymentDue || ""),
-      neftTransactionId: formData.neftTransactionId || "",
-      chequeId: formData.chequeId || "",
-      remarks: formData.remarks || "",
-      gemOrderNumber: formData.gemOrderNumber || "",
+      neftTransactionId: formData.neftTransactionId?.trim() || "",
+      chequeId: formData.chequeId?.trim() || "",
+      remarks: formData.remarks?.trim() || "",
+      gemOrderNumber: formData.gemOrderNumber?.trim() || "",
       deliveryDate: formData.deliveryDate || "",
       demoDate: formData.demoDate || "",
       paymentTerms: formData.paymentTerms || "",
       creditDays: formData.creditDays || "",
-      dispatchFrom: formData.dispatchFrom || "",
-      fulfillingStatus: formData.fulfillingStatus,
+      dispatchFrom: formData.dispatchFrom?.trim() || "",
+      fulfillingStatus: formData.fulfillingStatus || "Pending",
     };
-    // Create FormData for file upload
-    const formDataToSend = new FormData();
-    for (const key in newEntry) {
-      if (Array.isArray(newEntry[key])) {
-        formDataToSend.append(key, JSON.stringify(newEntry[key]));
-      } else {
-        formDataToSend.append(key, newEntry[key]);
+
+    // Build FormData
+    const buildFormData = () => {
+      const formDataToSend = new FormData();
+      for (const [key, value] of Object.entries(newEntry)) {
+        if (Array.isArray(value)) {
+          formDataToSend.append(key, JSON.stringify(value));
+        } else {
+          formDataToSend.append(key, value ?? "");
+        }
       }
-    }
-    if (poFile) {
-      formDataToSend.append("poFile", poFile);
-    }
+      if (poFile) {
+        formDataToSend.append("poFile", poFile);
+      }
+      return formDataToSend;
+    };
 
     try {
       setLoading(true);
+      const formDataToSend = buildFormData();
       const response = await axios.post(
-        "https://sales-order-server.onrender.com/api/orders",
-        newEntry,
+        `${
+          process.env.REACT_APP_API_URL ||
+          "https://sales-order-server.onrender.com"
+        }/api/orders`,
+        formDataToSend,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            // Don't set Content-Type; FormData sets it automatically
           },
+          timeout: 30000, // 30-second timeout
         }
       );
+
       toast.success("Order submitted successfully!");
       onSubmit(response.data);
       onClose();
     } catch (error) {
-      console.error("Error:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        "Failed to create order. Please try again.";
-      toast.error(errorMessage);
-      if (error.response?.status === 403) {
-        toast.error("Unauthorized: Insufficient permissions or invalid token");
-      } else if (error.response?.status === 400) {
-        console.error("Validation Error Details:", error.response?.data);
-        toast.error(
-          `Validation Error: ${JSON.stringify(error.response?.data)}`
-        );
+      console.error("Order submission error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+
+      let errorMessage = "Failed to create order. Please try again.";
+      if (error.response) {
+        // Server responded with an error
+        const { status, data } = error.response;
+        if (status === 400) {
+          errorMessage = data.errors
+            ? data.errors.map((err) => err.msg).join("; ")
+            : data.message || "Invalid input data";
+        } else if (status === 401 || status === 403) {
+          errorMessage = "Unauthorized: Please log in again";
+          // Optionally redirect to login
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+        } else if (status === 413) {
+          errorMessage = "File too large. Please upload a smaller file.";
+        } else if (status === 500) {
+          errorMessage = "Server error. Please contact support.";
+        } else {
+          errorMessage = data.message || errorMessage;
+        }
+      } else if (error.request) {
+        // No response (network error)
+        errorMessage = "Network error. Please check your connection.";
+      } else {
+        // Other errors (e.g., Axios setup)
+        errorMessage = error.message;
       }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
