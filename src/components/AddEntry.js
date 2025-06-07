@@ -329,7 +329,25 @@ function AddEntry({ onSubmit, onClose }) {
       if (formData.orderType === "B2G" && !formData.gemOrderNumber?.trim()) {
         return "GEM Order Number is required for B2G orders";
       }
-
+      if (!products?.length) {
+        return "At least one product is required";
+      }
+      for (const [index, p] of products.entries()) {
+        if (!p.productType?.trim()) {
+          return `Product ${index + 1}: Product type is required`;
+        }
+        if (!p.qty || Number(p.qty) <= 0) {
+          return `Product ${index + 1}: Quantity must be greater than 0`;
+        }
+        if (!p.gst || (p.gst !== "including" && !Number(p.gst))) {
+          return `Product ${
+            index + 1
+          }: GST is required (select 'including' or a number)`;
+        }
+        if (!p.warranty?.trim()) {
+          return `Product ${index + 1}: Warranty is required`;
+        }
+      }
       if (poFile) {
         const allowedTypes = [
           "application/pdf",
@@ -361,14 +379,14 @@ function AddEntry({ onSubmit, onClose }) {
     const userId = localStorage.getItem("userId");
     const newEntry = {
       ...formData,
-      createdBy: userId || "unknown", // Fallback for missing userId
+      createdBy: userId || "unknown",
       products: products.map((p) => ({
-        productType: p.productType?.trim() || "N/A",
+        productType: p.productType?.trim(),
         size: p.size?.trim() || "N/A",
         spec: p.spec?.trim() || "N/A",
-        qty: Number(p.qty) || 1,
+        qty: Number(p.qty),
         unitPrice: Number(p.unitPrice) || 0,
-        gst: p.gst === "including" ? "including" : Number(p.gst) || 0,
+        gst: p.gst === "including" ? "including" : Number(p.gst),
         serialNos: [],
         modelNos: p.modelNos
           ? p.modelNos
@@ -401,35 +419,28 @@ function AddEntry({ onSubmit, onClose }) {
       fulfillingStatus: formData.fulfillingStatus || "Pending",
     };
 
-    // Build FormData
-    const buildFormData = () => {
-      const formDataToSend = new FormData();
-      for (const [key, value] of Object.entries(newEntry)) {
-        if (Array.isArray(value)) {
-          formDataToSend.append(key, JSON.stringify(value));
-        } else {
-          formDataToSend.append(key, value ?? "");
-        }
+    // Build FormData for file upload
+    const formDataToSend = new FormData();
+    for (const [key, value] of Object.entries(newEntry)) {
+      if (Array.isArray(value)) {
+        formDataToSend.append(key, JSON.stringify(value));
+      } else {
+        formDataToSend.append(key, value ?? "");
       }
-      if (poFile) {
-        formDataToSend.append("poFile", poFile);
-      }
-      return formDataToSend;
-    };
+    }
+    if (poFile) {
+      formDataToSend.append("poFile", poFile); // Ensure field name matches backend
+    }
 
     try {
       setLoading(true);
-      const formDataToSend = buildFormData();
       const response = await axios.post(
-        `${
-          process.env.REACT_APP_API_URL ||
-          "https://sales-order-server.onrender.com"
-        }/api/orders`,
-        formDataToSend,
+        "https://sales-order-server.onrender.com/api/orders",
+        formDataToSend, // Use FormData for file upload
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            // Don't set Content-Type; FormData sets it automatically
+            // Content-Type is set automatically by FormData
           },
           timeout: 30000, // 30-second timeout
         }
@@ -447,29 +458,21 @@ function AddEntry({ onSubmit, onClose }) {
 
       let errorMessage = "Failed to create order. Please try again.";
       if (error.response) {
-        // Server responded with an error
         const { status, data } = error.response;
         if (status === 400) {
-          errorMessage = data.errors
-            ? data.errors.map((err) => err.msg).join("; ")
-            : data.message || "Invalid input data";
+          errorMessage = data.details || data.error || "Invalid input data";
         } else if (status === 401 || status === 403) {
           errorMessage = "Unauthorized: Please log in again";
-          // Optionally redirect to login
-          localStorage.removeItem("token");
-          window.location.href = "/login";
         } else if (status === 413) {
-          errorMessage = "File too large. Please upload a smaller file.";
+          errorMessage = "PO file too large. Please upload a smaller file.";
         } else if (status === 500) {
           errorMessage = "Server error. Please contact support.";
         } else {
-          errorMessage = data.message || errorMessage;
+          errorMessage = data.error || errorMessage;
         }
       } else if (error.request) {
-        // No response (network error)
         errorMessage = "Network error. Please check your connection.";
       } else {
-        // Other errors (e.g., Axios setup)
         errorMessage = error.message;
       }
 
