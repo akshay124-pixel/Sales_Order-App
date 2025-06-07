@@ -13,7 +13,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     }
 
     try {
-      const fileUrl = `http://localhost:4000${
+      const fileUrl = `https://sales-order-server.onrender.com${
         entry.poFilePath.startsWith("/") ? "" : "/"
       }${entry.poFilePath}`;
       const response = await fetch(fileUrl, {
