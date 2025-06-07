@@ -15,13 +15,11 @@ import {
   brandOptions,
   dispatchFromOptions,
 } from "./Options";
-
 function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [loading, setLoading] = useState(false);
-  const [poFile, setPoFile] = useState(null);
-  const [fileInputKey, setFileInputKey] = useState(Date.now()); // Added for resetting file input
+  const [poFile, setPoFile] = useState(null); //
   const [products, setProducts] = useState([]);
   const [currentProduct, setCurrentProduct] = useState({
     productType: "",
@@ -32,7 +30,7 @@ function AddEntry({ onSubmit, onClose }) {
     gst: "",
     modelNos: "",
     brand: "",
-    warranty: "",
+    warranty: "", // New warranty field
   });
 
   const [formData, setFormData] = useState({
@@ -68,10 +66,9 @@ function AddEntry({ onSubmit, onClose }) {
     demoDate: "",
     paymentTerms: "",
     creditDays: "",
-    dispatchFrom: "",
+    dispatchFrom: "", // New field for dropdown
     fulfillingStatus: "Pending",
   });
-
   const gstOptions =
     formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
 
@@ -83,7 +80,6 @@ function AddEntry({ onSubmit, onClose }) {
         "application/pdf",
         "image/png",
         "image/jpeg",
-        "image/jpg", // Explicitly include jpg
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ];
@@ -93,16 +89,9 @@ function AddEntry({ onSubmit, onClose }) {
         setPoFile(null);
         return;
       }
-      // Validate file size (max 5MB)
+      // Validate file size (e.g., max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("File size must be less than 5MB");
-        e.target.value = null;
-        setPoFile(null);
-        return;
-      }
-      // Validate file name length (optional, to avoid server issues)
-      if (file.name.length > 100) {
-        toast.error("File name is too long (max 100 characters)");
         e.target.value = null;
         setPoFile(null);
         return;
@@ -112,7 +101,6 @@ function AddEntry({ onSubmit, onClose }) {
       setPoFile(null);
     }
   };
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -310,9 +298,6 @@ function AddEntry({ onSubmit, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prevent multiple submissions
-    if (loading) return;
-
     const userRole = localStorage.getItem("role");
     if (!["Sales", "Admin"].includes(userRole)) {
       toast.error("Only Sales or Admin users can create orders");
@@ -364,71 +349,53 @@ function AddEntry({ onSubmit, onClose }) {
       dispatchFrom: formData.dispatchFrom || "",
       fulfillingStatus: formData.fulfillingStatus,
     };
-
     // Create FormData for file upload
     const formDataToSend = new FormData();
     for (const key in newEntry) {
       if (Array.isArray(newEntry[key])) {
         formDataToSend.append(key, JSON.stringify(newEntry[key]));
       } else {
-        formDataToSend.append(key, newEntry[key] ?? "");
+        formDataToSend.append(key, newEntry[key]);
       }
     }
     if (poFile) {
-      formDataToSend.append("poFile", poFile); // Ensure field name matches backend
+      formDataToSend.append("poFile", poFile);
     }
 
     try {
       setLoading(true);
       const response = await axios.post(
         "https://sales-order-server.onrender.com/api/orders",
-        formDataToSend, // Use FormData for file upload
+        newEntry,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            // Content-Type is set automatically by FormData
+            "Content-Type": "multipart/form-data",
           },
-          timeout: 30000, // 30-second timeout
         }
       );
       toast.success("Order submitted successfully!");
       onSubmit(response.data);
-      // Reset file input and state
-      setPoFile(null);
-      setFileInputKey(Date.now());
       onClose();
     } catch (error) {
-      console.error("Error:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
-      let errorMessage =
+      console.error("Error:", error);
+      const errorMessage =
         error.response?.data?.error ||
         error.response?.data?.message ||
         "Failed to create order. Please try again.";
-      // Handle file-specific errors
-      if (error.response?.status === 400 && error.response?.data?.details) {
-        errorMessage = error.response.data.details;
-      } else if (error.response?.status === 413) {
-        errorMessage = "PO file too large. Please upload a smaller file.";
-      } else if (error.response?.status === 403) {
-        errorMessage =
-          "Unauthorized: Insufficient permissions or invalid token";
-      } else if (error.response?.status === 500) {
-        errorMessage = "Server error. Please contact support.";
-      } else if (!error.response) {
-        errorMessage = "Network error. Please check your connection.";
-      }
       toast.error(errorMessage);
-      // Reset file input on error to allow re-selection
-      setPoFile(null);
-      setFileInputKey(Date.now());
+      if (error.response?.status === 403) {
+        toast.error("Unauthorized: Insufficient permissions or invalid token");
+      } else if (error.response?.status === 400) {
+        console.error("Validation Error Details:", error.response?.data);
+        toast.error(
+          `Validation Error: ${JSON.stringify(error.response?.data)}`
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <>
       <div
@@ -601,7 +568,6 @@ function AddEntry({ onSubmit, onClose }) {
                   accept: ".pdf,.png,.jpg,.jpeg,.docx",
                   placeholder: "Upload PO (PDF, PNG, JPG, DOCX)",
                   onChange: handleFileChange,
-                  key: fileInputKey, // Added to reset file input
                 },
                 ...(formData.orderType === "B2G"
                   ? [
@@ -683,16 +649,10 @@ function AddEntry({ onSubmit, onClose }) {
                           ? field.value
                           : formData[field.name] || ""
                       }
-                      onChange={
-                        field.disabled
-                          ? undefined
-                          : field.onChange || handleChange
-                      }
+                      onChange={field.disabled ? undefined : handleChange}
                       required={field.required}
                       placeholder={field.placeholder}
                       disabled={field.disabled || false}
-                      accept={field.accept}
-                      key={field.key} // Added for file input reset
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
@@ -1492,7 +1452,7 @@ function AddEntry({ onSubmit, onClose }) {
                     </select>
                   ) : (
                     <input
-                      type="tel"
+                      type={field.type}
                       name={field.name}
                       value={formData[field.name] || ""}
                       onChange={(e) => {
@@ -1537,7 +1497,7 @@ function AddEntry({ onSubmit, onClose }) {
                 fontSize: "1.5rem",
                 background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                 WebkitBackgroundClip: "text",
-                WebkitTextColor: "transparent",
+                WebkitTextFillColor: "transparent",
                 fontWeight: "700",
                 marginBottom: "1rem",
                 letterSpacing: "1px",
