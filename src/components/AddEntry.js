@@ -310,11 +310,6 @@ function AddEntry({ onSubmit, onClose }) {
       return;
     }
 
-    if (products.length === 0) {
-      toast.error("Please add at least one product to the order");
-      return;
-    }
-
     const total = calculateTotal();
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
