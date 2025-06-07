@@ -211,6 +211,7 @@ export const productOptions = {
     ],
   },
   "3 Cup Speaker": { sizes: ["N/A"], specs: ["N/A"] },
+  "4 Cup Speaker": { sizes: ["N/A"], specs: ["N/A"] },
   Microphone: {
     sizes: ["N/A"],
     specs: ["Handheld Collar Mic", "Goose Neck Mic", "Collar/Lapel Mic"],
