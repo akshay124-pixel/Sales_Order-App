@@ -15,12 +15,11 @@ import {
   brandOptions,
   dispatchFromOptions,
 } from "./Options";
-
 function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [loading, setLoading] = useState(false);
-  const [poFile, setPoFile] = useState(null);
+  const [poFile, setPoFile] = useState(null); //
   const [products, setProducts] = useState([]);
   const [currentProduct, setCurrentProduct] = useState({
     productType: "",
@@ -31,7 +30,7 @@ function AddEntry({ onSubmit, onClose }) {
     gst: "",
     modelNos: "",
     brand: "",
-    warranty: "",
+    warranty: "", // New warranty field
   });
 
   const [formData, setFormData] = useState({
@@ -67,10 +66,9 @@ function AddEntry({ onSubmit, onClose }) {
     demoDate: "",
     paymentTerms: "",
     creditDays: "",
-    dispatchFrom: "",
+    dispatchFrom: "", // New field for dropdown
     fulfillingStatus: "Pending",
   });
-
   const gstOptions =
     formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
 
@@ -92,7 +90,7 @@ function AddEntry({ onSubmit, onClose }) {
         setPoFile(null);
         return;
       }
-      // Validate file size (max 5MB)
+      // Validate file size (e.g., max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("File size must be less than 5MB");
         e.target.value = null;
@@ -104,7 +102,6 @@ function AddEntry({ onSubmit, onClose }) {
       setPoFile(null);
     }
   };
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -353,7 +350,6 @@ function AddEntry({ onSubmit, onClose }) {
       dispatchFrom: formData.dispatchFrom || "",
       fulfillingStatus: formData.fulfillingStatus,
     };
-
     // Create FormData for file upload
     const formDataToSend = new FormData();
     for (const key in newEntry) {
@@ -364,14 +360,14 @@ function AddEntry({ onSubmit, onClose }) {
       }
     }
     if (poFile) {
-      formDataToSend.append("poFile", poFile, poFile.name);
+      formDataToSend.append("poFile", poFile);
     }
 
     try {
       setLoading(true);
       const response = await axios.post(
         "https://sales-order-server.onrender.com/api/orders",
-        formDataToSend,
+        newEntry,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -401,7 +397,6 @@ function AddEntry({ onSubmit, onClose }) {
       setLoading(false);
     }
   };
-
   return (
     <>
       <div
@@ -568,12 +563,14 @@ function AddEntry({ onSubmit, onClose }) {
                   placeholder: "Select Dispatch Location",
                 },
                 {
+                  /* {
                   label: "PO Attach",
                   name: "poFile",
                   type: "file",
                   accept: ".pdf,.png,.jpg,.jpeg,.doc,.docx",
                   placeholder: "Upload PO (PDF, PNG, JPG, DOCX)",
                   onChange: handleFileChange,
+                }, */
                 },
                 ...(formData.orderType === "B2G"
                   ? [
@@ -655,11 +652,10 @@ function AddEntry({ onSubmit, onClose }) {
                           ? field.value
                           : formData[field.name] || ""
                       }
-                      onChange={field.onChange || handleChange}
+                      onChange={field.disabled ? undefined : handleChange}
                       required={field.required}
                       placeholder={field.placeholder}
                       disabled={field.disabled || false}
-                      accept={field.accept}
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
