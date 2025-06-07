@@ -317,6 +317,7 @@ function Finish() {
   ];
 
   const handleReset = () => {
+    setSalesPersonFilter("");
     setFreightStatusFilter("");
     setDispatchStatusFilter("");
     setOrderTypeFilter("");
