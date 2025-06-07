@@ -80,6 +80,7 @@ function AddEntry({ onSubmit, onClose }) {
         "application/pdf",
         "image/png",
         "image/jpeg",
+        "image/jpg",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ];
@@ -565,7 +566,7 @@ function AddEntry({ onSubmit, onClose }) {
                   label: "PO Attach",
                   name: "poFile",
                   type: "file",
-                  accept: ".pdf,.png,.jpg,.jpeg,.docx",
+                  accept: ".pdf,.png,.jpg,.jpeg,.doc,.docx",
                   placeholder: "Upload PO (PDF, PNG, JPG, DOCX)",
                   onChange: handleFileChange,
                 },
