@@ -329,20 +329,7 @@ function AddEntry({ onSubmit, onClose }) {
       if (formData.orderType === "B2G" && !formData.gemOrderNumber?.trim()) {
         return "GEM Order Number is required for B2G orders";
       }
-      if (!products?.length) {
-        return "At least one product is required";
-      }
-      for (const [index, p] of products.entries()) {
-        if (!p.productType?.trim()) {
-          return `Product ${index + 1}: Product type is required`;
-        }
-        if (!p.qty || p.qty <= 0) {
-          return `Product ${index + 1}: Quantity must be greater than 0`;
-        }
-        if (!p.unitPrice || p.unitPrice < 0) {
-          return `Product ${index + 1}: Unit price must be non-negative`;
-        }
-      }
+
       if (poFile) {
         const allowedTypes = [
           "application/pdf",
