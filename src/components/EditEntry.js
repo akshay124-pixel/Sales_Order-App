@@ -1706,6 +1706,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="B2C">B2C</option>
                 <option value="B2B">B2B</option>
                 <option value="Demo">Demo</option>
+                <option value="Repair">Repair</option>
                 <option value="Replacement">Replacement</option>
               </Form.Select>
             )}

@@ -1212,6 +1212,7 @@ export const orderTypeOptions = [
   "Demo",
   "Replacement",
   "Stock Out",
+  "Repair",
 ];
 export const companyOptions = ["Promark", "Foxmate", "Promine", "Primus"];
 
