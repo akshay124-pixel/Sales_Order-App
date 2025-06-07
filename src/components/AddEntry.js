@@ -349,7 +349,6 @@ function AddEntry({ onSubmit, onClose }) {
       dispatchFrom: formData.dispatchFrom || "",
       fulfillingStatus: formData.fulfillingStatus,
     };
-
     // Create FormData for file upload
     const formDataToSend = new FormData();
     for (const key in newEntry) {
@@ -367,7 +366,7 @@ function AddEntry({ onSubmit, onClose }) {
       setLoading(true);
       const response = await axios.post(
         "https://sales-order-server.onrender.com/api/orders",
-        formDataToSend,
+        newEntry,
         {
           headers: {
             Authorization: `Bearer ${token}`,
