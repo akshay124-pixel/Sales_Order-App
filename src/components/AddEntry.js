@@ -349,6 +349,18 @@ function AddEntry({ onSubmit, onClose }) {
       dispatchFrom: formData.dispatchFrom || "",
       fulfillingStatus: formData.fulfillingStatus,
     };
+    // Create FormData for file upload
+    const formDataToSend = new FormData();
+    for (const key in newEntry) {
+      if (Array.isArray(newEntry[key])) {
+        formDataToSend.append(key, JSON.stringify(newEntry[key]));
+      } else {
+        formDataToSend.append(key, newEntry[key]);
+      }
+    }
+    if (poFile) {
+      formDataToSend.append("poFile", poFile);
+    }
 
     try {
       setLoading(true);
