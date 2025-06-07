@@ -310,6 +310,11 @@ function AddEntry({ onSubmit, onClose }) {
       return;
     }
 
+    if (products.length === 0) {
+      toast.error("Please add at least one product to the order");
+      return;
+    }
+
     const total = calculateTotal();
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
@@ -350,6 +355,7 @@ function AddEntry({ onSubmit, onClose }) {
       dispatchFrom: formData.dispatchFrom || "",
       fulfillingStatus: formData.fulfillingStatus,
     };
+
     // Create FormData for file upload
     const formDataToSend = new FormData();
     for (const key in newEntry) {
@@ -367,7 +373,7 @@ function AddEntry({ onSubmit, onClose }) {
       setLoading(true);
       const response = await axios.post(
         "https://sales-order-server.onrender.com/api/orders",
-        newEntry,
+        formDataToSend,
         {
           headers: {
             Authorization: `Bearer ${token}`,
