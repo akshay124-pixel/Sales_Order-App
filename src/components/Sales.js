@@ -1274,6 +1274,7 @@ const Sales = () => {
 
   // Event handlers
   const handleReset = useCallback(() => {
+    setDispatchFromFilter("All");
     setApprovalFilter("All");
     setOrderTypeFilter("All");
     setDispatchFilter("All");
