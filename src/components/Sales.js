@@ -125,7 +125,65 @@ const MarkReadButton = styled(Button)`
     background: #218838;
   }
 `;
+// Styled Components
+const FilterWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  padding: 15px;
+  background: linear-gradient(135deg, #ffffff, #f0f7ff);
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+`;
 
+const StyledSelect = styled(Form.Select)`
+  padding: 10px 15px;
+  border-radius: 30px;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 160px;
+  &:focus {
+    box-shadow: 0 0 15px rgba(37, 117, 252, 0.3);
+    transform: scale(1.02);
+  }
+`;
+
+const StyledInput = styled(Form.Control)`
+  padding: 10px 15px;
+  border-radius: 30px;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  &:focus {
+    box-shadow: 0 0 15px rgba(37, 117, 252, 0.3);
+    transform: scale(1.02);
+  }
+`;
+
+const StyledButton = styled(Button)`
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+`;
 const DatePickerWrapper = styled.div`
   display: flex;
   gap: 10px;

@@ -1290,6 +1290,7 @@ export const salesPersonlist = [
   "Ranbeer Kaur",
   "Rachit Arya",
   "Rohit Kumar Tiwari",
+  "Sobhab Khan",
   "Sahil Gupta",
   "Sahil Kapoor",
   "Sahiba",

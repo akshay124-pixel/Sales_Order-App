@@ -275,9 +275,25 @@ const FilterSection = ({
   setOrderTypeFilter,
   dispatchFilter,
   setDispatchFilter,
+  dispatchFromFilter,
+  setDispatchFromFilter,
   handleReset,
   tableId = "orders-table", // Optional prop for accessibility
 }) => {
+  // Dispatch From options based on schema
+  const dispatchFromOptions = [
+    "All",
+    "Not Specified",
+    "Patna",
+    "Bareilly",
+    "Ranchi",
+    "Morinda",
+    "Lucknow",
+    "Delhi",
+    "Jaipur",
+    "Rajasthan",
+  ];
+
   return (
     <FilterContainer>
       <SearchInput
@@ -381,6 +397,29 @@ const FilterSection = ({
               <StyledDropdownItem
                 key={option}
                 onClick={() => setDispatchFilter(option)}
+              >
+                {option}
+              </StyledDropdownItem>
+            ))}
+          </StyledDropdownMenu>
+        </Dropdown>
+        <Dropdown>
+          <StyledDropdownToggle aria-controls={tableId}>
+            {dispatchFromFilter === "All"
+              ? "Dispatch From"
+              : dispatchFromFilter === ""
+              ? "Not Specified"
+              : dispatchFromFilter}
+          </StyledDropdownToggle>
+          <StyledDropdownMenu>
+            {dispatchFromOptions.map((option) => (
+              <StyledDropdownItem
+                key={option}
+                onClick={() =>
+                  setDispatchFromFilter(
+                    option === "Not Specified" ? "" : option
+                  )
+                }
               >
                 {option}
               </StyledDropdownItem>
