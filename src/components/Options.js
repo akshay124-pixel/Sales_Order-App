@@ -399,7 +399,10 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: ["Long Throw", "Short Throw", "Ultra Long Throw"],
   },
-  "LED TV": { sizes: ["N/A"], specs: ["N/A"] },
+  "LED TV": {
+    sizes: ["32 inch", "43 inch", "55 inch", "65 inch"],
+    specs: ["N/A"],
+  },
   "Digital Podium Controller": { sizes: ["N/A"], specs: ["N/A"] },
   "Amplifier Mic Receiver": { sizes: ["N/A"], specs: ["N/A"] },
   "Wireless Mic Receiver": { sizes: ["N/A"], specs: ["N/A"] },
