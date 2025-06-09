@@ -2139,7 +2139,7 @@ const Sales = () => {
           >
             <span style={{ fontSize: "1.2rem" }}>+</span>{" "}
             {/* Reduced from 1.3rem */}
-            Add Entry
+            Add Order
           </Button>
           <Button
             onClick={handleExport}
