@@ -4,24 +4,22 @@ import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
+import ViewEntry from "./ViewEntry";
 
 function Accounts() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [viewOrder, setViewOrder] = useState(null);
-  const [copied, setCopied] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
   const [formData, setFormData] = useState({
-    billNumber: "",
-    dispatchDate: "",
+    total: "",
     paymentReceived: "Not Received",
     remarksByAccounts: "",
     installationStatus: "Pending",
-    invoiceDate: "",
     paymentCollected: "",
     paymentMethod: "",
     paymentDue: "",
@@ -67,10 +65,19 @@ function Accounts() {
   }, []);
 
   useEffect(() => {
+    if (formData.paymentReceived === "Received") {
+      setFormData((prev) => ({
+        ...prev,
+        paymentDue: "0",
+        paymentCollected: Number(prev.total || 0).toFixed(2),
+      }));
+    }
+  }, [formData.paymentReceived]);
+
+  useEffect(() => {
     fetchAccountsOrders();
   }, [fetchAccountsOrders]);
 
-  // Filter orders based on search query and status
   const filterOrders = useCallback(() => {
     let filtered = [...orders];
     if (searchQuery) {
@@ -133,7 +140,6 @@ function Accounts() {
     filterOrders();
   }, [filterOrders]);
 
-  // Get unique statuses for filter dropdown
   const uniqueStatuses = [
     "All",
     "Received",
@@ -145,89 +151,27 @@ function Accounts() {
     ),
   ];
 
-  const handleView = (order) => {
-    setViewOrder(order);
-    setShowViewModal(true);
-    setCopied(false);
+  const handleViewClick = (order) => {
+    setSelectedOrder(order);
+    setIsViewModalOpen(true);
   };
-
-  const handleCopy = useCallback(() => {
-    if (!viewOrder) return;
-    const productsText = Array.isArray(viewOrder.products)
-      ? viewOrder.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
-                p.modelNos?.join(", ") || "N/A"
-              }, GST: ${p.gst || "0"})`
-          )
-          .join("\n")
-      : "N/A";
-    const orderText = `
-      Bill Number: ${viewOrder.billNumber || "N/A"}
-      Date: ${
-        viewOrder.dispatchDate
-          ? new Date(viewOrder.dispatchDate).toLocaleDateString()
-          : "N/A"
-      }
-      Email: ${viewOrder.customerEmail || "N/A"}
-      Mobile: ${viewOrder.contactNo || "N/A"}
-      Total: ${viewOrder.total || "N/A"}
-      Payment Collected: ${viewOrder.paymentCollected || "N/A"}
-      Payment Method: ${viewOrder.paymentMethod || "N/A"}
-      Payment Due: ${viewOrder.paymentDue || "N/A"}
-      NEFT Transaction ID: ${viewOrder.neftTransactionId || "N/A"}
-      Cheque ID: ${viewOrder.chequeId || "N/A"}
-      Payment Received: ${viewOrder.paymentReceived || "Not Received"}
-      Remarks: ${viewOrder.remarksByAccounts || "N/A"}
-     
-      Invoice Date: ${
-        viewOrder.invoiceDate
-          ? new Date(viewOrder.invoiceDate).toLocaleDateString()
-          : "N/A"
-      }
-      Products:\n${productsText}
-    `.trim();
-    navigator.clipboard
-      .writeText(orderText)
-      .then(() => {
-        setCopied(true);
-        toast.success("Details copied to clipboard!", {
-          position: "top-right",
-          autoClose: 2000,
-        });
-        setTimeout(() => setCopied(false), 2000);
-      })
-      .catch((err) => {
-        toast.error("Failed to copy details!", {
-          position: "top-right",
-          autoClose: 5000,
-        });
-        console.error("Copy error:", err);
-      });
-  }, [viewOrder]);
 
   const handleEdit = (order) => {
     setEditOrder(order);
     setFormData({
-      billNumber: order.billNumber || "",
-      dispatchDate: order.dispatchDate
-        ? new Date(order.dispatchDate).toISOString().split("T")[0]
-        : "",
+      total: order.total || "",
       paymentReceived: order.paymentReceived || "Not Received",
       remarksByAccounts: order.remarksByAccounts || "",
-
-      invoiceDate: order.invoiceDate
-        ? new Date(order.invoiceDate).toISOString().split("T")[0]
-        : "",
-      paymentCollected: order.paymentCollected || "",
+      installationStatus: order.installationStatus || "Pending",
+      paymentCollected:
+        order.paymentReceived === "Received"
+          ? Number(order.total || 0).toFixed(2)
+          : order.paymentCollected || "",
       paymentMethod: order.paymentMethod || "",
-      paymentDue: order.paymentDue || "",
+      paymentDue:
+        order.paymentReceived === "Received" ? "0" : order.paymentDue || "",
       neftTransactionId: order.neftTransactionId || "",
       chequeId: order.chequeId || "",
-      installationStatus: order.installationStatus || "Pending",
     });
     setErrors({});
     setShowEditModal(true);
@@ -235,12 +179,7 @@ function Accounts() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.billNumber || formData.billNumber.trim() === "") {
-      newErrors.billNumber = "Bill Number is required";
-    }
-    if (!formData.dispatchDate || formData.dispatchDate.trim() === "") {
-      newErrors.dispatchDate = "Date is required";
-    }
+
     if (
       !formData.remarksByAccounts ||
       formData.remarksByAccounts.trim() === ""
@@ -266,6 +205,13 @@ function Accounts() {
     ) {
       newErrors.chequeId = "Cheque ID is required for Cheque payments";
     }
+    if (
+      formData.paymentReceived === "Received" &&
+      (!formData.paymentCollected || Number(formData.paymentCollected) <= 0)
+    ) {
+      newErrors.paymentCollected =
+        "Payment Collected must be greater than 0 when Payment Received is set";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -276,17 +222,16 @@ function Accounts() {
 
     try {
       const submissionData = {
-        billNumber: formData.billNumber,
-        dispatchDate: new Date(formData.dispatchDate).toISOString(),
+        total: Number(formData.total) || undefined,
         paymentReceived: formData.paymentReceived,
         remarksByAccounts: formData.remarksByAccounts,
-
-        invoiceDate: formData.invoiceDate
-          ? new Date(formData.invoiceDate).toISOString()
+        paymentCollected: formData.paymentCollected
+          ? Number(formData.paymentCollected)
           : undefined,
-        paymentCollected: formData.paymentCollected || undefined,
         paymentMethod: formData.paymentMethod || undefined,
-        paymentDue: formData.paymentDue || undefined,
+        paymentDue: formData.paymentDue
+          ? Number(formData.paymentDue)
+          : undefined,
         neftTransactionId: formData.neftTransactionId || undefined,
         chequeId: formData.chequeId || undefined,
         installationStatus: formData.installationStatus || undefined,
@@ -304,11 +249,9 @@ function Accounts() {
       if (response.data.success) {
         const updatedOrder = response.data.data;
         setOrders((prevOrders) =>
-          prevOrders
-            .map((order) =>
-              order._id === editOrder._id ? updatedOrder : order
-            )
-            .filter((order) => order.paymentReceived !== "Received")
+          prevOrders.map((order) =>
+            order._id === editOrder._id ? updatedOrder : order
+          )
         );
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
@@ -335,16 +278,23 @@ function Accounts() {
             .join(", ")
         : "N/A";
       return {
+        "Order ID": order.orderId || "N/A",
+        "Customer Name": order.customername || "N/A",
         "Bill Number": order.billNumber || "N/A",
-        Date: order.dispatchDate
-          ? new Date(order.dispatchDate).toLocaleDateString()
+        "PI Number": order.piNumber || "N/A",
+        "Invoice Date": order.invoiceDate
+          ? new Date(order.invoiceDate).toLocaleDateString()
           : "N/A",
-        Address: order.shippingAddress || "N/A",
-        Email: order.customerEmail || "N/A",
-        Mobile: order.contactNo || "N/A",
-        Total: order.total || "N/A",
-        Products: productDetails,
+        Total: order.total ? `₹${order.total.toFixed(2)}` : "N/A",
+        "Payment Collected": order.paymentCollected
+          ? `₹${order.paymentCollected}`
+          : "N/A",
+        "Payment Due": order.paymentDue ? `₹${order.paymentDue}` : "N/A",
+        "Payment Method": order.paymentMethod || "N/A",
+        "Payment Terms": order.paymentTerms || "N/A",
+        "Credit Days": order.creditDays || "N/A",
         "Payment Received": order.paymentReceived || "Not Received",
+        Products: productDetails,
       };
     });
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -609,16 +559,19 @@ function Accounts() {
               >
                 <tr>
                   {[
+                    "Order ID",
+                    "Customer Name",
                     "Bill Number",
                     "PI Number",
-                    "Dispatch Date",
-                    "Customer Email",
-                    "Customer Name",
+                    "Invoice Date",
                     "Total",
                     "Payment Collected",
-                    "Actions",
+                    "Payment Due",
                     "Payment Method",
+                    "Payment Terms",
+                    "Credit Days",
                     "Payment Received",
+                    "Actions",
                   ].map((header, index) => (
                     <th
                       key={index}
@@ -641,7 +594,7 @@ function Accounts() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan="10"
+                      colSpan="13"
                       style={{
                         padding: "20px",
                         textAlign: "center",
@@ -667,7 +620,7 @@ function Accounts() {
                 ) : filteredOrders.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="10"
+                      colSpan="13"
                       style={{
                         padding: "20px",
                         textAlign: "center",
@@ -688,11 +641,11 @@ function Accounts() {
                   filteredOrders
                     .slice()
                     .sort((a, b) => {
-                      const dateA = a.dispatchDate
-                        ? new Date(a.dispatchDate)
+                      const dateA = a.invoiceDate
+                        ? new Date(a.invoiceDate)
                         : new Date(0);
-                      const dateB = b.dispatchDate
-                        ? new Date(b.dispatchDate)
+                      const dateB = b.invoiceDate
+                        ? new Date(b.invoiceDate)
                         : new Date(0);
                       if (dateA.getTime() === dateB.getTime()) {
                         return b._id.localeCompare(a._id);
@@ -715,6 +668,40 @@ function Accounts() {
                             index % 2 === 0 ? "#f8f9fa" : "#fff")
                         }
                       >
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
+                          }}
+                          title={order.orderId || "N/A"}
+                        >
+                          {order.orderId || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "150px",
+                          }}
+                          title={order.customername || "N/A"}
+                        >
+                          {order.customername || "N/A"}
+                        </td>
                         <td
                           style={{
                             padding: "15px",
@@ -763,15 +750,13 @@ function Accounts() {
                             maxWidth: "120px",
                           }}
                           title={
-                            order.dispatchDate
-                              ? new Date(
-                                  order.dispatchDate
-                                ).toLocaleDateString()
+                            order.invoiceDate
+                              ? new Date(order.invoiceDate).toLocaleDateString()
                               : "N/A"
                           }
                         >
-                          {order.dispatchDate
-                            ? new Date(order.dispatchDate).toLocaleDateString()
+                          {order.invoiceDate
+                            ? new Date(order.invoiceDate).toLocaleDateString()
                             : "N/A"}
                         </td>
                         <td
@@ -785,28 +770,11 @@ function Accounts() {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            maxWidth: "150px",
+                            maxWidth: "100px",
                           }}
-                          title={order.customerEmail || "N/A"}
+                          title={order.total?.toFixed(2) || "N/A"}
                         >
-                          {order.customerEmail || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "150px",
-                          }}
-                          title={order.customername || "N/A"}
-                        >
-                          {order.customername || "N/A"}
+                          {order.total ? `₹${order.total.toFixed(2)}` : "N/A"}
                         </td>
                         <td
                           style={{
@@ -821,9 +789,11 @@ function Accounts() {
                             whiteSpace: "nowrap",
                             maxWidth: "100px",
                           }}
-                          title={order.total?.toString() || "N/A"}
+                          title={order.paymentCollected || "N/A"}
                         >
-                          {order.total || "N/A"}
+                          {order.paymentCollected
+                            ? `₹${order.paymentCollected}`
+                            : "N/A"}
                         </td>
                         <td
                           style={{
@@ -838,10 +808,97 @@ function Accounts() {
                             whiteSpace: "nowrap",
                             maxWidth: "100px",
                           }}
-                          title={order.paymentCollected?.toString() || "N/A"}
+                          title={order.paymentDue || "N/A"}
                         >
-                          {order.paymentCollected || "N/A"}
-                        </td>{" "}
+                          {order.paymentDue ? `₹${order.paymentDue}` : "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
+                          }}
+                          title={order.paymentMethod || "N/A"}
+                        >
+                          {order.paymentMethod || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
+                          }}
+                          title={order.paymentTerms || "N/A"}
+                        >
+                          {order.paymentTerms || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "80px",
+                          }}
+                          title={order.creditDays || "N/A"}
+                        >
+                          {order.creditDays || "N/A"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "15px",
+                            textAlign: "center",
+                            color: "#2c3e50",
+                            fontSize: "1rem",
+                            height: "40px",
+                            lineHeight: "40px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "120px",
+                          }}
+                          title={order.paymentReceived || "Not Received"}
+                        >
+                          <Badge
+                            style={{
+                              background:
+                                order.paymentReceived === "Received"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                  : order.paymentReceived === "Not Received"
+                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                              color: "#fff",
+                              padding: "5px 10px",
+                              borderRadius: "12px",
+                              display: "inline-block",
+                              width: "100%",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {order.paymentReceived || "Not Received"}
+                          </Badge>
+                        </td>
                         <td
                           style={{
                             padding: "15px",
@@ -856,14 +913,14 @@ function Accounts() {
                             style={{
                               display: "flex",
                               gap: "10px",
-                              justifyContent: "center",
                               marginTop: "20px",
+                              justifyContent: "center",
                               alignItems: "center",
                             }}
                           >
                             <Button
                               variant="primary"
-                              onClick={() => handleView(order)}
+                              onClick={() => handleViewClick(order)}
                               style={{
                                 width: "40px",
                                 height: "40px",
@@ -905,324 +962,12 @@ function Accounts() {
                             </button>
                           </div>
                         </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "120px",
-                          }}
-                          title={order.paymentMethod || "N/A"}
-                        >
-                          {order.paymentMethod || "N/A"}
-                        </td>
-                        <td
-                          style={{
-                            padding: "15px",
-                            textAlign: "center",
-                            color: "#2c3e50",
-                            fontSize: "1rem",
-                            height: "40px",
-                            lineHeight: "40px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: "120px",
-                          }}
-                          title={order.paymentReceived || "Not Received"}
-                        >
-                          <Badge
-                            style={{
-                              background:
-                                order.paymentReceived === "Received"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : order.paymentReceived === "Not Received"
-                                  ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                              color: "#fff",
-                              padding: "5px 10px",
-                              borderRadius: "12px",
-                              display: "inline-block",
-                              width: "100%",
-                              textOverflow: "ellipsis",
-                              overflow: "hidden",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {order.paymentReceived || "Not Received"}
-                          </Badge>
-                        </td>
                       </tr>
                     ))
                 )}
               </tbody>
             </table>
           </div>
-
-          {/* View Modal */}
-          <Modal
-            show={showViewModal}
-            onHide={() => setShowViewModal(false)}
-            backdrop="static"
-            keyboard={false}
-            size="lg"
-          >
-            <Modal.Header
-              closeButton
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                color: "#fff",
-                padding: "20px",
-                borderBottom: "none",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-              }}
-            >
-              <Modal.Title
-                style={{
-                  fontWeight: "700",
-                  fontSize: "1.8rem",
-                  letterSpacing: "1px",
-                  textTransform: "uppercase",
-                  textShadow: "1px 1px 3px rgba(0, 0, 0, 0.2)",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>
-                  📋
-                </span>
-                Accounts Order Details
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body
-              style={{
-                padding: "30px",
-                background: "#fff",
-                borderRadius: "0 0 15px 15px",
-                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "20px",
-              }}
-            >
-              {viewOrder ? (
-                <>
-                  <div
-                    style={{
-                      background: "#f8f9fa",
-                      borderRadius: "10px",
-                      padding: "20px",
-                      boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontSize: "1.3rem",
-                        fontWeight: "600",
-                        color: "#333",
-                        marginBottom: "15px",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Accounts Info
-                    </h3>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: "15px",
-                      }}
-                    >
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Bill Number:</strong>{" "}
-                        {viewOrder.billNumber || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Date:</strong>{" "}
-                        {viewOrder.dispatchDate
-                          ? new Date(
-                              viewOrder.dispatchDate
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Address:</strong>{" "}
-                        {viewOrder.shippingAddress || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Email:</strong>{" "}
-                        {viewOrder.customerEmail || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Mobile:</strong> {viewOrder.contactNo || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Total:</strong> {viewOrder.total || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Payment Collected:</strong>{" "}
-                        {viewOrder.paymentCollected || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Payment Method:</strong>{" "}
-                        {viewOrder.paymentMethod || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Payment Due:</strong>{" "}
-                        {viewOrder.paymentDue || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>NEFT Transaction ID:</strong>{" "}
-                        {viewOrder.neftTransactionId || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Cheque ID:</strong>{" "}
-                        {viewOrder.chequeId || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Payment Received:</strong>{" "}
-                        <Badge
-                          style={{
-                            background:
-                              viewOrder.paymentReceived === "Received"
-                                ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                : viewOrder.paymentReceived === "Not Received"
-                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
-                          }}
-                        >
-                          {viewOrder.paymentReceived || "Not Received"}
-                        </Badge>
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Remarks:</strong>{" "}
-                        {viewOrder.remarksByAccounts || "N/A"}
-                      </span>
-
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Invoice Date:</strong>{" "}
-                        {viewOrder.invoiceDate
-                          ? new Date(viewOrder.invoiceDate).toLocaleDateString()
-                          : "N/A"}
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      background: "#f8f9fa",
-                      borderRadius: "10px",
-                      padding: "20px",
-                      boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontSize: "1.3rem",
-                        fontWeight: "600",
-                        color: "#333",
-                        marginBottom: "15px",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Products
-                    </h3>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: "15px",
-                      }}
-                    >
-                      {Array.isArray(viewOrder.products) &&
-                      viewOrder.products.length > 0 ? (
-                        viewOrder.products.map((product, index) => (
-                          <React.Fragment key={`product-${index}`}>
-                            <span
-                              key={`product-type-${index}`}
-                              style={{ fontSize: "1rem", color: "#555" }}
-                            >
-                              <strong>Product {index + 1}:</strong>{" "}
-                              {product.productType || "N/A"}
-                            </span>
-                            <span
-                              key={`quantity-${index}`}
-                              style={{ fontSize: "1rem", color: "#555" }}
-                            >
-                              <strong>Quantity:</strong> {product.qty || "N/A"}
-                            </span>
-                            <span
-                              key={`gst-${index}`}
-                              style={{ fontSize: "1rem", color: "#555" }}
-                            >
-                              <strong>GST:</strong> {product.gst || "0"}
-                            </span>
-                            <span
-                              key={`serial-nos-${index}`}
-                              style={{ fontSize: "1rem", color: "#555" }}
-                            >
-                              <strong>Serial Nos:</strong>{" "}
-                              {product.serialNos?.join(", ") || "N/A"}
-                            </span>
-                            <span
-                              key={`model-nos-${index}`}
-                              style={{ fontSize: "1rem", color: "#555" }}
-                            >
-                              <strong>Model Nos:</strong>{" "}
-                              {product.modelNos?.[0] || "N/A"}
-                            </span>
-                          </React.Fragment>
-                        ))
-                      ) : (
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Products:</strong> N/A
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleCopy}
-                    style={{
-                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                      border: "none",
-                      padding: "12px",
-                      borderRadius: "25px",
-                      color: "#fff",
-                      fontWeight: "600",
-                      fontSize: "1.1rem",
-                      textTransform: "uppercase",
-                      transition: "all 0.3s ease",
-                      boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.target.style.transform = "translateY(-3px)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.target.style.transform = "translateY(0)")
-                    }
-                  >
-                    {copied ? "✅ Copied!" : "📑 Copy Details"}
-                  </Button>
-                </>
-              ) : (
-                <p style={{ fontSize: "1rem", color: "#555" }}>
-                  No order details available.
-                </p>
-              )}
-            </Modal.Body>
-          </Modal>
-
-          {/* Edit Modal */}
           <Modal
             show={showEditModal}
             onHide={() => setShowEditModal(false)}
@@ -1260,18 +1005,22 @@ function Accounts() {
               <Form onSubmit={handleEditSubmit}>
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Bill Number <span style={{ color: "red" }}>*</span>
+                    Total Payment
                   </Form.Label>
                   <Form.Control
-                    type="text"
-                    value={formData.billNumber}
+                    type="number"
+                    step="0.01"
+                    value={formData.total}
                     onChange={(e) =>
-                      setFormData({ ...formData, billNumber: e.target.value })
+                      setFormData({
+                        ...formData,
+                        total: e.target.value,
+                      })
                     }
-                    placeholder="Enter bill number"
+                    placeholder="Enter total amount"
                     style={{
                       borderRadius: "10px",
-                      border: errors.billNumber
+                      border: errors.total
                         ? "1px solid red"
                         : "1px solid #ced4da",
                       padding: "12px",
@@ -1283,54 +1032,20 @@ function Accounts() {
                         "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    required
                   />
-                  {errors.billNumber && (
+                  {errors.total && (
                     <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.billNumber}
+                      {errors.total}
                     </Form.Text>
                   )}
                 </Form.Group>
-
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Dispatch Date <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={formData.dispatchDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dispatchDate: e.target.value })
-                    }
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.dispatchDate
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    required
-                  />
-                  {errors.dispatchDate && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.dispatchDate}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     Payment Collected
                   </Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
+                    step="0.01"
                     value={formData.paymentCollected}
                     onChange={(e) =>
                       setFormData({
@@ -1353,6 +1068,7 @@ function Accounts() {
                         "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
+                    disabled={formData.paymentReceived === "Received"}
                   />
                   {errors.paymentCollected && (
                     <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
@@ -1360,7 +1076,6 @@ function Accounts() {
                     </Form.Text>
                   )}
                 </Form.Group>
-
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     Payment Method
@@ -1400,13 +1115,13 @@ function Accounts() {
                     </Form.Text>
                   )}
                 </Form.Group>
-
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     Payment Due
                   </Form.Label>
                   <Form.Control
-                    type="text"
+                    type="number"
+                    step="0.01"
                     value={formData.paymentDue}
                     onChange={(e) =>
                       setFormData({ ...formData, paymentDue: e.target.value })
@@ -1426,6 +1141,7 @@ function Accounts() {
                         "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
+                    disabled={formData.paymentReceived === "Received"}
                   />
                   {errors.paymentDue && (
                     <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
@@ -1433,7 +1149,6 @@ function Accounts() {
                     </Form.Text>
                   )}
                 </Form.Group>
-
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     NEFT Transaction ID
@@ -1470,7 +1185,6 @@ function Accounts() {
                     </Form.Text>
                   )}
                 </Form.Group>
-
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     Cheque ID
@@ -1504,7 +1218,6 @@ function Accounts() {
                     </Form.Text>
                   )}
                 </Form.Group>
-
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     Payment Received
@@ -1526,45 +1239,14 @@ function Accounts() {
                     }}
                     onFocus={(e) =>
                       (e.target.style.boxShadow =
-                        "0 0 10px rgba(37, 117, DISPLAYING:252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  >
-                    {uniqueStatuses
-                      .filter((status) => status !== "All")
-                      .map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                  </Form.Select>
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Invoice Date
-                  </Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={formData.invoiceDate}
-                    onChange={(e) =>
-                      setFormData({ ...formData, invoiceDate: e.target.value })
-                    }
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                      (e.target.style.boxShadow =
                         "0 0 10px rgba(37, 117, 252, 0.5)")
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  />
+                  >
+                    <option value="Not Received">Not Received</option>
+                    <option value="Received">Received</option>
+                  </Form.Select>
                 </Form.Group>
-
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label style={{ fontWeight: "600", color: "#333" }}>
                     Remarks by Accounts <span style={{ color: "red" }}>*</span>
@@ -1640,7 +1322,6 @@ function Accounts() {
                     </Form.Text>
                   )}
                 </Form.Group>
-
                 <div
                   style={{
                     display: "flex",
@@ -1694,7 +1375,6 @@ function Accounts() {
           </Modal>
         </div>
       </div>
-
       <footer
         className="footer-container"
         style={{
@@ -1710,6 +1390,13 @@ function Accounts() {
           © 2025 Sales Order Management. All rights reserved.
         </p>
       </footer>
+      {isViewModalOpen && (
+        <ViewEntry
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          entry={selectedOrder}
+        />
+      )}
     </>
   );
 }
