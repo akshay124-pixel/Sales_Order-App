@@ -962,9 +962,11 @@ const Sales = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("All");
+  const [dispatchFromFilter, setDispatchFromFilter] = useState("All");
   const [orderTypeFilter, setOrderTypeFilter] = useState("All");
   const [dispatchFilter, setDispatchFilter] = useState("All");
   const [startDate, setStartDate] = useState(null);
@@ -1101,7 +1103,16 @@ const Sales = () => {
 
   // Filter orders
   const filterOrders = useCallback(
-    (ordersToFilter, search, approval, orderType, dispatch, start, end) => {
+    (
+      ordersToFilter,
+      search,
+      approval,
+      orderType,
+      dispatch,
+      dispatchFrom,
+      start,
+      end
+    ) => {
       let filtered = [...ordersToFilter];
       const searchLower = search.toLowerCase().trim();
 
@@ -1207,6 +1218,11 @@ const Sales = () => {
           (order) => order.dispatchStatus === dispatch
         );
       }
+      if (dispatchFrom !== "All") {
+        filtered = filtered.filter(
+          (order) => order.dispatchFrom === dispatchFrom
+        );
+      }
 
       if (start || end) {
         filtered = filtered.filter((order) => {
@@ -1240,6 +1256,7 @@ const Sales = () => {
       approvalFilter,
       orderTypeFilter,
       dispatchFilter,
+      dispatchFromFilter,
       startDate,
       endDate
     );
@@ -1248,6 +1265,7 @@ const Sales = () => {
     searchTerm,
     approvalFilter,
     orderTypeFilter,
+    dispatchFromFilter,
     dispatchFilter,
     startDate,
     endDate,
@@ -1985,6 +2003,8 @@ const Sales = () => {
           setOrderTypeFilter={setOrderTypeFilter}
           dispatchFilter={dispatchFilter}
           setDispatchFilter={setDispatchFilter}
+          dispatchFromFilter={dispatchFromFilter}
+          setDispatchFromFilter={setDispatchFromFilter}
           handleReset={handleReset}
         />
       </div>
