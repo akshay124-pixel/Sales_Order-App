@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
 import { Button } from "react-bootstrap";
 import { X } from "lucide-react";
-import axios from "axios";
-import io from "socket.io-client";
 
-// Styled Components (unchanged from your code, included for reference)
+// Styled Components
 const DrawerOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -107,22 +105,19 @@ const TableHeader = styled.th`
     width: 20%;
   }
   &:nth-child(2) {
-    width: 12%;
+    width: 15%;
   }
   &:nth-child(3) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(4) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(5) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(6) {
-    width: 16%;
-  }
-  &:nth-child(7) {
-    width: 14%;
+    width: 15%;
   }
 `;
 
@@ -136,22 +131,19 @@ const TotalHeader = styled.th`
     width: 20%;
   }
   &:nth-child(2) {
-    width: 12%;
+    width: 15%;
   }
   &:nth-child(3) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(4) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(5) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(6) {
-    width: 16%;
-  }
-  &:nth-child(7) {
-    width: 14%;
+    width: 15%;
   }
 `;
 
@@ -168,22 +160,19 @@ const TableCell = styled.td`
     width: 20%;
   }
   &:nth-child(2) {
-    width: 12%;
+    width: 15%;
   }
   &:nth-child(3) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(4) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(5) {
-    width: 16%;
+    width: 20%;
   }
   &:nth-child(6) {
-    width: 16%;
-  }
-  &:nth-child(7) {
-    width: 14%;
+    width: 15%;
   }
 `;
 
@@ -193,43 +182,15 @@ const TableRow = styled.tr`
   }
 `;
 
-const SalesDashboardDrawer = ({ isOpen, onClose }) => {
-  const [orders, setOrders] = useState([]);
+const SalesDashboardDrawer = ({ isOpen, onClose, orders }) => {
+  // Get current date for comparison
   const currentDate = new Date();
-
-  // Fetch initial orders
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await axios.get("/api/orders"); // Replace with your API endpoint
-        setOrders(response.data);
-      } catch (error) {
-        console.error("Failed to fetch orders:", error);
-      }
-    };
-
-    if (isOpen) {
-      fetchOrders();
-    }
-  }, [isOpen]);
-
-  // Set up WebSocket for real-time updates
-  useEffect(() => {
-    const socket = io("http://localhost:8080"); // Replace with your WebSocket server URL
-    socket.on("orderUpdate", () => {
-      // Refetch orders on update
-      axios.get("/api/orders").then((response) => {
-        setOrders(response.data);
-      });
-    });
-
-    return () => socket.disconnect();
-  }, []);
 
   // Compute analytics per salesperson
   const salesAnalytics = orders.reduce((acc, order) => {
     const salesPerson = order.salesPerson?.trim() || "Unknown";
 
+    // Initialize salesperson data if not exists
     if (!acc[salesPerson]) {
       acc[salesPerson] = {
         totalOrders: 0,
@@ -237,19 +198,15 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         totalPaymentCollected: 0,
         totalPaymentDue: 0,
         dueOver30Days: 0,
-        totalUnitPrice: 0,
       };
     }
 
+    // Parse and validate values
     const total = Number(order.total) || 0;
     const paymentCollected = parseFloat(order.paymentCollected) || 0;
     const paymentDue = parseFloat(order.paymentDue) || 0;
-    const totalUnitPrice = order.products.reduce(
-      (sum, product) =>
-        sum + (Number(product.unitPrice) || 0) * (Number(product.qty) || 1),
-      0
-    );
 
+    // Increment totals with validation
     if (isFinite(total)) {
       acc[salesPerson].totalOrders += 1;
       acc[salesPerson].totalAmount += total;
@@ -260,10 +217,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     if (isFinite(paymentDue)) {
       acc[salesPerson].totalPaymentDue += paymentDue;
     }
-    if (isFinite(totalUnitPrice)) {
-      acc[salesPerson].totalUnitPrice += totalUnitPrice;
-    }
 
+    // Calculate due amount over 30 days
     const soDate = order.soDate ? new Date(order.soDate) : null;
     if (
       soDate &&
@@ -291,7 +246,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         acc.totalPaymentCollected + data.totalPaymentCollected,
       totalPaymentDue: acc.totalPaymentDue + data.totalPaymentDue,
       dueOver30Days: acc.dueOver30Days + data.dueOver30Days,
-      totalUnitPrice: acc.totalUnitPrice + data.totalUnitPrice,
     }),
     {
       totalOrders: 0,
@@ -299,7 +253,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       totalPaymentCollected: 0,
       totalPaymentDue: 0,
       dueOver30Days: 0,
-      totalUnitPrice: 0,
     }
   );
 
@@ -312,7 +265,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       totalPaymentCollected: Number(data.totalPaymentCollected.toFixed(2)),
       totalPaymentDue: Number(data.totalPaymentDue.toFixed(2)),
       dueOver30Days: Number(data.dueOver30Days.toFixed(2)),
-      totalUnitPrice: Number(data.totalUnitPrice.toFixed(2)),
     })
   );
 
@@ -345,9 +297,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                 <TotalHeader>
                   ₹{overallTotals.dueOver30Days.toLocaleString("en-IN")}
                 </TotalHeader>
-                <TotalHeader>
-                  ₹{overallTotals.totalUnitPrice.toLocaleString("en-IN")}
-                </TotalHeader>
               </TotalHeaderRow>
               <TableHeaderRow>
                 <TableHeader>Salesperson</TableHeader>
@@ -356,7 +305,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                 <TableHeader>Payment Collected (₹)</TableHeader>
                 <TableHeader>Payment Due (₹)</TableHeader>
                 <TableHeader>Due Over 30 Days (₹)</TableHeader>
-                <TableHeader>Total Unit Price (₹)</TableHeader>
               </TableHeaderRow>
             </thead>
             <tbody>
@@ -377,14 +325,11 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                     <TableCell>
                       ₹{data.dueOver30Days.toLocaleString("en-IN")}
                     </TableCell>
-                    <TableCell>
-                      ₹{data.totalUnitPrice.toLocaleString("en-IN")}
-                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} style={{ textAlign: "center" }}>
+                  <TableCell colSpan={6} style={{ textAlign: "center" }}>
                     No data available
                   </TableCell>
                 </TableRow>
