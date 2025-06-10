@@ -1305,7 +1305,7 @@ const Sales = () => {
     setApprovalFilter("All");
     setOrderTypeFilter("All");
     setDispatchFilter("All");
-  
+
     // Filter after a small delay to ensure states are updated
     setTimeout(() => {
       filterOrders(
@@ -1314,13 +1314,13 @@ const Sales = () => {
         "All", // approval
         "All", // orderType
         "All", // dispatch
-        null,  // startDate
-        null   // endDate
+        "All", // dispatchFrom
+        null, // startDate
+        null // endDate
       );
       toast.info("Filters reset!");
     }, 0);
   }, [filterOrders, orders]);
-  
 
   const handleAddEntry = useCallback(
     async (newEntry) => {
