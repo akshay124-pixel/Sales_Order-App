@@ -986,6 +986,7 @@ export const statesAndCities = {
   ],
   "Uttar Pradesh": [
     "Shikohabad",
+    "Ballia",
     "Baghpat",
     "Mahuwadabar",
     "Anandnagar Maharajganj",
@@ -1279,6 +1280,7 @@ export const salesPersonlist = [
   "Mayank Goutam",
   "Mayank Prasad",
   "Nikhil Sharma",
+  "Nadeem Khan",
   "Parmjeet Singh",
   "Pitamber Sharma",
   "Priya Sharma",
