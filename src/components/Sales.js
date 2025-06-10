@@ -1298,16 +1298,29 @@ const Sales = () => {
 
   // Event handlers
   const handleReset = useCallback(() => {
+    setSearchTerm(""); // This will reset search
+    setStartDate(null);
+    setEndDate(null);
     setDispatchFromFilter("All");
     setApprovalFilter("All");
     setOrderTypeFilter("All");
     setDispatchFilter("All");
-    setSearchTerm("");
-    setStartDate(null);
-    setEndDate(null);
-    filterOrders(orders, "", "All", "All", "All", null, null);
-    toast.info("Filters reset!");
+  
+    // Filter after a small delay to ensure states are updated
+    setTimeout(() => {
+      filterOrders(
+        orders,
+        "", // search term
+        "All", // approval
+        "All", // orderType
+        "All", // dispatch
+        null,  // startDate
+        null   // endDate
+      );
+      toast.info("Filters reset!");
+    }, 0);
   }, [filterOrders, orders]);
+  
 
   const handleAddEntry = useCallback(
     async (newEntry) => {
