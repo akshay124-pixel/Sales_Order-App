@@ -1052,10 +1052,20 @@ const Sales = () => {
 
   // WebSocket setup
   useEffect(() => {
-    const socket = io("https://sales-order-server.onrender.com");
+    const socket = io("https://sales-order-server.onrender.com", {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
 
-    // Join global room for all notifications
-    socket.emit("join", { userId, role: userRole });
+    socket.on("connect", () => {
+      console.log("Socket.IO connected:", socket.id);
+      socket.emit("join", { userId, role: userRole });
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Socket.IO connection error:", error);
+    });
 
     socket.on("newOrder", ({ notification }) => {
       setOrders((prev) => {
@@ -1063,33 +1073,47 @@ const Sales = () => {
         return [notification, ...prev];
       });
       setNotifications((prev) => {
+        if (prev.some((n) => n.id === notification.id)) return prev;
         const updated = [notification, ...prev].slice(0, 50);
+        localStorage.setItem("notifications", JSON.stringify(updated));
         return updated;
       });
       toast.info(notification.message);
     });
 
-    socket.on("updateOrder", ({ notification }) => {
+    socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
       setOrders((prev) => {
         const updatedOrders = prev.map((order) =>
-          order._id === notification._id ? notification : order
+          order._id === _id ? { ...order, customername, orderId } : order
         );
         return updatedOrders;
       });
       setNotifications((prev) => {
+        if (prev.some((n) => n.id === notification.id)) return prev; // Prevent duplicates
         const updated = [notification, ...prev].slice(0, 50);
+        localStorage.setItem("notifications", JSON.stringify(updated));
         return updated;
       });
       toast.info(notification.message);
     });
 
-    // Initial fetch
+    socket.on("orderUpdate", ({ operationType, documentId, fullDocument }) => {
+      if (operationType === "insert" && fullDocument) {
+        setOrders((prev) => {
+          if (prev.some((o) => o._id === documentId)) return prev;
+          return [fullDocument, ...prev];
+        });
+      }
+    });
+
     fetchOrders();
     fetchNotifications();
 
-    return () => socket.disconnect();
+    return () => {
+      socket.disconnect();
+      console.log("Socket.IO disconnected");
+    };
   }, [fetchOrders, fetchNotifications, userRole, userId]);
-
   const calculateTotalResults = useMemo(() => {
     return Math.floor(
       filteredOrders.reduce((total, order) => {
