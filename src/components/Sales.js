@@ -1804,11 +1804,11 @@ const Sales = () => {
       "contactNo",
       "customerEmail",
       "sostatus",
-      "alterno",
+
       "city",
       "state",
       "pinCode",
-      "gstno",
+
       "shippingAddress",
       "billingAddress",
       "products", // We'll check products separately
@@ -1817,7 +1817,6 @@ const Sales = () => {
       "paymentMethod",
       "paymentDue",
       "paymentTerms",
-      "creditDays",
       "paymentReceived",
       "freightcs",
       "freightstatus",
@@ -1826,7 +1825,7 @@ const Sales = () => {
       "installation",
       "installationStatus",
       "transporter",
-      "transporterDetails",
+
       "dispatchFrom",
       "dispatchDate",
       "dispatchStatus",
