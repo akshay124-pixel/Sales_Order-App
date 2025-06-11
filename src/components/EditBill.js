@@ -29,16 +29,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
     setErrors((prev) => ({ ...prev, invoiceDate: "" }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.billNumber || formData.billNumber.trim() === "") {
-      newErrors.billNumber = "Bill Number is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -130,6 +120,30 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
         }}
       >
         <Form onSubmit={handleSubmit}>
+          {" "}
+          <Form.Group className="mb-3">
+            <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+              PI Number
+            </Form.Label>
+            <Form.Control
+              type="text"
+              name="piNumber"
+              value={formData.piNumber}
+              onChange={handleChange}
+              placeholder="Enter PI number"
+              style={{
+                borderRadius: "10px",
+                padding: "12px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                transition: "all 0.3s ease",
+              }}
+              onFocus={(e) =>
+                (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
+              }
+              onBlur={(e) => (e.target.style.boxShadow = "none")}
+            />
+          </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
               Bill Number <span style={{ color: "red" }}>*</span>
@@ -159,29 +173,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
                 {errors.billNumber}
               </Form.Text>
             )}
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-              PI Number
-            </Form.Label>
-            <Form.Control
-              type="text"
-              name="piNumber"
-              value={formData.piNumber}
-              onChange={handleChange}
-              placeholder="Enter PI number"
-              style={{
-                borderRadius: "10px",
-                padding: "12px",
-                border: "1px solid #ced4da",
-                fontSize: "1rem",
-                transition: "all 0.3s ease",
-              }}
-              onFocus={(e) =>
-                (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
-              }
-              onBlur={(e) => (e.target.style.boxShadow = "none")}
-            />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
