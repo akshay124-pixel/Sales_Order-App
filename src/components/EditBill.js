@@ -15,24 +15,18 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
     remarksByBilling: entryToEdit?.remarksByBilling || "",
     billStatus: entryToEdit?.billStatus || "Pending",
   });
-  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field on change
-    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleDateChange = (date) => {
     setFormData((prev) => ({ ...prev, invoiceDate: date }));
-    setErrors((prev) => ({ ...prev, invoiceDate: "" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
     try {
       const token = localStorage.getItem("token");
       const payload = {
@@ -73,7 +67,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
             width: 100%;
             padding: 12px;
             border: 1px solid #ced4da;
-           
             font-size: 1rem;
             transition: all 0.3s ease;
           }
@@ -120,7 +113,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
         }}
       >
         <Form onSubmit={handleSubmit}>
-          {" "}
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
               PI Number
@@ -157,9 +149,7 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
               style={{
                 borderRadius: "10px",
                 padding: "12px",
-                border: errors.billNumber
-                  ? "1px solid red"
-                  : "1px solid #ced4da",
+                border: "1px solid #ced4da",
                 fontSize: "1rem",
                 transition: "all 0.3s ease",
               }}
@@ -168,11 +158,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
               }
               onBlur={(e) => (e.target.style.boxShadow = "none")}
             />
-            {errors.billNumber && (
-              <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                {errors.billNumber}
-              </Form.Text>
-            )}
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
@@ -187,11 +172,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
                 placeholderText="Select invoice date"
               />
             </div>
-            {errors.invoiceDate && (
-              <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                {errors.invoiceDate}
-              </Form.Text>
-            )}
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
@@ -207,9 +187,7 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
               style={{
                 borderRadius: "10px",
                 padding: "12px",
-                border: errors.remarksByBilling
-                  ? "1px solid red"
-                  : "1px solid #ced4da",
+                border: "1px solid #ced4da",
                 fontSize: "1rem",
                 transition: "all 0.3s ease",
               }}
@@ -218,11 +196,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
               }
               onBlur={(e) => (e.target.style.boxShadow = "none")}
             />
-            {errors.remarksByBilling && (
-              <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                {errors.remarksByBilling}
-              </Form.Text>
-            )}
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
