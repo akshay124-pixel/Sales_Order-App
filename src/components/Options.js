@@ -131,7 +131,20 @@ export const productOptions = {
   },
 
   "Digital Podium": {
-    sizes: ["Standard"],
+    sizes: [
+      "Standard, RAM 4 GB, ROM 128 GB",
+      "Standard, RAM 4 GB, ROM 256 GB",
+      "Standard, RAM 4 GB, ROM 512 GB",
+      "Standard, RAM 4 GB, ROM 1024 GB",
+      "Standard, RAM 8 GB, ROM 128 GB",
+      "Standard, RAM 8 GB, ROM 256 GB",
+      "Standard, RAM 8 GB, ROM 512 GB",
+      "Standard, RAM 8 GB, ROM 1024 GB",
+      "Standard, RAM 16 GB, ROM 128 GB",
+      "Standard, RAM 16 GB, ROM 256 GB",
+      "Standard, RAM 16 GB, ROM 512 GB",
+      "Standard, RAM 16 GB, ROM 1024 GB",
+    ],
     specs: [
       'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 GOOSENECK MIC',
       'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 2 HANDHELD MIC, 1 GOOSENECK MIC',
@@ -142,7 +155,20 @@ export const productOptions = {
     ],
   },
   "Advance Digital Podium": {
-    sizes: ["Front Display 32inch"],
+    sizes: [
+      "Front Display 32inch, RAM 4 GB, ROM 128 GB",
+      "Front Display 32inch, RAM 4 GB, ROM 256 GB",
+      "Front Display 32inch, RAM 4 GB, ROM 512 GB",
+      "Front Display 32inch, RAM 4 GB, ROM 1024 GB",
+      "Front Display 32inch, RAM 8 GB, ROM 128 GB",
+      "Front Display 32inch, RAM 8 GB, ROM 256 GB",
+      "Front Display 32inch, RAM 8 GB, ROM 512 GB",
+      "Front Display 32inch, RAM 8 GB, ROM 1024 GB",
+      "Front Display 32inch, RAM 16 GB, ROM 128 GB",
+      "Front Display 32inch, RAM 16 GB, ROM 256 GB",
+      "Front Display 32inch, RAM 16 GB, ROM 512 GB",
+      "Front Display 32inch, RAM 16 GB, ROM 1024 GB",
+    ],
     specs: [
       'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 1 COOLER MIC, 1 GOOSENECK MIC',
       'MINI PC 21.5" TOUCH DISPLAY, AMP. 70 WATT 30 W, 2 SPEAKER, 1 HANDHELD MIC, 2 COOLER MIC, 1 GOOSENECK MIC',
