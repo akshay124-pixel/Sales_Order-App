@@ -1694,79 +1694,89 @@ const Sales = () => {
     try {
       const exportData = filteredOrders.map((order, index) => ({
         "Seq No": index + 1,
+        "Order ID": order.orderId || "-",
+        "SO Date": order.soDate
+          ? new Date(order.soDate).toLocaleDateString("en-GB")
+          : "-",
         "Customer Name": order.customername || "-",
+        "Contact Person Name": order.name || "-",
+        "Contact No": order.contactNo || "-",
+        "Customer Email": order.customerEmail || "-",
+        "SO Status": order.sostatus || "-",
+        "Alternate No": order.alterno || "-",
+        City: order.city || "-",
+        State: order.state || "-",
+        "Pin Code": order.pinCode || "-",
+        "GST No": order.gstno || "-",
+        "Shipping Address": order.shippingAddress || "-",
+        "Billing Address": order.billingAddress || "-",
         "Product Details": order.products
           ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
+          : "-",
+        "Product Type": order.products
+          ? order.products.map((p) => p.productType).join(", ")
+          : "-",
+        Size: order.products
+          ? order.products.map((p) => p.size || "N/A").join(", ")
+          : "-",
+        Spec: order.products
+          ? order.products.map((p) => p.spec || "N/A").join(", ")
+          : "-",
+        Qty: order.products
+          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
           : "-",
         "Unit Price": order.products
           ? order.products
               .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
               .toFixed(2)
           : "0.00",
-        Qty: order.products
-          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-          : "-",
-        "Freight Charges": order.freightcs || "-",
         GST: order.products
           ? order.products
-              .map((p) => `${p.gst}`)
+              .map((p) => p.gst || "N/A")
               .filter(Boolean)
               .join(", ")
           : "-",
-        Total: order.total?.toFixed(2) || "0.00",
-        "Order ID": order.orderId || "-",
-        "SO Date": order.soDate
-          ? new Date(order.soDate).toLocaleDateString("en-GB")
+        Brand: order.products
+          ? order.products.map((p) => p.brand || "N/A").join(", ")
           : "-",
-        "Approval Status": order.sostatus || "-",
-        City: order.city || "-",
-        State: order.state || "-",
-        "Pin Code": order.pinCode || "-",
-        "Contact Person Name": order.name || "-",
-        "Contact No": order.contactNo || "-",
-        "Customer Email": order.customerEmail || "-",
-        "Order Type": order.orderType || "-",
-        "Model Nos": order.products?.[0]?.modelNos?.join(", ") || "-",
-        "Serial Nos": order.products?.[0]?.serialNos?.join(", ") || "-",
-        "Product Type": order.products?.[0]?.productType || "-",
-        Size: order.products?.[0]?.size || "-",
-        Spec: order.products?.[0]?.spec || "-",
+        Warranty: order.products
+          ? order.products.map((p) => p.warranty || "N/A").join(", ")
+          : "-",
+        Total: order.total?.toFixed(2) || "0.00",
         "Payment Collected": formatCurrency(order.paymentCollected) || "-",
         "Payment Method": order.paymentMethod || "-",
         "Payment Due": formatCurrency(order.paymentDue) || "-",
         "Payment Terms": order.paymentTerms || "-",
         "Credit Days": order.creditDays || "-",
-        "GEM Order Number": order.gemOrderNumber || "-",
-        "Delivery Date": order.deliveryDate
-          ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
-          : "-",
+        "Payment Received": order.paymentReceived || "-",
+        "Freight Charges": order.freightcs || "-",
+        "Freight Status": order.freightstatus || "-",
+        "Actual Freight": order.actualFreight?.toFixed(2) || "-",
+        "Install Charges Status": order.installchargesstatus || "-",
         Installation: order.installation || "-",
+        "Installation Status": order.installationStatus || "-",
+        Transporter: order.transporter || "-",
+        "Transporter Details": order.transporterDetails || "-",
+        "Dispatch From": order.dispatchFrom || "-",
+        "Dispatch Date": order.dispatchDate
+          ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
+          : "-",
+        "Dispatch Status": order.dispatchStatus || "-",
+        "Order Type": order.orderType || "-",
+        Report: order.report || "-",
+        "Stock Status": order.stockStatus || "-",
+        "Bill Status": order.billStatus || "-",
+        "Production Status": order.fulfillingStatus || "-",
+        "Bill Number": order.billNumber || order.invoiceNo || "-",
+        "PI Number": order.piNumber || "-",
         "Sales Person": order.salesPerson || "-",
+        Company: order.company || "-",
         "Created By":
           order.createdBy && typeof order.createdBy === "object"
             ? order.createdBy.username || "Unknown"
             : typeof order.createdBy === "string"
             ? order.createdBy
             : "-",
-        Company: order.company || "-",
-        Transporter: order.transporter || "-",
-        "Transporter Details": order.transporterDetails || "-",
-        "Shipping Address": order.shippingAddress || "-",
-        "Billing Address": order.billingAddress || "-",
-        "Docket No": order.docketNo || "-",
-        "Dispatch From": order.dispatchFrom || "-",
-        "Dispatch Date": order.dispatchDate
-          ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-          : "-",
-        "Receipt Date": order.receiptDate
-          ? new Date(order.receiptDate).toLocaleDateString("en-GB")
-          : "-",
-        "Invoice No": order.invoiceNo || "-",
-        "Invoice Date": order.invoiceDate
-          ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
-          : "-",
-        "PI Number": order.piNumber || "-",
-        "Bill Status": order.billStatus || "-",
         Remarks: order.remarks || "-",
       }));
 
