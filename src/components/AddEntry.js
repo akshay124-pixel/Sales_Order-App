@@ -173,17 +173,21 @@ function AddEntry({ onSubmit, onClose }) {
           : name === "brand" &&
             prev.productType === "IFPD" &&
             value === "Promark"
-          ? { modelNos: "Standard", warranty: "3 Years" }
+          ? { modelNos: "", warranty: "3 Years" }
           : name === "brand" &&
             prev.productType === "IFPD" &&
-            value !== "Promark"
+            value === "White Label"
+          ? { modelNos: "Standard", warranty: "1 Year" }
+          : name === "brand" &&
+            prev.productType === "IFPD" &&
+            value !== "Promark" &&
+            value !== "White Label"
           ? { modelNos: "", warranty: "1 Year" }
           : {}),
       };
       return newProduct;
     });
   };
-
   const addProduct = () => {
     if (
       !currentProduct.productType ||
