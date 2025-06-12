@@ -173,11 +173,11 @@ function AddEntry({ onSubmit, onClose }) {
           : name === "brand" &&
             prev.productType === "IFPD" &&
             value === "Promark"
-          ? { warranty: "3 Years" }
+          ? { modelNos: "Standard", warranty: "3 Years" }
           : name === "brand" &&
             prev.productType === "IFPD" &&
             value !== "Promark"
-          ? { warranty: "1 Year" }
+          ? { modelNos: "", warranty: "1 Year" }
           : {}),
       };
       return newProduct;
@@ -562,7 +562,7 @@ function AddEntry({ onSubmit, onClose }) {
                   required: true,
                   placeholder: "Select Dispatch Location",
                 },
-               
+
                 ...(formData.orderType === "B2G"
                   ? [
                       {

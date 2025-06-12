@@ -1886,6 +1886,16 @@ const Production = () => {
                                 ? product.modelNos.join(", ")
                                 : "N/A"}
                             </div>
+                            {product.brand !== "" && (
+                              <div>
+                                <strong>Brand:</strong> {product.brand}
+                              </div>
+                            )}
+                            {product.warranty !== "" && (
+                              <div>
+                                <strong>Warranty:</strong> {product.warranty}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

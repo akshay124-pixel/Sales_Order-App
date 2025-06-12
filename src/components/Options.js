@@ -1401,7 +1401,7 @@ export const Reportinglist = [
   "Vaseem Khan",
 ];
 
-export const modelNoOptions = ["AT", "PRO MR PC"];
+export const modelNoOptions = ["AT", "PRO MR PC", "Standard"];
 export const brandOptions = ["Promark", "White Label"];
 export const dispatchFromOptions = [
   "Patna",
