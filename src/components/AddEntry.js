@@ -1183,36 +1183,6 @@ function AddEntry({ onSubmit, onClose }) {
                     backgroundColor: "#f8fafc",
                   }}
                 />
-              </div>{" "}
-              <div>
-                <label
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                  }}
-                >
-                  Brand *
-                </label>
-                <select
-                  name="brand"
-                  value={currentProduct.brand}
-                  onChange={handleProductChange}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: "#f8fafc",
-                  }}
-                >
-                  <option value="">Select Brand</option>
-                  {brandOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
               </div>
               {currentProduct.productType === "IFPD" && (
                 <>
@@ -1240,6 +1210,36 @@ function AddEntry({ onSubmit, onClose }) {
                     >
                       <option value="">Select Model No</option>
                       {modelNoOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: "600",
+                        color: "#475569",
+                      }}
+                    >
+                      Brand *
+                    </label>
+                    <select
+                      name="brand"
+                      value={currentProduct.brand}
+                      onChange={handleProductChange}
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                      }}
+                    >
+                      <option value="">Select Brand</option>
+                      {brandOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
                         </option>
