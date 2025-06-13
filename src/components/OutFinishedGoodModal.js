@@ -44,11 +44,17 @@ const OutFinishedGoodModal = ({
         ? "Not Dispatched"
         : dispatchStatus;
 
+      // Initialize products with all fields
       const products =
         entryToEdit.products?.map((product) => ({
           productType: product.productType || "",
           serialNos: product.serialNos || [],
           modelNos: product.modelNos || [],
+          unitPrice: product.unitPrice || "",
+          amount: product.amount || "",
+          modelName: product.modelName || "",
+          modelSize: product.modelSize || "",
+          specifications: product.specifications || "",
         })) || [];
 
       setFormData({
@@ -81,13 +87,20 @@ const OutFinishedGoodModal = ({
   const handleProductChange = (index, field, value) => {
     setFormData((prev) => {
       const updatedProducts = [...prev.products];
-      updatedProducts[index] = {
-        ...updatedProducts[index],
-        [field]: value
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-      };
+      if (["serialNos", "modelNos"].includes(field)) {
+        updatedProducts[index] = {
+          ...updatedProducts[index],
+          [field]: value
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+        };
+      } else {
+        updatedProducts[index] = {
+          ...updatedProducts[index],
+          [field]: value,
+        };
+      }
       return { ...prev, products: updatedProducts };
     });
   };
@@ -104,6 +117,25 @@ const OutFinishedGoodModal = ({
     setFormData((prev) => ({ ...prev, dispatchStatus: value }));
   };
 
+  const handleAddProduct = () => {
+    setFormData((prev) => ({
+      ...prev,
+      products: [
+        ...prev.products,
+        {
+          productType: "",
+          serialNos: [],
+          modelNos: [],
+          unitPrice: "",
+          amount: "",
+          modelName: "",
+          modelSize: "",
+          specifications: "",
+        },
+      ],
+    }));
+  };
+
   const handleSubmit = async () => {
     if (!showConfirm) {
       if (
@@ -116,6 +148,25 @@ const OutFinishedGoodModal = ({
         );
         toast.error("Billing Status must be Billing Complete!");
         return;
+      }
+      // Validate product fields when dispatchFrom is not Morinda
+      if (formData.dispatchFrom !== "Morinda") {
+        for (const product of formData.products) {
+          if (
+            !product.productType ||
+            !product.serialNos.length ||
+            !product.modelNos.length ||
+            !product.unitPrice ||
+            !product.amount ||
+            !product.modelName ||
+            !product.modelSize ||
+            !product.specifications
+          ) {
+            setError("All product fields are required!");
+            toast.error("Please fill all product details!");
+            return;
+          }
+        }
       }
       setShowConfirm(true);
       return;
@@ -141,6 +192,11 @@ const OutFinishedGoodModal = ({
           productType: product.productType,
           serialNos: product.serialNos,
           modelNos: product.modelNos,
+          unitPrice: Number(product.unitPrice) || undefined,
+          amount: Number(product.amount) || undefined,
+          modelName: product.modelName,
+          modelSize: product.modelSize,
+          specifications: product.specifications,
         })),
       };
 
@@ -370,14 +426,13 @@ const OutFinishedGoodModal = ({
                 padding: "10px",
                 fontSize: "1rem",
                 fontWeight: "600",
-                // background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                 color: "black",
                 border: "none",
                 marginBottom: "15px",
               }}
-              onClick={() => {}}
+              onClick={handleAddProduct}
             >
-              Add Serial Nos and Model Nos of Products
+              Add Product
             </Button>
             <Collapse
               accordion
@@ -398,17 +453,37 @@ const OutFinishedGoodModal = ({
                       marginBottom: "15px",
                     }}
                   >
-                    <h4
-                      style={{
-                        fontSize: "1rem",
-                        fontWeight: "600",
-                        color: "#333",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      {product.productType}
-                    </h4>
                     <div>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Product Type
+                      </label>
+                      <Input
+                        placeholder="Enter product type"
+                        value={product.productType}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "productType",
+                            e.target.value
+                          )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
                       <label
                         style={{
                           fontSize: "1rem",
@@ -455,6 +530,154 @@ const OutFinishedGoodModal = ({
                         value={product.modelNos.join(", ")}
                         onChange={(e) =>
                           handleProductChange(index, "modelNos", e.target.value)
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Unit Price
+                      </label>
+                      <Input
+                        placeholder="Enter unit price"
+                        type="number"
+                        value={product.unitPrice}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "unitPrice",
+                            e.target.value
+                          )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Amount
+                      </label>
+                      <Input
+                        placeholder="Enter amount"
+                        type="number"
+                        value={product.amount}
+                        onChange={(e) =>
+                          handleProductChange(index, "amount", e.target.value)
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Model Name
+                      </label>
+                      <Input
+                        placeholder="Enter model name"
+                        value={product.modelName}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "modelName",
+                            e.target.value
+                          )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Model Size
+                      </label>
+                      <Input
+                        placeholder="Enter model size"
+                        value={product.modelSize}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "modelSize",
+                            e.target.value
+                          )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Specifications
+                      </label>
+                      <Input
+                        placeholder="Enter specifications"
+                        value={product.specifications}
+                        onChange={(e) =>
+                          handleProductChange(
+                            index,
+                            "specifications",
+                            e.target.value
+                          )
                         }
                         style={{
                           borderRadius: "8px",
