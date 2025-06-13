@@ -55,6 +55,8 @@ const OutFinishedGoodModal = ({
           modelName: product.modelName || "",
           modelSize: product.modelSize || "",
           specifications: product.specifications || "",
+          size: product.size || "N/A", // Added size field
+          spec: product.spec || "N/A", // Added spec field
         })) || [];
 
       setFormData({
@@ -131,6 +133,8 @@ const OutFinishedGoodModal = ({
           modelName: "",
           modelSize: "",
           specifications: "",
+          size: "N/A", // Default size
+          spec: "N/A", // Default spec
         },
       ],
     }));
@@ -160,7 +164,9 @@ const OutFinishedGoodModal = ({
             !product.amount ||
             !product.modelName ||
             !product.modelSize ||
-            !product.specifications
+            !product.specifications ||
+            !product.size ||
+            !product.spec
           ) {
             setError("All product fields are required!");
             toast.error("Please fill all product details!");
@@ -197,6 +203,8 @@ const OutFinishedGoodModal = ({
           modelName: product.modelName,
           modelSize: product.modelSize,
           specifications: product.specifications,
+          size: product.size, // Include size
+          spec: product.spec, // Include spec
         })),
       };
 
@@ -678,6 +686,58 @@ const OutFinishedGoodModal = ({
                             "specifications",
                             e.target.value
                           )
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Size
+                      </label>
+                      <Input
+                        placeholder="Enter size"
+                        value={product.size}
+                        onChange={(e) =>
+                          handleProductChange(index, "size", e.target.value)
+                        }
+                        style={{
+                          borderRadius: "8px",
+                          padding: "10px",
+                          fontSize: "1rem",
+                        }}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: "600",
+                          color: "#333",
+                          marginBottom: "5px",
+                          display: "block",
+                        }}
+                      >
+                        Specification
+                      </label>
+                      <Input
+                        placeholder="Enter specification"
+                        value={product.spec}
+                        onChange={(e) =>
+                          handleProductChange(index, "spec", e.target.value)
                         }
                         style={{
                           borderRadius: "8px",
