@@ -230,7 +230,7 @@ const ProductionApproval = () => {
             boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
           }}
         >
-          Total Orders: {productMatchCount}
+          Total Orders: {filtered}
         </div>
 
         <div
