@@ -85,7 +85,7 @@ const OutFinishedGoodModal = ({
   const handleProductChange = (index, field, value) => {
     setFormData((prev) => {
       const updatedProducts = [...prev.products];
-      if (["serialNos", "modelNos"].includes(field)) {
+      if (["modelNos"].includes(field)) {
         updatedProducts[index] = {
           ...updatedProducts[index],
           [field]: value
@@ -151,7 +151,6 @@ const OutFinishedGoodModal = ({
         for (const product of formData.products) {
           if (
             !product.productType ||
-            !product.serialNos.length ||
             !product.modelNos.length ||
             !product.unitPrice ||
             !product.size ||
@@ -477,36 +476,7 @@ const OutFinishedGoodModal = ({
                         disabled={loading}
                       />
                     </div>
-                    <div style={{ marginTop: "10px" }}>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Serial Numbers
-                      </label>
-                      <Input
-                        placeholder="Enter serial numbers (comma-separated)"
-                        value={product.serialNos.join(", ")}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "serialNos",
-                            e.target.value
-                          )
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
-                    </div>
+
                     <div style={{ marginTop: "10px" }}>
                       <label
                         style={{
