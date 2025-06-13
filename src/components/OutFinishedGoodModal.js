@@ -51,12 +51,8 @@ const OutFinishedGoodModal = ({
           serialNos: product.serialNos || [],
           modelNos: product.modelNos || [],
           unitPrice: product.unitPrice || "",
-          amount: product.amount || "",
-          modelName: product.modelName || "",
-          modelSize: product.modelSize || "",
-          specifications: product.specifications || "",
-          size: product.size || "N/A", // Added size field
-          spec: product.spec || "N/A", // Added spec field
+          size: product.size || "N/A",
+          spec: product.spec || "N/A",
         })) || [];
 
       setFormData({
