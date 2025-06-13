@@ -48,7 +48,7 @@ const OutFinishedGoodModal = ({
       const products =
         entryToEdit.products?.map((product) => ({
           productType: product.productType || "",
-          serialNos: product.serialNos || [],
+
           modelNos: product.modelNos || [],
           unitPrice: product.unitPrice || "",
           size: product.size || "N/A",
@@ -122,7 +122,7 @@ const OutFinishedGoodModal = ({
         ...prev.products,
         {
           productType: "",
-          serialNos: [],
+
           modelNos: [],
           unitPrice: "",
 
@@ -185,13 +185,10 @@ const OutFinishedGoodModal = ({
         dispatchStatus: formData.dispatchStatus,
         products: formData.products.map((product) => ({
           productType: product.productType,
-          serialNos: product.serialNos,
+
           modelNos: product.modelNos,
           unitPrice: Number(product.unitPrice) || undefined,
-          amount: Number(product.amount) || undefined,
-          modelName: product.modelName,
-          modelSize: product.modelSize,
-          specifications: product.specifications,
+
           size: product.size, // Include size
           spec: product.spec, // Include spec
         })),
