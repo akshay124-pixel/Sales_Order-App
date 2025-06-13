@@ -125,10 +125,7 @@ const OutFinishedGoodModal = ({
           serialNos: [],
           modelNos: [],
           unitPrice: "",
-          amount: "",
-          modelName: "",
-          modelSize: "",
-          specifications: "",
+
           size: "N/A", // Default size
           spec: "N/A", // Default spec
         },
@@ -157,10 +154,6 @@ const OutFinishedGoodModal = ({
             !product.serialNos.length ||
             !product.modelNos.length ||
             !product.unitPrice ||
-            !product.amount ||
-            !product.modelName ||
-            !product.modelSize ||
-            !product.specifications ||
             !product.size ||
             !product.spec
           ) {
