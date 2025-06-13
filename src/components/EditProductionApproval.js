@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Button } from "react-bootstrap";
+import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -38,10 +38,21 @@ const EditProductionApproval = ({
         ...prev,
         [name]: type === "checkbox" ? checked : value,
       };
-      // If stockStatus is "Not in Stock", lock sostatus to "Pending for Approval" and clear deliveryDate
+      // If stockStatus is "Not in Stock", handle sostatus and deliveryDate
       if (name === "stockStatus" && value === "Not in Stock") {
-        newFormData.sostatus = "Pending for Approval";
-        newFormData.deliveryDate = "";
+        // If current sostatus is "Accounts Approved", keep it locked
+        if (prev.sostatus === "Accounts Approved") {
+          newFormData.sostatus = "Accounts Approved";
+        }
+        // If current sostatus is "Pending for Approval", keep it
+        else if (prev.sostatus === "Pending for Approval") {
+          newFormData.sostatus = "Pending for Approval";
+        }
+        // For other statuses (e.g., "Approved"), set to "Pending for Approval"
+        else {
+          newFormData.sostatus = "Pending for Approval";
+        }
+        newFormData.deliveryDate = ""; // Clear deliveryDate for "Not in Stock"
       }
       return newFormData;
     });
@@ -79,8 +90,9 @@ const EditProductionApproval = ({
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${entryToEdit._id}`,
+      const response = await axios.patch(
+        // Changed from put to patch
+        `https://sales-order-furniture-server.onrender.com/api/orders/${entryToEdit._id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
