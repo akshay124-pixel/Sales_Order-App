@@ -531,7 +531,6 @@ function Accounts() {
             </Button>
           </div>{" "}
           <div className="total-results my-3">
-            <span>Total Orders: {filteredOrders.length}</span>
             <span>Total Pending: {totalPending}</span>
           </div>
           <div
