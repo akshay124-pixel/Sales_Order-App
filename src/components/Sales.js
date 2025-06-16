@@ -1871,11 +1871,8 @@ const Sales = () => {
               product.spec &&
               product.spec.trim() !== "" &&
               product.gst !== undefined &&
-              product.gst.trim() !== "" &&
-              product.brand &&
-              product.brand.trim() !== "" &&
-              product.warranty &&
-              product.warranty.trim() !== ""
+              product.gst.trim() !== ""
+             
           )
         );
       }
