@@ -139,7 +139,10 @@ function Accounts() {
   useEffect(() => {
     filterOrders();
   }, [filterOrders]);
-
+  // Calculate total pending orders (billStatus === "Pending")
+  const totalPending = filteredOrders.filter(
+    (order) => order.paymentReceived === "Not Received"
+  ).length;
   const uniqueStatuses = [
     "All",
     "Received",
@@ -431,7 +434,6 @@ function Accounts() {
               </Button>
             </div>
           )}
-
           <div
             style={{
               display: "flex",
@@ -527,8 +529,11 @@ function Accounts() {
             >
               Export to Excel
             </Button>
+          </div>{" "}
+          <div className="total-results my-3">
+            <span>Total Orders: {filteredOrders.length}</span>
+            <span>Total Pending: {totalPending}</span>
           </div>
-
           <div
             style={{
               overflowX: "auto",
