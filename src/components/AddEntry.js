@@ -173,7 +173,7 @@ function AddEntry({ onSubmit, onClose }) {
           : name === "brand" &&
             prev.productType === "IFPD" &&
             value === "Promark"
-          ? { modelNos: "", warranty: "3 Years" }
+          ? { warranty: "3 Years" }
           : name === "brand" &&
             prev.productType === "IFPD" &&
             value === "White Label"
