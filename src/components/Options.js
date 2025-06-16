@@ -413,7 +413,10 @@ export const productOptions = {
     specs: ["Non-Magnetic", "Magnetic", "RC Magnetic", "UM", "UG"],
   },
   "Wooden Podium": { sizes: ["N/A"], specs: ["N/A"] },
-  "Writing Board": { sizes: ["N/A"], specs: ["N/A"] },
+  "Writing Board": {
+    sizes: ["4X8", "4X10", "4X12"],
+    specifications: ["Green", "White"],
+  },
   "LED Video Wall": { sizes: ["N/A"], specs: ["N/A"] },
   "4K Video Bar": { sizes: ["N/A"], specs: ["N/A"] },
   "Microsoft Office 2016 Licensed": { sizes: ["N/A"], specs: ["N/A"] },
