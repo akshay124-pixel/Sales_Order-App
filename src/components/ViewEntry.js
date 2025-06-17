@@ -591,12 +591,12 @@ Created By: ${
                   <strong>Pin Code:</strong> {entry.pinCode || "N/A"}
                 </div>
                 <div>
-                  <strong>Shipping Address:</strong>{" "}
-                  {entry.shippingAddress || "N/A"}
-                </div>
-                <div>
                   <strong>Billing Address:</strong>{" "}
                   {entry.billingAddress || "N/A"}
+                </div>
+                <div>
+                  <strong>Shipping Address:</strong>{" "}
+                  {entry.shippingAddress || "N/A"}
                 </div>
               </div>
             </Accordion.Body>
