@@ -110,8 +110,9 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
               background: #f3f4f6;
               padding: 1rem;
               border-radius: 8px;
-              text-align: right;
-              font-size: 0.95rem;
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 1.5rem;
             }
             .badge-custom {
               font-size: 0.85rem;
@@ -158,7 +159,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
               .modal-body { padding: 0; background: white; }
             }
             @media (max-width: 768px) {
-              .invoice-grid {
+              .invoice-grid, .totals-section {
                 grid-template-columns: 1fr;
               }
             }
@@ -195,6 +196,8 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                         entry.shippingAddress || "N/A"
                       }</span>
                     </div>
+                  </div>
+                  <div>
                     <div class="mb-2">
                       <strong class="text-gray-700">GSTIN No:</strong>
                       <span class="text-gray-900">${entry.gstno || "N/A"}</span>
@@ -211,26 +214,19 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                         entry.contactNo || "N/A"
                       }</span>
                     </div>
-                  </div>
-                  <div>
                     <div class="mb-2">
                       <strong class="text-gray-700">Mail ID of Partner/Customer:</strong>
                       <span class="text-gray-900">${
                         entry.customerEmail || "N/A"
                       }</span>
                     </div>
-                    <div class="mb-2">
-                      <strong class="text-gray-700">Name of the Sales Person:</strong>
-                      <span class="text-gray-900">${
-                        entry.salesPerson || "N/A"
-                      }</span>
-                    </div>
-                    <div class="mb-2">
-                      <strong class="text-gray-700">Reporting Manager Name:</strong>
-                      <span class="text-gray-900">${
-                        entry.report || "N/A"
-                      }</span>
-                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="invoice-section">
+                <h4 class="text-lg mb-3">Additional Details</h4>
+                <div class="invoice-grid">
+                  <div>
                     <div class="mb-2">
                       <strong class="text-gray-700">Transporter:</strong>
                       <span class="text-gray-900">${
@@ -241,6 +237,26 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                       <strong class="text-gray-700">Transporter Details:</strong>
                       <span class="text-gray-900">${
                         entry.transporterRemarks || "N/A"
+                      }</span>
+                    </div>
+                    <div class="mb-2">
+                      <strong class="text-gray-700">Order Type:</strong>
+                      <span class="text-gray-900">${
+                        entry.orderType || "N/A"
+                      }</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="mb-2">
+                      <strong class="text-gray-700">Dispatch From:</strong>
+                      <span class="text-gray-900">${
+                        entry.dispatchFrom || "N/A"
+                      }</span>
+                    </div>
+                    <div class="mb-2">
+                      <strong class="text-gray-700">Name of the Sales Person:</strong>
+                      <span class="text-gray-900">${
+                        entry.salesPerson || "N/A"
                       }</span>
                     </div>
                     <div class="mb-2">
@@ -387,6 +403,20 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
               </div>
               <div class="totals-section">
                 <div class="text-gray-700 space-y-1">
+                  <p><strong>Freight Status:</strong> ${
+                    entry.freightstatus || "N/A"
+                  }</p>
+                  <p><strong>Installation Status:</strong> ${
+                    entry.installchargesstatus || "N/A"
+                  }</p>
+                  <p><strong>Freight Charges:</strong> ₹${
+                    entry.actualFreight?.toFixed(2) || entry.freightcs || "N/A"
+                  }</p>
+                  <p><strong>Installation Charges:</strong> ${
+                    entry.installation || "N/A"
+                  }</p>
+                </div>
+                <div class="text-gray-700 space-y-1">
                   <p><strong>Subtotal:</strong> ₹${subtotal}</p>
                   <p><strong>Total GST:</strong> ₹${totalGST}</p>
                   <p class="text-lg font-semibold text-gray-800"><strong>Total Amount:</strong> ₹${total}</p>
@@ -478,8 +508,9 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
             background: #f3f4f6;
             padding: 1rem;
             border-radius: 8px;
-            text-align: right;
-            font-size: 0.95rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
           }
           .badge-custom {
             font-size: 0.85rem;
@@ -530,7 +561,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
             padding-bottom: 4px;
           }
           @media (max-width: 768px) {
-            .invoice-grid {
+            .invoice-grid, .totals-section {
               grid-template-columns: 1fr;
             }
           }
@@ -601,6 +632,8 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     {entry.shippingAddress || "N/A"}
                   </span>
                 </div>
+              </div>
+              <div>
                 <div className="mb-2">
                   <strong className="text-gray-700">GSTIN No:</strong>{" "}
                   <span className="text-gray-900">{entry.gstno || "N/A"}</span>
@@ -619,8 +652,6 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     {entry.contactNo || "N/A"}
                   </span>
                 </div>
-              </div>
-              <div>
                 <div className="mb-2">
                   <strong className="text-gray-700">
                     Mail ID of Partner/Customer:
@@ -629,20 +660,21 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     {entry.customerEmail || "N/A"}
                   </span>
                 </div>
-                <div className="mb-2">
-                  <strong className="text-gray-700">
-                    Name of the Sales Person:
-                  </strong>{" "}
-                  <span className="text-gray-900">
-                    {entry.salesPerson || "N/A"}
-                  </span>
-                </div>
-                <div className="mb-2">
-                  <strong className="text-gray-700">
-                    Reporting Manager Name:
-                  </strong>{" "}
-                  <span className="text-gray-900">{entry.report || "N/A"}</span>
-                </div>{" "}
+                {entry.gemOrderNumber && (
+                  <div className="mb-2">
+                    <strong className="text-gray-700">Gem Order Number:</strong>{" "}
+                    <span className="text-gray-900">
+                      {entry.gemOrderNumber || "N/A"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="invoice-section">
+            <h4 className="text-lg mb-3">Additional Details</h4>
+            <div className="invoice-grid">
+              <div>
                 <div className="mb-2">
                   <strong className="text-gray-700">Transporter:</strong>{" "}
                   <span className="text-gray-900">
@@ -658,6 +690,28 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                   </span>
                 </div>
                 <div className="mb-2">
+                  <strong className="text-gray-700">Order Type:</strong>{" "}
+                  <span className="text-gray-900">
+                    {entry.orderType || "N/A"}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="mb-2">
+                  <strong className="text-gray-700">Dispatch From:</strong>{" "}
+                  <span className="text-gray-900">
+                    {entry.dispatchFrom || "N/A"}
+                  </span>
+                </div>
+                <div className="mb-2">
+                  <strong className="text-gray-700">
+                    Name of the Sales Person:
+                  </strong>{" "}
+                  <span className="text-gray-900">
+                    {entry.salesPerson || "N/A"}
+                  </span>
+                </div>
+                <div className="mb-2">
                   <strong className="text-gray-700">
                     Remarks By SalesPerson:
                   </strong>{" "}
@@ -668,7 +722,6 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
               </div>
             </div>
           </div>
-
           <div className="invoice-section">
             <h4 className="text-lg mb-3">Invoice Details</h4>
             <div className="invoice-grid">
@@ -811,6 +864,23 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
           <div className="totals-section">
             <div className="text-gray-700 space-y-1">
               <p>
+                <strong>Freight Status:</strong> {entry.freightstatus || "N/A"}
+              </p>{" "}
+              <p>
+                <strong>Freight Charges:</strong> ₹
+                {entry.actualFreight?.toFixed(2) || entry.freightcs || "0"}
+              </p>
+              <p>
+                <strong>Installation Status:</strong>{" "}
+                {entry.installchargesstatus || "N/A"}
+              </p>
+              <p>
+                <strong>Installation Charges:</strong> ₹
+                {entry.installation || "0"}
+              </p>
+            </div>
+            <div className="text-gray-700 space-y-1">
+              <p>
                 <strong>Subtotal:</strong> ₹{subtotal}
               </p>
               <p>
@@ -823,7 +893,6 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
           </div>
           <div className="footer-branding">
             <p className="font-semibold">Thank you for your business!</p>
-
             <p>
               Promark Techsolutions Pvt Ltd | Phone: 1800 103 8878 | Email:
               info@promark.co.in
