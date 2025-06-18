@@ -952,7 +952,8 @@ Created By: ${
                   {entry.remarksByProduction || "N/A"}
                 </div>
                 <div>
-                  <strong>Remarks:</strong> {entry.remarks || "N/A"}
+                  <strong>Remarks (Sales Person):</strong>{" "}
+                  {entry.remarks || "N/A"}
                 </div>
               </div>
             </Accordion.Body>
