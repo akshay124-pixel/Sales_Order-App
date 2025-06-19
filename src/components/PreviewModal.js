@@ -32,11 +32,13 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
     return {
       subtotal: subtotal.toFixed(2),
       totalGST: totalGST.toFixed(2),
-      total: (subtotal + totalGST).toFixed(2),
     };
   };
 
-  const { subtotal, totalGST, total } = calculateTotals();
+  const { subtotal, totalGST } = calculateTotals();
+  const total = entry.total
+    ? parseFloat(entry.total).toFixed(2)
+    : (parseFloat(subtotal) + parseFloat(totalGST)).toFixed(2);
 
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
