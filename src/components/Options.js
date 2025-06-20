@@ -1038,6 +1038,7 @@ export const statesAndCities = {
     "Melaghar",
   ],
   "Uttar Pradesh": [
+    "Azamgarh",
     "Sultanpur",
     "Shikohabad",
     "Ballia",
