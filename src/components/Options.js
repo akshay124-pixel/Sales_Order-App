@@ -17,6 +17,7 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: [
       // i5 6th Gen
+      "i5 4TH GEN, 8GB RAM, 256GB ROM",
       "i5 6th Gen, 8GB RAM, 256GB ROM",
       "i5 6th Gen, 8GB RAM, 512GB ROM",
       "i5 6th Gen, 8GB RAM, 1TB ROM",
