@@ -26,6 +26,7 @@ function Installation() {
   const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
+  const [InstallationFilter, setInstallationFilter] = useState("All");
 
   const fetchInstallationOrders = useCallback(async () => {
     setLoading(true);
@@ -73,7 +74,6 @@ function Installation() {
     ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
   ];
 
-  // Filter orders based on search query and status
   // Update the useEffect for filtering orders to include date range
   useEffect(() => {
     let filtered = orders;
@@ -109,6 +109,11 @@ function Installation() {
         (order) => order.installationStatus === statusFilter
       );
     }
+    if (InstallationFilter !== "All") {
+      filtered = filtered.filter(
+        (order) => order.installchargesstatus === InstallationFilter
+      );
+    }
     if (salesPersonFilter !== "All") {
       filtered = filtered.filter(
         (order) => order.salesPerson === salesPersonFilter
@@ -131,6 +136,7 @@ function Installation() {
     orders,
     searchQuery,
     statusFilter,
+    InstallationFilter,
     salesPersonFilter,
     startDate,
     endDate,
@@ -270,6 +276,7 @@ function Installation() {
     setSearchQuery("");
     setStatusFilter("All");
     setSalesPersonFilter("All");
+    setInstallationFilter("All");
     setStartDate("");
     setEndDate("");
   };
@@ -452,6 +459,23 @@ function Installation() {
               {status}
             </option>
           ))}
+        </Form.Select>{" "}
+        <Form.Select
+          value={InstallationFilter}
+          onChange={(e) => setInstallationFilter(e.target.value)}
+          style={{
+            flex: "0 1 200px",
+            borderRadius: "20px",
+            padding: "10px",
+            border: "1px solid #ced4da",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <option>All</option>
+          <option>To Pay</option>
+          <option>Including</option>
+          <option>Extra</option>
         </Form.Select>
         <Form.Select
           value={salesPersonFilter}
