@@ -288,7 +288,9 @@ function Installation() {
         "Contact No": order.contactNo || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
         "Installation Details": order.installation || "N/A",
+
         "Installation Status": order.installationStatus || "Pending",
+        "Sales Person": order.salesPerson || "N/A",
       };
     });
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -603,6 +605,7 @@ function Installation() {
                       "Contact No",
                       "Shipping Address",
                       "Installation Status",
+                      "Sales Person",
                       "Installation",
                       "Actions",
                     ].map((header, index) => (
@@ -774,7 +777,6 @@ function Installation() {
                           >
                             {order.shippingAddress || "N/A"}
                           </td>
-
                           <td
                             style={{
                               padding: "15px",
@@ -834,6 +836,25 @@ function Installation() {
                               {order.installationStatus || "Pending"}
                             </Badge>
                           </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.salesPerson || "N/A"}
+                          >
+                            {order.salesPerson || "N/A"}
+                          </td>
+
                           <td
                             style={{
                               padding: "15px",
