@@ -972,8 +972,8 @@ function AddEntry({ onSubmit, onClose }) {
                 display: "grid",
                 gridTemplateColumns:
                   currentProduct.productType === "IFPD"
-                    ? "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto"
-                    : "1fr 1fr 1fr 1fr 1fr 1fr 1fr auto",
+                    ? "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto"
+                    : "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto",
                 gap: "1rem",
                 marginBottom: "1rem",
               }}
@@ -990,7 +990,14 @@ function AddEntry({ onSubmit, onClose }) {
                 </label>
                 <select
                   name="productType"
-                  value={currentProduct.productType}
+                  value={
+                    currentProduct.productType &&
+                    !Object.keys(productOptions).includes(
+                      currentProduct.productType
+                    )
+                      ? "Others"
+                      : currentProduct.productType
+                  }
                   onChange={handleProductChange}
                   style={{
                     width: "100%",
@@ -1008,6 +1015,50 @@ function AddEntry({ onSubmit, onClose }) {
                   ))}
                 </select>
               </div>
+              {(currentProduct.productType === "Others" ||
+                (currentProduct.productType &&
+                  !Object.keys(productOptions).includes(
+                    currentProduct.productType
+                  ))) && (
+                <div
+                  style={{
+                    animation: "fadeIn 0.3s ease-in",
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                    }}
+                  >
+                    Custom
+                  </label>
+                  <input
+                    type="text"
+                    name="productType"
+                    value={
+                      currentProduct.productType === "Others"
+                        ? ""
+                        : currentProduct.productType
+                    }
+                    onChange={handleProductChange}
+                    placeholder="Enter Custom Product Type"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                    aria-label="Custom Product Type"
+                    aria-required="true"
+                  />
+                </div>
+              )}
+
               <div>
                 <label
                   style={{
@@ -1017,32 +1068,56 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                 >
                   Size
-                </label>
-                <select
-                  name="size"
-                  value={currentProduct.size}
-                  onChange={handleProductChange}
-                  disabled={!currentProduct.productType}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: !currentProduct.productType
-                      ? "#e5e7eb"
-                      : "#f8fafc",
-                  }}
-                >
-                  <option value="">Select Size</option>
-                  {currentProduct.productType &&
-                    productOptions[currentProduct.productType]?.sizes.map(
-                      (size) => (
-                        <option key={size} value={size}>
-                          {size}
-                        </option>
-                      )
-                    )}
-                </select>
+                </label>{" "}
+                {currentProduct.productType === "Others" ||
+                (currentProduct.productType &&
+                  !Object.keys(productOptions).includes(
+                    currentProduct.productType
+                  )) ? (
+                  <input
+                    type="text"
+                    name="size"
+                    value={currentProduct.size}
+                    onChange={handleProductChange}
+                    placeholder="Enter Size"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                    aria-label="Custom Product Size"
+                  />
+                ) : (
+                  <select
+                    name="size"
+                    value={currentProduct.size}
+                    onChange={handleProductChange}
+                    disabled={!currentProduct.productType}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: !currentProduct.productType
+                        ? "#e5e7eb"
+                        : "#f8fafc",
+                    }}
+                  >
+                    <option value="">Select Size</option>
+                    {currentProduct.productType &&
+                      productOptions[currentProduct.productType]?.sizes.map(
+                        (size) => (
+                          <option key={size} value={size}>
+                            {size}
+                          </option>
+                        )
+                      )}
+                  </select>
+                )}
               </div>
               <div>
                 <label
@@ -1054,31 +1129,55 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   Specification
                 </label>
-                <select
-                  name="spec"
-                  value={currentProduct.spec}
-                  onChange={handleProductChange}
-                  disabled={!currentProduct.productType}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.75rem",
-                    backgroundColor: !currentProduct.productType
-                      ? "#e5e7eb"
-                      : "#f8fafc",
-                  }}
-                >
-                  <option value="">Select Spec</option>
-                  {currentProduct.productType &&
-                    productOptions[currentProduct.productType]?.specs.map(
-                      (spec) => (
-                        <option key={spec} value={spec}>
-                          {spec}
-                        </option>
-                      )
-                    )}
-                </select>
+                {currentProduct.productType === "Others" ||
+                (currentProduct.productType &&
+                  !Object.keys(productOptions).includes(
+                    currentProduct.productType
+                  )) ? (
+                  <input
+                    type="text"
+                    name="spec"
+                    value={currentProduct.spec}
+                    onChange={handleProductChange}
+                    placeholder="Enter Specification"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                    aria-label="Custom Product Specification"
+                  />
+                ) : (
+                  <select
+                    name="spec"
+                    value={currentProduct.spec}
+                    onChange={handleProductChange}
+                    disabled={!currentProduct.productType}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: !currentProduct.productType
+                        ? "#e5e7eb"
+                        : "#f8fafc",
+                    }}
+                  >
+                    <option value="">Select Spec</option>
+                    {currentProduct.productType &&
+                      productOptions[currentProduct.productType]?.specs.map(
+                        (spec) => (
+                          <option key={spec} value={spec}>
+                            {spec}
+                          </option>
+                        )
+                      )}
+                  </select>
+                )}
               </div>
               <div>
                 <label
@@ -1164,6 +1263,7 @@ function AddEntry({ onSubmit, onClose }) {
                     fontSize: "0.9rem",
                     fontWeight: "600",
                     color: "#475569",
+                    display: "block",
                   }}
                 >
                   Warranty *

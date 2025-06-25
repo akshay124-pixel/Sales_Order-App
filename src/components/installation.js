@@ -295,7 +295,6 @@ function Installation() {
         "Contact No": order.contactNo || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
         "Installation Details": order.installation || "N/A",
-
         "Installation Status": order.installationStatus || "Pending",
         "Sales Person": order.salesPerson || "N/A",
       };
