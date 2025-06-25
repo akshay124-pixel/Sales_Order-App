@@ -465,6 +465,50 @@ export const productOptions = {
 
   "Bubble Roll": { sizes: ["N/A"], specs: ["N/A"] },
   "Wrapping Roll": { sizes: ["N/A"], specs: ["N/A"] },
+  "Powered Active Speaker": {
+    sizes: ["N/A"],
+    specs: [
+      'Drive Unit: 15" bass × 1, 1.75" tweeter × 1, Frequency Response: 45 Hz – 18,000 Hz, Speaker Sensitivity: 98 ± 2 dB, Max. SPL: 125 ± 2 dB, Active Signal Input Impedance: 20 kΩ, Amplifier Power: 1500 W Class-D, Speaker Continuous Power: 450 W (AES), Directivity (H × V): 90° × 60°, Amplifier Distortion: < 0.05%, Damping Coefficient: > 250, Working Voltage: AC 220V / 50Hz',
+    ],
+  },
+  "16 Channel Audio Mixer": {
+    sizes: ["N/A"],
+    specs: [
+      "Nos of Audio Channel: 16, Frequency Response: +0.5dB/-1.5dB (20Hz to 48kHz) @1kHz GAIN: Min, Total Harmonic Distortion: 0.03% @ +14dBu (20Hz–20kHz) GAIN: Min, 0.005% @ +24dBu (1kHz) GAIN: Min, Hum and Noise (20Hz–20kHz): Input Noise: -128dBu (Mono in, Rs: 150Ω, GAIN Max), Residual Output Noise: -102dBu (STEREO OUT, Fader Min), Crosstalk (1kHz): -78dB, Output Channels: STEREO OUT: 2, MONITOR OUT: 1, PHONES: 1, Channel Gain Controls: 4, 3-Band EQ: Yes, Bus Configuration: Stereo: 1, Grouping: 4, AUX: 4, PAD (Mono Input): 26dB, High-Pass Filter (HPF): 80Hz, 12dB/oct (Mono & Stereo MIC inputs), Compressor (Mono Input): Threshold: +22dBu to -8dBu, Ratio: 1:1 to 4:1, Output Level: 0 to 7dB, Attack: 25ms, Release: 300ms, EQ (High): ±15dB @ 10kHz, EQ (Mid): Mono: ±15dB, 250Hz–5kHz peak, Stereo: ±15dB @ 2.5kHz peak, EQ (Low): ±15dB @ 100Hz, Peak LED (Mono): Lights at 3dB below clipping, Digital Effects: Yes, USB Audio Interface: Yes, Phantom Power: +48V, Power Supply Voltage: AC100–240V, 50/60Hz, Power Consumption: 30W, Included Accessories: Technical specifications, AC power cord, Cabinet mounting kit, Operating Temperature Range: 0 to +40°C, Equivalent Noise Level: 26 dB(A)",
+    ],
+  },
+
+  "Wired Vocal Microphone": {
+    sizes: ["N/A"],
+    specs: [
+      "Warranty: 10 years (AMER), Polar Pattern: Cardioid, Frequency Response: 40 - 16,000 Hz, Connection: Wired, Connectors: 3-pin XLR, Operating Temperature: 0°C to 40°C, Nominal Impedance: 350 Ω, Min. Terminating Impedance: 1000 Ω",
+    ],
+  },
+  "Microphone Stand": {
+    sizes: ["N/A"],
+    specs: [
+      "Type: Floor Stand, Height: 690-1000mm, Base Dia: 230mm, Weight: Not Less Than 3Kg",
+    ],
+  },
+  "Microphone Cable": {
+    sizes: ["N/A"],
+    specs: [
+      "No. of Conductors: 2, Conductor: 25/0.10 mm, Cross-Sectional Area: 0.22 sq.mm (24 AWG), Insulation Material: HDPE, Insulation OD: 1.10 mm, Insulation Colours: Red / Yellow, Shield Conductor: ATC Copper – (0.10mm) 65 wires (approx), Shield Type: Serve Shield + Aluminum Foil + Mylar Tape, Jacket Material: High Flex Matt Finish PVC, Jacket OD: 4.00 mm ± 0.10mm",
+    ],
+  },
+
+  "Desktop Computer": {
+    sizes: ["24 inch Monitor"],
+    specs: [
+      "Processor: i5 12th Gen, RAM: 16GB, Storage: 512GB SSD, OS: Windows 11, Software: Office 2021, Features: Inbuilt WiFi, Keyboard, Mouse",
+    ],
+  },
+  "Printer With Scanner All In One": {
+    sizes: ["N/A"],
+    specs: [
+      "Type: Image CLASS 4 In 1 Multifunctional Printer, Features: Monochrome Laser, Network, Duplex, ADF",
+    ],
+  },
 };
 
 export const statesAndCities = {
