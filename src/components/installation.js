@@ -605,8 +605,8 @@ function Installation() {
                       "Contact No",
                       "Shipping Address",
                       "Installation Status",
-                      "Sales Person",
                       "Installation",
+                      "Sales Person",
                       "Actions",
                     ].map((header, index) => (
                       <th
