@@ -477,7 +477,18 @@ export const productOptions = {
       "Nos of Audio Channel: 16, Frequency Response: +0.5dB/-1.5dB (20Hz to 48kHz) @1kHz GAIN: Min, Total Harmonic Distortion: 0.03% @ +14dBu (20Hz–20kHz) GAIN: Min, 0.005% @ +24dBu (1kHz) GAIN: Min, Hum and Noise (20Hz–20kHz): Input Noise: -128dBu (Mono in, Rs: 150Ω, GAIN Max), Residual Output Noise: -102dBu (STEREO OUT, Fader Min), Crosstalk (1kHz): -78dB, Output Channels: STEREO OUT: 2, MONITOR OUT: 1, PHONES: 1, Channel Gain Controls: 4, 3-Band EQ: Yes, Bus Configuration: Stereo: 1, Grouping: 4, AUX: 4, PAD (Mono Input): 26dB, High-Pass Filter (HPF): 80Hz, 12dB/oct (Mono & Stereo MIC inputs), Compressor (Mono Input): Threshold: +22dBu to -8dBu, Ratio: 1:1 to 4:1, Output Level: 0 to 7dB, Attack: 25ms, Release: 300ms, EQ (High): ±15dB @ 10kHz, EQ (Mid): Mono: ±15dB, 250Hz–5kHz peak, Stereo: ±15dB @ 2.5kHz peak, EQ (Low): ±15dB @ 100Hz, Peak LED (Mono): Lights at 3dB below clipping, Digital Effects: Yes, USB Audio Interface: Yes, Phantom Power: +48V, Power Supply Voltage: AC100–240V, 50/60Hz, Power Consumption: 30W, Included Accessories: Technical specifications, AC power cord, Cabinet mounting kit, Operating Temperature Range: 0 to +40°C, Equivalent Noise Level: 26 dB(A)",
     ],
   },
-
+  "Gooseneck Mic": {
+    sizes: ["18 inch"],
+    specs: [
+      "Adjustment Range (Transmitter): 0 to -30 dB (adjustable in 10 dB steps), Polar Pattern: Omnidirectional, Total Harmonic Distortion (THD): ≤ 0.9%, Audio Frequency Response: 50 to 16,000 Hz (–3 dB), Mic Level: 10 dB, Signal-to-Noise Ratio: ≥ 103 dBA, Squelch: Adjustable from 3 dBμV to 28 dBμV (with pilot tone), Operating Temperature: -10°C to +40°C, Effective Range: Up to 300 m (open environment)",
+    ],
+  },
+  "Wireless Microphone": {
+    sizes: ["N/A"],
+    specs: [
+      "Transmitter: 2 Handheld, Frequency Range: 632 – 661.25 MHz, Number of Channels: 48, Frequency Step: 250 KHz, Dynamic Range: 82 dB, Max. Frequency Deviation: ±45 KHz, Audio Response: 120 Hz – 15 KHz (±3 dB), Comprehensive S/N Ratio: >70 dB, Comprehensive Distortion: ≤1%, Operating Temperature: -10°C to +40°C, Effective Range: Up to 300 m (open environment)",
+    ],
+  },
   "Wired Vocal Microphone": {
     sizes: ["N/A"],
     specs: [
