@@ -137,6 +137,7 @@ export const productOptions = {
 
   "Digital Podium": {
     sizes: [
+      "Standard",
       "Standard, RAM 4 GB, ROM 128 GB, Processor i5",
       "Standard, RAM 4 GB, ROM 128 GB, Processor i7",
       "Standard, RAM 4 GB, ROM 256 GB, Processor i5",
@@ -173,6 +174,7 @@ export const productOptions = {
   },
   "Advance Digital Podium": {
     sizes: [
+      "Standard",
       "Front Display 32inch, RAM 4 GB, ROM 128 GB, Processor i5",
       "Front Display 32inch, RAM 4 GB, ROM 128 GB, Processor i7",
       "Front Display 32inch, RAM 4 GB, ROM 256 GB, Processor i5",
