@@ -1006,6 +1006,24 @@ Created By: ${
                     {entry.installationStatus || "N/A"}
                   </Badge>
                 </div>
+                {entry.subinstallationStatus && (
+                  <div>
+                    <strong>Sub Status:</strong> {entry.subinstallationStatus}
+                  </div>
+                )}
+                {entry.installationStatusDate && (
+                  <div>
+                    <strong>Installation Date:</strong>{" "}
+                    {new Date(entry.installationStatusDate).toLocaleDateString(
+                      "en-IN"
+                    )}
+                  </div>
+                )}
+                {entry.installationeng && (
+                  <div>
+                    <strong>Engineer:</strong> {entry.installationeng}
+                  </div>
+                )}
                 <div>
                   <strong>Remarks (Installation):</strong>{" "}
                   {entry.remarksByInstallation || "N/A"}
