@@ -1755,6 +1755,12 @@ const Sales = () => {
         "Install Charges Status": order.installchargesstatus || "-",
         Installation: order.installation || "-",
         "Installation Status": order.installationStatus || "-",
+        "Sub Installation Status": order.subinstallationStatus || "-",
+        "Installation Completion Date": order.installationStatusDate
+          ? new Date(order.installationStatusDate).toLocaleDateString("en-GB")
+          : "-",
+        "Installation Engineer": order.installationeng || "-",
+        Transporter: order.transporter || "-",
         Transporter: order.transporter || "-",
         "Transporter Details": order.transporterDetails || "-",
         "Dispatch From": order.dispatchFrom || "-",

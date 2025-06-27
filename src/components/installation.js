@@ -19,6 +19,9 @@ function Installation() {
   const [formData, setFormData] = useState({
     installationStatus: "Pending",
     remarksByInstallation: "",
+    subinstallationStatus: "",
+    installationStatusDate: "",
+    installationeng: "",
   });
   const [errors, setErrors] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +30,11 @@ function Installation() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
   const [InstallationFilter, setInstallationFilter] = useState("All");
+
+  const subStatusMap = {
+    Hold: ["Hold from Salesperson", "Hold from Customer"],
+    "In Progress": ["Engineering is Working", "Dealer is Working"],
+  };
 
   const fetchInstallationOrders = useCallback(async () => {
     setLoading(true);
@@ -192,6 +200,7 @@ function Installation() {
       Shipping Address: ${viewOrder.shippingAddress || "N/A"}
       Installation Details: ${viewOrder.installation || "N/A"}
       Installation Status: ${viewOrder.installationStatus || "Pending"}
+        Sub-Installation Status: ${viewOrder.subinstallationStatus || "Pending"}
       Remarks: ${viewOrder.remarksByInstallation || "N/A"}
       Products:\n${productsText}
     `.trim();
@@ -215,7 +224,10 @@ function Installation() {
     setEditOrder(order);
     setFormData({
       installationStatus: order.installationStatus || "Pending",
+      subinstallationStatus: order.subinstallationStatus || "Pending",
       remarksByInstallation: order.remarksByInstallation || "",
+      installationStatusDate: order.installationStatusDate || "",
+      installationeng: order.installationeng || "",
     });
     setErrors({});
     setShowEditModal(true);
@@ -294,10 +306,12 @@ function Installation() {
         "Contact Person": order.name || "N/A",
         "Contact No": order.contactNo || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
-
-        "Dispatch Date": order.dispatchDate || "N/A",
         "Installation Details": order.installation || "N/A",
+
+        installationeng: order.installationeng || "N/A",
+        installationStatusDate: order.installationStatusDate || "N/A",
         "Installation Status": order.installationStatus || "Pending",
+        "Installation Sub-Status": order.subinstallationStatus || "Pending",
         "Sales Person": order.salesPerson || "N/A",
       };
     });
@@ -1096,12 +1110,8 @@ function Installation() {
                             ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Completed
                             : viewOrder.installationStatus === "Failed"
                             ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Failed
-                            : viewOrder.installationStatus ===
-                              "Hold by Salesperson"
+                            : viewOrder.installationStatus === "Hold"
                             ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue for Hold by Salesperson
-                            : viewOrder.installationStatus ===
-                              "Hold by Customer"
-                            ? "linear-gradient(135deg, #8e44ad, #be94e6)" // Purple for Hold by Customer
                             : viewOrder.installationStatus === "Site Not Ready"
                             ? "linear-gradient(135deg, #e84393, #ff6b9b)" // Pink/Magenta for Site Not Ready
                             : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
@@ -1113,6 +1123,31 @@ function Installation() {
                       {viewOrder.installationStatus || "Pending"}
                     </Badge>
                   </span>
+                  {viewOrder.subinstallationStatus && (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Sub Installation Status:</strong>{" "}
+                      {viewOrder.subinstallationStatus}
+                    </span>
+                  )}
+
+                  {viewOrder.installationStatusDate && (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Installation Completion Date:</strong>{" "}
+                      {
+                        new Date(viewOrder.installationStatusDate)
+                          .toISOString()
+                          .split("T")[0]
+                      }
+                    </span>
+                  )}
+
+                  {viewOrder.installationeng && (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Engineer Name:</strong>{" "}
+                      {viewOrder.installationeng}
+                    </span>
+                  )}
+
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Remarks By Installation:</strong>{" "}
                     {viewOrder.remarksByInstallation || "N/A"}
@@ -1270,12 +1305,14 @@ function Installation() {
               </Form.Label>
               <Form.Select
                 value={formData.installationStatus}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const newStatus = e.target.value;
                   setFormData({
                     ...formData,
-                    installationStatus: e.target.value,
-                  })
-                }
+                    installationStatus: newStatus,
+                    subinstallationStatus: "",
+                  });
+                }}
                 style={{
                   borderRadius: "10px",
                   border: errors.installationStatus
@@ -1295,8 +1332,8 @@ function Installation() {
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
                 <option value="Failed">Failed</option>
-                <option value="Hold by Salesperson">Hold by Salesperson</option>
-                <option value="Hold by Customer">Hold by Customer</option>
+                <option value="Hold">Hold</option>
+
                 <option value="Site Not Ready">Site Not Ready</option>
               </Form.Select>
               {errors.installationStatus && (
@@ -1305,6 +1342,102 @@ function Installation() {
                 </Form.Text>
               )}
             </Form.Group>
+            {(formData.installationStatus === "Hold" ||
+              formData.installationStatus === "In Progress") && (
+              <Form.Group style={{ marginBottom: "20px" }}>
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                  Sub Installation Status
+                </Form.Label>
+                <Form.Select
+                  value={formData.subinstallationStatus}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      subinstallationStatus: e.target.value,
+                    })
+                  }
+                  style={{
+                    borderRadius: "10px",
+                    border: "1px solid #ced4da",
+                    padding: "12px",
+                    fontSize: "1rem",
+                    transition: "all 0.3s ease",
+                  }}
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow =
+                      "0 0 10px rgba(37, 117, 252, 0.5)")
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
+                >
+                  <option value="">Select Sub Status</option>
+                  {subStatusMap[formData.installationStatus].map(
+                    (subOption, idx) => (
+                      <option key={idx} value={subOption}>
+                        {subOption}
+                      </option>
+                    )
+                  )}
+                </Form.Select>
+              </Form.Group>
+            )}
+            {formData.installationStatus === "Completed" && (
+              <>
+                <Form.Group style={{ marginBottom: "20px" }}>
+                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                    Installation Completion Date{" "}
+                    <span style={{ color: "red" }}>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={
+                      formData.installationStatusDate
+                        ? new Date(formData.installationStatusDate)
+                            .toISOString()
+                            .split("T")[0]
+                        : ""
+                    }
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        installationStatusDate: e.target.value,
+                      })
+                    }
+                    style={{
+                      borderRadius: "10px",
+                      border: "1px solid #ced4da",
+                      padding: "12px",
+                      fontSize: "1rem",
+                    }}
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group style={{ marginBottom: "20px" }}>
+                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                    Installation Engineer Name{" "}
+                    <span style={{ color: "red" }}>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter engineer name"
+                    value={formData.installationeng}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        installationeng: e.target.value,
+                      })
+                    }
+                    style={{
+                      borderRadius: "10px",
+                      border: "1px solid #ced4da",
+                      padding: "12px",
+                      fontSize: "1rem",
+                    }}
+                    required
+                  />
+                </Form.Group>
+              </>
+            )}
 
             <Form.Group style={{ marginBottom: "20px" }}>
               <Form.Label style={{ fontWeight: "600", color: "#333" }}>
