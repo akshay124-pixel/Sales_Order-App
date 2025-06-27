@@ -294,8 +294,7 @@ function Installation() {
         "Contact Person": order.name || "N/A",
         "Contact No": order.contactNo || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
-        "Docket No": order.docketNo || "N/A",
-        Transporter: order.transporter || "N/A",
+
         "Dispatch Date": order.dispatchDate || "N/A",
         "Installation Details": order.installation || "N/A",
         "Installation Status": order.installationStatus || "Pending",

@@ -493,6 +493,8 @@ function Finish() {
         ? new Date(order.dispatchDate).toLocaleDateString()
         : "N/A",
       "Dispatch From": order.dispatchFrom || "N/A",
+      "Docket No": order.docketNo || "N/A",
+      Transporter: order.transporter || "N/A",
       "Billing Status": order.billStatus || "Pending",
       "Freight Status": order.freightstatus || "To Pay",
       "Product Status": order.fulfillingStatus || "N/A",
