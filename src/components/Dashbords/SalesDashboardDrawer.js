@@ -220,7 +220,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         throw new Error("No authentication token found. Please log in.");
       }
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/get-orders",
+        "https://sales-order-server-7xyl.onrender.com/api/get-orders",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -252,7 +252,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       fetchOrders();
 
       // Connect to Socket.IO server
-      const socket = io("https://sales-order-server.onrender.com", {
+      const socket = io("https://sales-order-server-7xyl.onrender.com", {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
