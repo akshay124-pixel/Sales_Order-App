@@ -148,7 +148,7 @@ const Production = () => {
     setError(null);
     try {
       const response = await axios.get(
-        "https://sales-order-server.onrender.com/api/production-orders",
+        "https://sales-order-server-7xyl.onrender.com/api/production-orders",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -355,7 +355,7 @@ const Production = () => {
     delete submitData.productUnits;
     try {
       const response = await axios.put(
-        `https://sales-order-server.onrender.com/api/edit/${editOrder?._id}`,
+        `https://sales-order-server-7xyl.onrender.com/api/edit/${editOrder?._id}`,
         submitData,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
