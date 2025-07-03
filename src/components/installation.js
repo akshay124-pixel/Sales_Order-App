@@ -29,7 +29,7 @@ function Installation() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
   const [InstallationFilter, setInstallationFilter] = useState("All");
-
+  const [orderTypeFilter, setOrderTypeFilter] = useState("");
   const fetchInstallationOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -111,6 +111,12 @@ function Installation() {
         (order) => order.installationStatus === statusFilter
       );
     }
+    if (orderTypeFilter) {
+      filtered = filtered.filter(
+        (order) => order.orderType === orderTypeFilter
+      );
+    }
+
     if (InstallationFilter !== "All") {
       filtered = filtered.filter((order) => {
         if (InstallationFilter === "Not Available") {
@@ -150,6 +156,7 @@ function Installation() {
     orders,
     searchQuery,
     statusFilter,
+    orderTypeFilter,
     InstallationFilter,
     salesPersonFilter,
     startDate,
@@ -181,6 +188,10 @@ function Installation() {
     setCopied(false);
   };
 
+  const uniqueOrderTypes = [
+    "",
+    ...new Set(orders.map((order) => order.orderType || "N/A")),
+  ];
   const handleCopy = useCallback(() => {
     if (!viewOrder) return;
     const productsText = Array.isArray(viewOrder.products)
@@ -290,6 +301,7 @@ function Installation() {
   };
   const handleClearFilters = () => {
     setSearchQuery("");
+    setOrderTypeFilter("");
     setStatusFilter("All");
     setSalesPersonFilter("All");
     setInstallationFilter("All");
@@ -503,6 +515,24 @@ function Installation() {
           <option>Including</option>
           <option>Extra</option>
           <option>Not Available</option>
+        </Form.Select>
+        <Form.Select
+          value={orderTypeFilter}
+          onChange={(e) => setOrderTypeFilter(e.target.value)}
+          style={{
+            flex: "0 1 200px",
+            borderRadius: "20px",
+            padding: "10px",
+            border: "1px solid #ced4da",
+            fontSize: "1rem",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          {uniqueOrderTypes.map((orderType) => (
+            <option key={orderType} value={orderType}>
+              {orderType || "All"}
+            </option>
+          ))}
         </Form.Select>
         <Form.Select
           value={salesPersonFilter}
