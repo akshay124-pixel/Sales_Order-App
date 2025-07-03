@@ -114,13 +114,18 @@ function Installation() {
     if (InstallationFilter !== "All") {
       filtered = filtered.filter((order) => {
         if (InstallationFilter === "Not Available") {
+          const installation = order.installation
+            ? String(order.installation).trim().toLowerCase()
+            : "";
           return (
-            !order.installchargesstatus ||
-            order.installchargesstatus === "0" ||
-            order.installchargesstatus.toLowerCase() === "n/a"
+            !installation ||
+            installation === "0" ||
+            installation === "n/a" ||
+            installation === "null" ||
+            installation === ""
           );
         }
-        return order.installchargesstatus === InstallationFilter;
+        return order.installation === InstallationFilter;
       });
     }
     if (salesPersonFilter !== "All") {
@@ -161,13 +166,11 @@ function Installation() {
     "Pending",
     "In Progress",
     "Completed",
-    "Failed",
     ...new Set(
       orders
         .map((order) => order.installationStatus || "Pending")
         .filter(
-          (status) =>
-            !["Pending", "In Progress", "Completed", "Failed"].includes(status)
+          (status) => !["Pending", "In Progress", "Completed"].includes(status)
         )
     ),
   ];
