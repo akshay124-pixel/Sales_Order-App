@@ -1675,6 +1675,14 @@ function Finish() {
                       ? new Date(viewOrder.dispatchDate).toLocaleDateString()
                       : "N/A"}
                   </span>
+                  {viewOrder.deliveredDate && (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Delivered Date:</strong>{" "}
+                      {new Date(viewOrder.deliveredDate).toLocaleDateString(
+                        "en-GB"
+                      ) || "N/A"}
+                    </span>
+                  )}
                   <span style={{ fontSize: "1rem", color: "#555" }}>
                     <strong>Dispatch From:</strong>{" "}
                     {viewOrder.dispatchFrom || "N/A"}

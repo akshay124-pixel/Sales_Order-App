@@ -422,18 +422,16 @@ Created By: ${
                     {entry.dispatchStatus || "N/A"}
                   </Badge>
                 </div>
-                <div>
-                  <strong>Completion Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.completionStatus === "Complete"
-                        ? "success"
-                        : "warning"
-                    }
-                  >
-                    {entry.completionStatus || "N/A"}
-                  </Badge>
-                </div>
+                {entry.deliveredDate && (
+                  <div>
+                    <strong>Delivered Date:</strong>{" "}
+                    {entry.deliveredDate
+                      ? new Date(entry.deliveredDate).toLocaleDateString(
+                          "en-GB"
+                        )
+                      : "N/A"}
+                  </div>
+                )}
                 <div>
                   <strong>Stock Status:</strong>{" "}
                   <Badge
@@ -449,7 +447,7 @@ Created By: ${
                     : "N/A"}
                 </div>
                 <div>
-                  <strong>Fulfillment Date:</strong>{" "}
+                  <strong>Production Date:</strong>{" "}
                   {entry.fulfillmentDate
                     ? new Date(entry.fulfillmentDate).toLocaleDateString(
                         "en-GB"

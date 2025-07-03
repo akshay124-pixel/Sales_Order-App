@@ -1160,6 +1160,15 @@ function Installation() {
                     <strong>Dispatch Status:</strong>{" "}
                     {viewOrder.dispatchStatus || "N/A"}
                   </span>
+
+                  {viewOrder.deliveredDate && (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Delivered Date:</strong>{" "}
+                      {new Date(viewOrder.deliveredDate).toLocaleDateString(
+                        "en-GB"
+                      ) || "N/A"}
+                    </span>
+                  )}
                 </div>
               </div>
               <div
