@@ -9,7 +9,7 @@ import { FaEdit, FaSyncAlt, FaCog } from "react-icons/fa";
 import { salesPersonlist } from "./Options";
 import { Reportinglist } from "./Options";
 import { productOptions } from "./Options";
-const userRole = localStorage.getItem("role");
+
 // Styled Components
 const StyledModal = styled(Modal)`
   .modal-content {
@@ -169,6 +169,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
+  useEffect(() => {
+    setUserRole(localStorage.getItem("role") || "");
+  }, [isOpen]);
 
   const {
     register,
