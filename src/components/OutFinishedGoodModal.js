@@ -314,9 +314,12 @@ const OutFinishedGoodModal = ({
               }}
             >
               {field.label}
-              {["dispatchFrom", "transporter", "dispatchDate"].includes(
-                field.key
-              ) && " *"}
+              {[
+                "dispatchFrom",
+                "transporter",
+                "dispatchDate",
+                "deliveredDate",
+              ].includes(field.key) && " *"}
             </label>
             <Input
               placeholder={`Enter ${field.label.toLowerCase()}`}
