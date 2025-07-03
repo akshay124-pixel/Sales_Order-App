@@ -66,7 +66,7 @@ const OutFinishedGoodModal = ({
           : new Date().toISOString().split("T")[0],
         deliveredDate: initialData.deliveredDate
           ? new Date(initialData.deliveredDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
+          : "",
         docketNo: initialData.docketNo || "",
         actualFreight: initialData.actualFreight || "",
         dispatchStatus: validDispatchStatus,
