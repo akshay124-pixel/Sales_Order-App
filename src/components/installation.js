@@ -324,6 +324,7 @@ function Installation() {
 
       return {
         "Order ID": order.orderId || "N/A",
+        "Order Type": order.orderType || "N/A",
         "Product Details": productDetails,
         "Total Quantity": totalProductQty,
         "Contact Person": order.name || "N/A",
@@ -333,7 +334,6 @@ function Installation() {
         installationeng: order.installationeng || "N/A",
         installationStatusDate: order.installationStatusDate || "N/A",
         "Installation Status": order.installationStatus || "Pending",
-
         "Sales Person": order.salesPerson || "N/A",
       };
     });
