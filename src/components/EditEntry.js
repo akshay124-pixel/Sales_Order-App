@@ -9,6 +9,7 @@ import { FaEdit, FaSyncAlt, FaCog } from "react-icons/fa";
 import { salesPersonlist } from "./Options";
 import { Reportinglist } from "./Options";
 import { productOptions } from "./Options";
+const userRole = localStorage.getItem("role");
 // Styled Components
 const StyledModal = styled(Modal)`
   .modal-content {
@@ -1432,9 +1433,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       <StyledButton variant="primary" onClick={() => setView("edit")}>
         Edit Full Details
       </StyledButton>
-      <StyledButton variant="info" onClick={() => setView("update")}>
-        Update Approvals
-      </StyledButton>
+      {userRole === "Admin" && (
+        <StyledButton variant="info" onClick={() => setView("update")}>
+          Update Approvals
+        </StyledButton>
+      )}
     </div>
   );
 

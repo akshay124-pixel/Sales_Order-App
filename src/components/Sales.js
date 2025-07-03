@@ -513,7 +513,11 @@ const Row = React.memo(({ index, style, data }) => {
               >
                 <FaEye />
               </Button>
-              {userRole == "Admin" && (
+              {(userRole === "Admin" ||
+                (userRole === "Sales" &&
+                  order.sostatus !== "Approved" &&
+                  order.sostatus !== "Accounts Approved" &&
+                  order.sostatus !== "Order on Hold Due to Low Price")) && (
                 <>
                   <button
                     className="editBtn"
