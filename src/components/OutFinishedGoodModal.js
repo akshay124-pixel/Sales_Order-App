@@ -19,6 +19,7 @@ const OutFinishedGoodModal = ({
     transporterDetails: "",
     billNumber: "",
     dispatchDate: new Date().toISOString().split("T")[0],
+    deliveredDate: new Date().toISOString().split("T")[0],
     docketNo: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
@@ -62,6 +63,9 @@ const OutFinishedGoodModal = ({
         billNumber: initialData.billNumber || "",
         dispatchDate: initialData.dispatchDate
           ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        deliveredDate: initialData.deliveredDate
+          ? new Date(initialData.deliveredDate).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
         docketNo: initialData.docketNo || "",
         actualFreight: initialData.actualFreight || "",
@@ -159,6 +163,7 @@ const OutFinishedGoodModal = ({
         transporterDetails: formData.transporterDetails || undefined,
         billNumber: formData.billNumber || undefined,
         dispatchDate: new Date(formData.dispatchDate).toISOString(),
+        deliveredDate: new Date(formData.deliveredDate).toISOString(),
         docketNo: formData.docketNo || undefined,
         actualFreight:
           formData.actualFreight !== ""
@@ -289,6 +294,7 @@ const OutFinishedGoodModal = ({
         </div>
         {[
           { key: "dispatchDate", label: "Dispatch Date", type: "date" },
+          { key: "deliveredDate", label: "Delivery Date", type: "date" },
           { key: "docketNo", label: "Docket No", type: "text" },
           { key: "actualFreight", label: "Actual Freight", type: "number" },
           {
