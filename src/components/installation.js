@@ -19,7 +19,6 @@ function Installation() {
   const [formData, setFormData] = useState({
     installationStatus: "Pending",
     remarksByInstallation: "",
-    subinstallationStatus: "",
     installationStatusDate: "",
     installationeng: "",
   });
@@ -30,11 +29,6 @@ function Installation() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
   const [InstallationFilter, setInstallationFilter] = useState("All");
-
-  const subStatusMap = {
-    Hold: ["Hold from Salesperson", "Hold from Customer"],
-    "In Progress": ["Engineering is Working", "Dealer is Working"],
-  };
 
   const fetchInstallationOrders = useCallback(async () => {
     setLoading(true);
@@ -118,9 +112,16 @@ function Installation() {
       );
     }
     if (InstallationFilter !== "All") {
-      filtered = filtered.filter(
-        (order) => order.installchargesstatus === InstallationFilter
-      );
+      filtered = filtered.filter((order) => {
+        if (InstallationFilter === "Not Available") {
+          return (
+            !order.installchargesstatus ||
+            order.installchargesstatus === "0" ||
+            order.installchargesstatus.toLowerCase() === "n/a"
+          );
+        }
+        return order.installchargesstatus === InstallationFilter;
+      });
     }
     if (salesPersonFilter !== "All") {
       filtered = filtered.filter(
@@ -200,7 +201,7 @@ function Installation() {
       Shipping Address: ${viewOrder.shippingAddress || "N/A"}
       Installation Details: ${viewOrder.installation || "N/A"}
       Installation Status: ${viewOrder.installationStatus || "Pending"}
-        Sub-Installation Status: ${viewOrder.subinstallationStatus || "Pending"}
+     
       Remarks: ${viewOrder.remarksByInstallation || "N/A"}
       Products:\n${productsText}
     `.trim();
@@ -224,7 +225,7 @@ function Installation() {
     setEditOrder(order);
     setFormData({
       installationStatus: order.installationStatus || "Pending",
-      subinstallationStatus: order.subinstallationStatus || "Pending",
+
       remarksByInstallation: order.remarksByInstallation || "",
       installationStatusDate: order.installationStatusDate || "",
       installationeng: order.installationeng || "",
@@ -300,21 +301,28 @@ function Installation() {
             .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
             .join(", ")
         : "N/A";
+
+      // 👇 Calculate total quantity from products array
+      const totalProductQty = Array.isArray(order.products)
+        ? order.products.reduce((sum, p) => sum + (Number(p.qty) || 0), 0)
+        : 0;
+
       return {
         "Order ID": order.orderId || "N/A",
         "Product Details": productDetails,
+        "Total Quantity": totalProductQty,
         "Contact Person": order.name || "N/A",
         "Contact No": order.contactNo || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
         "Installation Details": order.installation || "N/A",
-
         installationeng: order.installationeng || "N/A",
         installationStatusDate: order.installationStatusDate || "N/A",
         "Installation Status": order.installationStatus || "Pending",
-        "Installation Sub-Status": order.subinstallationStatus || "Pending",
+
         "Sales Person": order.salesPerson || "N/A",
       };
     });
+
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Installation Orders");
@@ -491,6 +499,7 @@ function Installation() {
           <option>To Pay</option>
           <option>Including</option>
           <option>Extra</option>
+          <option>Not Available</option>
         </Form.Select>
         <Form.Select
           value={salesPersonFilter}
@@ -643,8 +652,8 @@ function Installation() {
                       "Contact Person",
                       "Contact No",
                       "Shipping Address",
+                      "Charges Status",
                       "Installation Status",
-                      "Installation",
                       "Sales Person",
                       "Actions",
                     ].map((header, index) => (
@@ -859,8 +868,6 @@ function Installation() {
                                     ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                     : order.installationStatus === "Completed"
                                     ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                    : order.installationStatus === "Failed"
-                                    ? "linear-gradient(135deg, #6c757d, #5a6268)"
                                     : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                                 color: "#fff",
                                 padding: "5px 10px",
@@ -1123,12 +1130,6 @@ function Installation() {
                       {viewOrder.installationStatus || "Pending"}
                     </Badge>
                   </span>
-                  {viewOrder.subinstallationStatus && (
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Sub Installation Status:</strong>{" "}
-                      {viewOrder.subinstallationStatus}
-                    </span>
-                  )}
 
                   {viewOrder.installationStatusDate && (
                     <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -1310,7 +1311,6 @@ function Installation() {
                   setFormData({
                     ...formData,
                     installationStatus: newStatus,
-                    subinstallationStatus: "",
                   });
                 }}
                 style={{
@@ -1331,9 +1331,7 @@ function Installation() {
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
-                <option value="Failed">Failed</option>
                 <option value="Hold">Hold</option>
-
                 <option value="Site Not Ready">Site Not Ready</option>
               </Form.Select>
               {errors.installationStatus && (
@@ -1342,44 +1340,7 @@ function Installation() {
                 </Form.Text>
               )}
             </Form.Group>
-            {(formData.installationStatus === "Hold" ||
-              formData.installationStatus === "In Progress") && (
-              <Form.Group style={{ marginBottom: "20px" }}>
-                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                  Sub Installation Status
-                </Form.Label>
-                <Form.Select
-                  value={formData.subinstallationStatus}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      subinstallationStatus: e.target.value,
-                    })
-                  }
-                  style={{
-                    borderRadius: "10px",
-                    border: "1px solid #ced4da",
-                    padding: "12px",
-                    fontSize: "1rem",
-                    transition: "all 0.3s ease",
-                  }}
-                  onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                  }
-                  onBlur={(e) => (e.target.style.boxShadow = "none")}
-                >
-                  <option value="">Select Sub Status</option>
-                  {subStatusMap[formData.installationStatus].map(
-                    (subOption, idx) => (
-                      <option key={idx} value={subOption}>
-                        {subOption}
-                      </option>
-                    )
-                  )}
-                </Form.Select>
-              </Form.Group>
-            )}
+
             {formData.installationStatus === "Completed" && (
               <>
                 <Form.Group style={{ marginBottom: "20px" }}>
