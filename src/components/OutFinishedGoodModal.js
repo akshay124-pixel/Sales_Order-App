@@ -38,7 +38,7 @@ const OutFinishedGoodModal = ({
         .trim()
         .toLowerCase();
       const isBillingComplete = billStatus === "billing complete";
-      const dispatchStatus = dispatchStatus || "Not Dispatched";
+      const dispatchStatus = initialData.dispatchStatus || "Not Dispatched"; // Fix: Use initialData.dispatchStatus
       const validDispatchStatus = isBillingComplete
         ? dispatchStatus
         : ["Dispatched", "Delivered"].includes(dispatchStatus)
