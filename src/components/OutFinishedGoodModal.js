@@ -38,7 +38,7 @@ const OutFinishedGoodModal = ({
         .trim()
         .toLowerCase();
       const isBillingComplete = billStatus === "billing complete";
-      const dispatchStatus = initialData.dispatchStatus || "Not Dispatched";
+      const dispatchStatus = dispatchStatus || "Not Dispatched";
       const validDispatchStatus = isBillingComplete
         ? dispatchStatus
         : ["Dispatched", "Delivered"].includes(dispatchStatus)
@@ -314,12 +314,9 @@ const OutFinishedGoodModal = ({
               }}
             >
               {field.label}
-              {[
-                "dispatchFrom",
-                "transporter",
-                "dispatchDate",
-                "deliveredDate",
-              ].includes(field.key) && " *"}
+              {["dispatchFrom", "transporter", "dispatchDate"].includes(
+                field.key
+              ) && " *"}
             </label>
             <Input
               placeholder={`Enter ${field.label.toLowerCase()}`}
