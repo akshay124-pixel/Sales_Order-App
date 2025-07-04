@@ -213,7 +213,7 @@ function Installation() {
       Contact Person: ${viewOrder.name || "N/A"}
       Contact No: ${viewOrder.contactNo || "N/A"}
       Shipping Address: ${viewOrder.shippingAddress || "N/A"}
-      Installation Details: ${viewOrder.installation || "N/A"}
+      Charges Status: ${viewOrder.installchargesstatus || "N/A"}
       Installation Status: ${viewOrder.installationStatus || "Pending"}
      
       Remarks: ${viewOrder.remarksByInstallation || "N/A"}
@@ -330,9 +330,7 @@ function Installation() {
         "Contact Person": order.name || "N/A",
         "Contact No": order.contactNo || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
-        "Installation Details": order.installation || "N/A",
-        installationeng: order.installationeng || "N/A",
-        installationStatusDate: order.installationStatusDate || "N/A",
+        "Charges Status": order.installchargesstatus || "N/A",
         "Installation Status": order.installationStatus || "Pending",
         "Sales Person": order.salesPerson || "N/A",
       };
