@@ -1392,6 +1392,7 @@ export const paymentTermsOptions = [
 ];
 export const salesPersonlist = [
   "Aasim Musadiq",
+  "Ashish Soni",
   "Ankur Jain",
   "Abhay Pratap Singh",
   "Abhay Bhardwaj",
