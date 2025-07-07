@@ -227,6 +227,54 @@ const StyledDropdownItem = styled(Dropdown.Item)`
   }
 `;
 
+const StyledFormSelect = styled(Form.Select)`
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.7rem 0.75rem;
+  border-radius: 0.75rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease-in-out;
+  flex: 1;
+  max-width: 150px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    opacity: 0.9;
+  }
+
+  &:focus {
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+    outline: none;
+  }
+
+  option {
+    background: white;
+    color: #1e40af;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 1023px) {
+    max-width: 120px;
+    font-size: 0.8rem;
+    padding: 0.6rem 0.7rem;
+  }
+
+  @media (max-width: 768px) {
+    flex: 0 0 100%;
+    max-width: none;
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+  }
+`;
+
 const NotificationWrapper = styled.div`
   position: relative;
   cursor: pointer;
@@ -251,7 +299,7 @@ const NotificationBadge = styled.span`
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #ef4444;
+  background: #ef Dobson;
   color: white;
   border-radius: 50%;
   padding: 2px 6px;
@@ -277,8 +325,11 @@ const FilterSection = ({
   setDispatchFilter,
   dispatchFromFilter,
   setDispatchFromFilter,
+  salesPersonFilter,
+  setSalesPersonFilter,
+  uniqueSalesPersons,
   handleReset,
-  tableId = "orders-table", // Optional prop for accessibility
+  tableId = "orders-table",
 }) => {
   // Dispatch From options based on schema
   const dispatchFromOptions = [
@@ -345,6 +396,20 @@ const FilterSection = ({
             aria-label="Select order end date"
           />
         </DatePickerWrapper>
+        <StyledFormSelect
+          value={salesPersonFilter}
+          onChange={(e) => setSalesPersonFilter(e.target.value)}
+          aria-label="Select sales person"
+        >
+          <option value="All">All Sales Persons</option>
+          {uniqueSalesPersons
+            .filter((salesPerson) => salesPerson !== "All")
+            .map((salesPerson) => (
+              <option key={salesPerson} value={salesPerson}>
+                {salesPerson}
+              </option>
+            ))}
+        </StyledFormSelect>
         <Dropdown>
           <StyledDropdownToggle aria-controls={tableId}>
             {approvalFilter === "All" ? "Approval Status" : approvalFilter}
