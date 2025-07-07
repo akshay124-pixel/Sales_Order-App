@@ -19,7 +19,7 @@ const OutFinishedGoodModal = ({
     transporterDetails: "",
     billNumber: "",
     dispatchDate: new Date().toISOString().split("T")[0],
-    deliveredDate: new Date().toISOString().split("T")[0],
+    deliveredDate: "",
     docketNo: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
@@ -38,7 +38,7 @@ const OutFinishedGoodModal = ({
         .trim()
         .toLowerCase();
       const isBillingComplete = billStatus === "billing complete";
-      const dispatchStatus = initialData.dispatchStatus || "Not Dispatched"; // Fix: Use initialData.dispatchStatus
+      const dispatchStatus = initialData.dispatchStatus || "Not Dispatched";
       const validDispatchStatus = isBillingComplete
         ? dispatchStatus
         : ["Dispatched", "Delivered"].includes(dispatchStatus)
@@ -132,23 +132,6 @@ const OutFinishedGoodModal = ({
         toast.error("Billing Status must be Billing Complete!");
         return;
       }
-      // Validate product fields when dispatchFrom is not Morinda
-      if (formData.dispatchFrom !== "Morinda") {
-        for (const product of formData.products) {
-          if (
-            !product.productType ||
-            !product.serialNos.length ||
-            !product.modelNos.length ||
-            !product.unitPrice ||
-            !product.size ||
-            !product.spec
-          ) {
-            setError("All product fields are required!");
-            toast.error("Please fill all product details!");
-            return;
-          }
-        }
-      }
       setShowConfirm(true);
       return;
     }
@@ -158,31 +141,35 @@ const OutFinishedGoodModal = ({
 
     try {
       const submissionData = {
-        dispatchFrom: formData.dispatchFrom,
-        transporter: formData.transporter,
+        dispatchFrom: formData.dispatchFrom || undefined,
+        transporter: formData.transporter || undefined,
         transporterDetails: formData.transporterDetails || undefined,
         billNumber: formData.billNumber || undefined,
-        dispatchDate: new Date(formData.dispatchDate).toISOString(),
-        deliveredDate: new Date(formData.deliveredDate).toISOString(),
+        dispatchDate: formData.dispatchDate
+          ? new Date(formData.dispatchDate).toISOString()
+          : undefined,
+        deliveredDate: formData.deliveredDate
+          ? new Date(formData.deliveredDate).toISOString()
+          : undefined,
         docketNo: formData.docketNo || undefined,
         actualFreight:
           formData.actualFreight !== ""
             ? Number(formData.actualFreight)
             : undefined,
-        dispatchStatus: formData.dispatchStatus,
+        dispatchStatus: formData.dispatchStatus || undefined,
         products: formData.products.map((product) => ({
-          productType: product.productType,
-          serialNos: product.serialNos,
-          modelNos: product.modelNos,
-          unitPrice: Number(product.unitPrice) || undefined,
-
-          size: product.size, // Include size
-          spec: product.spec, // Include spec
+          productType: product.productType || undefined,
+          serialNos: product.serialNos.length ? product.serialNos : undefined,
+          modelNos: product.modelNos.length ? product.modelNos : undefined,
+          unitPrice:
+            product.unitPrice !== "" ? Number(product.unitPrice) : undefined,
+          size: product.size !== "N/A" ? product.size : undefined,
+          spec: product.spec !== "N/A" ? product.spec : undefined,
         })),
       };
 
       const response = await axios.put(
-        `https://sales-order-server-7xyl.onrender.com/api/edit/${entryToEdit._id}`,
+        `http://localhost:4000/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -274,7 +261,7 @@ const OutFinishedGoodModal = ({
               display: "block",
             }}
           >
-            Dispatch From *
+            Dispatch From
           </label>
           <Select
             value={formData.dispatchFrom || undefined}
@@ -282,8 +269,8 @@ const OutFinishedGoodModal = ({
             placeholder="Select dispatch location"
             style={{ width: "100%", borderRadius: "8px" }}
             disabled={loading}
+            allowClear
           >
-            <Option value="">Select Dispatch From</Option>
             <Option value="Patna">Patna</Option>
             <Option value="Bareilly">Bareilly</Option>
             <Option value="Ranchi">Ranchi</Option>
@@ -314,9 +301,6 @@ const OutFinishedGoodModal = ({
               }}
             >
               {field.label}
-              {["dispatchFrom", "transporter", "dispatchDate"].includes(
-                field.key
-              ) && " *"}
             </label>
             <Input
               placeholder={`Enter ${field.label.toLowerCase()}`}
@@ -339,7 +323,7 @@ const OutFinishedGoodModal = ({
               display: "block",
             }}
           >
-            Transporter *
+            Transporter
           </label>
           <Select
             value={formData.transporter || undefined}
@@ -347,8 +331,8 @@ const OutFinishedGoodModal = ({
             placeholder="Select transporter"
             style={{ width: "100%", borderRadius: "8px" }}
             disabled={loading}
+            allowClear
           >
-            <Option value="">Select Transporter</Option>
             <Option value="BlueDart">BlueDart</Option>
             <Option value="Om Logistics">Om Logistics</Option>
             <Option value="Rivigo">Rivigo</Option>
@@ -537,7 +521,6 @@ const OutFinishedGoodModal = ({
                         disabled={loading}
                       />
                     </div>
-
                     <div style={{ marginTop: "10px" }}>
                       <label
                         style={{
