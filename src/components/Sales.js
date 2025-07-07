@@ -1043,9 +1043,12 @@ const Sales = () => {
   const clearNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete("https://sales-order-server-7xyl.onrender.com/api/clear", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        "https://sales-order-server-7xyl.onrender.com/api/clear",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setNotifications([]);
       toast.success("All notifications cleared!");
     } catch (error) {
@@ -1697,12 +1700,41 @@ const Sales = () => {
   const handleExport = useCallback(() => {
     try {
       const exportData = filteredOrders.map((order, index) => ({
-        "Seq No": index + 1,
         "Order ID": order.orderId || "-",
+        "Seq No": index + 1,
         "SO Date": order.soDate
           ? new Date(order.soDate).toLocaleDateString("en-GB")
           : "-",
         "Customer Name": order.customername || "-",
+        "Sales Person": order.salesPerson || "-",
+        "Product Details": order.products
+          ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
+          : "-",
+        "Product Type": order.products
+          ? order.products.map((p) => p.productType).join(", ")
+          : "-",
+
+        Size: order.products
+          ? order.products.map((p) => p.size || "N/A").join(", ")
+          : "-",
+        Spec: order.products
+          ? order.products.map((p) => p.spec || "N/A").join(", ")
+          : "-",
+        Qty: order.products
+          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
+          : "-",
+        "Total Price Without GST": order.products
+          ? order.products
+              .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
+              .toFixed(2)
+          : "0.00",
+        "Total With GST": order.total?.toFixed(2) || "0.00",
+        "Payment Due": formatCurrency(order.paymentDue) || "-",
+        "Payment Terms": order.paymentTerms || "-",
+        "Credit Days": order.creditDays || "-",
+        "Actual Freight": order.actualFreight?.toFixed(2) || "-",
+        Installation: order.installation || "-",
+        "Dispatch Status": order.dispatchStatus || "-",
         "Contact Person Name": order.name || "-",
         "Contact No": order.contactNo || "-",
         "Customer Email": order.customerEmail || "-",
@@ -1714,21 +1746,6 @@ const Sales = () => {
         "GST No": order.gstno || "-",
         "Shipping Address": order.shippingAddress || "-",
         "Billing Address": order.billingAddress || "-",
-        "Product Details": order.products
-          ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
-          : "-",
-        "Product Type": order.products
-          ? order.products.map((p) => p.productType).join(", ")
-          : "-",
-        Size: order.products
-          ? order.products.map((p) => p.size || "N/A").join(", ")
-          : "-",
-        Spec: order.products
-          ? order.products.map((p) => p.spec || "N/A").join(", ")
-          : "-",
-        Qty: order.products
-          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-          : "-",
         "Unit Price": order.products
           ? order.products
               .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
@@ -1749,15 +1766,10 @@ const Sales = () => {
         Total: order.total?.toFixed(2) || "0.00",
         "Payment Collected": formatCurrency(order.paymentCollected) || "-",
         "Payment Method": order.paymentMethod || "-",
-        "Payment Due": formatCurrency(order.paymentDue) || "-",
-        "Payment Terms": order.paymentTerms || "-",
-        "Credit Days": order.creditDays || "-",
         "Payment Received": order.paymentReceived || "-",
         "Freight Charges": order.freightcs || "-",
         "Freight Status": order.freightstatus || "-",
-        "Actual Freight": order.actualFreight?.toFixed(2) || "-",
         "Install Charges Status": order.installchargesstatus || "-",
-        Installation: order.installation || "-",
         "Installation Status": order.installationStatus || "-",
         "Sub Installation Status": order.subinstallationStatus || "-",
         "Installation Completion Date": order.installationStatusDate
@@ -1771,7 +1783,7 @@ const Sales = () => {
         "Dispatch Date": order.dispatchDate
           ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
           : "-",
-        "Dispatch Status": order.dispatchStatus || "-",
+
         "Order Type": order.orderType || "-",
         Report: order.report || "-",
         "Stock Status": order.stockStatus || "-",
@@ -1779,7 +1791,7 @@ const Sales = () => {
         "Production Status": order.fulfillingStatus || "-",
         "Bill Number": order.billNumber || order.invoiceNo || "-",
         "PI Number": order.piNumber || "-",
-        "Sales Person": order.salesPerson || "-",
+
         Company: order.company || "-",
         "Created By":
           order.createdBy && typeof order.createdBy === "object"
