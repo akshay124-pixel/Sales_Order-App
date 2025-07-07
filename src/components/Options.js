@@ -273,6 +273,10 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: ["Handheld Collar Mic", "Goose Neck Mic", "Collar/Lapel Mic"],
   },
+  "Wireless Speaker Phone": {
+    sizes: ["N/A"],
+    specs: ["N/A"],
+  },
   CCTV: {
     sizes: ["N/A"],
     specs: ["N/A"],
