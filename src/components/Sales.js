@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaEye, FaBell } from "react-icons/fa";
 import { Button, Badge, OverlayTrigger, Popover } from "react-bootstrap";
-import DatePicker from "react-datepicker";
+
 import FilterSection from "./FilterSection";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
@@ -966,7 +966,7 @@ const Sales = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
+  const [salesPersonFilter, setSalesPersonFilter] = useState("All");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("All");
@@ -978,6 +978,14 @@ const Sales = () => {
   const [notifications, setNotifications] = useState([]);
   const userRole = localStorage.getItem("role");
   const userId = localStorage.getItem("userId");
+
+  // Create uniqueSalesPersons array from orders
+  const uniqueSalesPersons = useMemo(() => {
+    const salesPersons = orders
+      .map((order) => order.createdBy?.username?.trim() || "Sales Order Team")
+      .filter((salesPerson) => salesPerson && salesPerson.trim() !== "");
+    return ["All", ...new Set(salesPersons)];
+  }, [orders]);
 
   // Debounced search handler
   const debouncedSetSearchTerm = useMemo(
@@ -1001,10 +1009,11 @@ const Sales = () => {
       toast.error("Failed to fetch orders!");
     }
   }, []);
+
   const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Token for notifications request:", token); // Log token
+      console.log("Token for notifications request:", token);
       if (!token) {
         throw new Error("No token found in localStorage");
       }
@@ -1020,6 +1029,7 @@ const Sales = () => {
       toast.error("Failed to fetch notifications!");
     }
   }, []);
+
   // Mark all notifications as read
   const markAllRead = useCallback(async () => {
     try {
@@ -1096,7 +1106,7 @@ const Sales = () => {
         return updatedOrders;
       });
       setNotifications((prev) => {
-        if (prev.some((n) => n.id === notification.id)) return prev; // Prevent duplicates
+        if (prev.some((n) => n.id === notification.id)) return prev;
         const updated = [notification, ...prev].slice(0, 50);
         localStorage.setItem("notifications", JSON.stringify(updated));
         return updated;
@@ -1121,6 +1131,7 @@ const Sales = () => {
       console.log("Socket.IO disconnected");
     };
   }, [fetchOrders, fetchNotifications, userRole, userId]);
+
   const calculateTotalResults = useMemo(() => {
     return Math.floor(
       filteredOrders.reduce((total, order) => {
@@ -1140,6 +1151,7 @@ const Sales = () => {
       approval,
       orderType,
       dispatch,
+      salesPerson,
       dispatchFrom,
       start,
       end
@@ -1244,11 +1256,20 @@ const Sales = () => {
         filtered = filtered.filter((order) => order.orderType === orderType);
       }
 
+      if (salesPerson !== "All") {
+        filtered = filtered.filter(
+          (order) =>
+            (order.createdBy?.username?.trim() || "Sales Order Team") ===
+            salesPerson
+        );
+      }
+
       if (dispatch !== "All") {
         filtered = filtered.filter(
           (order) => order.dispatchStatus === dispatch
         );
       }
+
       if (dispatchFrom !== "All") {
         filtered = filtered.filter(
           (order) => order.dispatchFrom === dispatchFrom
@@ -1287,6 +1308,7 @@ const Sales = () => {
       approvalFilter,
       orderTypeFilter,
       dispatchFilter,
+      salesPersonFilter,
       dispatchFromFilter,
       startDate,
       endDate
@@ -1296,8 +1318,9 @@ const Sales = () => {
     searchTerm,
     approvalFilter,
     orderTypeFilter,
-    dispatchFromFilter,
     dispatchFilter,
+    salesPersonFilter,
+    dispatchFromFilter,
     startDate,
     endDate,
     filterOrders,
@@ -1305,8 +1328,9 @@ const Sales = () => {
 
   // Event handlers
   const handleReset = useCallback(() => {
-    setSearchTerm(""); // This will reset search
+    setSearchTerm("");
     setStartDate(null);
+    setSalesPersonFilter("All");
     setEndDate(null);
     setDispatchFromFilter("All");
     setApprovalFilter("All");
@@ -1315,16 +1339,7 @@ const Sales = () => {
 
     // Filter after a small delay to ensure states are updated
     setTimeout(() => {
-      filterOrders(
-        orders,
-        "", // search term
-        "All", // approval
-        "All", // orderType
-        "All", // dispatch
-        "All", // dispatchFrom
-        null, // startDate
-        null // endDate
-      );
+      filterOrders(orders, "", "All", "All", "All", "All", "All", null, null);
       toast.info("Filters reset!");
     }, 0);
   }, [filterOrders, orders]);
@@ -1342,6 +1357,8 @@ const Sales = () => {
           approvalFilter,
           orderTypeFilter,
           dispatchFilter,
+          salesPersonFilter,
+          dispatchFromFilter,
           startDate,
           endDate
         );
@@ -1356,8 +1373,11 @@ const Sales = () => {
       approvalFilter,
       orderTypeFilter,
       dispatchFilter,
+      salesPersonFilter,
+      dispatchFromFilter,
       startDate,
       endDate,
+      fetchOrders,
     ]
   );
 
@@ -1388,6 +1408,8 @@ const Sales = () => {
           approvalFilter,
           orderTypeFilter,
           dispatchFilter,
+          salesPersonFilter,
+          dispatchFromFilter,
           startDate,
           endDate
         );
@@ -1402,6 +1424,8 @@ const Sales = () => {
       approvalFilter,
       orderTypeFilter,
       dispatchFilter,
+      salesPersonFilter,
+      dispatchFromFilter,
       startDate,
       endDate,
     ]
@@ -1427,6 +1451,8 @@ const Sales = () => {
             approvalFilter,
             orderTypeFilter,
             dispatchFilter,
+            salesPersonFilter,
+            dispatchFromFilter,
             startDate,
             endDate
           );
@@ -1445,6 +1471,8 @@ const Sales = () => {
       approvalFilter,
       orderTypeFilter,
       dispatchFilter,
+      salesPersonFilter,
+      dispatchFromFilter,
       startDate,
       endDate,
     ]
@@ -1666,6 +1694,8 @@ const Sales = () => {
               approvalFilter,
               orderTypeFilter,
               dispatchFilter,
+              salesPersonFilter,
+              dispatchFromFilter,
               startDate,
               endDate
             );
@@ -1692,6 +1722,8 @@ const Sales = () => {
       approvalFilter,
       orderTypeFilter,
       dispatchFilter,
+      salesPersonFilter,
+      dispatchFromFilter,
       startDate,
       endDate,
     ]
@@ -1827,7 +1859,6 @@ const Sales = () => {
   }, [filteredOrders, formatCurrency]);
 
   const isOrderComplete = useCallback((order) => {
-    // List of fields corresponding to table headers
     const requiredFields = [
       "orderId",
       "soDate",
@@ -1836,14 +1867,12 @@ const Sales = () => {
       "contactNo",
       "customerEmail",
       "sostatus",
-
       "city",
       "state",
       "pinCode",
-
       "shippingAddress",
       "billingAddress",
-      "products", // We'll check products separately
+      "products",
       "total",
       "paymentCollected",
       "paymentMethod",
@@ -1857,7 +1886,6 @@ const Sales = () => {
       "installation",
       "installationStatus",
       "transporter",
-
       "dispatchFrom",
       "dispatchDate",
       "dispatchStatus",
@@ -1874,7 +1902,6 @@ const Sales = () => {
       "remarks",
     ];
 
-    // Check if all required fields are filled
     const areFieldsComplete = requiredFields.every((field) => {
       const value = order[field];
       if (field === "products") {
@@ -1985,12 +2012,10 @@ const Sales = () => {
     "Seq No",
     "Order ID",
     "SO Date",
-
     "Customer Name",
     "Contact Person Name",
     "Contact No",
     "Customer Email",
-
     "SO Status",
     "Actions",
     "Alternate No",
@@ -2039,6 +2064,7 @@ const Sales = () => {
     "Created By",
     "Remarks",
   ];
+
   return (
     <>
       <style>{tableStyles}</style>
@@ -2070,6 +2096,9 @@ const Sales = () => {
           setDispatchFilter={setDispatchFilter}
           dispatchFromFilter={dispatchFromFilter}
           setDispatchFromFilter={setDispatchFromFilter}
+          salesPersonFilter={salesPersonFilter}
+          setSalesPersonFilter={setSalesPersonFilter}
+          uniqueSalesPersons={uniqueSalesPersons}
           handleReset={handleReset}
         />
       </div>
@@ -2084,10 +2113,10 @@ const Sales = () => {
         <div
           className="my-4"
           style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)", // Updated gradient
-            borderRadius: "20px", // Reduced from 25px
-            padding: "10px 16px", // Reduced from 12px 20px
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.18)", // Reduced from 0 5px 15px
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            borderRadius: "20px",
+            padding: "10px 16px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.18)",
             display: "inline-flex",
             alignItems: "center",
             transition: "all 0.3s ease",
@@ -2097,9 +2126,9 @@ const Sales = () => {
             style={{
               color: "#ffffff",
               fontWeight: "700",
-              fontSize: "0.85rem", // Reduced from 0.9rem
+              fontSize: "0.85rem",
               margin: 0,
-              letterSpacing: "0.4px", // Reduced from 0.5px
+              letterSpacing: "0.4px",
             }}
             title="Total number of entries"
           >
@@ -2109,10 +2138,10 @@ const Sales = () => {
         <div
           className="mx-3 my-4"
           style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)", // Updated gradient
-            borderRadius: "20px", // Reduced from 25px
-            padding: "10px 16px", // Reduced from 12px 20px
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.18)", // Reduced from 0 5px 15px
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            borderRadius: "20px",
+            padding: "10px 16px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.18)",
             display: "inline-flex",
             alignItems: "center",
             transition: "all 0.3s ease",
@@ -2122,9 +2151,9 @@ const Sales = () => {
             style={{
               color: "#ffffff",
               fontWeight: "700",
-              fontSize: "0.85rem", // Reduced from 0.9rem
+              fontSize: "0.85rem",
               margin: 0,
-              letterSpacing: "0.4px", // Reduced from 0.5px
+              letterSpacing: "0.4px",
             }}
             title="Total quantity of products"
           >
@@ -2135,8 +2164,8 @@ const Sales = () => {
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: "20px", // Reduced from 25px
-            marginBottom: "30px", // Reduced from 40px
+            gap: "20px",
+            marginBottom: "30px",
             flexWrap: "wrap",
           }}
         >
@@ -2145,28 +2174,27 @@ const Sales = () => {
               style={{
                 background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                 color: "white",
-                padding: "12px 24px", // Reduced from 15px 30px
-                borderRadius: "30px", // Reduced from 35px
+                padding: "12px 24px",
+                borderRadius: "30px",
                 fontWeight: "600",
-                fontSize: "1rem", // Reduced from 1.1rem
+                fontSize: "1rem",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px", // Reduced from 10px
-                boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
+                gap: "8px",
+                boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
                 transition: "all 0.4s ease",
               }}
               onMouseEnter={(e) => {
                 e.target.style.transform = "scale(1.05)";
-                e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
+                e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
               }}
               onMouseLeave={(e) => {
                 e.target.style.transform = "scale(1)";
-                e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
+                e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
               }}
             >
-              <span style={{ fontSize: "1.2rem" }}>⬅</span>{" "}
-              {/* Reduced from 1.3rem */}
+              <span style={{ fontSize: "1.2rem" }}>⬅</span>
               Bulk Upload
               <input
                 type="file"
@@ -2181,28 +2209,27 @@ const Sales = () => {
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               border: "none",
-              padding: "12px 24px", // Reduced from 15px 30px
-              borderRadius: "30px", // Reduced from 35px
+              padding: "12px 24px",
+              borderRadius: "30px",
               color: "white",
               fontWeight: "600",
-              fontSize: "1rem", // Reduced from 1.1rem
-              boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
+              fontSize: "1rem",
+              boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
               display: "flex",
               alignItems: "center",
-              gap: "8px", // Reduced from 10px
+              gap: "8px",
               transition: "all 0.4s ease",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
+              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
             }}
             onMouseLeave={(e) => {
               e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
+              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
             }}
           >
-            <span style={{ fontSize: "1.2rem" }}>+</span>{" "}
-            {/* Reduced from 1.3rem */}
+            <span style={{ fontSize: "1.2rem" }}>+</span>
             Add Order
           </Button>
           <Button
@@ -2210,28 +2237,27 @@ const Sales = () => {
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               border: "none",
-              padding: "12px 24px", // Reduced from 15px 30px
-              borderRadius: "30px", // Reduced from 35px
+              padding: "12px 24px",
+              borderRadius: "30px",
               color: "white",
               fontWeight: "600",
-              fontSize: "1rem", // Reduced from 1.1rem
-              boxShadow: "0 6px 16px rgba(0,0,0,0.25)", // Reduced from 0 8px 20px
+              fontSize: "1rem",
+              boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
               display: "flex",
               alignItems: "center",
-              gap: "8px", // Reduced from 10px
+              gap: "8px",
               transition: "all 0.4s ease",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)"; // Reduced from 0 12px 30px
+              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
             }}
             onMouseLeave={(e) => {
               e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"; // Reduced from 0 8px 20px
+              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
             }}
           >
-            <span style={{ fontSize: "1.2rem" }}>➔</span>{" "}
-            {/* Reduced from 1.3rem */}
+            <span style={{ fontSize: "1.2rem" }}>➔</span>
             Export Orders
           </Button>
           {userRole === "Admin" && (
@@ -2263,7 +2289,9 @@ const Sales = () => {
         <SalesDashboardDrawer
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
-          orders={orders}
+          orders={filteredOrders}
+          startDate={startDate}
+          endDate={endDate}
         />
         {isAddModalOpen && (
           <AddEntry
@@ -2347,7 +2375,7 @@ const Sales = () => {
             </tbody>
           </table>
         </div>
-      </div>{" "}
+      </div>
       <footer
         style={{
           margin: 0,
