@@ -442,6 +442,7 @@ export const productOptions = {
     specs: ["8GB", "16GB"],
   },
   "Video Conferencing Camera": { sizes: ["N/A"], specs: ["N/A"] },
+  Speaker: { sizes: ["75", "65", "86"], specs: ["RSP "] },
   "CBSE Content": { sizes: ["N/A"], specs: ["N/A"] },
   "ICSE Content": { sizes: ["N/A"], specs: ["N/A"] },
   "PA System Speakers": { sizes: ["N/A"], specs: ["N/A"] },
