@@ -1433,6 +1433,7 @@ export const salesPersonlist = [
   "Nikhil Sharma",
   "Nadeem Khan",
   "Parmjeet Singh",
+  "Priyanka Rajput",
   "Pitamber Sharma",
   "Priya Sharma",
   "PS Brar",
