@@ -131,9 +131,10 @@ function Installation() {
             installation === ""
           );
         }
-        return order.installation === InstallationFilter;
+        return order.installchargesstatus === InstallationFilter;
       });
     }
+
     if (salesPersonFilter !== "All") {
       filtered = filtered.filter(
         (order) => order.salesPerson === salesPersonFilter
@@ -239,7 +240,6 @@ function Installation() {
     setEditOrder(order);
     setFormData({
       installationStatus: order.installationStatus || "Pending",
-
       remarksByInstallation: order.remarksByInstallation || "",
       installationStatusDate: order.installationStatusDate || "",
       installationeng: order.installationeng || "",
