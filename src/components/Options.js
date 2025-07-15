@@ -4,7 +4,7 @@ export const productOptions = {
     specs: ["N/A"],
   },
   IFPD: {
-    sizes: ["65 inch", "75 inch", "86 inch", "98 inch"],
+    sizes: ["65 inch", "75 inch", "86 inch", "98 inch", "110 inch"],
     specs: [
       "Android 9, 4GB RAM, 32GB ROM",
       "Android 8, 4GB RAM, 32GB ROM",
