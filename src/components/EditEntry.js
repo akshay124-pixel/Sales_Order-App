@@ -662,6 +662,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       Bihar: [
         "Patna",
         "Mirzapur",
+        "Aurangabad",
         "Jehanabad",
         "Mithapur",
         "Gaya",
