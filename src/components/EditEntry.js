@@ -366,7 +366,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           size: p.size || "N/A",
           spec: p.spec || "N/A",
           qty: p.qty ? Number(p.qty) : undefined,
-          unitPrice: p.unitPrice ? Number(p.unitPrice) : undefined,
+          unitPrice:
+            p.unitPrice !== undefined && p.unitPrice !== ""
+              ? Number(p.unitPrice)
+              : undefined,
           serialNos: p.serialNos
             ? p.serialNos
                 .split(",")
@@ -2150,40 +2153,36 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                         Unit Price <span style={{ color: "#f43f5e" }}>*</span>
                       </Form.Label>
                       <Form.Control
-  type="number"
-  step="0.01"
-  {...register(`products.${index}.unitPrice`, {
-    required: "Unit Price is required",
-    min: {
-      value: 0, // Ensure 0 is allowed
-      message: "Unit Price cannot be negative",
-    },
-    validate: (value) => {
-      // Explicitly allow 0 and positive numbers
-      return Number(value) >= 0 || "Unit Price cannot be negative";
-    },
-  })}
-  onChange={(e) =>
-    debouncedHandleInputChange(
-      `products.${index}.unitPrice`,
-      e.target.value,
-      index
-    )
-  }
-  isInvalid={!!errors.products?.[index]?.unitPrice}
-  style={{
-    width: "100%",
-    padding: "0.75rem",
-    border: "1px solid #e2e8f0",
-    borderRadius: "0.75rem",
-    backgroundColor: "#f8fafc",
-    fontSize: "1rem",
-    color: "#1e293b",
-  }}
-/>
-<Form.Control.Feedback type="invalid">
-  {errors.products?.[index]?.unitPrice?.message}
-</Form.Control.Feedback>
+                        type="number"
+                        step="0.01"
+                        {...register(`products.${index}.unitPrice`, {
+                          required: "Unit Price is required",
+                          min: {
+                            value: 0,
+                            message: "Unit Price cannot be negative",
+                          },
+                        })}
+                        onChange={(e) =>
+                          debouncedHandleInputChange(
+                            `products.${index}.unitPrice`,
+                            e.target.value,
+                            index
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.unitPrice}
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor: "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
+                        }}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.products?.[index]?.unitPrice?.message}
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </div>
                   <div style={{ gridColumn: "3 / 4" }}>
