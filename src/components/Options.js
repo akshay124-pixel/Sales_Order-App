@@ -221,6 +221,7 @@ export const productOptions = {
       "UHD 20x",
       "FHD Voice Tracking",
       "4K Auto Tracking",
+      "4K Gesture Tracking",
       "4K 12x",
       "HD 20x",
     ],
