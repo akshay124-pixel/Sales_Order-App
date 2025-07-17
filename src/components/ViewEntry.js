@@ -669,7 +669,7 @@ Created By: ${
                         </div>
                         <div>
                           <strong>Unit Price:</strong> ₹
-                          {product.unitPrice?.toFixed(2) || "0.00"}
+                          {product.unitPrice || "0.00"}
                         </div>
                         <div>
                           <strong>GST:</strong> {product.gst || "N/A"}
