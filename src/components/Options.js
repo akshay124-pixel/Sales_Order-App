@@ -218,11 +218,10 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: [
       "Non-Voice Tracking-Full HD",
-   
+
       "FHD Voice Tracking",
       "4K Auto Tracking",
       "4K Gesture Tracking",
-     
     ],
   },
   "Document Camera": {
@@ -1418,6 +1417,8 @@ export const salesPersonlist = [
   "Awadesh Kumar Srivastav",
   "Bachan Pal",
   "Barjesh Singh",
+  "Deepak saini",
+  "Parth Bhardwaj",
   "Ekant Yati",
   "Gursewak Singh",
   "Gem Team",
@@ -1432,6 +1433,7 @@ export const salesPersonlist = [
   "Manjit Singh Chowhan",
   "Mayank Goutam",
   "Mayank Prasad",
+  "Monika",
   "Nikhil Sharma",
   "Nadeem Khan",
   "Narinder Singh",
@@ -1439,6 +1441,7 @@ export const salesPersonlist = [
   "Priyanka Rajput",
   "Pitamber Sharma",
   "Priya Sharma",
+  "Pihu Juneja",
   "PS Brar",
   "Purnendu Kumar",
   "Raj Bahadur Singh",
@@ -1447,6 +1450,7 @@ export const salesPersonlist = [
   "Rajeev Pal Singh",
   "Rajesh Kumar",
   "Rakesh Kumar",
+  "Riya Rana",
   "Ramkumar Singh",
   "Ranbeer Kaur",
   "Rachit Arya",
@@ -1481,6 +1485,7 @@ export const Reportinglist = [
   "Bachan Pal",
   "Ekant Yati",
   "Gem Team",
+  "Heera Singh Daspa",
   "Harpeet Singh",
   "Harsimran",
   "J P Sharma",
