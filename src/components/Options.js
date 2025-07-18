@@ -1461,6 +1461,7 @@ export const salesPersonlist = [
   "Sahiba",
   "Savir Khan",
   "Shri Kant",
+  "Subhendra Singh"
   "Siddhartha Kumar",
   "Sidhant Oberai",
   "Sidhant Prajapati",
