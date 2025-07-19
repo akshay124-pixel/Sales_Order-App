@@ -984,9 +984,11 @@ function AddEntry({ onSubmit, onClose }) {
                     fontSize: "0.9rem",
                     fontWeight: "600",
                     color: "#475569",
+                    marginBottom: "0.5rem",
+                    display: "block",
                   }}
                 >
-                  Product
+                  Product * <span style={{ color: "#f43f5e" }}>*</span>
                 </label>
                 <select
                   name="productType"
@@ -1005,10 +1007,21 @@ function AddEntry({ onSubmit, onClose }) {
                     border: "1px solid #e2e8f0",
                     borderRadius: "0.75rem",
                     backgroundColor: "#f8fafc",
+                    fontSize: "1rem",
+                    color: "#1e293b",
                   }}
+                  aria-label="Product Type"
+                  aria-required="true"
                 >
-                  <option value="">Select Product</option>
-                  {Object.keys(productOptions).map((type) => (
+                  <option value="" disabled>
+                    Select Product
+                  </option>
+                  {[
+                    "Others",
+                    ...Object.keys(productOptions)
+                      .filter((type) => type !== "Others")
+                      .sort(),
+                  ].map((type) => (
                     <option key={type} value={type}>
                       {type}
                     </option>
