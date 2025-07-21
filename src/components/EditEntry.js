@@ -437,7 +437,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `https://sales-order-server-7xyl.onrender.com/api/edit/${entryToEdit._id}`,
+        `https://sales-order-server-e084.onrender.com/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
@@ -481,7 +481,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       };
 
       const response = await axios.put(
-        `https://sales-order-server-7xyl.onrender.com/api/edit/${entryToEdit._id}`,
+        `https://sales-order-server-e084.onrender.com/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {

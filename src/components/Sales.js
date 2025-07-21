@@ -998,7 +998,7 @@ const Sales = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://sales-order-server-7xyl.onrender.com/api/get-orders",
+        "https://sales-order-server-e084.onrender.com/api/get-orders",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -1018,7 +1018,7 @@ const Sales = () => {
         throw new Error("No token found in localStorage");
       }
       const response = await axios.get(
-        "https://sales-order-server-7xyl.onrender.com/api/notifications",
+        "https://sales-order-server-e084.onrender.com/api/notifications",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -1035,7 +1035,7 @@ const Sales = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "https://sales-order-server-7xyl.onrender.com/api/mark-read",
+        "https://sales-order-server-e084.onrender.com/api/mark-read",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1054,7 +1054,7 @@ const Sales = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        "https://sales-order-server-7xyl.onrender.com/api/clear",
+        "https://sales-order-server-e084.onrender.com/api/clear",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -1069,7 +1069,7 @@ const Sales = () => {
 
   // WebSocket setup
   useEffect(() => {
-    const socket = io("https://sales-order-server-7xyl.onrender.com", {
+    const socket = io("https://sales-order-server-e084.onrender.com", {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
@@ -1436,7 +1436,7 @@ const Sales = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.put(
-          `https://sales-order-server-7xyl.onrender.com/api/edit/${updatedEntry._id}`,
+          `https://sales-order-server-e084.onrender.com/api/edit/${updatedEntry._id}`,
           updatedEntry,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -1676,7 +1676,7 @@ const Sales = () => {
 
           const token = localStorage.getItem("token");
           const response = await axios.post(
-            "https://sales-order-server-7xyl.onrender.com/api/bulk-orders",
+            "https://sales-order-server-e084.onrender.com/api/bulk-orders",
             newEntries,
             {
               headers: {

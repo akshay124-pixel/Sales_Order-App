@@ -19,7 +19,7 @@ const Verification = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://sales-order-server-7xyl.onrender.com/api/get-verification-orders",
+        "https://sales-order-server-e084.onrender.com/api/get-verification-orders",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

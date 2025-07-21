@@ -38,7 +38,7 @@ function Signup() {
 
     try {
       const response = await axios.post(
-        "https://sales-order-server-7xyl.onrender.com/user/signup",
+        "https://sales-order-server-e084.onrender.com/user/signup",
         form
       );
 
