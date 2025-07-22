@@ -1428,6 +1428,7 @@ export const salesPersonlist = [
   "J P Sharma",
   "Jagan Lal",
   "Javvad Akram",
+  "Jashanpreet",
   "Kulwinder Singh",
   "Manish CS Lange",
   "Manjit Singh Chowhan",
