@@ -417,7 +417,6 @@ function AddEntry({ onSubmit, onClose }) {
           opacity: 0,
           animation: "fadeIn 0.4s ease forwards",
         }}
-        onClick={onClose}
       ></div>
 
       <div
