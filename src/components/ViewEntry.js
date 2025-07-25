@@ -216,7 +216,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       { key: "sostatus", label: "SO Status" },
       { key: "dispatchStatus", label: "Dispatch Status" },
       { key: "installationStatus", label: "Installation Status" },
-      { key: "completionStatus", label: "Completion Status" },
+      { key: "completionStatus", label: "Production Status" },
       { key: "stockStatus", label: "Stock Status" },
       { key: "demoDate", label: "Demo Date", formatter: formatDate },
       { key: "demostatus", label: "Demo Status" },
