@@ -212,7 +212,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       { key: "piNumber", label: "PI Number" },
       { key: "billStatus", label: "Bill Status" },
       { key: "paymentReceived", label: "Payment Received" },
-      { key: "fulfillingStatus", label: "Fulfilling Status" },
+      { key: "fulfillingStatus", label: "Production Fulfilling Status" },
       { key: "sostatus", label: "SO Status" },
       { key: "dispatchStatus", label: "Dispatch Status" },
       { key: "installationStatus", label: "Installation Status" },
