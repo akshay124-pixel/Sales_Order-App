@@ -6,8 +6,63 @@ import { Copy, Download } from "lucide-react";
 
 function ViewEntry({ isOpen, onClose, entry }) {
   const [copied, setCopied] = useState(false);
+
+  // Utility function to check if a field is valid (not null, undefined, empty, or "N/A")
+  const isValidField = (value) => {
+    if (value === null || value === undefined || value === "") return false;
+    if (typeof value === "string" && value.trim() === "N/A") return false;
+    if (Array.isArray(value) && value.length === 0) return false;
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      Object.keys(value).length === 0
+    )
+      return false;
+    return true;
+  };
+
+  // Utility function to check if an object (e.g., createdBy) has valid content
+  const isValidObjectField = (obj, key) => {
+    if (!isValidField(obj)) return false;
+    if (typeof obj === "object" && key) {
+      return isValidField(obj[key]);
+    }
+    return true;
+  };
+
+  // Utility function to format date fields
+  const formatDate = (dateStr) => {
+    if (!isValidField(dateStr)) return null;
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return null;
+    return date.toLocaleDateString("en-GB");
+  };
+
+  // Utility function to format date and time for soDate
+  const formatDateTime = (dateStr) => {
+    if (!isValidField(dateStr)) return null;
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return null;
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const datePart = date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    if (hours < 5 || (hours === 5 && minutes <= 30)) {
+      return datePart;
+    }
+    const timePart = date.toLocaleString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return `${datePart} ${timePart}`;
+  };
+
   const handleDownload = useCallback(async () => {
-    if (!entry?.poFilePath) {
+    if (!isValidField(entry?.poFilePath)) {
       toast.error("No PO file available to download!");
       return;
     }
@@ -44,10 +99,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
       console.error("Download error:", err);
     }
   }, [entry]);
+
   const handleCopy = useCallback(() => {
     if (!entry) return;
 
-    const productsText = entry.products
+    const productsText = isValidField(entry.products)
       ? entry.products
           .map(
             (p, i) =>
@@ -58,126 +114,166 @@ function ViewEntry({ isOpen, onClose, entry }) {
               }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${
                 p.gst || "N/A"
               }, Serial Nos: ${
-                p.serialNos?.length > 0 ? p.serialNos.join(", ") : "N/A"
+                isValidField(p.serialNos) && p.serialNos.length > 0
+                  ? p.serialNos.join(", ")
+                  : "N/A"
               }, Model Nos: ${
-                p.modelNos?.length > 0 ? p.modelNos.join(", ") : "N/A"
+                isValidField(p.modelNos) && p.modelNos.length > 0
+                  ? p.modelNos.join(", ")
+                  : "N/A"
               }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`
           )
           .join("\n")
       : "N/A";
 
-    const totalUnitPrice = entry.products
+    const totalUnitPrice = isValidField(entry.products)
       ? entry.products.reduce(
           (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
           0
         )
-      : 0;
+      : null;
 
-    const gstText = entry.products
+    const gstText = isValidField(entry.products)
       ? entry.products
           .map((p) => p.gst)
           .filter(Boolean)
           .join(", ")
-      : "N/A";
+      : null;
 
-    const textToCopy = `
-Order ID: ${entry.orderId || "N/A"}
-SO Date: ${
-      entry.soDate ? new Date(entry.soDate).toLocaleDateString("en-GB") : "N/A"
+    // Define all fields for copying
+    const fieldsToCopy = [
+      { key: "orderId", label: "Order ID" },
+      { key: "soDate", label: "SO Date", formatter: formatDateTime },
+      { key: "customername", label: "Customer Name" },
+      { key: "name", label: "Contact Person Name" },
+      { key: "contactNo", label: "Contact No" },
+      { key: "alterno", label: "Alternate No" },
+      { key: "customerEmail", label: "Customer Email" },
+      { key: "city", label: "City" },
+      { key: "state", label: "State" },
+      { key: "pinCode", label: "Pin Code" },
+      { key: "gstno", label: "GST No" },
+      {
+        key: "products",
+        label: "Products",
+        value: productsText,
+        condition: isValidField(entry.products),
+      },
+      {
+        key: "totalUnitPrice",
+        label: "Total Unit Price",
+        value: isValidField(totalUnitPrice)
+          ? `₹${totalUnitPrice.toFixed(2)}`
+          : null,
+        condition: isValidField(entry.products),
+      },
+      {
+        key: "gstText",
+        label: "GST",
+        value: gstText,
+        condition: isValidField(entry.products),
+      },
+      { key: "freightcs", label: "Freight Charges" },
+      { key: "freightstatus", label: "Freight Status" },
+      {
+        key: "actualFreight",
+        label: "Actual Freight",
+        formatter: (v) => (isValidField(v) ? `₹${v.toFixed(2)}` : null),
+      },
+      { key: "installchargesstatus", label: "Install Charges Status" },
+      { key: "installation", label: "Installation" },
+      {
+        key: "total",
+        label: "Total",
+        formatter: (v) => (isValidField(v) ? `₹${v.toFixed(2)}` : null),
+      },
+      { key: "paymentCollected", label: "Payment Collected" },
+      { key: "paymentMethod", label: "Payment Method" },
+      { key: "paymentDue", label: "Payment Due" },
+      { key: "neftTransactionId", label: "NEFT Transaction ID" },
+      { key: "chequeId", label: "Cheque ID" },
+      { key: "paymentTerms", label: "Payment Terms" },
+      { key: "creditDays", label: "Credit Days" },
+      { key: "orderType", label: "Order Type" },
+      { key: "gemOrderNumber", label: "GEM Order Number" },
+      { key: "report", label: "Reporting Person" },
+      { key: "transporter", label: "Transporter" },
+      { key: "transporterDetails", label: "Transporter Details" },
+      { key: "shippingAddress", label: "Shipping Address" },
+      { key: "billingAddress", label: "Billing Address" },
+      { key: "dispatchFrom", label: "Dispatch From" },
+      { key: "dispatchDate", label: "Dispatch Date", formatter: formatDate },
+      { key: "docketNo", label: "Docket No" },
+      { key: "deliveryDate", label: "Delivery Date", formatter: formatDate },
+      { key: "receiptDate", label: "Receipt Date", formatter: formatDate },
+      { key: "invoiceNo", label: "Invoice No" },
+      { key: "invoiceDate", label: "Invoice Date", formatter: formatDate },
+      { key: "billNumber", label: "Bill Number" },
+      { key: "piNumber", label: "PI Number" },
+      { key: "billStatus", label: "Bill Status" },
+      { key: "paymentReceived", label: "Payment Received" },
+      { key: "fulfillingStatus", label: "Fulfilling Status" },
+      { key: "sostatus", label: "SO Status" },
+      { key: "dispatchStatus", label: "Dispatch Status" },
+      { key: "installationStatus", label: "Installation Status" },
+      { key: "completionStatus", label: "Completion Status" },
+      { key: "stockStatus", label: "Stock Status" },
+      { key: "demoDate", label: "Demo Date", formatter: formatDate },
+      { key: "demostatus", label: "Demo Status" },
+      {
+        key: "demoRecivedDate",
+        label: "Demo Received Date",
+        formatter: formatDate,
+      },
+      { key: "demoBillno", label: "Demo Bill Number" },
+      {
+        key: "fulfillmentDate",
+        label: "Fulfillment Date",
+        formatter: formatDate,
+      },
+      { key: "remarks", label: "Remarks" },
+      { key: "remarksByProduction", label: "Remarks By Production" },
+      { key: "remarksByAccounts", label: "Remarks By Accounts" },
+      { key: "remarksByBilling", label: "Remarks By Billing" },
+      { key: "remarksByInstallation", label: "Remarks By Installation" },
+      { key: "verificationRemarks", label: "Verification Remarks" },
+      { key: "salesPerson", label: "Sales Person" },
+      { key: "company", label: "Company" },
+      {
+        key: "createdBy",
+        label: "Created By",
+        formatter: (v) =>
+          isValidObjectField(v, "username") ? v.username || v : null,
+      },
+      { key: "poFilePath", label: "PO File" },
+    ];
+
+    const textToCopy = fieldsToCopy
+      .filter(
+        ({ key, condition, value }) =>
+          (condition !== undefined
+            ? condition
+            : isValidField(value || entry[key])) &&
+          (value !== undefined ||
+            (entry[key] !== null && entry[key] !== undefined))
+      )
+      .map(({ label, key, value, formatter }) => {
+        const val =
+          value !== undefined
+            ? value
+            : formatter
+            ? formatter(entry[key])
+            : entry[key];
+        return isValidField(val) ? `${label}: ${val}` : null;
+      })
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+
+    if (!textToCopy) {
+      toast.error("No valid data to copy!");
+      return;
     }
-Customer Name: ${entry.customername || "N/A"}
-Contact Person Name: ${entry.name || "N/A"}
-Contact No: ${entry.contactNo || "N/A"}
-Alternate No: ${entry.alterno || "N/A"}
-Customer Email: ${entry.customerEmail || "N/A"}
-City: ${entry.city || "N/A"}
-State: ${entry.state || "N/A"}
-Pin Code: ${entry.pinCode || "N/A"}
-GST No: ${entry.gstno || "N/A"}
-Products:\n${productsText}
-Total Unit Price: ₹${totalUnitPrice.toFixed(2)}
-GST: ${gstText}
-Freight Charges: ${entry.freightcs || "N/A"}
-Freight Status: ${entry.freightstatus || "N/A"}
-Actual Freight: ${
-      entry.actualFreight ? `₹${entry.actualFreight.toFixed(2)}` : "N/A"
-    }
-Install Charges Status: ${entry.installchargesstatus || "N/A"}
-Installation: ${entry.installation || "N/A"}
-Total: ₹${entry.total?.toFixed(2) || "0.00"}
-Payment Collected: ${entry.paymentCollected || "N/A"}
-Payment Method: ${entry.paymentMethod || "N/A"}
-Payment Due: ${entry.paymentDue || "N/A"}
-NEFT Transaction ID: ${entry.neftTransactionId || "N/A"}
-Cheque ID: ${entry.chequeId || "N/A"}
-Payment Terms: ${entry.paymentTerms || "N/A"}
-Credit Days: ${entry.creditDays || "N/A"}
-Order Type: ${entry.orderType || "N/A"}
-GEM Order Number: ${entry.gemOrderNumber || "N/A"}
-Reporting Person: ${entry.report || "N/A"}
-Transporter: ${entry.transporter || "N/A"}
-Transporter Details: ${entry.transporterDetails || "N/A"}
-Shipping Address: ${entry.shippingAddress || "N/A"}
-Billing Address: ${entry.billingAddress || "N/A"}
-Dispatch From: ${entry.dispatchFrom || "N/A"}
-Dispatch Date: ${
-      entry.dispatchDate
-        ? new Date(entry.dispatchDate).toLocaleDateString("en-GB")
-        : "N/A"
-    }
-Docket No: ${entry.docketNo || "N/A"}
-Delivery Date: ${
-      entry.deliveryDate
-        ? new Date(entry.deliveryDate).toLocaleDateString("en-GB")
-        : "N/A"
-    }
-Receipt Date: ${
-      entry.receiptDate
-        ? new Date(entry.receiptDate).toLocaleDateString("en-GB")
-        : "N/A"
-    }
-Invoice No: ${entry.invoiceNo || "N/A"}
-Invoice Date: ${
-      entry.invoiceDate
-        ? new Date(entry.invoiceDate).toLocaleDateString("en-GB")
-        : "N/A"
-    }
-Bill Number: ${entry.billNumber || "N/A"}
-PI Number: ${entry.piNumber || "N/A"}
-Bill Status: ${entry.billStatus || "N/A"}
-Payment Received: ${entry.paymentReceived || "N/A"}
-Fulfilling Status: ${entry.fulfillingStatus || "N/A"}
-SO Status: ${entry.sostatus || "N/A"}
-Dispatch Status: ${entry.dispatchStatus || "N/A"}
-Installation Status: ${entry.installationStatus || "N/A"}
-Completion Status: ${entry.completionStatus || "N/A"}
-Stock Status: ${entry.stockStatus || "N/A"}
-Demo Date: ${
-      entry.demoDate
-        ? new Date(entry.demoDate).toLocaleDateString("en-GB")
-        : "N/A"
-    }
-Fulfillment Date: ${
-      entry.fulfillmentDate
-        ? new Date(entry.fulfillmentDate).toLocaleDateString("en-GB")
-        : "N/A"
-    }
-Remarks: ${entry.remarks || "N/A"}
-Remarks By Production: ${entry.remarksByProduction || "N/A"}
-Remarks By Accounts: ${entry.remarksByAccounts || "N/A"}
-Remarks By Billing: ${entry.remarksByBilling || "N/A"}
-Remarks By Installation: ${entry.remarksByInstallation || "N/A"}
-Verification Remarks: ${entry.verificationRemarks || "N/A"}
-Sales Person: ${entry.salesPerson || "N/A"}
-Company: ${entry.company || "N/A"}
-Created By: ${
-      entry.createdBy && typeof entry.createdBy === "object"
-        ? entry.createdBy.username || "Unknown"
-        : typeof entry.createdBy === "string"
-        ? entry.createdBy
-        : "N/A"
-    }
-    `.trim();
 
     navigator.clipboard
       .writeText(textToCopy)
@@ -194,19 +290,335 @@ Created By: ${
 
   if (!entry) return null;
 
-  const totalUnitPrice = entry.products
+  const totalUnitPrice = isValidField(entry.products)
     ? entry.products.reduce(
         (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
         0
       )
-    : 0;
+    : null;
 
-  const gstText = entry.products
+  const gstText = isValidField(entry.products)
     ? entry.products
         .map((p) => p.gst)
         .filter(Boolean)
         .join(", ")
-    : "N/A";
+    : null;
+
+  // Define fields that should use badges
+  const badgeFields = {
+    orderType: {
+      Demo: "warning",
+      B2C: "success",
+      B2B: "info",
+      B2G: "primary",
+      default: "secondary",
+    },
+    sostatus: {
+      "Pending for Approval": "warning",
+      "Accounts Approved": "info",
+      Approved: "success",
+      "On Hold Due to Low Price": "danger",
+      default: "secondary",
+    },
+    dispatchStatus: {
+      "Not Dispatched": "warning",
+      Dispatched: "info",
+      Delivered: "success",
+      "Docket Awaited Dispatched": "primary",
+      default: "secondary",
+    },
+    completionStatus: {
+      Complete: "success",
+      default: "warning",
+    },
+    stockStatus: {
+      "In Stock": "success",
+      default: "danger",
+    },
+    demostatus: {
+      Recived: "success",
+      "Not Recived": "warning",
+      default: "secondary",
+    },
+    freightstatus: {
+      Including: "success",
+      "To Pay": "warning",
+      "Self-Pickup": "info",
+      default: "primary",
+    },
+    installchargesstatus: {
+      Including: "success",
+      "To Pay": "warning",
+      default: "primary",
+    },
+    paymentMethod: {
+      Cash: "success",
+      NEFT: "info",
+      RTGS: "primary",
+      Cheque: "warning",
+      default: "secondary",
+    },
+    paymentTerms: {
+      "100% Advance": "success",
+      "Partial Advance": "info",
+      Credit: "warning",
+      default: "secondary",
+    },
+    paymentReceived: {
+      Received: "success",
+      default: "warning",
+    },
+    billStatus: {
+      Pending: "warning",
+      "Under Billing": "info",
+      "Billing Complete": "success",
+      default: "secondary",
+    },
+    fulfillingStatus: {
+      "Under Process": {
+        bg: "linear-gradient(135deg, #f39c12, #f7c200)",
+        color: "#fff",
+      },
+      Pending: {
+        bg: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+        color: "#fff",
+      },
+      "Partial Dispatch": {
+        bg: "linear-gradient(135deg, #00c6ff, #0072ff)",
+        color: "#fff",
+      },
+      Fulfilled: {
+        bg: "linear-gradient(135deg, #28a745, #4cd964)",
+        color: "#fff",
+      },
+      default: {
+        bg: "linear-gradient(135deg, #6c757d, #a9a9a9)",
+        color: "#fff",
+      },
+    },
+    installationStatus: {
+      Pending: "warning",
+      "In Progress": "info",
+      Completed: "success",
+      Failed: "danger",
+      default: "secondary",
+    },
+    company: {
+      Promark: "success",
+      Foxmate: "info",
+      Promine: "warning",
+      default: "primary",
+    },
+  };
+
+  // Define fields for each accordion section
+  const orderInfoFields = [
+    { key: "orderId", label: "Order ID" },
+    { key: "soDate", label: "SO Date & Time", formatter: formatDateTime },
+    { key: "orderType", label: "Order Type" },
+    { key: "gemOrderNumber", label: "GEM Order Number" },
+    { key: "dispatchDate", label: "Dispatch Date", formatter: formatDate },
+    { key: "deliveryDate", label: "Delivery Date", formatter: formatDate },
+    { key: "receiptDate", label: "Receipt Date", formatter: formatDate },
+    { key: "docketNo", label: "Docket No" },
+    { key: "sostatus", label: "SO Status" },
+    { key: "dispatchStatus", label: "Dispatch Status" },
+    { key: "completionStatus", label: "Completion Status" },
+    { key: "stockStatus", label: "Stock Status" },
+    { key: "demoDate", label: "Demo Date", formatter: formatDate },
+    { key: "demostatus", label: "Demo Status" },
+    {
+      key: "demoRecivedDate",
+      label: "Demo Received Date",
+      formatter: formatDate,
+    },
+    { key: "demoBillno", label: "Demo Bill Number" },
+    {
+      key: "fulfillmentDate",
+      label: "Fulfillment Date",
+      formatter: formatDate,
+    },
+    {
+      key: "createdBy",
+      label: "Created By",
+      formatter: (v) =>
+        isValidObjectField(v, "username") ? v.username || v : null,
+    },
+    { key: "salesPerson", label: "Sales Person" },
+    { key: "report", label: "Reporting Person" },
+    {
+      key: "poFilePath",
+      label: "PO File",
+      renderer: () =>
+        isValidField(entry.poFilePath) ? (
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={handleDownload}
+            style={{
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              padding: "6px 12px",
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "0.85rem",
+              fontWeight: "600",
+              color: "#ffffff",
+              border: "1px solid #ffffff22",
+              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+              transition:
+                "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.boxShadow = "0 4px 12px rgba(106, 17, 203, 0.4)";
+              e.target.style.background =
+                "linear-gradient(135deg, #3b82f6, #7e22ce)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+              e.target.style.background =
+                "linear-gradient(135deg, #2575fc, #6a11cb)";
+            }}
+            onMouseDown={(e) => {
+              e.target.style.transform = "scale(0.95)";
+            }}
+            onMouseUp={(e) => {
+              e.target.style.transform = "scale(1.05)";
+            }}
+          >
+            <Download size={14} />
+            Download
+          </Button>
+        ) : null,
+    },
+  ];
+
+  const customerInfoFields = [
+    { key: "customername", label: "Customer Name" },
+    { key: "name", label: "Contact Person" },
+    { key: "contactNo", label: "Contact No" },
+    { key: "alterno", label: "Alternate No" },
+    { key: "customerEmail", label: "Email" },
+    { key: "gstno", label: "GST No" },
+    { key: "city", label: "City" },
+    { key: "state", label: "State" },
+    { key: "pinCode", label: "Pin Code" },
+    { key: "shippingAddress", label: "Shipping Address" },
+    { key: "billingAddress", label: "Billing Address" },
+  ];
+
+  const financialInfoFields = [
+    {
+      key: "totalUnitPrice",
+      label: "Total Unit Price",
+      value: isValidField(totalUnitPrice)
+        ? `₹${totalUnitPrice.toFixed(2)}`
+        : null,
+      condition: isValidField(entry.products),
+    },
+    {
+      key: "gstText",
+      label: "GST",
+      value: gstText,
+      condition: isValidField(entry.products),
+    },
+    { key: "freightcs", label: "Freight Charges" },
+    { key: "freightstatus", label: "Freight Status" },
+    {
+      key: "actualFreight",
+      label: "Actual Freight",
+      formatter: (v) => (isValidField(v) ? `₹${v.toFixed(2)}` : null),
+    },
+    { key: "installchargesstatus", label: "Install Charges Status" },
+    { key: "installation", label: "Installation" },
+    {
+      key: "total",
+      label: "Total",
+      formatter: (v) => (isValidField(v) ? `₹${v.toFixed(2)}` : null),
+    },
+    { key: "paymentCollected", label: "Payment Collected" },
+    { key: "paymentMethod", label: "Payment Method" },
+    { key: "paymentDue", label: "Payment Due" },
+    { key: "neftTransactionId", label: "NEFT Transaction ID" },
+    { key: "chequeId", label: "Cheque ID" },
+    { key: "paymentTerms", label: "Payment Terms" },
+    { key: "creditDays", label: "Credit Days" },
+    { key: "paymentReceived", label: "Payment Received" },
+    { key: "invoiceNo", label: "Invoice No" },
+    { key: "invoiceDate", label: "Invoice Date", formatter: formatDate },
+    { key: "billNumber", label: "Bill Number" },
+    { key: "piNumber", label: "PI Number" },
+    { key: "billStatus", label: "Bill Status" },
+    { key: "remarksByAccounts", label: "Remarks (Accounts)" },
+    { key: "remarksByBilling", label: "Remarks (Billing)" },
+    { key: "verificationRemarks", label: "Verification Remarks" },
+  ];
+
+  const productionInfoFields = [
+    { key: "fulfillingStatus", label: "Production Status" },
+    { key: "remarksByProduction", label: "Remarks (Production)" },
+    { key: "remarks", label: "Remarks" },
+  ];
+
+  const logisticsInfoFields = [
+    { key: "installationStatus", label: "Installation Status" },
+    { key: "remarksByInstallation", label: "Remarks (Installation)" },
+    { key: "company", label: "Company" },
+    { key: "dispatchFrom", label: "Dispatch From" },
+    { key: "transporter", label: "Transporter" },
+    { key: "transporterDetails", label: "Transporter Details" },
+    { key: "docketNo", label: "Docket Number" },
+  ];
+
+  // Filter sections to only show those with at least one valid field
+  const sections = [
+    {
+      eventKey: "0",
+      title: "📅 Order Information",
+      fields: orderInfoFields,
+    },
+    {
+      eventKey: "1",
+      title: "👤 Customer Information",
+      fields: customerInfoFields,
+    },
+    {
+      eventKey: "2",
+      title: "📦 Product Information",
+      condition: isValidField(entry.products),
+    },
+    {
+      eventKey: "3",
+      title: "💰 Financial Information",
+      fields: financialInfoFields,
+    },
+    {
+      eventKey: "4",
+      title: "🛠️ Production Information",
+      fields: productionInfoFields,
+    },
+    {
+      eventKey: "5",
+      title: "🚚 Logistics & Installation",
+      fields: logisticsInfoFields,
+    },
+  ].filter((section) => {
+    if (section.condition !== undefined) return section.condition;
+    return section.fields?.some(
+      ({ key, condition, value, formatter, renderer }) =>
+        condition !== undefined
+          ? condition
+          : renderer
+          ? renderer()
+          : isValidField(
+              value || (formatter ? formatter(entry[key]) : entry[key])
+            )
+    );
+  });
 
   return (
     <Modal
@@ -225,7 +637,6 @@ Created By: ${
           color: "#fff",
           padding: "1.5rem 2rem",
           border: "none",
-
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -278,787 +689,225 @@ Created By: ${
           scrollbarColor: "#2575fc #e6f0fa",
         }}
       >
-        <Accordion defaultActiveKey={["0"]} alwaysOpen>
-          {/* Order Info Section */}
-          <Accordion.Item eventKey="0">
-            <Accordion.Header
-              style={{
-                color: "#fff",
-                borderRadius: "10px",
-                padding: "1rem",
-                fontWeight: "600",
-                fontFamily: "'Poppins', sans-serif",
-                border: "none",
-              }}
-            >
-              📅 Order Information
-            </Accordion.Header>
-            <Accordion.Body
-              style={{
-                background: "#fff",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                  gap: "1rem",
-                }}
+        {sections.length === 0 ? (
+          <p style={{ color: "#555", textAlign: "center" }}>
+            No valid data available to display.
+          </p>
+        ) : (
+          <Accordion
+            defaultActiveKey={sections.map((s) => s.eventKey)}
+            alwaysOpen
+          >
+            {sections.map((section) => (
+              <Accordion.Item
+                key={section.eventKey}
+                eventKey={section.eventKey}
               >
-                <div>
-                  <strong>Order ID:</strong> {entry.orderId || "N/A"}
-                </div>
-                <div>
-                  <strong>SO Date & Time:</strong>{" "}
-                  {entry.soDate
-                    ? (() => {
-                        const date = new Date(entry.soDate);
-                        if (isNaN(date.getTime())) return "N/A"; // Handle invalid date
-
-                        const hours = date.getHours();
-                        const minutes = date.getMinutes();
-
-                        // Always show the date
-                        const dateStr = date.toLocaleString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        });
-
-                        // Show time only if after 5:30 AM
-                        if (hours < 5 || (hours === 5 && minutes <= 30)) {
-                          return dateStr; // Show only date
-                        }
-
-                        const timeStr = date.toLocaleString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        });
-
-                        return `${dateStr} ${timeStr}`; // Show date and time
-                      })()
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Order Type:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.orderType === "Demo"
-                        ? "warning"
-                        : entry.orderType === "B2C"
-                        ? "success"
-                        : entry.orderType === "B2B"
-                        ? "info"
-                        : entry.orderType === "B2G"
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {entry.orderType || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>GEM Order Number:</strong>{" "}
-                  {entry.gemOrderNumber || "N/A"}
-                </div>
-                <div>
-                  <strong>Dispatch Date:</strong>{" "}
-                  {entry.dispatchDate
-                    ? new Date(entry.dispatchDate).toLocaleDateString("en-GB")
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Delivery Date:</strong>{" "}
-                  {entry.deliveryDate
-                    ? new Date(entry.deliveryDate).toLocaleDateString("en-GB")
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Receipt Date:</strong>{" "}
-                  {entry.receiptDate
-                    ? new Date(entry.receiptDate).toLocaleDateString("en-GB")
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Docket No:</strong> {entry.docketNo || "N/A"}
-                </div>
-                <div>
-                  <strong>SO Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.sostatus === "Pending for Approval"
-                        ? "warning"
-                        : entry.sostatus === "Accounts Approved"
-                        ? "info"
-                        : entry.sostatus === "Approved"
-                        ? "success"
-                        : entry.sostatus === "On Hold Due to Low Price"
-                        ? "danger"
-                        : "secondary"
-                    }
-                  >
-                    {entry.sostatus || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Dispatch Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.dispatchStatus === "Not Dispatched"
-                        ? "warning"
-                        : entry.dispatchStatus === "Dispatched"
-                        ? "info"
-                        : entry.dispatchStatus === "Delivered"
-                        ? "success"
-                        : entry.dispatchStatus === "Docket Awaited Dispatched"
-                        ? "primary"
-                        : "secondary"
-                    }
-                  >
-                    {entry.dispatchStatus || "N/A"}
-                  </Badge>
-                </div>
-                {entry.deliveredDate && (
-                  <div>
-                    <strong>Delivered Date:</strong>{" "}
-                    {entry.deliveredDate
-                      ? new Date(entry.deliveredDate).toLocaleDateString(
-                          "en-GB"
-                        )
-                      : "N/A"}
-                  </div>
-                )}
-                <div>
-                  <strong>Stock Status:</strong>{" "}
-                  <Badge
-                    bg={entry.stockStatus === "In Stock" ? "success" : "danger"}
-                  >
-                    {entry.stockStatus || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Demo Date:</strong>{" "}
-                  {entry.demoDate
-                    ? new Date(entry.demoDate).toLocaleDateString("en-GB")
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Production Date:</strong>{" "}
-                  {entry.fulfillmentDate
-                    ? new Date(entry.fulfillmentDate).toLocaleDateString(
-                        "en-GB"
-                      )
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Created By:</strong>{" "}
-                  {entry.createdBy && typeof entry.createdBy === "object"
-                    ? entry.createdBy.username || "Unknown"
-                    : typeof entry.createdBy === "string"
-                    ? entry.createdBy
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Sales Person:</strong> {entry.salesPerson || "N/A"}
-                </div>
-                <div>
-                  <strong>Reporting Person:</strong> {entry.report || "N/A"}
-                </div>{" "}
-                <div
+                <Accordion.Header
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
+                    color: "#fff",
+                    borderRadius: "10px",
+                    padding: "1rem",
+                    fontWeight: "600",
+                    fontFamily: "'Poppins', sans-serif",
+                    border: "none",
                   }}
                 >
-                  <strong>PO File:</strong>{" "}
-                  {entry.poFilePath ? (
-                    <>
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={handleDownload}
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #2575fc, #6a11cb)",
-                          padding: "6px 12px",
-                          borderRadius: "8px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          fontSize: "0.85rem",
-                          fontWeight: "600",
-                          color: "#ffffff",
-                          border: "1px solid #ffffff22",
-                          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-                          transition:
-                            "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
-                          cursor: "pointer",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.transform = "scale(1.05)";
-                          e.target.style.boxShadow =
-                            "0 4px 12px rgba(106, 17, 203, 0.4)";
-                          e.target.style.background =
-                            "linear-gradient(135deg, #3b82f6, #7e22ce)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = "scale(1)";
-                          e.target.style.boxShadow =
-                            "0 2px 6px rgba(0, 0, 0, 0.15)";
-                          e.target.style.background =
-                            "linear-gradient(135deg, #2575fc, #6a11cb)";
-                        }}
-                        onMouseDown={(e) => {
-                          e.target.style.transform = "scale(0.95)";
-                        }}
-                        onMouseUp={(e) => {
-                          e.target.style.transform = "scale(1.05)";
-                        }}
-                      >
-                        <Download size={14} />
-                        Download
-                      </Button>
-                    </>
+                  {section.title}
+                </Accordion.Header>
+                <Accordion.Body
+                  style={{
+                    background: "#fff",
+                    borderRadius: "10px",
+                    padding: "1.5rem",
+                    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  {section.eventKey === "2" ? (
+                    isValidField(entry.products) ? (
+                      entry.products.map((product, index) => (
+                        <Card
+                          key={index}
+                          style={{
+                            marginBottom: "1rem",
+                            border: "none",
+                            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+                            borderRadius: "10px",
+                            transition: "transform 0.2s ease",
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.transform = "scale(1.02)")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.transform = "scale(1)")
+                          }
+                        >
+                          <Card.Body>
+                            <Card.Title
+                              style={{
+                                fontSize: "1.1rem",
+                                fontWeight: "600",
+                                color: "#1e293b",
+                              }}
+                            >
+                              Product {index + 1}:{" "}
+                              {product.productType || "N/A"}
+                            </Card.Title>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                  "repeat(auto-fit, minmax(200px, 1fr))",
+                                gap: "0.5rem",
+                              }}
+                            >
+                              {[
+                                { key: "qty", label: "Quantity" },
+                                { key: "size", label: "Size" },
+                                { key: "spec", label: "Spec" },
+                                {
+                                  key: "unitPrice",
+                                  label: "Unit Price",
+                                  formatter: (v) =>
+                                    isValidField(v) ? `₹${v.toFixed(2)}` : null,
+                                },
+                                { key: "gst", label: "GST" },
+                                { key: "brand", label: "Brand" },
+                                { key: "warranty", label: "Warranty" },
+                                {
+                                  key: "serialNos",
+                                  label: "Serial Nos",
+                                  formatter: (v) =>
+                                    isValidField(v) && v.length > 0
+                                      ? v.join(", ")
+                                      : null,
+                                },
+                                {
+                                  key: "modelNos",
+                                  label: "Model Nos",
+                                  formatter: (v) =>
+                                    isValidField(v) && v.length > 0
+                                      ? v.join(", ")
+                                      : null,
+                                },
+                              ]
+                                .filter(({ key, formatter }) =>
+                                  isValidField(
+                                    formatter
+                                      ? formatter(product[key])
+                                      : product[key]
+                                  )
+                                )
+                                .map(({ key, label, formatter }) => (
+                                  <div key={key}>
+                                    <strong>{label}:</strong>{" "}
+                                    {formatter
+                                      ? formatter(product[key])
+                                      : product[key]}
+                                  </div>
+                                ))}
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      ))
+                    ) : null
                   ) : (
-                    "N/A"
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(250px, 1fr))",
+                        gap: "1rem",
+                      }}
+                    >
+                      {section.fields
+                        .filter(
+                          ({ key, condition, value, formatter, renderer }) =>
+                            condition !== undefined
+                              ? condition
+                              : renderer
+                              ? renderer()
+                              : isValidField(
+                                  value ||
+                                    (formatter
+                                      ? formatter(entry[key])
+                                      : entry[key])
+                                )
+                        )
+                        .map(({ key, label, value, formatter, renderer }) => {
+                          const displayValue =
+                            value ||
+                            (formatter ? formatter(entry[key]) : entry[key]);
+                          const badgeStyle = badgeFields[key];
+                          return (
+                            <div
+                              key={key}
+                              style={{
+                                display: renderer ? "flex" : "block",
+                                alignItems: renderer ? "center" : "initial",
+                                gap: renderer ? "10px" : "0",
+                              }}
+                            >
+                              {renderer ? (
+                                <>
+                                  <strong>{label}:</strong> {renderer()}
+                                </>
+                              ) : badgeStyle && isValidField(displayValue) ? (
+                                <div>
+                                  <strong>{label}:</strong>{" "}
+                                  <Badge
+                                    bg={
+                                      typeof badgeStyle[displayValue] ===
+                                      "string"
+                                        ? badgeStyle[displayValue] ||
+                                          badgeStyle.default
+                                        : undefined
+                                    }
+                                    style={
+                                      typeof badgeStyle[displayValue] ===
+                                      "object"
+                                        ? {
+                                            background:
+                                              badgeStyle[displayValue].bg,
+                                            color:
+                                              badgeStyle[displayValue].color,
+                                            padding: "5px 10px",
+                                            borderRadius: "12px",
+                                            fontWeight: "500",
+                                          }
+                                        : key === "fulfillingStatus"
+                                        ? {
+                                            background:
+                                              badgeStyle[displayValue]?.bg ||
+                                              badgeStyle.default.bg,
+                                            color:
+                                              badgeStyle[displayValue]?.color ||
+                                              badgeStyle.default.color,
+                                            padding: "5px 10px",
+                                            borderRadius: "12px",
+                                            fontWeight: "500",
+                                          }
+                                        : {}
+                                    }
+                                  >
+                                    {displayValue}
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <div>
+                                  <strong>{label}:</strong> {displayValue}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
                   )}
-                </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
-
-          {/* Customer Info Section */}
-          <Accordion.Item eventKey="1">
-            <Accordion.Header
-              style={{
-                color: "#fff",
-                borderRadius: "10px",
-                padding: "1rem",
-                fontWeight: "600",
-                fontFamily: "'Poppins', sans-serif",
-                border: "none",
-              }}
-            >
-              👤 Customer Information
-            </Accordion.Header>
-            <Accordion.Body
-              style={{
-                background: "#fff",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                  gap: "1rem",
-                }}
-              >
-                <div>
-                  <strong>Customer Name:</strong> {entry.customername || "N/A"}
-                </div>
-                <div>
-                  <strong>Contact Person:</strong> {entry.name || "N/A"}
-                </div>
-                <div>
-                  <strong>Contact No:</strong> {entry.contactNo || "N/A"}
-                </div>
-                <div>
-                  <strong>Alternate No:</strong> {entry.alterno || "N/A"}
-                </div>
-                <div>
-                  <strong>Email:</strong> {entry.customerEmail || "N/A"}
-                </div>
-                <div>
-                  <strong>GST No:</strong> {entry.gstno || "N/A"}
-                </div>
-                <div>
-                  <strong>City:</strong> {entry.city || "N/A"}
-                </div>
-                <div>
-                  <strong>State:</strong> {entry.state || "N/A"}
-                </div>
-                <div>
-                  <strong>Pin Code:</strong> {entry.pinCode || "N/A"}
-                </div>
-                <div>
-                  <strong>Billing Address:</strong>{" "}
-                  {entry.billingAddress || "N/A"}
-                </div>
-                <div>
-                  <strong>Shipping Address:</strong>{" "}
-                  {entry.shippingAddress || "N/A"}
-                </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
-
-          {/* Product Info Section */}
-          <Accordion.Item eventKey="2">
-            <Accordion.Header
-              style={{
-                color: "#fff",
-                borderRadius: "10px",
-                padding: "1rem",
-                fontWeight: "600",
-                fontFamily: "'Poppins', sans-serif",
-                border: "none",
-              }}
-            >
-              📦 Product Information
-            </Accordion.Header>
-            <Accordion.Body
-              style={{
-                background: "#fff",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              {entry.products && entry.products.length > 0 ? (
-                entry.products.map((product, index) => (
-                  <Card
-                    key={index}
-                    style={{
-                      marginBottom: "1rem",
-                      border: "none",
-                      boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-                      borderRadius: "10px",
-                      transition: "transform 0.2s ease",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.02)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
-                  >
-                    <Card.Body>
-                      <Card.Title
-                        style={{
-                          fontSize: "1.1rem",
-                          fontWeight: "600",
-                          color: "#1e293b",
-                        }}
-                      >
-                        Product {index + 1}: {product.productType || "N/A"}
-                      </Card.Title>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fit, minmax(200px, 1fr))",
-                          gap: "0.5rem",
-                        }}
-                      >
-                        <div>
-                          <strong>Quantity:</strong> {product.qty || "N/A"}
-                        </div>
-                        <div>
-                          <strong>Size:</strong> {product.size || "N/A"}
-                        </div>
-                        <div>
-                          <strong>Spec:</strong> {product.spec || "N/A"}
-                        </div>
-                        <div>
-                          <strong>Unit Price:</strong> ₹
-                          {product.unitPrice || "0.00"}
-                        </div>
-                        <div>
-                          <strong>GST:</strong> {product.gst || "N/A"}
-                        </div>
-                        <div>
-                          <strong>Brand:</strong> {product.brand || "N/A"}
-                        </div>
-                        <div>
-                          <strong>Warranty:</strong> {product.warranty || "N/A"}
-                        </div>
-                        <div>
-                          <strong>Serial Nos:</strong>{" "}
-                          {product.serialNos?.length > 0
-                            ? product.serialNos.join(", ")
-                            : "N/A"}
-                        </div>
-                        <div>
-                          <strong>Model Nos:</strong>{" "}
-                          {product.modelNos?.length > 0
-                            ? product.modelNos.join(", ")
-                            : "N/A"}
-                        </div>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                ))
-              ) : (
-                <p style={{ color: "#555" }}>No products available.</p>
-              )}
-            </Accordion.Body>
-          </Accordion.Item>
-
-          {/* Financial Info Section */}
-          <Accordion.Item eventKey="3">
-            <Accordion.Header
-              style={{
-                color: "#fff",
-                borderRadius: "10px",
-                padding: "1rem",
-                fontWeight: "600",
-                fontFamily: "'Poppins', sans-serif",
-                border: "none",
-              }}
-            >
-              💰 Financial Information
-            </Accordion.Header>
-            <Accordion.Body
-              style={{
-                background: "#fff",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                  gap: "1rem",
-                }}
-              >
-                <div>
-                  <strong>Total Unit Price:</strong> ₹
-                  {totalUnitPrice.toFixed(2)}
-                </div>
-                <div>
-                  <strong>GST:</strong> {gstText}
-                </div>
-                <div>
-                  <strong>Freight Charges:</strong> {entry.freightcs || "N/A"}
-                </div>
-                <div>
-                  <strong>Freight Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.freightstatus === "Including"
-                        ? "success"
-                        : entry.freightstatus === "To Pay"
-                        ? "warning"
-                        : entry.freightstatus === "Self-Pickup"
-                        ? "info"
-                        : "primary"
-                    }
-                  >
-                    {entry.freightstatus || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Actual Freight:</strong>{" "}
-                  {entry.actualFreight
-                    ? `₹${entry.actualFreight.toFixed(2)}`
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Install Charges Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.installchargesstatus === "Including"
-                        ? "success"
-                        : entry.installchargesstatus === "To Pay"
-                        ? "warning"
-                        : "primary"
-                    }
-                  >
-                    {entry.installchargesstatus || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Installation:</strong> {entry.installation || "N/A"}
-                </div>
-                <div>
-                  <strong>Total:</strong> ₹{entry.total?.toFixed(2) || "0.00"}
-                </div>
-                <div>
-                  <strong>Payment Collected:</strong>{" "}
-                  {entry.paymentCollected || "N/A"}
-                </div>
-                <div>
-                  <strong>Payment Method:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.paymentMethod === "Cash"
-                        ? "success"
-                        : entry.paymentMethod === "NEFT"
-                        ? "info"
-                        : entry.paymentMethod === "RTGS"
-                        ? "primary"
-                        : entry.paymentMethod === "Cheque"
-                        ? "warning"
-                        : "secondary"
-                    }
-                  >
-                    {entry.paymentMethod || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Payment Due:</strong> {entry.paymentDue || "N/A"}
-                </div>
-                <div>
-                  <strong>NEFT Transaction ID:</strong>{" "}
-                  {entry.neftTransactionId || "N/A"}
-                </div>
-                <div>
-                  <strong>Cheque ID:</strong> {entry.chequeId || "N/A"}
-                </div>
-                <div>
-                  <strong>Payment Terms:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.paymentTerms === "100% Advance"
-                        ? "success"
-                        : entry.paymentTerms === "Partial Advance"
-                        ? "info"
-                        : entry.paymentTerms === "Credit"
-                        ? "warning"
-                        : "secondary"
-                    }
-                  >
-                    {entry.paymentTerms || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Credit Days:</strong> {entry.creditDays || "N/A"}
-                </div>
-                <div>
-                  <strong>Payment Received:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.paymentReceived === "Received"
-                        ? "success"
-                        : "warning"
-                    }
-                  >
-                    {entry.paymentReceived || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Invoice No:</strong> {entry.invoiceNo || "N/A"}
-                </div>
-                <div>
-                  <strong>Invoice Date:</strong>{" "}
-                  {entry.invoiceDate
-                    ? new Date(entry.invoiceDate).toLocaleDateString("en-GB")
-                    : "N/A"}
-                </div>
-                <div>
-                  <strong>Bill Number:</strong> {entry.billNumber || "N/A"}
-                </div>
-                <div>
-                  <strong>PI Number:</strong> {entry.piNumber || "N/A"}
-                </div>
-                <div>
-                  <strong>Bill Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.billStatus === "Pending"
-                        ? "warning"
-                        : entry.billStatus === "Under Billing"
-                        ? "info"
-                        : entry.billStatus === "Billing Complete"
-                        ? "success"
-                        : "secondary"
-                    }
-                  >
-                    {entry.billStatus || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Remarks (Accounts):</strong>{" "}
-                  {entry.remarksByAccounts || "N/A"}
-                </div>
-                <div>
-                  <strong>Remarks (Billing):</strong>{" "}
-                  {entry.remarksByBilling || "N/A"}
-                </div>
-                <div>
-                  <strong>Verification Remarks:</strong>{" "}
-                  {entry.verificationRemarks || "N/A"}
-                </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
-
-          {/* Production Info Section */}
-          <Accordion.Item eventKey="4">
-            <Accordion.Header
-              style={{
-                color: "#fff",
-                borderRadius: "10px",
-                padding: "1rem",
-                fontWeight: "600",
-                fontFamily: "'Poppins', sans-serif",
-                border: "none",
-              }}
-            >
-              🛠️ Production Information
-            </Accordion.Header>
-            <Accordion.Body
-              style={{
-                background: "#fff",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                  gap: "1rem",
-                }}
-              >
-                <div>
-                  <strong>Production Status:</strong>{" "}
-                  <Badge
-                    style={{
-                      background:
-                        entry.fulfillingStatus === "Under Process"
-                          ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                          : entry.fulfillingStatus === "Pending"
-                          ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                          : entry.fulfillingStatus === "Partial Dispatch"
-                          ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                          : entry.fulfillingStatus === "Fulfilled"
-                          ? "linear-gradient(135deg, #28a745, #4cd964)"
-                          : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                      color: "#fff",
-                      padding: "5px 10px",
-                      borderRadius: "12px",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {entry.fulfillingStatus || "Pending"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Remarks (Production):</strong>{" "}
-                  {entry.remarksByProduction || "N/A"}
-                </div>
-                <div>
-                  <strong>Remarks (Sales Person):</strong>{" "}
-                  {entry.remarks || "N/A"}
-                </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
-
-          {/* Logistics & Installation Info Section */}
-          <Accordion.Item eventKey="5">
-            <Accordion.Header
-              style={{
-                color: "#fff",
-                borderRadius: "10px",
-                padding: "1rem",
-                fontWeight: "600",
-                fontFamily: "'Poppins', sans-serif",
-                border: "none",
-              }}
-            >
-              🚚 Logistics & Installation
-            </Accordion.Header>
-            <Accordion.Body
-              style={{
-                background: "#fff",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                  gap: "1rem",
-                }}
-              >
-                <div>
-                  <strong>Installation Status:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.installationStatus === "Pending"
-                        ? "warning"
-                        : entry.installationStatus === "In Progress"
-                        ? "info"
-                        : entry.installationStatus === "Completed"
-                        ? "success"
-                        : entry.installationStatus === "Failed"
-                        ? "danger"
-                        : "secondary"
-                    }
-                  >
-                    {entry.installationStatus || "N/A"}
-                  </Badge>
-                </div>
-                {entry.subinstallationStatus && (
-                  <div>
-                    <strong>Sub Status:</strong> {entry.subinstallationStatus}
-                  </div>
-                )}
-                {entry.installationStatusDate && (
-                  <div>
-                    <strong>Installation Date:</strong>{" "}
-                    {new Date(entry.installationStatusDate).toLocaleDateString(
-                      "en-IN"
-                    )}
-                  </div>
-                )}
-                {entry.installationeng && (
-                  <div>
-                    <strong>Engineer:</strong> {entry.installationeng}
-                  </div>
-                )}
-                <div>
-                  <strong>Remarks (Installation):</strong>{" "}
-                  {entry.remarksByInstallation || "N/A"}
-                </div>
-                <div>
-                  <strong>Company:</strong>{" "}
-                  <Badge
-                    bg={
-                      entry.company === "Promark"
-                        ? "success"
-                        : entry.company === "Foxmate"
-                        ? "info"
-                        : entry.company === "Promine"
-                        ? "warning"
-                        : "primary"
-                    }
-                  >
-                    {entry.company || "N/A"}
-                  </Badge>
-                </div>
-                <div>
-                  <strong>Dispatch From:</strong> {entry.dispatchFrom || "N/A"}
-                </div>
-                <div>
-                  <strong>Transporter:</strong> {entry.transporter || "N/A"}
-                </div>
-                <div>
-                  <strong>Transporter Details:</strong>{" "}
-                  {entry.transporterDetails || "N/A"}
-                </div>{" "}
-                <div>
-                  <strong>Docket Number:</strong> {entry.docketNo || "N/A"}
-                </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
-        </Accordion>
+                </Accordion.Body>
+              </Accordion.Item>
+            ))}
+          </Accordion>
+        )}
 
         <Button
           onClick={handleCopy}
