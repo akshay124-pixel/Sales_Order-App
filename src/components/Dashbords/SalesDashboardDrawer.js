@@ -668,7 +668,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           <ButtonContainer>
             <DatePickerPopup>
               <DatePickerContainer>
-                <DatePickerLabel>Start Date</DatePickerLabel>
                 <StyledDatePicker
                   selected={startDate}
                   onChange={(date) => setStartDate(date)}
@@ -684,7 +683,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
             </DatePickerPopup>
             <DatePickerPopup>
               <DatePickerContainer>
-                <DatePickerLabel>End Date</DatePickerLabel>
                 <StyledDatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
@@ -700,7 +698,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               </DatePickerContainer>
             </DatePickerPopup>
             <SalesPersonSelectContainer>
-              <SalesPersonLabel>Sales Person</SalesPersonLabel>
               <StyledFormSelect
                 value={selectedSalesPerson}
                 onChange={(e) => setSelectedSalesPerson(e.target.value)}
