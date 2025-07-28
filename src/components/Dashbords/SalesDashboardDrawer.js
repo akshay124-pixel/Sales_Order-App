@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { X, Download, Calendar } from "lucide-react";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -8,8 +8,6 @@ import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-// Styled Components
 
 // Styled Components
 const DrawerOverlay = styled.div`
@@ -103,7 +101,7 @@ const DatePickerContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  z-index: 2000; /* Ensure container has high z-index */
+  z-index: 2000;
 `;
 
 const DatePickerLabel = styled.label`
@@ -143,7 +141,6 @@ const DatePickerIcon = styled(Calendar)`
   pointer-events: none;
 `;
 
-// Override react-datepicker popup z-index and styling
 const DatePickerPopup = styled.div`
   .react-datepicker {
     z-index: 2000 !important;
@@ -192,6 +189,35 @@ const ResetButton = styled(Button)`
   font-size: 0.9rem;
   &:hover {
     background: #4b5563;
+  }
+`;
+
+const SalesPersonSelectContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+`;
+
+const SalesPersonLabel = styled.label`
+  font-size: 0.85rem;
+  color: white;
+  font-weight: 500;
+  text-transform: uppercase;
+`;
+
+const StyledFormSelect = styled(Form.Select)`
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 160px;
+  background: white;
+  color: #1e3a8a;
+  font-family: "Poppins", sans-serif;
+  &:focus {
+    outline: none;
+    border-color: #2575fc;
+    box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.3);
   }
 `;
 
@@ -326,29 +352,53 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [selectedSalesPerson, setSelectedSalesPerson] = useState("All");
+
+  // Compute unique salespersons
+  const uniqueSalesPersons = useMemo(() => {
+    const persons = [
+      ...new Set(
+        orders.map(
+          (order) => order.createdBy?.username?.trim() || "Sales Order Team"
+        )
+      ),
+    ];
+    return ["All", ...persons.sort()];
+  }, [orders]);
 
   // Filter orders
-  const filterOrders = useCallback((ordersToFilter, start, end) => {
-    let filtered = [...ordersToFilter];
+  const filterOrders = useCallback(
+    (ordersToFilter, start, end, salesPerson) => {
+      let filtered = [...ordersToFilter];
 
-    if (start || end) {
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.soDate);
-        const startDateAdjusted = start
-          ? new Date(start.setHours(0, 0, 0, 0))
-          : null;
-        const endDateAdjusted = end
-          ? new Date(end.setHours(23, 59, 59, 999))
-          : null;
-        return (
-          (!startDateAdjusted || orderDate >= startDateAdjusted) &&
-          (!endDateAdjusted || orderDate <= endDateAdjusted)
+      if (start || end) {
+        filtered = filtered.filter((order) => {
+          const orderDate = new Date(order.soDate);
+          const startDateAdjusted = start
+            ? new Date(start.setHours(0, 0, 0, 0))
+            : null;
+          const endDateAdjusted = end
+            ? new Date(end.setHours(23, 59, 59, 999))
+            : null;
+          return (
+            (!startDateAdjusted || orderDate >= startDateAdjusted) &&
+            (!endDateAdjusted || orderDate <= endDateAdjusted)
+          );
+        });
+      }
+
+      if (salesPerson && salesPerson !== "All") {
+        filtered = filtered.filter(
+          (order) =>
+            (order.createdBy?.username?.trim() || "Sales Order Team") ===
+            salesPerson
         );
-      });
-    }
+      }
 
-    return filtered;
-  }, []);
+      return filtered;
+    },
+    []
+  );
 
   // Fetch orders from API
   const fetchOrders = async () => {
@@ -434,8 +484,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
 
   // Memoize filtered orders
   const filteredOrders = useMemo(() => {
-    return filterOrders(orders, startDate, endDate);
-  }, [orders, startDate, endDate, filterOrders]);
+    return filterOrders(orders, startDate, endDate, selectedSalesPerson);
+  }, [orders, startDate, endDate, selectedSalesPerson, filterOrders]);
 
   // Memoize sales analytics computation
   const salesAnalytics = useMemo(() => {
@@ -602,10 +652,11 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle date reset
+  // Handle date and salesperson reset
   const handleReset = useCallback(() => {
     setStartDate(null);
     setEndDate(null);
+    setSelectedSalesPerson("All");
   }, []);
 
   return (
@@ -617,7 +668,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           <ButtonContainer>
             <DatePickerPopup>
               <DatePickerContainer>
-                <DatePickerLabel></DatePickerLabel>
+                <DatePickerLabel>Start Date</DatePickerLabel>
                 <StyledDatePicker
                   selected={startDate}
                   onChange={(date) => setStartDate(date)}
@@ -633,7 +684,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
             </DatePickerPopup>
             <DatePickerPopup>
               <DatePickerContainer>
-                <DatePickerLabel></DatePickerLabel>
+                <DatePickerLabel>End Date</DatePickerLabel>
                 <StyledDatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
@@ -648,6 +699,20 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                 <DatePickerIcon size={18} />
               </DatePickerContainer>
             </DatePickerPopup>
+            <SalesPersonSelectContainer>
+              <SalesPersonLabel>Sales Person</SalesPersonLabel>
+              <StyledFormSelect
+                value={selectedSalesPerson}
+                onChange={(e) => setSelectedSalesPerson(e.target.value)}
+                aria-label="Select Sales Person"
+              >
+                {uniqueSalesPersons.map((person, index) => (
+                  <option key={index} value={person}>
+                    {person}
+                  </option>
+                ))}
+              </StyledFormSelect>
+            </SalesPersonSelectContainer>
             <ResetButton onClick={handleReset}>
               <X size={16} />
               Reset
