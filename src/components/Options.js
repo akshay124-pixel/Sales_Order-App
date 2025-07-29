@@ -219,9 +219,9 @@ export const productOptions = {
     specs: [
       "Non-Voice Tracking-Full HD",
 
-      "FHD Voice Tracking",
-      "4K Auto Tracking",
-      "4K Gesture Tracking",
+      "FHD Voice Tracking 20X",
+      "4K Auto Tracking 12X",
+      "4K Gesture Tracking 10X",
     ],
   },
   "Document Camera": {
