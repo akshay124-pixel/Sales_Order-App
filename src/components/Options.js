@@ -218,7 +218,6 @@ export const productOptions = {
     sizes: ["N/A"],
     specs: [
       "Non-Voice Tracking-Full HD",
-
       "FHD Voice Tracking 20X",
       "4K Auto Tracking 12X",
       "4K Gesture Tracking 10X",
