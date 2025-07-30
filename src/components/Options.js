@@ -1013,6 +1013,7 @@ export const statesAndCities = {
   Rajasthan: [
     "Baran",
     "Newai",
+    "Churu",
     "Gaganagar",
     "Suratgarh",
     "Jaipur",
