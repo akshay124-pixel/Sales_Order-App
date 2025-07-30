@@ -286,7 +286,21 @@ const Production = () => {
     "All",
     ...new Set(orders.map((order) => order.orderType || "N/A")),
   ];
+  const productTypeGroups = formData.productUnits.reduce((acc, unit) => {
+    if (!acc[unit.productType]) {
+      acc[unit.productType] = [];
+    }
+    acc[unit.productType].push(unit);
+    return acc;
+  }, {});
 
+  // Handle model number change for a product type
+  const handleModelNoChange = (productType, value) => {
+    const newUnits = formData.productUnits.map((unit) =>
+      unit.productType === productType ? { ...unit, modelNo: value } : unit
+    );
+    setFormData({ ...formData, productUnits: newUnits });
+  };
   const handleEdit = (order) => {
     setEditOrder(order);
     const products = Array.isArray(order.products) ? order.products : [];
@@ -1439,7 +1453,6 @@ const Production = () => {
             </>
           )}
         </div>
-        {/* Edit Modal */}
         <Modal
           show={showEditModal}
           onHide={() => setShowEditModal(false)}
@@ -1506,80 +1519,94 @@ const Production = () => {
                   <option value="Fulfilled">Completed</option>
                 </Form.Select>
               </Form.Group>
-              {formData.productUnits.length > 0 ? (
-                formData.productUnits.map((unit, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      marginBottom: "20px",
-                      padding: "15px",
-                      background: "#f8f9fa",
-                      borderRadius: "10px",
-                    }}
-                  >
-                    <h5 style={{ fontSize: "1.1rem", color: "#333" }}>
-                      {unit.productType} - Unit {index + 1}
-                    </h5>
-                    <Form.Group style={{ marginBottom: "15px" }}>
-                      <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                        Serial Number
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={unit.serialNo || ""}
-                        onChange={(e) => {
-                          const newUnits = [...formData.productUnits];
-                          newUnits[index].serialNo = e.target.value;
-                          setFormData({ ...formData, productUnits: newUnits });
-                        }}
-                        placeholder={`Serial No for ${unit.productType} Unit ${
-                          index + 1
-                        }`}
-                        style={{
-                          borderRadius: "10px",
-                          border: "1px solid #ced4da",
-                          padding: "12px",
-                          fontSize: "1rem",
-                          transition: "all 0.3s ease",
-                        }}
-                        onFocus={(e) =>
-                          (e.target.style.boxShadow =
-                            "0 0 10px rgba(37, 117, 252, 0.5)")
-                        }
-                        onBlur={(e) => (e.target.style.boxShadow = "none")}
-                      />
-                    </Form.Group>
-                    <Form.Group style={{ marginBottom: "15px" }}>
-                      <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                        Model Number
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={unit.modelNo || ""}
-                        onChange={(e) => {
-                          const newUnits = [...formData.productUnits];
-                          newUnits[index].modelNo = e.target.value;
-                          setFormData({ ...formData, productUnits: newUnits });
-                        }}
-                        placeholder={`Model No for ${unit.productType} Unit ${
-                          index + 1
-                        }`}
-                        style={{
-                          borderRadius: "10px",
-                          border: "1px solid #ced4da",
-                          padding: "12px",
-                          fontSize: "1rem",
-                          transition: "all 0.3s ease",
-                        }}
-                        onFocus={(e) =>
-                          (e.target.style.boxShadow =
-                            "0 0 10px rgba(37, 117, 252, 0.5)")
-                        }
-                        onBlur={(e) => (e.target.style.boxShadow = "none")}
-                      />
-                    </Form.Group>
-                  </div>
-                ))
+              {Object.keys(productTypeGroups).length > 0 ? (
+                Object.entries(productTypeGroups).map(
+                  ([productType, units], groupIndex) => (
+                    <div
+                      key={groupIndex}
+                      style={{
+                        marginBottom: "20px",
+                        padding: "15px",
+                        background: "#f8f9fa",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <h5 style={{ fontSize: "1.1rem", color: "#333" }}>
+                        {productType} - {units.length} Unit
+                        {units.length > 1 ? "s" : ""}
+                      </h5>
+                      <Form.Group style={{ marginBottom: "15px" }}>
+                        <Form.Label
+                          style={{ fontWeight: "600", color: "#333" }}
+                        >
+                          Model Number
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={units[0].modelNo || ""}
+                          onChange={(e) =>
+                            handleModelNoChange(productType, e.target.value)
+                          }
+                          placeholder={`Model No for ${productType}`}
+                          style={{
+                            borderRadius: "10px",
+                            border: "1px solid #ced4da",
+                            padding: "12px",
+                            fontSize: "1rem",
+                            transition: "all 0.3s ease",
+                          }}
+                          onFocus={(e) =>
+                            (e.target.style.boxShadow =
+                              "0 0 10px rgba(37, 117, 252, 0.5)")
+                          }
+                          onBlur={(e) => (e.target.style.boxShadow = "none")}
+                        />
+                      </Form.Group>
+                      {units.map((unit, index) => (
+                        <Form.Group
+                          key={index}
+                          style={{ marginBottom: "15px" }}
+                        >
+                          <Form.Label
+                            style={{ fontWeight: "600", color: "#333" }}
+                          >
+                            Serial Number - Unit {index + 1}
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={unit.serialNo || ""}
+                            onChange={(e) => {
+                              const newUnits = [...formData.productUnits];
+                              const unitIndex = formData.productUnits.findIndex(
+                                (u) => u === unit
+                              );
+                              newUnits[unitIndex].serialNo = e.target.value;
+                              setFormData({
+                                ...formData,
+                                productUnits: newUnits,
+                              });
+                            }}
+                            placeholder={`Serial No for ${
+                              unit.productType
+                            } Unit ${index + 1}`}
+                            style={{
+                              borderRadius: "10px",
+                              border: "1px solid #ced4da",
+                              padding: "12px",
+                              fontSize: "1rem",
+                              transition: "all 0.3s ease",
+                            }}
+                            onFocus={(e) =>
+                              (e.target.style.boxShadow =
+                                "0 0 10px rgba(37, 117, 252, 0.5)")
+                            }
+                            onBlur={(e) => (e.target.style.boxShadow = "none")}
+                          />
+                        </Form.Group>
+                      ))}
+                    </div>
+                  )
+                )
               ) : (
                 <p style={{ color: "#555" }}>No products available to edit.</p>
               )}
@@ -1886,16 +1913,6 @@ const Production = () => {
                                 ? product.modelNos.join(", ")
                                 : "N/A"}
                             </div>
-                            {product.brand !== "" && (
-                              <div>
-                                <strong>Brand:</strong> {product.brand}
-                              </div>
-                            )}
-                            {product.warranty !== "" && (
-                              <div>
-                                <strong>Warranty:</strong> {product.warranty}
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))}
