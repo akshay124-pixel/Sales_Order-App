@@ -11,6 +11,7 @@ export const productOptions = {
       "Android 11, 4GB RAM, 32GB ROM",
       "Android 11, 4GB RAM, 64GB ROM",
       "Android 11, 8GB RAM, 128GB ROM",
+      "Android 12, 4GB RAM, 32GB ROM",
       "Android 13, 4GB RAM, 32GB ROM",
       "Android 13, 8GB RAM, 128GB ROM",
       "Android 13, 8GB RAM, 128GB ROM  Inbuilt Camera",
