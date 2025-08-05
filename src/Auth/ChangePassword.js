@@ -71,8 +71,7 @@ function ChangePassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate form fields
+  
     if (
       !formData.currentPassword ||
       !formData.newPassword ||
@@ -85,8 +84,7 @@ function ChangePassword() {
       });
       return;
     }
-
-    // Password complexity validation
+  
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(formData.newPassword)) {
@@ -100,8 +98,7 @@ function ChangePassword() {
       );
       return;
     }
-
-    // Confirm password match
+  
     if (formData.newPassword !== formData.confirmNewPassword) {
       toast.error("New password and confirmation do not match.", {
         position: "top-right",
@@ -110,8 +107,7 @@ function ChangePassword() {
       });
       return;
     }
-
-    // Check if new password is same as current
+  
     if (formData.currentPassword === formData.newPassword) {
       toast.error("New password must be different from current password.", {
         position: "top-right",
@@ -120,13 +116,15 @@ function ChangePassword() {
       });
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
       const token = localStorage.getItem("token");
-      const email = localStorage.getItem("userEmail"); // Get user email here
-
+      const email = localStorage.getItem("userEmail");
+  
+      console.log("Submitting with:", { token, email, formData }); // Debug log
+  
       if (!token || !email) {
         toast.error("Authentication data not found. Please log in again.", {
           position: "top-right",
@@ -136,13 +134,13 @@ function ChangePassword() {
         navigate("/login");
         return;
       }
-
+  
       const response = await axios.post(
         "https://sales-order-server-e084.onrender.com/auth/change-password",
         {
           currentPassword: formData.currentPassword,
           newPassword: formData.newPassword,
-          email, // send email here as backend expects it
+          email,
         },
         {
           headers: {
@@ -151,7 +149,7 @@ function ChangePassword() {
           },
         }
       );
-
+  
       if (response.status === 200) {
         toast.success("Password changed successfully! Please log in again.", {
           position: "top-right",
@@ -167,12 +165,14 @@ function ChangePassword() {
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("role");
+          localStorage.removeItem("userEmail");
           navigate("/login");
         }, 3000);
       }
     } catch (error) {
       console.error("Error while changing password:", error);
-
+      console.log("Backend response:", error.response?.data);
+  
       if (error.response?.status === 401) {
         toast.error("Current password is incorrect.", {
           position: "top-right",
@@ -180,13 +180,17 @@ function ChangePassword() {
           theme: "colored",
         });
       } else if (error.response?.status === 403) {
-        toast.error("Unauthorized action.", {
-          position: "top-right",
-          autoClose: 3000,
-          theme: "colored",
-        });
+        toast.error(
+          error.response?.data?.message || "Unauthorized action. Please ensure you are logged in with valid credentials.",
+          {
+            position: "top-right",
+            autoClose: 3000,
+            theme: "colored",
+          }
+        );
+        setTimeout(() => navigate("/login"), 3000);
       } else if (error.response?.status === 400) {
-        toast.error(error.response.data.message || "Invalid request data.", {
+        toast.error(error.response?.data?.message || "Invalid request data.", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
