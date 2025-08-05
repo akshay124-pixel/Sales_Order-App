@@ -1,3 +1,4 @@
+// ChangePassword.js
 import { useState, useEffect } from "react";
 import "../App.css";
 import { Link, useNavigate } from "react-router-dom";
@@ -19,27 +20,45 @@ function ChangePassword() {
   const [passwordStrengthColor, setPasswordStrengthColor] = useState("");
   const navigate = useNavigate();
 
-  // Check authentication status on mount (for debugging)
+  // Verify token on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    const role = localStorage.getItem("role");
-
-    console.log("ChangePassword: Component mounted", {
-      hasToken: !!token,
-      hasUserId: !!userId,
-      userId,
-      role,
-    });
-
-    // Rely on PrivateRoute for redirecting unauthenticated users
-  }, []);
+    const verifyToken = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("No authentication token found. Please log in.", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "colored",
+        });
+        navigate("/login");
+        return;
+      }
+      try {
+        const response = await axios.get(
+          "https://sales-order-server-e084.onrender.com/auth/verify-token",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log("Token verification:", response.data);
+      } catch (error) {
+        console.error("Token verification failed:", error);
+        toast.error("Invalid or expired token. Please log in again.", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "colored",
+        });
+        localStorage.clear();
+        navigate("/login");
+      }
+    };
+    verifyToken();
+  }, [navigate]);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
 
-    // Check password strength for new password
     if (name === "newPassword") {
       const strength = checkPasswordStrength(value);
       setPasswordStrength(strength.text);
@@ -71,7 +90,7 @@ function ChangePassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (
       !formData.currentPassword ||
       !formData.newPassword ||
@@ -84,7 +103,7 @@ function ChangePassword() {
       });
       return;
     }
-  
+
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(formData.newPassword)) {
@@ -98,7 +117,7 @@ function ChangePassword() {
       );
       return;
     }
-  
+
     if (formData.newPassword !== formData.confirmNewPassword) {
       toast.error("New password and confirmation do not match.", {
         position: "top-right",
@@ -107,7 +126,7 @@ function ChangePassword() {
       });
       return;
     }
-  
+
     if (formData.currentPassword === formData.newPassword) {
       toast.error("New password must be different from current password.", {
         position: "top-right",
@@ -116,17 +135,14 @@ function ChangePassword() {
       });
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       const token = localStorage.getItem("token");
-      const email = localStorage.getItem("userEmail");
-  
-      console.log("Submitting with:", { token, email, formData }); // Debug log
-  
-      if (!token || !email) {
-        toast.error("Authentication data not found. Please log in again.", {
+
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
@@ -134,13 +150,14 @@ function ChangePassword() {
         navigate("/login");
         return;
       }
-  
+
+      console.log("Submitting with:", { token, formData }); // Debug log
+
       const response = await axios.post(
         "https://sales-order-server-e084.onrender.com/auth/change-password",
         {
           currentPassword: formData.currentPassword,
           newPassword: formData.newPassword,
-          email,
         },
         {
           headers: {
@@ -149,7 +166,7 @@ function ChangePassword() {
           },
         }
       );
-  
+
       if (response.status === 200) {
         toast.success("Password changed successfully! Please log in again.", {
           position: "top-right",
@@ -162,33 +179,20 @@ function ChangePassword() {
           confirmNewPassword: "",
         });
         setTimeout(() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("userId");
-          localStorage.removeItem("role");
-          localStorage.removeItem("userEmail");
+          localStorage.clear(); // Clear all localStorage
           navigate("/login");
         }, 3000);
       }
     } catch (error) {
       console.error("Error while changing password:", error);
       console.log("Backend response:", error.response?.data);
-  
+
       if (error.response?.status === 401) {
         toast.error("Current password is incorrect.", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
         });
-      } else if (error.response?.status === 403) {
-        toast.error(
-          error.response?.data?.message || "Unauthorized action. Please ensure you are logged in with valid credentials.",
-          {
-            position: "top-right",
-            autoClose: 3000,
-            theme: "colored",
-          }
-        );
-        setTimeout(() => navigate("/login"), 3000);
       } else if (error.response?.status === 400) {
         toast.error(error.response?.data?.message || "Invalid request data.", {
           position: "top-right",
@@ -203,16 +207,21 @@ function ChangePassword() {
         });
         navigate("/login");
       } else {
-        toast.error("Failed to change password. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          theme: "colored",
-        });
+        toast.error(
+          error.response?.data?.message ||
+            "Failed to change password. Please try again.",
+          {
+            position: "top-right",
+            autoClose: 3000,
+            theme: "colored",
+          }
+        );
       }
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div
       className="login-container"
