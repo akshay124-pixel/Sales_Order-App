@@ -35,7 +35,7 @@ function Installation() {
     setError(null);
     try {
       const response = await axios.get(
-        "https://sales-order-server-e084.onrender.com/api/installation-orders",
+        `${process.env.REACT_APP_URL}/api/installation-orders`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -266,7 +266,7 @@ function Installation() {
 
     try {
       const response = await axios.put(
-        `https://sales-order-server-e084.onrender.com/api/edit/${editOrder?._id}`,
+        `${process.env.REACT_APP_URL}/api/edit/${editOrder?._id}`,
         formData,
         {
           headers: {

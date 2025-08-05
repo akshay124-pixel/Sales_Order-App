@@ -35,7 +35,7 @@ function ChangePassword() {
       }
       try {
         const response = await axios.get(
-          "https://sales-order-server-e084.onrender.com/auth/verify-token",
+          `${process.env.REACT_APP_URL}/auth/verify-token`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -154,7 +154,7 @@ function ChangePassword() {
       console.log("Submitting with:", { token, formData }); // Debug log
 
       const response = await axios.post(
-        "https://sales-order-server-e084.onrender.com/auth/change-password",
+        `${process.env.REACT_APP_URL}/auth/change-password`,
         {
           currentPassword: formData.currentPassword,
           newPassword: formData.newPassword,

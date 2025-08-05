@@ -19,7 +19,7 @@ const ProductionApproval = () => {
 
   // Socket.IO integration for real-time updates
   useEffect(() => {
-    const socket = io("https://sales-order-server-e084.onrender.com", {
+    const socket = io(`${process.env.REACT_APP_URL}`, {
       auth: { token: localStorage.getItem("token") },
     });
 
@@ -51,7 +51,7 @@ const ProductionApproval = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://sales-order-server-e084.onrender.com/api/production-approval-orders",
+        `${process.env.REACT_APP_URL}/api/production-approval-orders`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

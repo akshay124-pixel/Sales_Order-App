@@ -68,7 +68,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     }
 
     try {
-      const fileUrl = `https://sales-order-server-e084.onrender.com${
+      const fileUrl = `${process.env.REACT_APP_URL}${
         entry.poFilePath.startsWith("/") ? "" : "/"
       }${entry.poFilePath}`;
       const response = await fetch(fileUrl, {

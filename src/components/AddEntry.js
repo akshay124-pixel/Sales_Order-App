@@ -370,7 +370,7 @@ function AddEntry({ onSubmit, onClose }) {
     try {
       setLoading(true);
       const response = await axios.post(
-        "https://sales-order-server-e084.onrender.com/api/orders",
+        `${process.env.REACT_APP_URL}/api/orders`,
         newEntry,
         {
           headers: {
