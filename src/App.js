@@ -18,11 +18,13 @@ import Accounts from "./components/Accounts";
 import Verification from "./components/Verification";
 import Bill from "./components/BillGeneration";
 import ProductionApproval from "./components/ProductionApproval";
+import ChangePassword from "./Auth/ChangePassword";
 
 const ConditionalNavbar = ({ isAuthenticated, onLogout, userRole }) => {
   const location = useLocation();
-  const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/signup";
+  const isAuthPage = ["/login", "/signup", "/change-password"].includes(
+    location.pathname
+  );
 
   return !isAuthPage && isAuthenticated ? (
     <Navbar
@@ -43,18 +45,58 @@ const PrivateRoute = ({ element, isAuthenticated, allowedRoles }) => {
   );
 };
 
+const roleRedirect = (role) => {
+  if (role === "Production") return "/production";
+  if (role === "Finish") return "/finish";
+  if (role === "Installation") return "/installation";
+  if (role === "Accounts") return "/accounts";
+  if (role === "Verification") return "/verification";
+  if (role === "Bill") return "/bill";
+  if (role === "ProductionApproval") return "/production-approval";
+  if (role === "Sales" || role === "Admin") return "/sales";
+  return "/login";
+};
+
 const AppContent = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("token")
   );
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogin = ({ token, userId, role }) => {
-    console.log("Login successful in App.jsx:", { token, userId, role });
+  // Validate token on app load
+  useEffect(() => {
+    const validateToken = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const response = await fetch("/api/validate-token", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!response.ok) {
+            throw new Error("Invalid token");
+          }
+        } catch (err) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          localStorage.removeItem("role");
+          setIsAuthenticated(false);
+          navigate("/login");
+        }
+      }
+    };
+    validateToken();
+  }, [navigate]);
+
+  // After login, redirect user according to their role
+  const handleLogin = ({ token, userId, role, email }) => {
     localStorage.setItem("token", token);
     localStorage.setItem("userId", userId);
+    localStorage.setItem("userEmail", email);
     localStorage.setItem("role", role);
     setIsAuthenticated(true);
+    // Redirect on login for optimal UX
+    navigate(roleRedirect(role), { replace: true });
   };
 
   const handleLogout = () => {
@@ -66,29 +108,21 @@ const AppContent = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const role = localStorage.getItem("role");
-      if (role === "Production") {
-        navigate("/production");
-      } else if (role === "Finish") {
-        navigate("/finish");
-      } else if (role === "Installation") {
-        navigate("/installation");
-      } else if (role === "Accounts") {
-        navigate("/accounts");
-      } else if (role === "Verification") {
-        navigate("/verification");
-      } else if (role === "Bill") {
-        navigate("/bill");
-      } else if (role === "ProductionApproval") {
-        navigate("/production-approval");
-      } else if (role === "Sales" || role === "Admin") {
-        navigate("/sales");
-      } else {
-        navigate("/login");
-      }
+    if (!isAuthenticated) return;
+
+    // Do not redirect if on any of these pages
+    if (
+      location.pathname === "/change-password" ||
+      location.pathname === "/login" ||
+      location.pathname === "/signup"
+    ) {
+      return;
     }
-  }, [isAuthenticated, navigate]);
+
+    // If not on above path, always correct route based on role
+    const role = localStorage.getItem("role");
+    navigate(roleRedirect(role), { replace: true });
+  }, [isAuthenticated, navigate, location.pathname]);
 
   return (
     <>
@@ -100,6 +134,15 @@ const AppContent = () => {
       <Routes>
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route
+          path="/change-password"
+          element={
+            <PrivateRoute
+              element={<ChangePassword />}
+              isAuthenticated={isAuthenticated}
+            />
+          }
+        />
         <Route
           path="/sales"
           element={
@@ -185,23 +228,7 @@ const AppContent = () => {
           element={
             isAuthenticated ? (
               <Navigate
-                to={
-                  localStorage.getItem("role") === "Production"
-                    ? "/production"
-                    : localStorage.getItem("role") === "Finish"
-                    ? "/finish"
-                    : localStorage.getItem("role") === "Installation"
-                    ? "/installation"
-                    : localStorage.getItem("role") === "Accounts"
-                    ? "/accounts"
-                    : localStorage.getItem("role") === "Verification"
-                    ? "/verification"
-                    : localStorage.getItem("role") === "Bill"
-                    ? "/bill"
-                    : localStorage.getItem("role") === "ProductionApproval"
-                    ? "/production-approval"
-                    : "/sales"
-                }
+                to={roleRedirect(localStorage.getItem("role"))}
                 replace
               />
             ) : (
