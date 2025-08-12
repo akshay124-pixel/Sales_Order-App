@@ -44,9 +44,7 @@ function DeleteModal({ isOpen, onClose, onDelete, itemId }) {
       console.error("Error deleting entry:", error);
       const errorMessage =
         error.response?.data?.message ||
-        `Request failed with status code ${
-          error.response?.status || "unknown"
-        }`;
+        (error.message ? error.message : "Unknown error occurred");
       toast.error(`Error deleting entry: ${errorMessage}`);
     } finally {
       setIsLoading(false);

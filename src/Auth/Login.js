@@ -22,7 +22,7 @@ function Login({ onLogin }) {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      toast.error("Please fill in both fields.", {
+      toast.error("Please enter both Email and Password.", {
         position: "top-right",
         autoClose: 3000,
         theme: "colored",
@@ -62,7 +62,7 @@ function Login({ onLogin }) {
 
         onLogin({ token, userId: user.id, role: user.role });
       } else {
-        toast.error("Unexpected response. Please try again.", {
+        toast.error("Something went wrong. Please try again.", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
@@ -70,14 +70,33 @@ function Login({ onLogin }) {
       }
     } catch (error) {
       console.error("Error while logging in:", error);
-      toast.error(
-        error.response?.data?.message || "Login failed. Please try again.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-          theme: "colored",
+
+      let errorMessage = "Login failed. Please try again.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = "Please provide valid email and password.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Invalid email or password.";
+        } else if (error.response.status === 404) {
+          errorMessage = "Account not found. Please sign up first.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
         }
-      );
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
     } finally {
       setLoading(false);
     }

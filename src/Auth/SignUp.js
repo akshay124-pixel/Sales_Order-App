@@ -19,18 +19,13 @@ function Signup() {
     const { name, value } = e.target;
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.username || !form.email || !form.password || !form.role) {
-      toast.error("All fields are required", {
+      toast.error("Please fill in all required fields.", {
         position: "top-right",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
       });
       return;
@@ -61,10 +56,6 @@ function Signup() {
         toast.success("Signup successful! Redirecting...", {
           position: "top-right",
           autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
           theme: "colored",
         });
 
@@ -85,32 +76,42 @@ function Signup() {
         } else if (role === "ProductionApproval") {
           navigate("/production-approval");
         } else {
-          navigate("/sales"); // Sales or Admin
+          navigate("/sales");
         }
       } else {
-        toast.error("Unexpected response. Please try again.", {
+        toast.error("Something went wrong. Please try again.", {
           position: "top-right",
           autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
           theme: "colored",
         });
       }
     } catch (error) {
-      console.error("Error during signup", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "Something went wrong. Please try again.";
+      console.error("Error during signup:", error);
+
+      let errorMessage = "Signup failed. Please try again.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = "Please fill all details correctly.";
+        } else if (error.response.status === 409) {
+          errorMessage = "Email already registered. Please log in instead.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+
       setError(errorMessage);
+
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
       });
     }
