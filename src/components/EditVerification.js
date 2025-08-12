@@ -48,7 +48,19 @@ const EditVerification = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
-      toast.error(error.response?.data?.message || "Failed to update order!", {
+
+      // User-friendly error message
+      let errorMessage = "Something went wrong while updating the order.";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.request) {
+        errorMessage =
+          "No response from server. Please check your internet connection.";
+      } else {
+        errorMessage = "Unable to update the order. Please try again.";
+      }
+
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
       });

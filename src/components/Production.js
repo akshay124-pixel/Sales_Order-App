@@ -408,7 +408,32 @@ const Production = () => {
         throw new Error(response.data.message || "Failed to update order");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update order.", {
+      console.error("Error updating order:", error);
+
+      let userFriendlyMessage = "Unable to update the order. Please try again.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          userFriendlyMessage =
+            "Invalid data. Please check your input and try again.";
+        } else if (error.response.status === 401) {
+          userFriendlyMessage = "Your session expired. Please login again.";
+        } else if (error.response.status === 403) {
+          userFriendlyMessage =
+            "You do not have permission to update this order.";
+        } else if (error.response.status === 404) {
+          userFriendlyMessage = "Order not found.";
+        } else if (error.response.status >= 500) {
+          userFriendlyMessage = "Server error. Please try later.";
+        } else if (error.response.data?.message) {
+          userFriendlyMessage = error.response.data.message;
+        }
+      } else if (error.request) {
+        userFriendlyMessage =
+          "No response from server. Check your internet connection.";
+      }
+
+      toast.error(userFriendlyMessage, {
         position: "top-right",
         autoClose: 5000,
       });

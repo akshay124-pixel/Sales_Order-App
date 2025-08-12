@@ -101,15 +101,14 @@ function Finish() {
         setFilteredOrders(sortedData);
       } else {
         throw new Error(
-          response.data.message || "Failed to fetch finished goods data"
+          response.data.message ||
+            "Unable to load finished goods. Please try again later."
         );
       }
     } catch (error) {
       console.error("Error fetching finished goods:", error);
       toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch finished goods",
+        "We couldn’t load the finished goods list. Please check your connection or try again in a moment.",
         {
           position: "top-right",
           autoClose: 5000,

@@ -92,7 +92,27 @@ const EditProductionApproval = ({
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
-      toast.error(error.response?.data?.message || "Failed to update order!", {
+
+      let userFriendlyMessage = "Something went wrong. Please try again later.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          userFriendlyMessage =
+            "Invalid data provided. Please check and try again.";
+        } else if (error.response.status === 401) {
+          userFriendlyMessage =
+            "Your session has expired. Please log in again.";
+        } else if (error.response.status === 404) {
+          userFriendlyMessage = "Order not found. It may have been deleted.";
+        } else if (error.response.status === 500) {
+          userFriendlyMessage = "Server error. Please contact support.";
+        }
+      } else if (error.request) {
+        userFriendlyMessage =
+          "No response from server. Please check your internet connection.";
+      }
+
+      toast.error(userFriendlyMessage, {
         position: "top-right",
         autoClose: 5000,
       });

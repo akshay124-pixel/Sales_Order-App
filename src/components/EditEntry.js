@@ -451,16 +451,31 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       onEntryUpdated(updatedEntry);
       setView("options");
       onClose();
-    } catch (err) {
-      console.error("Edit submission error:", err);
-      const errorMessage =
-        err.response?.data?.message || err.message || "Failed to update entry.";
-      const errorDetails = err.response?.data?.errors
-        ? err.response.data.errors.join(", ")
-        : err.response?.data?.error || "";
-      setError(
-        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
-      );
+    } catch (error) {
+      console.error("Edit submission error:", error);
+
+      let errorMessage = "Failed to update entry.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = "Some required details are missing or incorrect.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 403) {
+          errorMessage = "You don’t have permission to update this entry.";
+        } else if (error.response.status === 404) {
+          errorMessage = "The entry you are trying to update was not found.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -495,16 +510,32 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       onEntryUpdated(updatedEntry);
       setView("options");
       onClose();
-    } catch (err) {
-      console.error("Update submission error:", err);
-      const errorMessage =
-        err.response?.data?.message || "Failed to update approvals.";
-      const errorDetails = err.response?.data?.errors
-        ? err.response.data.errors.join(", ")
-        : err.response?.data?.error || err.message;
-      setError(
-        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
-      );
+    } catch (error) {
+      console.error("Error updating approvals:", error);
+
+      let errorMessage = "Something went wrong while updating approvals.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage =
+            "Some details are missing or incorrect. Please check the inputs.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 403) {
+          errorMessage = "You don’t have permission to update approvals.";
+        } else if (error.response.status === 404) {
+          errorMessage = "The entry you are trying to update was not found.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);

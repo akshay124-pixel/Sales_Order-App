@@ -405,9 +405,12 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+
       if (!token) {
-        throw new Error("No authentication token found. Please log in.");
+        toast.error("Your session has expired. Please log in again.");
+        return;
       }
+
       const response = await axios.get(
         `${process.env.REACT_APP_URL}/api/get-orders`,
         {
@@ -416,6 +419,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           },
         }
       );
+
       console.log("Fetched orders:", response.data);
       setOrders(response.data || []);
     } catch (error) {
@@ -424,11 +428,25 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         status: error.response?.status,
         data: error.response?.data,
       });
-      toast.error(
-        `Failed to fetch orders: ${
-          error.response?.data?.error || error.message
-        }`
-      );
+
+      let errorMessage = "Something went wrong while loading orders.";
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 404) {
+          errorMessage = "No orders found.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server is not responding. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.error || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect. Please check your internet connection.";
+      }
+
+      toast.error(errorMessage);
       setOrders([]);
     } finally {
       setLoading(false);

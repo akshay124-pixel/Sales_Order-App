@@ -48,13 +48,35 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
       onClose();
     } catch (error) {
       console.error("Error updating bill order:", error);
-      toast.error(error.response?.data?.message || "Failed to update order!", {
+
+      let errorMessage = "Something went wrong while updating the bill order.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage =
+            "Some details are missing or incorrect. Please check the form.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 403) {
+          errorMessage = "You don’t have permission to update this order.";
+        } else if (error.response.status === 404) {
+          errorMessage = "The order you are trying to update was not found.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
       });
     }
   };
-
   return (
     <Modal show={isOpen} onHide={onClose} centered backdrop="static">
       <style>

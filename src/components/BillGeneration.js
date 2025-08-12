@@ -29,7 +29,26 @@ const BillGeneration = () => {
       toast.success("Bill orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching bill orders:", error);
-      toast.error("Failed to fetch bill orders!");
+
+      let errorMessage = "Something went wrong while loading bill orders.";
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 404) {
+          errorMessage = "No bill orders found.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server is not responding. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet.";
+      }
+
+      toast.error(errorMessage);
+      setOrders([]);
     }
   }, []);
 

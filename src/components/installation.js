@@ -47,15 +47,25 @@ function Installation() {
         setFilteredOrders(response.data.data);
       } else {
         throw new Error(
-          response.data.message || "Failed to fetch installation orders"
+          response.data.message || "Could not load installation orders"
         );
       }
     } catch (error) {
       console.error("Error fetching installation orders:", error);
-      const errorMessage =
-        error.response?.data?.message || "Failed to fetch installation orders";
-      setError(errorMessage);
-      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
+
+      // Non-technical, user-friendly message
+      let friendlyMessage = "Sorry! We couldn't load your installation orders.";
+      if (error.code === "ECONNABORTED" || !navigator.onLine) {
+        friendlyMessage =
+          "Please check your internet connection and try again.";
+      } else if (error.response?.status >= 500) {
+        friendlyMessage = "Server is currently unavailable. Please try later.";
+      } else if (error.response?.status === 404) {
+        friendlyMessage = "No installation orders found.";
+      }
+
+      setError(friendlyMessage);
+      toast.error(friendlyMessage, { position: "top-right", autoClose: 5000 });
     } finally {
       setLoading(false);
     }

@@ -192,15 +192,36 @@ const OutFinishedGoodModal = ({
       onClose();
     } catch (err) {
       console.error("Dispatch submission error:", err);
-      const errorMessage =
-        err.response?.data?.message || "Failed to update dispatch.";
-      const errorDetails = err.response?.data?.errors
-        ? err.response.data.errors.join(", ")
-        : err.response?.data?.error || err.message;
-      setError(
-        errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage
-      );
-      toast.error(errorMessage, { position: "top-right", autoClose: 5000 });
+
+      let userFriendlyMessage =
+        "Failed to update dispatch. Please try again later.";
+
+      if (err.response) {
+        if (err.response.status === 400) {
+          userFriendlyMessage =
+            "Invalid data provided. Please check and try again.";
+        } else if (err.response.status === 401) {
+          userFriendlyMessage = "Your session expired. Please log in again.";
+        } else if (err.response.status === 403) {
+          userFriendlyMessage =
+            "You do not have permission to update this dispatch.";
+        } else if (err.response.status === 404) {
+          userFriendlyMessage = "Dispatch entry not found.";
+        } else if (err.response.status >= 500) {
+          userFriendlyMessage = "Server error. Please try again later.";
+        } else if (err.response.data?.message) {
+          userFriendlyMessage = err.response.data.message;
+        }
+      } else if (err.request) {
+        userFriendlyMessage =
+          "No response from server. Check your internet connection.";
+      }
+
+      setError(userFriendlyMessage);
+      toast.error(userFriendlyMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      });
     } finally {
       setLoading(false);
       setShowConfirm(false);

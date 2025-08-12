@@ -60,7 +60,14 @@ const ProductionApproval = () => {
       toast.success("Production approval orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching production approval orders:", error);
-      toast.error("Failed to fetch production approval orders!");
+
+      const friendlyMessage = !navigator.onLine
+        ? "No internet connection. Please check your network."
+        : error.response?.status >= 500
+        ? "Server is currently unreachable. Please try again later."
+        : "Unable to load production approval orders. Please try again.";
+
+      toast.error(friendlyMessage, { position: "top-right", autoClose: 5000 });
     }
   }, []);
 

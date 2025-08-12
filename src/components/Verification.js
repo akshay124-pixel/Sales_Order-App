@@ -28,7 +28,14 @@ const Verification = () => {
       toast.success("Verification orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching verification orders:", error);
-      toast.error("Failed to fetch verification orders!");
+      const friendlyMessage =
+        error.response?.data?.message ||
+        "Sorry, we couldn't load the verification orders. Please try again later.";
+
+      toast.error(friendlyMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      });
     }
   }, []);
 

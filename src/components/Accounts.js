@@ -266,7 +266,27 @@ function Accounts() {
         throw new Error(response.data.message || "Failed to update order");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update order", {
+      console.error("Error updating order:", error);
+
+      let errorMessage = "Something went wrong while updating the order.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = "Invalid data provided. Please check your inputs.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 404) {
+          errorMessage = "The order you are trying to update was not found.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage = "Unable to connect to the server. Check your internet.";
+      }
+
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
       });

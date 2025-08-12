@@ -305,12 +305,12 @@ function AddEntry({ onSubmit, onClose }) {
 
     const userRole = localStorage.getItem("role");
     if (!["Sales", "Admin"].includes(userRole)) {
-      toast.error("Only Sales or Admin users can create orders");
+      toast.error("You do not have permission to create orders.");
       return;
     }
 
     if (formData.orderType === "B2G" && !formData.gemOrderNumber) {
-      toast.error("Please provide GEM Order Number for B2G orders");
+      toast.error("Please enter a GEM Order Number for B2G orders.");
       return;
     }
 
@@ -383,20 +383,34 @@ function AddEntry({ onSubmit, onClose }) {
       onSubmit(response.data);
       onClose();
     } catch (error) {
-      console.error("Error:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        "Failed to create order. Please try again.";
-      toast.error(errorMessage);
-      if (error.response?.status === 403) {
-        toast.error("Unauthorized: Insufficient permissions or invalid token");
-      } else if (error.response?.status === 400) {
-        console.error("Validation Error Details:", error.response?.data);
-        toast.error(
-          `Validation Error: ${JSON.stringify(error.response?.data)}`
-        );
+      console.error("Error creating order:", error);
+
+      let errorMessage = "Something went wrong while creating the order.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage =
+            "Some details are missing or incorrect. Please check the form.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 403) {
+          errorMessage = "You do not have permission to create this order.";
+        } else if (error.response.status === 404) {
+          errorMessage = "Order service not found. Please try again later.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage =
+            error.response.data?.error ||
+            error.response.data?.message ||
+            errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
       }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

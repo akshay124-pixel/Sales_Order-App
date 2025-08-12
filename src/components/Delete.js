@@ -42,13 +42,32 @@ function DeleteModal({ isOpen, onClose, onDelete, itemId }) {
       }
     } catch (error) {
       console.error("Error deleting entry:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        (error.message ? error.message : "Unknown error occurred");
-      toast.error(`Error deleting entry: ${errorMessage}`);
+
+      let errorMessage = "Something went wrong while deleting the entry.";
+
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = "Invalid request. Please check the entry details.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (error.response.status === 403) {
+          errorMessage = "You don’t have permission to delete this entry.";
+        } else if (error.response.status === 404) {
+          errorMessage = "The entry you are trying to delete was not found.";
+        } else if (error.response.status === 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage =
+          "Unable to connect to the server. Please check your internet connection.";
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
-      setConfirmationText(""); // Reset input after action
+      setConfirmationText(""); // reset input
     }
   };
 

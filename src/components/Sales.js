@@ -1006,7 +1006,14 @@ const Sales = () => {
       setOrders(response.data);
     } catch (error) {
       console.error("Error fetching orders:", error);
-      toast.error("Failed to fetch orders!");
+
+      const friendlyMessage = !navigator.onLine
+        ? "No internet connection. Please check your network."
+        : error.response?.status >= 500
+        ? "Server is temporarily unavailable. Please try again later."
+        : "Unable to load orders. Please try again.";
+
+      toast.error(friendlyMessage, { position: "top-right", autoClose: 5000 });
     }
   }, []);
 
@@ -1459,7 +1466,33 @@ const Sales = () => {
         toast.success("Order updated successfully!");
       } catch (error) {
         console.error("Error updating order:", error);
-        toast.error("Failed to update order!");
+
+        let friendlyMessage = "Unable to update the order. Please try again.";
+
+        if (error.response) {
+          if (error.response.status === 400) {
+            friendlyMessage =
+              "Invalid data provided. Please check and try again.";
+          } else if (error.response.status === 401) {
+            friendlyMessage = "Session expired. Please log in again.";
+          } else if (error.response.status === 403) {
+            friendlyMessage = "You don’t have permission to update this order.";
+          } else if (error.response.status === 404) {
+            friendlyMessage = "Order not found.";
+          } else if (error.response.status >= 500) {
+            friendlyMessage = "Server error. Please try again later.";
+          } else if (error.response.data?.message) {
+            friendlyMessage = error.response.data.message;
+          }
+        } else if (error.request) {
+          friendlyMessage =
+            "No response from server. Check your internet connection.";
+        }
+
+        toast.error(friendlyMessage, {
+          position: "top-right",
+          autoClose: 5000,
+        });
       }
     },
     [
@@ -1703,11 +1736,23 @@ const Sales = () => {
           );
         } catch (error) {
           console.error("Error uploading entries:", error);
-          const message =
-            error.response?.data?.details?.join(", ") ||
-            error.response?.data?.message ||
-            "Failed to upload entries. Please check the data and try again.";
-          toast.error(message);
+
+          // Friendly, non-technical error messages:
+          let friendlyMessage =
+            "Sorry, we couldn't upload your data. Please check your file and try again.";
+
+          if (error.response?.data?.details) {
+            friendlyMessage =
+              "Please fix the following issues in your file: " +
+              error.response.data.details.join(", ");
+          } else if (error.response?.data?.message) {
+            friendlyMessage = error.response.data.message;
+          }
+
+          toast.error(friendlyMessage, {
+            position: "top-right",
+            autoClose: 7000,
+          });
         }
       };
       reader.readAsArrayBuffer(file);
