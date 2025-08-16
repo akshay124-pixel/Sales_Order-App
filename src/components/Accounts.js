@@ -29,6 +29,8 @@ function Accounts() {
   const [errors, setErrors] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const fetchAccountsOrders = useCallback(async () => {
     setLoading(true);
@@ -133,13 +135,25 @@ function Accounts() {
         (order) => (order.paymentReceived || "Not Received") === statusFilter
       );
     }
+    if (startDate) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.invoiceDate);
+        return orderDate >= new Date(startDate);
+      });
+    }
+    if (endDate) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.invoiceDate);
+        return orderDate <= new Date(endDate);
+      });
+    }
     setFilteredOrders(filtered);
-  }, [orders, searchQuery, statusFilter]);
+  }, [orders, searchQuery, statusFilter, startDate, endDate]);
 
   useEffect(() => {
     filterOrders();
   }, [filterOrders]);
-  // Calculate total pending orders (billStatus === "Pending")
+
   const totalPending = filteredOrders.filter(
     (order) => order.paymentReceived === "Not Received"
   ).length;
@@ -332,6 +346,8 @@ function Accounts() {
   const handleClearFilters = () => {
     setSearchQuery("");
     setStatusFilter("All");
+    setStartDate("");
+    setEndDate("");
   };
 
   if (loading && orders.length === 0) {
@@ -491,6 +507,34 @@ function Accounts() {
                 />
               )}
             </div>
+            <Form.Control
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              placeholder="Start Date"
+              style={{
+                flex: "0 1 200px",
+                borderRadius: "20px",
+                padding: "10px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              }}
+            />
+            <Form.Control
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="End Date"
+              style={{
+                flex: "0 1 200px",
+                borderRadius: "20px",
+                padding: "10px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              }}
+            />
             <Form.Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -656,7 +700,10 @@ function Accounts() {
                         animation: "fadeIn 0.5s ease-in-out",
                       }}
                     >
-                      {searchQuery || statusFilter !== "All"
+                      {searchQuery ||
+                      statusFilter !== "All" ||
+                      startDate ||
+                      endDate
                         ? "No orders match your search criteria."
                         : "No Payment Collection orders available."}
                     </td>
