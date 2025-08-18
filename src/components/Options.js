@@ -1484,6 +1484,7 @@ export const salesPersonlist = [
   "Vaibhav Mishra",
   "Varun Budhiraja",
   "Vaseem Khan",
+  "Vishal Angra",
 ];
 
 export const Reportinglist = [
@@ -1521,6 +1522,7 @@ export const Reportinglist = [
   "Sushil Kumar",
   "Varun Budhiraja",
   "Vaseem Khan",
+  "Vishal Angra",
 ];
 
 export const modelNoOptions = ["AT", "PRO MR PC", "Standard"];
