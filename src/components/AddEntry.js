@@ -12,6 +12,7 @@ import {
   salesPersonlist,
   Reportinglist,
   modelNoOptions,
+  printerOptions,
   brandOptions,
   dispatchFromOptions,
 } from "./Options";
@@ -152,7 +153,12 @@ function AddEntry({ onSubmit, onClose }) {
           ? {
               size: "",
               spec: "",
-              gst: value === "IFPD" || value === "Projector" ? "28" : "",
+              gst:
+                value === "IFPD" ||
+                value === "Projector" ||
+                value === "Fujifilm-Printer"
+                  ? "28"
+                  : "",
               modelNos: "",
               brand: "",
               warranty:
@@ -162,7 +168,9 @@ function AddEntry({ onSubmit, onClose }) {
           ? {
               spec: "",
               gst:
-                prev.productType === "IFPD" || prev.productType === "Projector"
+                prev.productType === "IFPD" ||
+                prev.productType === "Projector" ||
+                prev.productType === "Fujifilm-Printer"
                   ? "28"
                   : "",
               modelNos: "",
@@ -202,10 +210,13 @@ function AddEntry({ onSubmit, onClose }) {
       return;
     }
     if (
-      currentProduct.productType === "IFPD" &&
+      (currentProduct.productType === "IFPD" ||
+        currentProduct.productType === "Fujifilm-Printer") &&
       (!currentProduct.modelNos || !currentProduct.brand)
     ) {
-      toast.error("Model Numbers and Brand are required for IFPD products");
+      toast.error(
+        "Model Numbers and Brand are required for IFPD and Fujifilm-Printer products"
+      );
       return;
     }
     if (isNaN(Number(currentProduct.qty)) || Number(currentProduct.qty) <= 0) {
@@ -239,7 +250,6 @@ function AddEntry({ onSubmit, onClose }) {
       paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
     }));
   };
-
   const removeProduct = (index) => {
     setProducts(products.filter((_, i) => i !== index));
     setFormData((prev) => ({
@@ -1310,7 +1320,8 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                 />
               </div>
-              {currentProduct.productType === "IFPD" && (
+              {(currentProduct.productType === "IFPD" ||
+                currentProduct.productType === "Fujifilm-Printer") && (
                 <>
                   <div>
                     <label
@@ -1335,11 +1346,17 @@ function AddEntry({ onSubmit, onClose }) {
                       }}
                     >
                       <option value="">Select Model No</option>
-                      {modelNoOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
+                      {currentProduct.productType === "IFPD"
+                        ? modelNoOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))
+                        : printerOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
                     </select>
                   </div>
                   <div>
