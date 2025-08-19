@@ -10,7 +10,6 @@ import { salesPersonlist } from "./Options";
 import { Reportinglist } from "./Options";
 import { productOptions } from "./Options";
 
-// Styled Components
 const StyledModal = styled(Modal)`
   .modal-content {
     border-radius: 12px;
