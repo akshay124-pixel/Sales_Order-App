@@ -794,7 +794,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   key: "productCode",
                                   label: "Product Code",
                                   formatter: (v) =>
-                                    product.productType === "FUJIFILM" &&
+                                    product.productType ===
+                                      "Fujifilm-Printer" &&
                                     isValidField(v) &&
                                     v.length > 0
                                       ? v.join(", ")
