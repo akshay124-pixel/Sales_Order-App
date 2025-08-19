@@ -163,9 +163,7 @@ function AddEntry({ onSubmit, onClose }) {
           ? {
               spec: "",
               gst:
-                prev.productType === "IFPD" ||
-                prev.productType === "Projector" ||
-                prev.productType === "Fujifilm-Printer"
+                prev.productType === "IFPD" || prev.productType === "Projector"
                   ? "28"
                   : "",
               modelNos: "",
@@ -205,12 +203,15 @@ function AddEntry({ onSubmit, onClose }) {
       return;
     }
     if (
-      (currentProduct.productType === "IFPD" ||
-        currentProduct.productType === "Fujifilm-Printer") &&
-      (!currentProduct.modelNos || !currentProduct.brand)
+      (currentProduct.productType === "IFPD" &&
+        (!currentProduct.modelNos || !currentProduct.brand)) ||
+      (currentProduct.productType === "Fujifilm-Printer" &&
+        !currentProduct.modelNos)
     ) {
       toast.error(
-        "Model Numbers and Brand are required for IFPD and Fujifilm-Printer products"
+        currentProduct.productType === "IFPD"
+          ? "Model Numbers and Brand are required for IFPD products"
+          : "Model Numbers are required for Fujifilm-Printer products"
       );
       return;
     }
@@ -1317,74 +1318,74 @@ function AddEntry({ onSubmit, onClose }) {
               </div>
               {(currentProduct.productType === "IFPD" ||
                 currentProduct.productType === "Fujifilm-Printer") && (
-                <>
-                  <div>
-                    <label
-                      style={{
-                        fontSize: "0.9rem",
-                        fontWeight: "600",
-                        color: "#475569",
-                      }}
-                    >
-                      Model No *
-                    </label>
-                    <select
-                      name="modelNos"
-                      value={currentProduct.modelNos}
-                      onChange={handleProductChange}
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
-                      }}
-                    >
-                      <option value="">Select Model No</option>
-                      {currentProduct.productType === "IFPD"
-                        ? modelNoOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))
-                        : printerOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label
-                      style={{
-                        fontSize: "0.9rem",
-                        fontWeight: "600",
-                        color: "#475569",
-                      }}
-                    >
-                      Brand *
-                    </label>
-                    <select
-                      name="brand"
-                      value={currentProduct.brand}
-                      onChange={handleProductChange}
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
-                      }}
-                    >
-                      <option value="">Select Brand</option>
-                      {brandOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                    }}
+                  >
+                    Model No *
+                  </label>
+                  <select
+                    name="modelNos"
+                    value={currentProduct.modelNos}
+                    onChange={handleProductChange}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                    }}
+                  >
+                    <option value="">Select Model No</option>
+                    {currentProduct.productType === "IFPD"
+                      ? modelNoOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      : printerOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                  </select>
+                </div>
+              )}
+              {currentProduct.productType === "IFPD" && (
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                    }}
+                  >
+                    Brand *
+                  </label>
+                  <select
+                    name="brand"
+                    value={currentProduct.brand}
+                    onChange={handleProductChange}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                    }}
+                  >
+                    <option value="">Select Brand</option>
+                    {brandOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
               <button
                 type="button"
