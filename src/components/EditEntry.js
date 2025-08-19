@@ -101,6 +101,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           unitPrice: "",
           serialNos: "",
           modelNos: "",
+          productCode: "",
           gst: "18",
           brand: "",
           warranty: "",
@@ -221,6 +222,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 serialNos:
                   p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
                 modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+                productCode:
+                  p.productCode?.length > 0 ? p.productCode.join(", ") : "",
                 gst: p.gst || "18",
                 brand: p.brand || "",
                 warranty: p.warranty || "",
@@ -234,6 +237,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   unitPrice: "",
                   serialNos: "",
                   modelNos: "",
+                  productCode: "",
                   gst: "18",
                   brand: "",
                   warranty: "",
@@ -382,6 +386,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 .map((m) => m.trim())
                 .filter(Boolean)
             : [],
+          productCode: p.productCode,
           gst: p.gst || "18",
           brand: p.brand || null,
           warranty: p.warranty || null,
@@ -554,6 +559,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         unitPrice: "",
         serialNos: "",
         modelNos: "",
+        productCode: "",
         gst: "18",
         brand: "",
         warranty: "",
@@ -578,6 +584,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               unitPrice: "",
               serialNos: "",
               modelNos: "",
+              productCode: "",
               gst: "18",
               brand: "",
               warranty: "",
@@ -2398,32 +2405,117 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                       >
                         Model Nos
                       </Form.Label>
-                      <Form.Control
-                        {...register(`products.${index}.modelNos`)}
-                        onChange={(e) =>
-                          debouncedHandleInputChange(
-                            `products.${index}.modelNos`,
-                            e.target.value,
-                            index
-                          )
-                        }
-                        isInvalid={!!errors.products?.[index]?.modelNos}
-                        placeholder="e.g., MN1, MN2, MN3"
-                        style={{
-                          width: "100%",
-                          padding: "0.75rem",
-                          border: "1px solid #e2e8f0",
-                          borderRadius: "0.75rem",
-                          backgroundColor: "#f8fafc",
-                          fontSize: "1rem",
-                          color: "#1e293b",
-                        }}
-                      />
+                      {selectedProductType === "Fujifilm-Printer" ? (
+                        <Form.Select
+                          {...register(`products.${index}.modelNos`)}
+                          onChange={(e) => {
+                            setValue(
+                              `products.${index}.modelNos`,
+                              e.target.value
+                            );
+                            debouncedHandleInputChange(
+                              `products.${index}.modelNos`,
+                              e.target.value,
+                              index
+                            );
+                          }}
+                          isInvalid={!!errors.products?.[index]?.modelNos}
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.75rem",
+                            backgroundColor: "#f8fafc",
+                            fontSize: "1rem",
+                            color: "#1e293b",
+                          }}
+                        >
+                          <option value="">Select Model No</option>
+                          {printerOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      ) : (
+                        <Form.Control
+                          {...register(`products.${index}.modelNos`)}
+                          onChange={(e) =>
+                            debouncedHandleInputChange(
+                              `products.${index}.modelNos`,
+                              e.target.value,
+                              index
+                            )
+                          }
+                          isInvalid={!!errors.products?.[index]?.modelNos}
+                          placeholder="e.g., MN1, MN2, MN3"
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.75rem",
+                            backgroundColor: "#f8fafc",
+                            fontSize: "1rem",
+                            color: "#1e293b",
+                          }}
+                        />
+                      )}
                       <Form.Control.Feedback type="invalid">
                         {errors.products?.[index]?.modelNos?.message}
                       </Form.Control.Feedback>
                     </Form.Group>
                   </div>
+                  {selectedProductType === "Fujifilm-Printer" && (
+                    <div style={{ gridColumn: "2 / 3" }}>
+                      <Form.Group controlId={`products.${index}.productCode`}>
+                        <Form.Label
+                          style={{
+                            fontSize: "1rem",
+                            fontWeight: "600",
+                            color: "#475569",
+                            marginBottom: "0.5rem",
+                            display: "block",
+                          }}
+                        >
+                          Product Code
+                        </Form.Label>
+                        <Form.Select
+                          {...register(`products.${index}.productCode`)}
+                          onChange={(e) => {
+                            setValue(
+                              `products.${index}.productCode`,
+                              e.target.value
+                            );
+                            debouncedHandleInputChange(
+                              `products.${index}.productCode`,
+                              e.target.value,
+                              index
+                            );
+                          }}
+                          isInvalid={!!errors.products?.[index]?.productCode}
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.75rem",
+                            backgroundColor: "#f8fafc",
+                            fontSize: "1rem",
+                            color: "#1e293b",
+                          }}
+                        >
+                          <option value="">Select Product Code</option>
+                          {productCode.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.products?.[index]?.productCode?.message}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </div>
+                  )}
                 </div>
               </ProductContainer>
             );
