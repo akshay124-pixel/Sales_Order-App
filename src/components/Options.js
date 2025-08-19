@@ -996,6 +996,7 @@ export const statesAndCities = {
     "Faridkot",
     "Fatehgarh Sahib",
     "Fazilka",
+    "Lodhipur",
     "Ferozepur",
     "Gurdaspur",
     "Hoshiarpur",
