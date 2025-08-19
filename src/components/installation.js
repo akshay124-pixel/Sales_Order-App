@@ -1278,6 +1278,10 @@ function Installation() {
                         <strong>Model Nos:</strong>{" "}
                         {product.modelNos?.[0] || "N/A"}
                       </span>
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Product Code:</strong>{" "}
+                        {product.productCode?.[0] || "N/A"}
+                      </span>
                     </div>
                   ))
                 ) : (
