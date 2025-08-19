@@ -1509,9 +1509,16 @@ function AddEntry({ onSubmit, onClose }) {
                         {product.productType} | {product.size} | {product.spec}{" "}
                         | Qty: {product.qty} | Price: ₹{product.unitPrice} |
                         GST: {product.gst} | Warranty: {product.warranty}
-                        {product.productType === "IFPD" &&
+                        {(product.productType === "IFPD" ||
+                          product.productType === "FUJIFILM") &&
                           product.modelNos &&
-                          ` | Model No: ${product.modelNos} | Brand: ${product.brand}`}
+                          ` | Model No: ${product.modelNos}`}
+                        {product.productType === "FUJIFILM" &&
+                          product.productCode &&
+                          ` | Product Code: ${product.productCode}`}
+                        {product.productType === "IFPD" &&
+                          product.brand &&
+                          ` | Brand: ${product.brand}`}
                       </span>
                       <button
                         type="button"
