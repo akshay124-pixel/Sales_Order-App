@@ -388,8 +388,8 @@ export const productOptions = {
     specs: [
       "Color Printer",
       "Monochrome Printer",
-      "MFM Color Printer",
-      "MFM Monochrome Printer",
+      "MFM Color",
+      "MFM Monochrome",
     ],
   },
   "Google TV": {
