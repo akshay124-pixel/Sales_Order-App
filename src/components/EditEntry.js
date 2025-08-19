@@ -1137,6 +1137,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         "Faridkot",
         "Muktsar",
         "Fazilka",
+        "Lodhipur",
         "Barnala",
         "Mansa",
         "Tarn Taran",
