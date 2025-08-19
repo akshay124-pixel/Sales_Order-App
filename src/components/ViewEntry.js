@@ -790,6 +790,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                       ? v.join(", ")
                                       : null,
                                 },
+                                {
+                                  key: "productCode",
+                                  label: "Product Code",
+                                  formatter: (v) =>
+                                    product.productType === "FUJIFILM" &&
+                                    isValidField(v) &&
+                                    v.length > 0
+                                      ? v.join(", ")
+                                      : null,
+                                },
                               ]
                                 .filter(({ key, formatter }) =>
                                   isValidField(
