@@ -153,12 +153,7 @@ function AddEntry({ onSubmit, onClose }) {
           ? {
               size: "",
               spec: "",
-              gst:
-                value === "IFPD" ||
-                value === "Projector" ||
-                value === "Fujifilm-Printer"
-                  ? "28"
-                  : "",
+              gst: value === "IFPD" || value === "Projector" ? "28" : "",
               modelNos: "",
               brand: "",
               warranty:
