@@ -9,6 +9,8 @@ import { FaEdit, FaSyncAlt, FaCog } from "react-icons/fa";
 import { salesPersonlist } from "./Options";
 import { Reportinglist } from "./Options";
 import { productOptions } from "./Options";
+import { printerOptions } from "./Options";
+import { productCode } from "./Options";
 
 const StyledModal = styled(Modal)`
   .modal-content {
