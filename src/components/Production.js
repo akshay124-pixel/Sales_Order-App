@@ -1938,6 +1938,14 @@ const Production = () => {
                                 ? product.modelNos.join(", ")
                                 : "N/A"}
                             </div>
+                            {product.productCode && (
+                              <div>
+                                <strong>Product Code:</strong>{" "}
+                                {product.productCode?.length > 0
+                                  ? product.productCode.join(", ")
+                                  : "N/A"}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
