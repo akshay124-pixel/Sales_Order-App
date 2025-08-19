@@ -14,6 +14,7 @@ import {
   modelNoOptions,
   printerOptions,
   brandOptions,
+  productCode,
   dispatchFromOptions,
 } from "./Options";
 function AddEntry({ onSubmit, onClose }) {
@@ -30,6 +31,7 @@ function AddEntry({ onSubmit, onClose }) {
     unitPrice: "",
     gst: "",
     modelNos: "",
+    productCode: "",
     brand: "",
     warranty: "", // New warranty field
   });
@@ -238,6 +240,7 @@ function AddEntry({ onSubmit, onClose }) {
       unitPrice: "",
       gst: "",
       modelNos: "",
+      productCode: "",
       brand: "",
       warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
     });
@@ -337,6 +340,7 @@ function AddEntry({ onSubmit, onClose }) {
         serialNos: [],
         modelNos: p.modelNos ? p.modelNos.split(",").map((m) => m.trim()) : [],
         brand: p.brand || "",
+        productCode: p.productCode || "",
         warranty:
           p.warranty ||
           (formData.orderType === "B2G" ? "As Per Tender" : "1 Year"),
@@ -1380,6 +1384,39 @@ function AddEntry({ onSubmit, onClose }) {
                   >
                     <option value="">Select Brand</option>
                     {brandOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {currentProduct.productType === "Fujifilm-Printer" && (
+                <div>
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "600",
+                      color: "#475569",
+                      display: "block",
+                    }}
+                  >
+                    Product Code *
+                  </label>
+                  <select
+                    name="productCode"
+                    value={currentProduct.productCode}
+                    onChange={handleProductChange}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                    }}
+                  >
+                    <option value="">Select Product Code</option>
+                    {productCode.map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>
