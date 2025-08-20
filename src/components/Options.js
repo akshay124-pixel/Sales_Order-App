@@ -1009,9 +1009,9 @@ export const statesAndCities = {
     "Pathankot",
     "Patiala",
     "Rupnagar",
-    "S.A.S. Nagar", // Sahibzada Ajit Singh Nagar
+    "S.A.S. Nagar",
     "Sangrur",
-    "Shaheed Bhagat Singh Nagar", // Nawanshahr
+    "Shaheed Bhagat Singh Nagar",
     "Sri Muktsar Sahib",
     "Tarn Taran",
   ],
@@ -1557,6 +1557,7 @@ export const printerOptions = [
   "Assist Handle",
   "Booklet Maker Unit for Finisher-B",
   "Cabinet",
+  "Cable Assy-ffc LED MBL3",
   "Data Overwrite Kit",
   "Data Overwrite Kit (HW)",
   "Drum Cartridge",
@@ -1567,6 +1568,7 @@ export const printerOptions = [
   "Fax Kit 3 1byte",
   "Fax Kit 3 (Type-C) 1",
   "Fax Kit 3 (Type-C) 2",
+  "Fusing Unit (220V)(WW)",
   "Finisher-A2",
   "Finisher-B4",
   "Finisher-C4 2/4 Hole Punch",
@@ -1594,6 +1596,7 @@ export const printerOptions = [
   "Toner Cartridge - Magenta *Standard Capacity",
   "Toner Cartridge - Yellow *High Capacity",
   "Toner Cartridge - Yellow *Standard Capacity",
+  "Transport Assv-Regi No",
   "Toner Cartridge C WW",
   "Toner Cartridge K WW",
   "Toner Cartridge M WW",
@@ -1715,4 +1718,7 @@ export const productCode = [
   "CT204229",
   "CT204231",
   "CT351436",
+  "117K 50711",
+  "CWAA1058",
+  "859K01543",
 ];
