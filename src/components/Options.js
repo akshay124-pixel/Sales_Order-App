@@ -1449,6 +1449,7 @@ export const salesPersonlist = [
   "Pitamber Sharma",
   "Priya Sharma",
   "Pihu Juneja",
+  "Piyush Chopra",
   "PS Brar",
   "Purnendu Kumar",
   "Raj Bahadur Singh",
