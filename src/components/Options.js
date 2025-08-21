@@ -1609,6 +1609,7 @@ export const printerOptions = [
   "Waste Toner Container",
   "Waste Toner Container 1",
   "Wireless Network Kit 2",
+  "Pipe ASSY-DISP FB",
 ];
 
 export const brandOptions = ["Promark", "White Label"];
@@ -1722,4 +1723,5 @@ export const productCode = [
   "117K 50711",
   "CWAA1058",
   "859K01543",
+  "052K15520",
 ];
