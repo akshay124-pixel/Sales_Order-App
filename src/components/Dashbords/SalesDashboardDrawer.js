@@ -754,22 +754,37 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                   <TotalHeader>Overall Totals</TotalHeader>
                   <TotalHeader>{overallTotals.totalOrders}</TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.totalAmount.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.totalAmount.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                   <TotalHeader>
                     ₹
                     {overallTotals.totalPaymentCollected.toLocaleString(
-                      "en-IN"
+                      "en-IN",
+                      {
+                        maximumFractionDigits: 0,
+                      }
                     )}
                   </TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.totalPaymentDue.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.totalPaymentDue.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.dueOver30Days.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.dueOver30Days.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                   <TotalHeader>
-                    ₹{overallTotals.totalUnitPrice.toLocaleString("en-IN")}
+                    ₹
+                    {overallTotals.totalUnitPrice.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
                   </TotalHeader>
                 </TotalHeaderRow>
                 <TableHeaderRow>
