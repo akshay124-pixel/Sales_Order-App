@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaEye, FaBell } from "react-icons/fa";
 import { Button, Badge, OverlayTrigger, Popover } from "react-bootstrap";
-
+// TeamBuilder: Team management modal component (import)
+import TeamBuilder from "./TeamBuilder";
 import FilterSection from "./FilterSection";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
@@ -359,6 +360,10 @@ const Row = React.memo(({ index, style, data }) => {
     if (order.sostatus === "Approved") return "#e6ffed"; // Light green for Approved
     if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
     return "#f3e8ff"; // Light purple for incomplete/others
+  };
+
+  const isTeamMemberOrder = () => {
+    return order.createdBy?._id !== userId;
   };
 
   const getHoverBackground = () => {
@@ -923,12 +928,37 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[52],
-          content:
-            order.createdBy && typeof order.createdBy === "object"
-              ? order.createdBy.username || "Unknown"
-              : typeof order.createdBy === "string"
-              ? order.createdBy
-              : "-",
+          content: (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+              }}
+            >
+              {order.createdBy && typeof order.createdBy === "object"
+                ? order.createdBy.username || "Unknown"
+                : typeof order.createdBy === "string"
+                ? order.createdBy
+                : "-"}
+              {isTeamMemberOrder() && (
+                <span
+                  style={{
+                    background: "#4f46e5",
+                    color: "white",
+                    fontSize: "10px",
+                    padding: "2px 6px",
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                  }}
+                  title="Team Member Order"
+                >
+                  TEAM
+                </span>
+              )}
+            </div>
+          ),
           title:
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
@@ -976,7 +1006,10 @@ const Sales = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  // TeamBuilder: Controls open/close state of the TeamBuilder modal
+  const [isTeamBuilderOpen, setIsTeamBuilderOpen] = useState(false);
   const userRole = localStorage.getItem("role");
+  // TeamBuilder: Logged-in user's ID, passed to TeamBuilder for ownership checks
   const userId = localStorage.getItem("userId");
 
   // Create uniqueSalesPersons array from orders
@@ -1081,6 +1114,7 @@ const Sales = () => {
 
     socket.on("connect", () => {
       console.log("Socket.IO connected:", socket.id);
+      // TeamBuilder: identify current user + role on socket join (server may segment events)
       socket.emit("join", { userId, role: userRole });
     });
 
@@ -2211,6 +2245,35 @@ const Sales = () => {
             flexWrap: "wrap",
           }}
         >
+          {" "}
+          <Button
+            onClick={() => setIsTeamBuilderOpen(true)}
+            style={{
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              border: "none",
+              padding: "12px 24px",
+              borderRadius: "30px",
+              color: "white",
+              fontWeight: "600",
+              fontSize: "1rem",
+              boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "all 0.4s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
+            }}
+          >
+            <span style={{ fontSize: "1.2rem" }}>👥</span>
+            Manage Team
+          </Button>
           {userRole === "Admin" && (
             <label
               style={{
@@ -2365,6 +2428,13 @@ const Sales = () => {
           />
         )}
 
+        {isTeamBuilderOpen && (
+          <TeamBuilder
+            isOpen={isTeamBuilderOpen}
+            onClose={() => setIsTeamBuilderOpen(false)}
+            userId={userId}
+          />
+        )}
         <div className="sales-table-container">
           <table className="sales-table">
             <thead>
