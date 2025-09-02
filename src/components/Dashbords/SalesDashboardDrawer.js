@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { Button, Form } from "react-bootstrap";
@@ -47,12 +46,12 @@ const DrawerHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 6px 12px;
   background: linear-gradient(135deg, #2575fc, #6a11cb);
   border-radius: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 10px;
 `;
 
 const DrawerTitle = styled.h3`
@@ -103,13 +102,6 @@ const DatePickerContainer = styled.div`
   flex-direction: column;
   gap: 5px;
   z-index: 2000;
-`;
-
-const DatePickerLabel = styled.label`
-  font-size: 0.85rem;
-  color: white;
-  font-weight: 500;
-  text-transform: uppercase;
 `;
 
 const StyledDatePicker = styled(DatePicker)`
@@ -199,13 +191,6 @@ const SalesPersonSelectContainer = styled.div`
   gap: 5px;
 `;
 
-const SalesPersonLabel = styled.label`
-  font-size: 0.85rem;
-  color: white;
-  font-weight: 500;
-  text-transform: uppercase;
-`;
-
 const StyledFormSelect = styled(Form.Select)`
   padding: 8px 10px;
   border: 1px solid #d1d5db;
@@ -241,14 +226,21 @@ const TotalHeaderRow = styled.tr`
   background: linear-gradient(135deg, #1e3a8a, #4b0082);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
 `;
 
 const TableHeaderRow = styled.tr`
   background: linear-gradient(135deg, #2575fc, #6a11cb);
   position: sticky;
   top: 44px;
-  z-index: 9;
+  z-index: 15;
+`;
+
+const TeamHeaderRow = styled.tr`
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  position: sticky;
+  top: 44px;
+  z-index: 15;
 `;
 
 const TableHeader = styled.th`
@@ -310,6 +302,15 @@ const TotalHeader = styled.th`
   }
 `;
 
+const TeamHeader = styled.th`
+  padding: 12px 15px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  text-align: center;
+`;
+
 const TableCell = styled.td`
   padding: 12px 15px;
   border-bottom: 1px solid #e6f0fa;
@@ -355,13 +356,16 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   const [endDate, setEndDate] = useState(null);
   const [selectedSalesPerson, setSelectedSalesPerson] = useState("All");
   const userId = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("role");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [groupByTeam, setGroupByTeam] = useState(false);
+  const [teamMemberIds, setTeamMemberIds] = useState([]);
+  const [salesScope, setSalesScope] = useState("team");
 
-  // Helper function to check if order is from team member
   const isTeamMemberOrder = (order) => {
     return order.createdBy?._id !== userId;
   };
 
-  // Compute unique salespersons
   const uniqueSalesPersons = useMemo(() => {
     const persons = [
       ...new Set(
@@ -373,7 +377,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     return ["All", ...persons.sort()];
   }, [orders]);
 
-  // Filter orders
   const filterOrders = useCallback(
     (ordersToFilter, start, end, salesPerson) => {
       let filtered = [...ordersToFilter];
@@ -402,12 +405,28 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         );
       }
 
+      if (userRole === "Sales") {
+        if (salesScope === "own") {
+          filtered = filtered.filter(
+            (order) => order.createdBy?._id === userId
+          );
+        } else {
+          const allowedIds = new Set([userId, ...teamMemberIds]);
+          filtered = filtered.filter((order) => {
+            const createdById = order.createdBy?._id;
+            const isAssignedToMe = Array.isArray(order.assignedTo)
+              ? order.assignedTo.includes(userId)
+              : false;
+            return allowedIds.has(createdById) || isAssignedToMe;
+          });
+        }
+      }
+
       return filtered;
     },
-    []
+    [userRole, currentUser, userId, teamMemberIds, salesScope]
   );
 
-  // Fetch orders from API
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -460,10 +479,37 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   };
 
-  // Initialize Socket.IO connection
   useEffect(() => {
     if (isOpen) {
       fetchOrders();
+      (async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) return;
+          const res = await axios.get(
+            `${process.env.REACT_APP_URL}/api/current-user`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setCurrentUser(res.data);
+          if (userRole === "Sales") {
+            try {
+              const teamRes = await axios.get(
+                `${process.env.REACT_APP_URL}/api/fetch-my-team`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              const ids = (teamRes.data?.data || []).map((u) => u._id);
+              setTeamMemberIds(ids);
+            } catch (err) {
+              console.warn("Failed to fetch team members", err?.message);
+            }
+          }
+        } catch (e) {
+          console.warn(
+            "Failed to fetch current user for dashboard",
+            e?.message
+          );
+        }
+      })();
       const socket = io(`${process.env.REACT_APP_URL}`, {
         reconnection: true,
         reconnectionAttempts: 5,
@@ -507,32 +553,39 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Memoize filtered orders
   const filteredOrders = useMemo(() => {
     return filterOrders(orders, startDate, endDate, selectedSalesPerson);
   }, [orders, startDate, endDate, selectedSalesPerson, filterOrders]);
 
-  // Memoize sales analytics computation
   const salesAnalytics = useMemo(() => {
     console.log("Computing sales analytics for orders:", filteredOrders);
     return filteredOrders.reduce((acc, order) => {
-      const createdBy = order.createdBy?.username?.trim() || "Sales Order Team";
-      const isTeamMember = isTeamMemberOrder(order);
-      console.log(
-        `Order ID: ${
-          order.orderId || "N/A"
-        }, CreatedBy: ${createdBy}, IsTeamMember: ${isTeamMember}`
-      );
+      const personName =
+        order.createdBy?.username?.trim() || "Sales Order Team";
+      const leaderName =
+        order.createdBy?.assignedToLeader?.username || `${personName} (Leader)`;
 
-      if (!acc[createdBy]) {
-        acc[createdBy] = {
+      let groupKey;
+      let showTeamBadge = false;
+      if (userRole === "Admin" && groupByTeam) {
+        groupKey = `${leaderName}:::${personName}`;
+      } else {
+        groupKey = personName;
+        showTeamBadge = isTeamMemberOrder(order);
+      }
+
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          teamName:
+            userRole === "Admin" && groupByTeam ? leaderName : undefined,
+          personName: personName,
           totalOrders: 0,
           totalAmount: 0,
           totalPaymentCollected: 0,
           totalPaymentDue: 0,
           dueOver30Days: 0,
           totalUnitPrice: 0,
-          isTeamMember: isTeamMember,
+          isTeamMember: showTeamBadge,
         };
       }
 
@@ -548,17 +601,17 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         }, 0) || 0;
 
       if (isFinite(total)) {
-        acc[createdBy].totalOrders += 1;
-        acc[createdBy].totalAmount += total;
+        acc[groupKey].totalOrders += 1;
+        acc[groupKey].totalAmount += total;
       }
       if (isFinite(paymentCollected)) {
-        acc[createdBy].totalPaymentCollected += paymentCollected;
+        acc[groupKey].totalPaymentCollected += paymentCollected;
       }
       if (isFinite(paymentDue)) {
-        acc[createdBy].totalPaymentDue += paymentDue;
+        acc[groupKey].totalPaymentDue += paymentDue;
       }
       if (isFinite(unitPriceTotal)) {
-        acc[createdBy].totalUnitPrice += unitPriceTotal;
+        acc[groupKey].totalUnitPrice += unitPriceTotal;
       }
 
       const soDate = order.soDate ? new Date(order.soDate) : null;
@@ -573,15 +626,14 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           (currentDate - soDate) / (1000 * 60 * 60 * 24)
         );
         if (daysSinceOrder > 30) {
-          acc[createdBy].dueOver30Days += paymentDue;
+          acc[groupKey].dueOver30Days += paymentDue;
         }
       }
 
       return acc;
     }, {});
-  }, [filteredOrders]);
+  }, [filteredOrders, userRole, groupByTeam]);
 
-  // Calculate overall totals
   const overallTotals = Object.values(salesAnalytics).reduce(
     (acc, data) => ({
       totalOrders: acc.totalOrders + data.totalOrders,
@@ -602,20 +654,233 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   );
 
-  // Convert to array for table rendering
-  const analyticsData = Object.entries(salesAnalytics).map(
-    ([createdBy, data]) => ({
-      createdBy,
-      totalOrders: data.totalOrders,
-      totalAmount: Number(data.totalAmount.toFixed(2)),
-      totalPaymentCollected: Number(data.totalPaymentCollected.toFixed(2)),
-      totalPaymentDue: Number(data.totalPaymentDue.toFixed(2)),
-      dueOver30Days: Number(data.dueOver30Days.toFixed(2)),
-      totalUnitPrice: Number(data.totalUnitPrice.toFixed(2)),
-    })
-  );
+  const analyticsData = Object.entries(salesAnalytics).map(([key, data]) => ({
+    teamName: data.teamName,
+    createdBy: data.personName || key,
+    totalOrders: data.totalOrders,
+    totalAmount: Number(data.totalAmount.toFixed(2)),
+    totalPaymentCollected: Number(data.totalPaymentCollected.toFixed(2)),
+    totalPaymentDue: Number(data.totalPaymentDue.toFixed(2)),
+    dueOver30Days: Number(data.dueOver30Days.toFixed(2)),
+    totalUnitPrice: Number(data.totalUnitPrice.toFixed(2)),
+    isTeamMember: data.isTeamMember,
+    collectionRate:
+      data.totalAmount > 0
+        ? Number(
+            ((data.totalPaymentCollected / data.totalAmount) * 100).toFixed(2)
+          )
+        : 0,
+    dueRate:
+      data.totalAmount > 0
+        ? Number(((data.totalPaymentDue / data.totalAmount) * 100).toFixed(2))
+        : 0,
+    avgOrderValue:
+      data.totalOrders > 0
+        ? Number((data.totalAmount / data.totalOrders).toFixed(2))
+        : 0,
+  }));
 
-  // Handle Excel export
+  const groupedAnalytics = useMemo(() => {
+    if (!(userRole === "Admin" && groupByTeam)) return null;
+
+    const groups = new Map();
+    for (const row of analyticsData) {
+      const team = row.teamName || "Unassigned";
+      if (!groups.has(team)) groups.set(team, []);
+      groups.get(team).push(row);
+    }
+
+    for (const [team, rows] of groups) {
+      rows.sort((a, b) => {
+        if (b.totalAmount !== a.totalAmount)
+          return b.totalAmount - a.totalAmount;
+        return a.createdBy.localeCompare(b.createdBy);
+      });
+    }
+
+    const sorted = Array.from(groups.entries()).sort(([a], [b]) =>
+      a.localeCompare(b)
+    );
+
+    const withTotals = sorted.map(([team, rows]) => {
+      const totals = rows.reduce(
+        (acc, r) => ({
+          totalOrders: acc.totalOrders + r.totalOrders,
+          totalAmount: acc.totalAmount + r.totalAmount,
+          totalPaymentCollected:
+            acc.totalPaymentCollected + r.totalPaymentCollected,
+          totalPaymentDue: acc.totalPaymentDue + r.totalPaymentDue,
+          dueOver30Days: acc.dueOver30Days + r.dueOver30Days,
+          totalUnitPrice: acc.totalUnitPrice + r.totalUnitPrice,
+        }),
+        {
+          totalOrders: 0,
+          totalAmount: 0,
+          totalPaymentCollected: 0,
+          totalPaymentDue: 0,
+          dueOver30Days: 0,
+          totalUnitPrice: 0,
+        }
+      );
+      const teamCollectionRate =
+        totals.totalAmount > 0
+          ? Number(
+              (
+                (totals.totalPaymentCollected / totals.totalAmount) *
+                100
+              ).toFixed(2)
+            )
+          : 0;
+      const teamDueRate =
+        totals.totalAmount > 0
+          ? Number(
+              ((totals.totalPaymentDue / totals.totalAmount) * 100).toFixed(2)
+            )
+          : 0;
+      const teamAOV =
+        totals.totalOrders > 0
+          ? Number((totals.totalAmount / totals.totalOrders).toFixed(2))
+          : 0;
+      return { team, rows, totals, teamCollectionRate, teamDueRate, teamAOV };
+    });
+
+    return withTotals;
+  }, [analyticsData, userRole, groupByTeam]);
+
+  const [expandedTeams, setExpandedTeams] = useState({});
+  const toggleTeam = useCallback((team) => {
+    setExpandedTeams((prev) => ({ ...prev, [team]: !prev[team] }));
+  }, []);
+
+  const adminTeamSections = useMemo(() => {
+    if (!(userRole === "Admin" && groupByTeam)) return null;
+
+    const personAggByLeader = new Map();
+    const leaderNameById = new Map();
+    const personNameById = new Map();
+
+    for (const order of filteredOrders) {
+      const createdById = order.createdBy?._id || "unknown";
+      const createdByName =
+        order.createdBy?.username?.trim() || "Sales Order Team";
+      const leaderId = order.createdBy?.assignedToLeader?._id || createdById;
+      const leaderName =
+        order.createdBy?.assignedToLeader?.username || createdByName;
+
+      leaderNameById.set(leaderId, leaderName);
+      personNameById.set(createdById, createdByName);
+
+      if (!personAggByLeader.has(leaderId)) {
+        personAggByLeader.set(leaderId, new Map());
+      }
+      const perPerson = personAggByLeader.get(leaderId);
+
+      if (!perPerson.has(createdById)) {
+        perPerson.set(createdById, {
+          personId: createdById,
+          personName: createdByName,
+          totalOrders: 0,
+          totalAmount: 0,
+          totalPaymentCollected: 0,
+          totalPaymentDue: 0,
+          dueOver30Days: 0,
+          totalUnitPrice: 0,
+        });
+      }
+      const agg = perPerson.get(createdById);
+
+      const total = Number(order.total) || 0;
+      const paymentCollected = parseFloat(order.paymentCollected) || 0;
+      const paymentDue = parseFloat(order.paymentDue) || 0;
+      const unitPriceTotal =
+        order.products?.reduce((sum, product) => {
+          const unitPrice = Number(product.unitPrice) || 0;
+          const qty = Number(product.qty) || 0;
+          return sum + unitPrice * qty;
+        }, 0) || 0;
+
+      if (isFinite(total)) {
+        agg.totalOrders += 1;
+        agg.totalAmount += total;
+      }
+      if (isFinite(paymentCollected))
+        agg.totalPaymentCollected += paymentCollected;
+      if (isFinite(paymentDue)) agg.totalPaymentDue += paymentDue;
+      if (isFinite(unitPriceTotal)) agg.totalUnitPrice += unitPriceTotal;
+
+      const soDate = order.soDate ? new Date(order.soDate) : null;
+      const currentDate = new Date();
+      if (
+        soDate &&
+        !isNaN(soDate.getTime()) &&
+        isFinite(paymentDue) &&
+        paymentDue > 0
+      ) {
+        const daysSinceOrder = Math.floor(
+          (currentDate - soDate) / (1000 * 60 * 60 * 24)
+        );
+        if (daysSinceOrder > 30) agg.dueOver30Days += paymentDue;
+      }
+    }
+
+    const sections = [];
+    for (const [leaderId, perPerson] of personAggByLeader.entries()) {
+      const leaderName = leaderNameById.get(leaderId) || "Unknown";
+      const rows = Array.from(perPerson.values()).map((agg) => ({
+        personId: agg.personId,
+        createdBy: agg.personName,
+        totalOrders: agg.totalOrders,
+        totalAmount: Number(agg.totalAmount.toFixed(2)),
+        totalPaymentCollected: Number(agg.totalPaymentCollected.toFixed(2)),
+        totalPaymentDue: Number(agg.totalPaymentDue.toFixed(2)),
+        dueOver30Days: Number(agg.dueOver30Days.toFixed(2)),
+        totalUnitPrice: Number(agg.totalUnitPrice.toFixed(2)),
+      }));
+
+      const memberCount = rows.filter((r) => r.personId !== leaderId).length;
+      if (memberCount === 0) continue;
+
+      const totals = rows.reduce(
+        (acc, r) => ({
+          totalOrders: acc.totalOrders + r.totalOrders,
+          totalAmount: acc.totalAmount + r.totalAmount,
+          totalPaymentCollected:
+            acc.totalPaymentCollected + r.totalPaymentCollected,
+          totalPaymentDue: acc.totalPaymentDue + r.totalPaymentDue,
+          dueOver30Days: acc.dueOver30Days + r.dueOver30Days,
+          totalUnitPrice: acc.totalUnitPrice + r.totalUnitPrice,
+        }),
+        {
+          totalOrders: 0,
+          totalAmount: 0,
+          totalPaymentCollected: 0,
+          totalPaymentDue: 0,
+          dueOver30Days: 0,
+          totalUnitPrice: 0,
+        }
+      );
+
+      rows.sort((a, b) => {
+        if (a.personId === leaderId && b.personId !== leaderId) return -1;
+        if (b.personId === leaderId && a.personId !== leaderId) return 1;
+        if (b.totalAmount !== a.totalAmount)
+          return b.totalAmount - a.totalAmount;
+        return a.createdBy.localeCompare(b.createdBy);
+      });
+
+      sections.push({
+        teamId: leaderId,
+        teamName: leaderName,
+        memberCount,
+        totals,
+        rows,
+      });
+    }
+
+    sections.sort((a, b) => a.teamName.localeCompare(b.teamName));
+    return sections;
+  }, [filteredOrders, userRole, groupByTeam]);
+
   const handleExportToExcel = () => {
     try {
       const exportData = [
@@ -630,15 +895,28 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           "Total Unit Price (₹)": overallTotals.totalUnitPrice.toFixed(2),
         },
         {},
-        ...analyticsData.map((data) => ({
-          "Created By": data.createdBy,
-          "Total Orders": data.totalOrders,
-          "Total Amount (₹)": data.totalAmount.toFixed(2),
-          "Payment Collected (₹)": data.totalPaymentCollected.toFixed(2),
-          "Payment Due (₹)": data.totalPaymentDue.toFixed(2),
-          "Due Over 30 Days (₹)": data.dueOver30Days.toFixed(2),
-          "Total Unit Price (₹)": data.totalUnitPrice.toFixed(2),
-        })),
+        ...analyticsData.map((data) =>
+          userRole === "Admin" && groupByTeam
+            ? {
+                Team: data.teamName || "",
+                "Sales Person": data.createdBy,
+                "Total Orders": data.totalOrders,
+                "Total Amount (₹)": data.totalAmount.toFixed(2),
+                "Payment Collected (₹)": data.totalPaymentCollected.toFixed(2),
+                "Payment Due (₹)": data.totalPaymentDue.toFixed(2),
+                "Due Over 30 Days (₹)": data.dueOver30Days.toFixed(2),
+                "Total Unit Price (₹)": data.totalUnitPrice.toFixed(2),
+              }
+            : {
+                "Created By": data.createdBy,
+                "Total Orders": data.totalOrders,
+                "Total Amount (₹)": data.totalAmount.toFixed(2),
+                "Payment Collected (₹)": data.totalPaymentCollected.toFixed(2),
+                "Payment Due (₹)": data.totalPaymentDue.toFixed(2),
+                "Due Over 30 Days (₹)": data.dueOver30Days.toFixed(2),
+                "Total Unit Price (₹)": data.totalUnitPrice.toFixed(2),
+              }
+        ),
       ];
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -681,7 +959,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle date and salesperson reset
   const handleReset = useCallback(() => {
     setStartDate(null);
     setEndDate(null);
@@ -739,6 +1016,20 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                 ))}
               </StyledFormSelect>
             </SalesPersonSelectContainer>
+            {userRole === "Sales" && (
+              <ResetButton
+                onClick={() =>
+                  setSalesScope((v) => (v === "team" ? "own" : "team"))
+                }
+              >
+                {salesScope === "team" ? "Show Own Only" : "Show My Team"}
+              </ResetButton>
+            )}
+            {userRole === "Admin" && (
+              <ResetButton onClick={() => setGroupByTeam((v) => !v)}>
+                {groupByTeam ? "Show Per Person" : "Show Team-wise"}
+              </ResetButton>
+            )}
             <ResetButton onClick={handleReset}>
               <X size={16} />
               Reset
@@ -798,82 +1089,285 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                     })}
                   </TotalHeader>
                 </TotalHeaderRow>
-                <TableHeaderRow>
-                  <TableHeader>Sales Persons</TableHeader>
-                  <TableHeader>Total Orders</TableHeader>
-                  <TableHeader>Total Amount (₹)</TableHeader>
-                  <TableHeader>Payment Collected (₹)</TableHeader>
-                  <TableHeader>Payment Due (₹)</TableHeader>
-                  <TableHeader>Due Over 30 Days (₹)</TableHeader>
-                  <TableHeader>Total Unit Price (₹)</TableHeader>
-                </TableHeaderRow>
+                {userRole !== "Admin" || !groupByTeam ? (
+                  <TableHeaderRow>
+                    <TableHeader>Sales Persons</TableHeader>
+                    <TableHeader>Total Orders</TableHeader>
+                    <TableHeader>Total Amount (₹)</TableHeader>
+                    <TableHeader>Payment Collected (₹)</TableHeader>
+                    <TableHeader>Payment Due (₹)</TableHeader>
+                    <TableHeader>Due Over 30 Days (₹)</TableHeader>
+                    <TableHeader>Total Unit Price (₹)</TableHeader>
+                  </TableHeaderRow>
+                ) : (
+                  <TeamHeaderRow>
+                    <TeamHeader colSpan={8}>Team Analytics</TeamHeader>
+                  </TeamHeaderRow>
+                )}
               </thead>
               <tbody>
                 {analyticsData.length > 0 ? (
-                  analyticsData.map((data, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          {data.createdBy}
-                          {data.isTeamMember && (
-                            <span
+                  userRole === "Admin" && groupByTeam && adminTeamSections ? (
+                    adminTeamSections.map(
+                      ({ teamId, teamName, rows, totals, memberCount }) => (
+                        <React.Fragment key={teamId}>
+                          <TableRow>
+                            <TableCell
+                              colSpan={8}
                               style={{
-                                background: "#4f46e5",
-                                color: "white",
-                                fontSize: "10px",
-                                padding: "2px 6px",
-                                borderRadius: "10px",
-                                fontWeight: "bold",
+                                padding: 0,
+                                border: "none",
                               }}
-                              title="Team Member"
                             >
-                              TEAM
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{data.totalOrders}</TableCell>
-                      <TableCell>
-                        ₹
-                        {data.totalAmount.toLocaleString("en-IN", {
-                          maximumFractionDigits: 0,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        ₹
-                        {data.totalPaymentCollected.toLocaleString("en-IN", {
-                          maximumFractionDigits: 0,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        ₹
-                        {data.totalPaymentDue.toLocaleString("en-IN", {
-                          maximumFractionDigits: 0,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        ₹
-                        {data.dueOver30Days.toLocaleString("en-IN", {
-                          maximumFractionDigits: 0,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        ₹
-                        {data.totalUnitPrice.toLocaleString("en-IN", {
-                          maximumFractionDigits: 0,
-                        })}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "8px 12px",
+                                  background:
+                                    "linear-gradient(135deg, #4b5efa, #7e22ce)",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => toggleTeam(teamId)}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: 10,
+                                    alignItems: "center",
+                                    color: "white",
+                                    fontWeight: 700,
+                                    fontSize: 14,
+                                  }}
+                                >
+                                  <span style={{ fontSize: 12 }}>
+                                    {expandedTeams[teamId] ? "▾" : "▸"}
+                                  </span>
+                                  <span>Team: {teamName}</span>
+                                  <span>| Members: {memberCount}</span>
+                                  <span>| Orders: {totals.totalOrders}</span>
+                                  <span>
+                                    | Amount: ₹
+                                    {totals.totalAmount.toLocaleString(
+                                      "en-IN",
+                                      {
+                                        maximumFractionDigits: 0,
+                                      }
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                              {expandedTeams[teamId] && (
+                                <div
+                                  style={{ padding: 10, background: "#ffffff" }}
+                                >
+                                  <table
+                                    style={{
+                                      width: "100%",
+                                      borderCollapse: "collapse",
+                                    }}
+                                  >
+                                    <thead>
+                                      <tr style={{ background: "#f1f5f9" }}>
+                                        <th
+                                          style={{
+                                            textAlign: "left",
+                                            padding: 8,
+                                            fontSize: "0.9rem",
+                                            color: "#1e3a8a",
+                                          }}
+                                        >
+                                          Sales Person
+                                        </th>
+                                        <th
+                                          style={{
+                                            textAlign: "left",
+                                            padding: 8,
+                                            fontSize: "0.9rem",
+                                            color: "#1e3a8a",
+                                          }}
+                                        >
+                                          Total Orders
+                                        </th>
+                                        <th
+                                          style={{
+                                            textAlign: "left",
+                                            padding: 8,
+                                            fontSize: "0.9rem",
+                                            color: "#1e3a8a",
+                                          }}
+                                        >
+                                          Total Amount (₹)
+                                        </th>
+                                        <th
+                                          style={{
+                                            textAlign: "left",
+                                            padding: 8,
+                                            fontSize: "0.9rem",
+                                            color: "#1e3a8a",
+                                          }}
+                                        >
+                                          Collected (₹)
+                                        </th>
+                                        <th
+                                          style={{
+                                            textAlign: "left",
+                                            padding: 8,
+                                            fontSize: "0.9rem",
+                                            color: "#1e3a8a",
+                                          }}
+                                        >
+                                          Due (₹)
+                                        </th>
+                                        <th
+                                          style={{
+                                            textAlign: "left",
+                                            padding: 8,
+                                            fontSize: "0.9rem",
+                                            color: "#1e3a8a",
+                                          }}
+                                        >
+                                          Due &gt;30d (₹)
+                                        </th>
+                                        <th
+                                          style={{
+                                            textAlign: "left",
+                                            padding: 8,
+                                            fontSize: "0.9rem",
+                                            color: "#1e3a8a",
+                                          }}
+                                        >
+                                          Unit Price (₹)
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {rows.map((data, index) => (
+                                        <tr
+                                          key={`${teamId}-member-${index}`}
+                                          style={{
+                                            borderTop: "1px solid #e5e7eb",
+                                          }}
+                                        >
+                                          <td style={{ padding: 8 }}>
+                                            {data.createdBy || "Unknown"}
+                                          </td>
+                                          <td style={{ padding: 8 }}>
+                                            {data.totalOrders}
+                                          </td>
+                                          <td style={{ padding: 8 }}>
+                                            ₹
+                                            {data.totalAmount.toLocaleString(
+                                              "en-IN",
+                                              {
+                                                maximumFractionDigits: 0,
+                                              }
+                                            )}
+                                          </td>
+                                          <td style={{ padding: 8 }}>
+                                            ₹
+                                            {data.totalPaymentCollected.toLocaleString(
+                                              "en-IN",
+                                              { maximumFractionDigits: 0 }
+                                            )}
+                                          </td>
+                                          <td style={{ padding: 8 }}>
+                                            ₹
+                                            {data.totalPaymentDue.toLocaleString(
+                                              "en-IN",
+                                              {
+                                                maximumFractionDigits: 0,
+                                              }
+                                            )}
+                                          </td>
+                                          <td style={{ padding: 8 }}>
+                                            ₹
+                                            {data.dueOver30Days.toLocaleString(
+                                              "en-IN",
+                                              {
+                                                maximumFractionDigits: 0,
+                                              }
+                                            )}
+                                          </td>
+                                          <td style={{ padding: 8 }}>
+                                            ₹
+                                            {data.totalUnitPrice.toLocaleString(
+                                              "en-IN",
+                                              {
+                                                maximumFractionDigits: 0,
+                                              }
+                                            )}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        </React.Fragment>
+                      )
+                    )
+                  ) : (
+                    analyticsData
+                      .slice()
+                      .sort((a, b) => b.totalAmount - a.totalAmount)
+                      .map((data, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                              }}
+                            >
+                              {data.createdBy}
+                            </div>
+                          </TableCell>
+                          <TableCell>{data.totalOrders}</TableCell>
+                          <TableCell>
+                            ₹
+                            {data.totalAmount.toLocaleString("en-IN", {
+                              maximumFractionDigits: 0,
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            ₹
+                            {data.totalPaymentCollected.toLocaleString(
+                              "en-IN",
+                              {
+                                maximumFractionDigits: 0,
+                              }
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            ₹
+                            {data.totalPaymentDue.toLocaleString("en-IN", {
+                              maximumFractionDigits: 0,
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            ₹
+                            {data.dueOver30Days.toLocaleString("en-IN", {
+                              maximumFractionDigits: 0,
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            ₹
+                            {data.totalUnitPrice.toLocaleString("en-IN", {
+                              maximumFractionDigits: 0,
+                            })}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  )
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} style={{ textAlign: "center" }}>
+                    <TableCell colSpan={8} style={{ textAlign: "center" }}>
                       No data available
                     </TableCell>
                   </TableRow>

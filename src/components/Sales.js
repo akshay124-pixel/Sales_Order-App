@@ -2365,7 +2365,7 @@ const Sales = () => {
             <span style={{ fontSize: "1.2rem" }}>➔</span>
             Export Orders
           </Button>
-          {userRole === "Admin" && (
+          {(userRole === "Admin" || userRole === "Sales") && (
             <Button
               variant="primary"
               onClick={() => setIsDashboardOpen(true)}
