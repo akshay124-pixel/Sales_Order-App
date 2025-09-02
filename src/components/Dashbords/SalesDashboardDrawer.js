@@ -353,12 +353,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [selectedSalesPerson, setSelectedSalesPerson] = useState("All");
-  const userId = localStorage.getItem("userId");
-
-  // Helper function to check if order is from team member
-  const isTeamMemberOrder = (order) => {
-    return order.createdBy?._id !== userId;
-  };
 
   // Compute unique salespersons
   const uniqueSalesPersons = useMemo(() => {
@@ -516,9 +510,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     console.log("Computing sales analytics for orders:", filteredOrders);
     return filteredOrders.reduce((acc, order) => {
       const createdBy = order.createdBy?.username?.trim() || "Sales Order Team";
-      const isTeamMember = isTeamMemberOrder(order);
       console.log(
-        `Order ID: ${order.orderId || "N/A"}, CreatedBy: ${createdBy}, IsTeamMember: ${isTeamMember}`
+        `Order ID: ${order.orderId || "N/A"}, CreatedBy: ${createdBy}`
       );
 
       if (!acc[createdBy]) {
@@ -529,7 +522,6 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           totalPaymentDue: 0,
           dueOver30Days: 0,
           totalUnitPrice: 0,
-          isTeamMember: isTeamMember,
         };
       }
 
@@ -809,26 +801,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                 {analyticsData.length > 0 ? (
                   analyticsData.map((data, index) => (
                     <TableRow key={index}>
-                      <TableCell>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {data.createdBy}
-                          {data.isTeamMember && (
-                            <span 
-                              style={{ 
-                                background: '#4f46e5', 
-                                color: 'white', 
-                                fontSize: '10px', 
-                                padding: '2px 6px', 
-                                borderRadius: '10px',
-                                fontWeight: 'bold'
-                              }}
-                              title="Team Member"
-                            >
-                              TEAM
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
+                      <TableCell>{data.createdBy}</TableCell>
                       <TableCell>{data.totalOrders}</TableCell>
                       <TableCell>
                         ₹
