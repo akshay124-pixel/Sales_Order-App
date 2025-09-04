@@ -567,7 +567,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
 
       let groupKey;
       let showTeamBadge = false;
-      if (userRole === "Admin" && groupByTeam) {
+      if ((userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam) {
         groupKey = `${leaderName}:::${personName}`;
       } else {
         groupKey = personName;
@@ -577,7 +577,9 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       if (!acc[groupKey]) {
         acc[groupKey] = {
           teamName:
-            userRole === "Admin" && groupByTeam ? leaderName : undefined,
+            (userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam
+              ? leaderName
+              : undefined,
           personName: personName,
           totalOrders: 0,
           totalAmount: 0,
@@ -681,7 +683,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   }));
 
   const groupedAnalytics = useMemo(() => {
-    if (!(userRole === "Admin" && groupByTeam)) return null;
+    if (!((userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam))
+      return null;
 
     const groups = new Map();
     for (const row of analyticsData) {
@@ -753,7 +756,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   }, []);
 
   const adminTeamSections = useMemo(() => {
-    if (!(userRole === "Admin" && groupByTeam)) return null;
+    if (!((userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam))
+      return null;
 
     const personAggByLeader = new Map();
     const leaderNameById = new Map();
@@ -896,7 +900,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         },
         {},
         ...analyticsData.map((data) =>
-          userRole === "Admin" && groupByTeam
+          (userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam
             ? {
                 Team: data.teamName || "",
                 "Sales Person": data.createdBy,
@@ -1025,7 +1029,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                 {salesScope === "team" ? "Show Own Only" : "Show My Team"}
               </ResetButton>
             )}
-            {userRole === "Admin" && (
+            {(userRole === "Admin" || userRole === "SuperAdmin") && (
               <ResetButton onClick={() => setGroupByTeam((v) => !v)}>
                 {groupByTeam ? "Show Per Person" : "Show Team-wise"}
               </ResetButton>
@@ -1089,7 +1093,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                     })}
                   </TotalHeader>
                 </TotalHeaderRow>
-                {userRole !== "Admin" || !groupByTeam ? (
+                {(userRole !== "Admin" && userRole !== "SuperAdmin") ||
+                !groupByTeam ? (
                   <TableHeaderRow>
                     <TableHeader>Sales Persons</TableHeader>
                     <TableHeader>Total Orders</TableHeader>
@@ -1107,7 +1112,9 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               </thead>
               <tbody>
                 {analyticsData.length > 0 ? (
-                  userRole === "Admin" && groupByTeam && adminTeamSections ? (
+                  (userRole === "Admin" || userRole === "SuperAdmin") &&
+                  groupByTeam &&
+                  adminTeamSections ? (
                     adminTeamSections.map(
                       ({ teamId, teamName, rows, totals, memberCount }) => (
                         <React.Fragment key={teamId}>

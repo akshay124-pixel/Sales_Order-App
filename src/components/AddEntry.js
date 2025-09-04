@@ -313,7 +313,7 @@ function AddEntry({ onSubmit, onClose }) {
     e.preventDefault();
 
     const userRole = localStorage.getItem("role");
-    if (!["Sales", "Admin"].includes(userRole)) {
+    if (!["Sales", "Admin", "SuperAdmin"].includes(userRole)) {
       toast.error("You do not have permission to create orders.");
       return;
     }

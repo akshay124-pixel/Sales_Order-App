@@ -1489,11 +1489,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       <StyledButton variant="primary" onClick={() => setView("edit")}>
         Edit Full Details
       </StyledButton>
-      {userRole === "Admin" && (
-        <StyledButton variant="info" onClick={() => setView("update")}>
-          Update Approvals
-        </StyledButton>
-      )}
+      {(userRole === "Admin" || userRole === "SuperAdmin") && (
+          <StyledButton variant="info" onClick={() => setView("update")}>
+            Update Approvals
+          </StyledButton>
+        )}
     </div>
   );
 

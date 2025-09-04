@@ -484,7 +484,7 @@ const TeamBuilder = ({ isOpen, onClose, userId }) => {
     }
   }, []);
 
-  // GET /api/fetch-available-users -> users without a leader (Sales/Admin)
+  // GET /api/fetch-available-users -> users without a leader
   const fetchAvailableUsers = useCallback(async () => {
     try {
       setLoading(true);

@@ -354,23 +354,23 @@ const FilterSection = ({
         aria-label="Search orders by keyword"
       />
       <FilterGroup>
-        {userRole === "Admin" && (
-          <OverlayTrigger
-            trigger="click"
-            placement="bottom"
-            overlay={notificationPopover}
-            rootClose
-          >
-            <NotificationWrapper aria-label="View notifications">
-              <NotificationIcon />
-              {notifications.filter((notif) => !notif.isRead).length > 0 && (
-                <NotificationBadge>
-                  {notifications.filter((notif) => !notif.isRead).length}
-                </NotificationBadge>
-              )}
-            </NotificationWrapper>
-          </OverlayTrigger>
-        )}
+        {(userRole === "Admin" || userRole === "SuperAdmin")  && (
+            <OverlayTrigger
+              trigger="click"
+              placement="bottom"
+              overlay={notificationPopover}
+              rootClose
+            >
+              <NotificationWrapper aria-label="View notifications">
+                <NotificationIcon />
+                {notifications.filter((notif) => !notif.isRead).length > 0 && (
+                  <NotificationBadge>
+                    {notifications.filter((notif) => !notif.isRead).length}
+                  </NotificationBadge>
+                )}
+              </NotificationWrapper>
+            </OverlayTrigger>
+          )}
         <DatePickerWrapper>
           <DatePicker
             selected={startDate}
