@@ -1038,10 +1038,12 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               <X size={16} />
               Reset
             </ResetButton>
-            <ExportButton onClick={handleExportToExcel}>
-              <Download size={18} />
-              Export
-            </ExportButton>
+            {userRole === "SuperAdmin" && (
+              <ExportButton onClick={handleExportToExcel}>
+                <Download size={18} />
+                Export
+              </ExportButton>
+            )}
             <CloseButton onClick={onClose}>
               <X size={18} />
               Close
