@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button, Form, Badge } from "react-bootstrap";
 import { FaEye } from "react-icons/fa";
-import { io } from "socket.io-client"; // Socket.IO client import
+import { io } from "socket.io-client";
 import ViewEntry from "./ViewEntry";
 import EditProductionApproval from "./EditProductionApproval";
 import axios from "axios";
@@ -18,13 +18,22 @@ const ProductionApproval = () => {
   const [productMatchCount, setProductMatchCount] = useState(0);
 
   // Socket.IO integration for real-time updates
+  // Socket.IO integration for real-time updates
   useEffect(() => {
     const socket = io(`${process.env.REACT_APP_URL}`, {
+      path: "/socket.io/",
+      withCredentials: true,
       auth: { token: localStorage.getItem("token") },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      transports: ["websocket", "polling"],
     });
 
     socket.on("connect", () => {
-      console.log("Socket.IO se connect ho gaya!");
+      console.log("✅ Socket.IO connected:", socket.id);
+      toast.success("Real-time updates connected!");
+      socket.emit("join", "global");
     });
 
     socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
@@ -35,15 +44,29 @@ const ProductionApproval = () => {
             : order
         )
       );
-      toast.info(`Order ${orderId} updated: ${notification.message}`);
+      toast.info(`📢 Order ${orderId} updated: ${notification.message}`);
     });
 
-    socket.on("disconnect", () => {
-      console.log("Socket.IO se disconnect ho gaya!");
+    socket.on("disconnect", (reason) => {
+      console.log("⚠️ Socket.IO disconnected:", reason);
+      if (reason !== "io client disconnect") {
+        toast.warn("Disconnected. Reconnecting...");
+      }
+    });
+
+    socket.on("reconnect", (attempt) => {
+      console.log("🔄 Reconnected after attempt:", attempt);
+      toast.success("Reconnected to server!");
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("❌ Connection error:", error.message);
+      toast.error(`Connection failed: ${error.message}`);
     });
 
     return () => {
       socket.disconnect();
+      console.log("🔌 Socket.IO disconnected (cleanup)");
     };
   }, []);
 
