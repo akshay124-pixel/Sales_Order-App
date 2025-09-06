@@ -354,23 +354,23 @@ const FilterSection = ({
         aria-label="Search orders by keyword"
       />
       <FilterGroup>
-        {(userRole === "Admin" || userRole === "SuperAdmin")  && (
-            <OverlayTrigger
-              trigger="click"
-              placement="bottom"
-              overlay={notificationPopover}
-              rootClose
-            >
-              <NotificationWrapper aria-label="View notifications">
-                <NotificationIcon />
-                {notifications.filter((notif) => !notif.isRead).length > 0 && (
-                  <NotificationBadge>
-                    {notifications.filter((notif) => !notif.isRead).length}
-                  </NotificationBadge>
-                )}
-              </NotificationWrapper>
-            </OverlayTrigger>
-          )}
+        {(userRole === "Admin" || userRole === "SuperAdmin") && (
+          <OverlayTrigger
+            trigger="click"
+            placement="bottom"
+            overlay={notificationPopover}
+            rootClose
+          >
+            <NotificationWrapper aria-label="View notifications">
+              <NotificationIcon />
+              {notifications.filter((notif) => !notif.isRead).length > 0 && (
+                <NotificationBadge>
+                  {notifications.filter((notif) => !notif.isRead).length}
+                </NotificationBadge>
+              )}
+            </NotificationWrapper>
+          </OverlayTrigger>
+        )}
         <DatePickerWrapper>
           <DatePicker
             selected={startDate}
@@ -435,16 +435,22 @@ const FilterSection = ({
             {orderTypeFilter === "All" ? "Order Type" : orderTypeFilter}
           </StyledDropdownToggle>
           <StyledDropdownMenu>
-            {["All", "B2G", "B2C", "B2B", "Demo", "Replacement"].map(
-              (option) => (
-                <StyledDropdownItem
-                  key={option}
-                  onClick={() => setOrderTypeFilter(option)}
-                >
-                  {option}
-                </StyledDropdownItem>
-              )
-            )}
+            {[
+              "All",
+              "B2G",
+              "B2C",
+              "B2B",
+              "Demo",
+              "Stock Out",
+              "Replacement",
+            ].map((option) => (
+              <StyledDropdownItem
+                key={option}
+                onClick={() => setOrderTypeFilter(option)}
+              >
+                {option}
+              </StyledDropdownItem>
+            ))}
           </StyledDropdownMenu>
         </Dropdown>
         <Dropdown>

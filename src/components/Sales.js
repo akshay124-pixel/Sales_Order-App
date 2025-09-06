@@ -929,37 +929,12 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[52],
-          content: (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-              }}
-            >
-              {order.createdBy && typeof order.createdBy === "object"
-                ? order.createdBy.username || "Unknown"
-                : typeof order.createdBy === "string"
-                ? order.createdBy
-                : "-"}
-              {isTeamMemberOrder() && (
-                <span
-                  style={{
-                    background: "#4f46e5",
-                    color: "white",
-                    fontSize: "10px",
-                    padding: "2px 6px",
-                    borderRadius: "10px",
-                    fontWeight: "bold",
-                  }}
-                  title="Team Member Order"
-                >
-                  TEAM
-                </span>
-              )}
-            </div>
-          ),
+          content:
+            order.createdBy && typeof order.createdBy === "object"
+              ? order.createdBy.username || "Unknown"
+              : typeof order.createdBy === "string"
+              ? order.createdBy
+              : "-",
           title:
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
@@ -2275,41 +2250,41 @@ const Sales = () => {
             <span style={{ fontSize: "1.2rem" }}>👥</span>
             Manage Team
           </Button>
-          {(userRole === "Admin" || userRole === "SuperAdmin")  && (
-              <label
-                style={{
-                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                  color: "white",
-                  padding: "12px 24px",
-                  borderRadius: "30px",
-                  fontWeight: "600",
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-                  transition: "all 0.4s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = "scale(1.05)";
-                  e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = "scale(1)";
-                  e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
-                }}
-              >
-                <span style={{ fontSize: "1.2rem" }}>⬅</span>
-                Bulk Upload
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  onChange={handleFileUpload}
-                  style={{ display: "none" }}
-                />
-              </label>
-            )}
+          {(userRole === "Admin" || userRole === "SuperAdmin") && (
+            <label
+              style={{
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                color: "white",
+                padding: "12px 24px",
+                borderRadius: "30px",
+                fontWeight: "600",
+                fontSize: "1rem",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
+                transition: "all 0.4s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+                e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+                e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>⬅</span>
+              Bulk Upload
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileUpload}
+                style={{ display: "none" }}
+              />
+            </label>
+          )}
           <Button
             onClick={() => setIsAddModalOpen(true)}
             style={{
