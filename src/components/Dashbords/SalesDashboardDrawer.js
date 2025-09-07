@@ -510,8 +510,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           );
         }
       })();
-      const socket = io(`${process.env.REACT_APP_WEB}`, {
-        path: "/sales/socket.io/",
+      const socket = io(`${process.env.REACT_APP_URL}`, {
+        path: "/socket.io/",
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
