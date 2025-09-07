@@ -606,8 +606,9 @@ const TeamBuilder = ({ isOpen, onClose, userId }) => {
   // TeamBuilder: Socket.IO integration for live team updates
   useEffect(() => {
     if (!isOpen) return;
-    const socket = io(`${process.env.REACT_APP_URL}/sales`, {
-      path: "/sales/socket.io/", // ✅ fixed subpath for nginx + backend
+
+    const socket = io(process.env.REACT_APP_URL, {
+      path: "/socket.io/", // ✅ fixed subpath for nginx + backend
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
