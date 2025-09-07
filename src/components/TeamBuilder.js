@@ -609,7 +609,7 @@ const TeamBuilder = ({ isOpen, onClose, userId }) => {
 
     const socket = io(process.env.REACT_APP_URL, {
       reconnection: true,
-      path: "/sales/socket.io/",
+      path: "/socket.io/",
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });

@@ -21,7 +21,7 @@ const ProductionApproval = () => {
   // Socket.IO integration for real-time updates
   useEffect(() => {
     const socket = io(`${process.env.REACT_APP_URL}`, {
-      path: "/sales/socket.io/",
+      path: "/socket.io/",
       withCredentials: true,
       auth: { token: localStorage.getItem("token") },
       reconnection: true,
