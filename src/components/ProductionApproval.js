@@ -20,14 +20,14 @@ const ProductionApproval = () => {
   // Socket.IO integration for real-time updates
   // Socket.IO integration for real-time updates
   useEffect(() => {
-    const socket = io(`${process.env.REACT_APP_URL}`, {
-      path: "/socket.io/",
-      withCredentials: true,
-      auth: { token: localStorage.getItem("token") },
+    const socket = io(process.env.REACT_APP_URL, {
+      path: "/sales/socket.io/", // ✅ fixed path for sub-app
+      withCredentials: true, // ✅ important for cookies/sessions
+      auth: { token: localStorage.getItem("token") }, // ✅ secure auth
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      transports: ["websocket", "polling"],
+      transports: ["websocket", "polling"], // ✅ stable transport
     });
 
     socket.on("connect", () => {

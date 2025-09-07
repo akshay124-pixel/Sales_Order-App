@@ -511,11 +511,12 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         }
       })();
       const socket = io(`${process.env.REACT_APP_URL}`, {
-        path: "/socket.io/",
+        path: "/sales/socket.io/",
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         transports: ["websocket", "polling"],
+        withCredentials: true,
       });
 
       socket.on("connect", () => {

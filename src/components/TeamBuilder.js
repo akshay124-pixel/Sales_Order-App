@@ -608,26 +608,37 @@ const TeamBuilder = ({ isOpen, onClose, userId }) => {
     if (!isOpen) return;
 
     const socket = io(process.env.REACT_APP_URL, {
+      path: "/sales/socket.io/", // ✅ fixed subpath for nginx + backend
       reconnection: true,
-      path: "/socket.io/",
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      transports: ["websocket", "polling"], // ✅ stable transport
+      withCredentials: true, // ✅ cookies/session support
     });
 
     socket.on("connect", () => {
-      console.log("Socket.IO connected for TeamBuilder:", socket.id);
+      console.log("✅ Socket.IO connected for TeamBuilder:", socket.id);
       socket.emit("join", { userId, role: "Sales" });
     });
 
     socket.on("teamUpdate", ({ userId: updatedUserId, leaderId, action }) => {
-      console.log("Received teamUpdate:", { updatedUserId, leaderId, action });
+      console.log("📢 Received teamUpdate:", {
+        updatedUserId,
+        leaderId,
+        action,
+      });
       if (leaderId === userId) {
         handleRefresh();
       }
     });
 
+    socket.on("connect_error", (error) => {
+      console.error("❌ TeamBuilder socket connection error:", error.message);
+    });
+
     return () => {
       socket.disconnect();
+      console.log("🔌 TeamBuilder socket disconnected");
     };
   }, [isOpen, userId, handleRefresh]);
 
