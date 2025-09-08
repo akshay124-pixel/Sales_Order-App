@@ -510,13 +510,20 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
           );
         }
       })();
-      const socket = io(`${process.env.REACT_APP_URL}`, {
+      const baseOrigin = (() => {
+        try {
+          return new URL(process.env.REACT_APP_URL).origin;
+        } catch {
+          return process.env.REACT_APP_URL;
+        }
+      })();
+      const socket = io(baseOrigin, {
         path: "/sales/socket.io",
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        transports: ["websocket", "polling"],
         withCredentials: true,
+        transports: ["websocket", "polling"],
       });
 
       socket.on("connect", () => {

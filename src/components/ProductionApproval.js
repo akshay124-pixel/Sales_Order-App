@@ -18,22 +18,27 @@ const ProductionApproval = () => {
   const [productMatchCount, setProductMatchCount] = useState(0);
 
   // Socket.IO integration for real-time updates
-  // Socket.IO integration for real-time updates
   useEffect(() => {
-    const socket = io(process.env.REACT_APP_URL, {
-      path: "/sales/socket.io", // ✅ fixed path for sub-app
-      withCredentials: true, // ✅ important for cookies/sessions
-      auth: { token: localStorage.getItem("token") }, // ✅ secure auth
+    const baseOrigin = (() => {
+      try {
+        return new URL(process.env.REACT_APP_URL).origin;
+      } catch {
+        return process.env.REACT_APP_URL;
+      }
+    })();
+
+    const socket = io(baseOrigin, {
+      path: "/sales/socket.io",
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      transports: ["websocket", "polling"], // ✅ stable transport
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+      auth: { token: localStorage.getItem("token") },
     });
 
     socket.on("connect", () => {
-      console.log("✅ Socket.IO connected:", socket.id);
-      toast.success("Real-time updates connected!");
-      socket.emit("join", "global");
+      console.log("Socket.IO se connect ho gaya!");
     });
 
     socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
@@ -44,29 +49,15 @@ const ProductionApproval = () => {
             : order
         )
       );
-      toast.info(`📢 Order ${orderId} updated: ${notification.message}`);
+      toast.info(`Order ${orderId} updated: ${notification.message}`);
     });
 
-    socket.on("disconnect", (reason) => {
-      console.log("⚠️ Socket.IO disconnected:", reason);
-      if (reason !== "io client disconnect") {
-        toast.warn("Disconnected. Reconnecting...");
-      }
-    });
-
-    socket.on("reconnect", (attempt) => {
-      console.log("🔄 Reconnected after attempt:", attempt);
-      toast.success("Reconnected to server!");
-    });
-
-    socket.on("connect_error", (error) => {
-      console.error("❌ Connection error:", error.message);
-      toast.error(`Connection failed: ${error.message}`);
+    socket.on("disconnect", () => {
+      console.log("Socket.IO se disconnect ho gaya!");
     });
 
     return () => {
       socket.disconnect();
-      console.log("🔌 Socket.IO disconnected (cleanup)");
     };
   }, []);
 
