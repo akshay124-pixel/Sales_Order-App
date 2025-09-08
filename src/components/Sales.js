@@ -1083,7 +1083,7 @@ const Sales = () => {
   // WebSocket setup
   useEffect(() => {
     const socket = io(`${process.env.REACT_APP_URL}`, {
-      path: "/socket.io/",
+      path: "/sales/socket.io",
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
