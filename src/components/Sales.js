@@ -1082,12 +1082,20 @@ const Sales = () => {
 
   // WebSocket setup
   useEffect(() => {
-    const socket = io(`${process.env.REACT_APP_URL}`, {
+    const baseOrigin = (() => {
+      try {
+        return new URL(process.env.REACT_APP_URL).origin;
+      } catch {
+        return process.env.REACT_APP_URL; // fallback
+      }
+    })();
+
+    const socket = io(baseOrigin, {
       path: "/sales/socket.io",
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      transports: ["websocket", "polling"],
       withCredentials: true,
     });
 
