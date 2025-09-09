@@ -1109,37 +1109,52 @@ const Sales = () => {
       console.error("Socket.IO connection error:", error);
     });
 
-    socket.on("newOrder", ({ notification }) => {
+    socket.on("newOrder", (payload) => {
+      // Accept only if this user is the owner or assignee
+      const currentUserId = userId;
+      const owners = [payload?.createdBy, payload?.assignedTo].filter(Boolean);
+      if (!owners.includes(currentUserId)) return;
       setOrders((prev) => {
-        if (prev.some((o) => o._id === notification._id)) return prev;
-        return [notification, ...prev];
+        if (prev.some((o) => o._id === payload._id)) return prev;
+        return [payload, ...prev];
       });
-      setNotifications((prev) => {
-        if (prev.some((n) => n.id === notification.id)) return prev;
-        const updated = [notification, ...prev].slice(0, 50);
-        localStorage.setItem("notifications", JSON.stringify(updated));
-        return updated;
-      });
-      toast.info(notification.message);
+      if (payload?.notification) {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === payload.notification.id)) return prev;
+          const updated = [payload.notification, ...prev].slice(0, 50);
+          localStorage.setItem("notifications", JSON.stringify(updated));
+          return updated;
+        });
+        toast.info(payload.notification.message);
+      }
     });
 
-    socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
-      setOrders((prev) => {
-        const updatedOrders = prev.map((order) =>
-          order._id === _id ? { ...order, customername, orderId } : order
-        );
-        return updatedOrders;
-      });
-      setNotifications((prev) => {
-        if (prev.some((n) => n.id === notification.id)) return prev;
-        const updated = [notification, ...prev].slice(0, 50);
-        localStorage.setItem("notifications", JSON.stringify(updated));
-        return updated;
-      });
-      toast.info(notification.message);
+    socket.on("updateOrder", (payload) => {
+      const currentUserId = userId;
+      const owners = [payload?.createdBy, payload?.assignedTo].filter(Boolean);
+      if (!owners.includes(currentUserId)) return;
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === payload._id
+            ? { ...order, customername: payload.customername, orderId: payload.orderId }
+            : order
+        )
+      );
+      if (payload?.notification) {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === payload.notification.id)) return prev;
+          const updated = [payload.notification, ...prev].slice(0, 50);
+          localStorage.setItem("notifications", JSON.stringify(updated));
+          return updated;
+        });
+        toast.info(payload.notification.message);
+      }
     });
 
-    socket.on("orderUpdate", ({ operationType, documentId, fullDocument }) => {
+    socket.on("orderUpdate", ({ operationType, documentId, fullDocument, createdBy, assignedTo }) => {
+      const currentUserId = userId;
+      const owners = [createdBy, assignedTo].filter(Boolean);
+      if (!owners.includes(currentUserId)) return;
       if (operationType === "insert" && fullDocument) {
         setOrders((prev) => {
           if (prev.some((o) => o._id === documentId)) return prev;
