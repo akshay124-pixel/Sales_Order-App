@@ -1136,7 +1136,11 @@ const Sales = () => {
       setOrders((prev) =>
         prev.map((order) =>
           order._id === payload._id
-            ? { ...order, customername: payload.customername, orderId: payload.orderId }
+            ? {
+                ...order,
+                customername: payload.customername,
+                orderId: payload.orderId,
+              }
             : order
         )
       );
@@ -1151,17 +1155,20 @@ const Sales = () => {
       }
     });
 
-    socket.on("orderUpdate", ({ operationType, documentId, fullDocument, createdBy, assignedTo }) => {
-      const currentUserId = userId;
-      const owners = [createdBy, assignedTo].filter(Boolean);
-      if (!owners.includes(currentUserId)) return;
-      if (operationType === "insert" && fullDocument) {
-        setOrders((prev) => {
-          if (prev.some((o) => o._id === documentId)) return prev;
-          return [fullDocument, ...prev];
-        });
+    socket.on(
+      "orderUpdate",
+      ({ operationType, documentId, fullDocument, createdBy, assignedTo }) => {
+        const currentUserId = userId;
+        const owners = [createdBy, assignedTo].filter(Boolean);
+        if (!owners.includes(currentUserId)) return;
+        if (operationType === "insert" && fullDocument) {
+          setOrders((prev) => {
+            if (prev.some((o) => o._id === documentId)) return prev;
+            return [fullDocument, ...prev];
+          });
+        }
       }
-    });
+    );
 
     fetchOrders();
     fetchNotifications();
@@ -1881,11 +1888,6 @@ const Sales = () => {
         "Freight Status": order.freightstatus || "-",
         "Install Charges Status": order.installchargesstatus || "-",
         "Installation Status": order.installationStatus || "-",
-        "Sub Installation Status": order.subinstallationStatus || "-",
-        "Installation Completion Date": order.installationStatusDate
-          ? new Date(order.installationStatusDate).toLocaleDateString("en-GB")
-          : "-",
-        "Installation Engineer": order.installationeng || "-",
         Transporter: order.transporter || "-",
         Transporter: order.transporter || "-",
         "Transporter Details": order.transporterDetails || "-",
