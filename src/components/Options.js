@@ -22,14 +22,14 @@ export const productOptions = {
   OPS: {
     sizes: ["N/A"],
     specs: [
-      // i5 6th Gen
-      "i5 4TH GEN, 8GB RAM, 256GB ROM",
-      "i5 6th Gen, 8GB RAM, 256GB ROM",
-      "i5 6th Gen, 8GB RAM, 512GB ROM",
-      "i5 6th Gen, 8GB RAM, 1TB ROM",
-      "i5 6th Gen, 16GB RAM, 256GB ROM",
-      "i5 6th Gen, 16GB RAM, 512GB ROM",
-      "i5 6th Gen, 16GB RAM, 1TB ROM",
+      // i5 4th Gen
+      "i5 4th Gen, 8GB RAM, 256GB ROM",
+      "i5 4th Gen, 8GB RAM, 256GB ROM",
+      "i5 4th Gen, 8GB RAM, 512GB ROM",
+      "i5 4th Gen, 8GB RAM, 1TB ROM",
+      "i5 4th Gen, 16GB RAM, 256GB ROM",
+      "i5 4th Gen, 16GB RAM, 512GB ROM",
+      "i5 4th Gen, 16GB RAM, 1TB ROM",
 
       // i5 7th Gen
       "i5 7th Gen, 8GB RAM, 256GB ROM",
@@ -78,14 +78,6 @@ export const productOptions = {
       "i7 5th Gen, 16GB RAM, 256GB ROM",
       "i7 5th Gen, 16GB RAM, 512GB ROM",
       "i7 5th Gen, 16GB RAM, 1TB ROM",
-
-      // i7 6th Gen
-      "i7 6th Gen, 8GB RAM, 256GB ROM",
-      "i7 6th Gen, 8GB RAM, 512GB ROM",
-      "i7 6th Gen, 8GB RAM, 1TB ROM",
-      "i7 6th Gen, 16GB RAM, 256GB ROM",
-      "i7 6th Gen, 16GB RAM, 512GB ROM",
-      "i7 6th Gen, 16GB RAM, 1TB ROM",
 
       // i7 7th Gen
       "i7 7th Gen, 8GB RAM, 256GB ROM",
