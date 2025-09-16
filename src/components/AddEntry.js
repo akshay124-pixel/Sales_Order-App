@@ -387,7 +387,7 @@ function AddEntry({ onSubmit, onClose }) {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:4000/api/orders",
+        `${process.env.REACT_APP_URL}/api/orders`,
         formDataToSend,
         {
           headers: {
@@ -671,7 +671,8 @@ function AddEntry({ onSubmit, onClose }) {
                         borderRadius: "0.75rem",
                         backgroundColor: "#f8fafc",
                         padding: "0.5rem",
-                        transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+                        transition:
+                          "border-color 0.3s ease, box-shadow 0.3s ease",
                       }}
                     >
                       <label
@@ -679,7 +680,8 @@ function AddEntry({ onSubmit, onClose }) {
                         style={{
                           flex: 1,
                           padding: "0.5rem 1rem",
-                          background: "linear-gradient(135deg, #e2e8f0, #f8fafc)",
+                          background:
+                            "linear-gradient(135deg, #e2e8f0, #f8fafc)",
                           borderRadius: "0.5rem",
                           cursor: "pointer",
                           display: "flex",
@@ -699,7 +701,11 @@ function AddEntry({ onSubmit, onClose }) {
                         }
                       >
                         <svg
-                          style={{ width: "1.25rem", height: "1.25rem", color: "#6366f1" }}
+                          style={{
+                            width: "1.25rem",
+                            height: "1.25rem",
+                            color: "#6366f1",
+                          }}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -711,7 +717,9 @@ function AddEntry({ onSubmit, onClose }) {
                             d="M7 16V8m0 0l-4 4m4-4l4 4m6-4v8m0 0l4-4m-4 4l-4-4"
                           />
                         </svg>
-                        {poFile ? poFile.name : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                        {poFile
+                          ? poFile.name
+                          : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
                       </label>
                       <input
                         id="poFile"
@@ -1621,7 +1629,9 @@ function AddEntry({ onSubmit, onClose }) {
                       }}
                     >
                       <span>
-                        {product.productType} | {product.size} | {product.spec} | Qty: {product.qty} | Price: ₹{product.unitPrice} | GST: {product.gst} | Warranty: {product.warranty}
+                        {product.productType} | {product.size} | {product.spec}{" "}
+                        | Qty: {product.qty} | Price: ₹{product.unitPrice} |
+                        GST: {product.gst} | Warranty: {product.warranty}
                         {(product.productType === "IFPD" ||
                           product.productType === "Fujifilm-Printer") &&
                           product.modelNos &&
