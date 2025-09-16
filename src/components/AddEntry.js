@@ -17,12 +17,15 @@ import {
   productCode,
   dispatchFromOptions,
 } from "./Options";
+
 function AddEntry({ onSubmit, onClose }) {
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [loading, setLoading] = useState(false);
-  const [poFile, setPoFile] = useState(null); //
   const [products, setProducts] = useState([]);
+  const [poFile, setPoFile] = useState(null);
+  const [fileError, setFileError] = useState("");
+
   const [currentProduct, setCurrentProduct] = useState({
     productType: "",
     size: "",
@@ -33,7 +36,7 @@ function AddEntry({ onSubmit, onClose }) {
     modelNos: "",
     productCode: "",
     brand: "",
-    warranty: "", // New warranty field
+    warranty: "",
   });
 
   const [formData, setFormData] = useState({
@@ -69,42 +72,13 @@ function AddEntry({ onSubmit, onClose }) {
     demoDate: "",
     paymentTerms: "",
     creditDays: "",
-    dispatchFrom: "", // New field for dropdown
+    dispatchFrom: "",
     fulfillingStatus: "Pending",
   });
+
   const gstOptions =
     formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = [
-        "application/pdf",
-        "image/png",
-        "image/jpeg",
-        "image/jpg",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ];
-      if (!allowedTypes.includes(file.type)) {
-        toast.error("Please upload a PDF, PNG, JPG, or DOCX file");
-        e.target.value = null;
-        setPoFile(null);
-        return;
-      }
-      // Validate file size (e.g., max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("File size must be less than 5MB");
-        e.target.value = null;
-        setPoFile(null);
-        return;
-      }
-      setPoFile(file);
-    } else {
-      setPoFile(null);
-    }
-  };
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -142,6 +116,38 @@ function AddEntry({ onSubmit, onClose }) {
           ? { fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled" }
           : {}),
       }));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        setFileError("Please upload a PDF, PNG, JPG, or DOCX file");
+        toast.error("Please upload a PDF, PNG, JPG, or DOCX file");
+        e.target.value = null;
+        setPoFile(null);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setFileError("File size must be less than 5MB");
+        toast.error("File size must be less than 5MB");
+        e.target.value = null;
+        setPoFile(null);
+        return;
+      }
+      setPoFile(file);
+      setFileError("");
+    } else {
+      setPoFile(null);
+      setFileError("");
     }
   };
 
@@ -191,6 +197,7 @@ function AddEntry({ onSubmit, onClose }) {
       return newProduct;
     });
   };
+
   const addProduct = () => {
     if (
       !currentProduct.productType ||
@@ -249,6 +256,7 @@ function AddEntry({ onSubmit, onClose }) {
       paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
     }));
   };
+
   const removeProduct = (index) => {
     setProducts(products.filter((_, i) => i !== index));
     setFormData((prev) => ({
@@ -313,13 +321,13 @@ function AddEntry({ onSubmit, onClose }) {
     e.preventDefault();
 
     const userRole = localStorage.getItem("role");
-    if (!["Sales", "Admin", "SuperAdmin"].includes(userRole)) {
-      toast.error("You do not have permission to create orders.");
+    if (!["Sales", "Admin"].includes(userRole)) {
+      toast.error("Only Sales or Admin users can create orders");
       return;
     }
 
     if (formData.orderType === "B2G" && !formData.gemOrderNumber) {
-      toast.error("Please enter a GEM Order Number for B2G orders.");
+      toast.error("Please provide GEM Order Number for B2G orders");
       return;
     }
 
@@ -340,7 +348,6 @@ function AddEntry({ onSubmit, onClose }) {
         serialNos: [],
         modelNos: p.modelNos ? p.modelNos.split(",").map((m) => m.trim()) : [],
         brand: p.brand || "",
-        productCode: p.productCode || "",
         warranty:
           p.warranty ||
           (formData.orderType === "B2G" ? "As Per Tender" : "1 Year"),
@@ -364,7 +371,7 @@ function AddEntry({ onSubmit, onClose }) {
       dispatchFrom: formData.dispatchFrom || "",
       fulfillingStatus: formData.fulfillingStatus,
     };
-    // Create FormData for file upload
+
     const formDataToSend = new FormData();
     for (const key in newEntry) {
       if (Array.isArray(newEntry[key])) {
@@ -380,8 +387,8 @@ function AddEntry({ onSubmit, onClose }) {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${process.env.REACT_APP_URL}/api/orders`,
-        newEntry,
+        "http://localhost:4000/api/orders",
+        formDataToSend,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -393,38 +400,25 @@ function AddEntry({ onSubmit, onClose }) {
       onSubmit(response.data);
       onClose();
     } catch (error) {
-      console.error("Error creating order:", error);
-
-      let errorMessage = "Something went wrong while creating the order.";
-
-      if (error.response) {
-        if (error.response.status === 400) {
-          errorMessage =
-            "Some details are missing or incorrect. Please check the form.";
-        } else if (error.response.status === 401) {
-          errorMessage = "Your session has expired. Please log in again.";
-        } else if (error.response.status === 403) {
-          errorMessage = "You do not have permission to create this order.";
-        } else if (error.response.status === 404) {
-          errorMessage = "Order service not found. Please try again later.";
-        } else if (error.response.status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage =
-            error.response.data?.error ||
-            error.response.data?.message ||
-            errorMessage;
-        }
-      } else if (error.request) {
-        errorMessage =
-          "Unable to connect to the server. Please check your internet connection.";
-      }
-
+      console.error("Error:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Failed to create order. Please try again.";
       toast.error(errorMessage);
+      if (error.response?.status === 403) {
+        toast.error("Unauthorized: Insufficient permissions or invalid token");
+      } else if (error.response?.status === 400) {
+        console.error("Validation Error Details:", error.response?.data);
+        toast.error(
+          `Validation Error: ${JSON.stringify(error.response?.data)}`
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <>
       <div
@@ -589,7 +583,14 @@ function AddEntry({ onSubmit, onClose }) {
                   required: true,
                   placeholder: "Select Dispatch Location",
                 },
-
+                {
+                  label: "Attachment (Optional)",
+                  name: "poFile",
+                  type: "file",
+                  accept: ".pdf,.png,.jpg,.jpeg,.docx",
+                  placeholder: "Upload Attachment (PDF, PNG, JPG, DOCX)",
+                  onChange: handleFileChange,
+                },
                 ...(formData.orderType === "B2G"
                   ? [
                       {
@@ -612,7 +613,7 @@ function AddEntry({ onSubmit, onClose }) {
                       {
                         label: "Demo Date *",
                         name: "demoDate",
-                        type: "Date",
+                        type: "date",
                         required: true,
                       },
                     ]
@@ -661,6 +662,102 @@ function AddEntry({ onSubmit, onClose }) {
                         </option>
                       ))}
                     </select>
+                  ) : field.type === "file" ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "0.75rem",
+                        backgroundColor: "#f8fafc",
+                        padding: "0.5rem",
+                        transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+                      }}
+                    >
+                      <label
+                        htmlFor="poFile"
+                        style={{
+                          flex: 1,
+                          padding: "0.5rem 1rem",
+                          background: "linear-gradient(135deg, #e2e8f0, #f8fafc)",
+                          borderRadius: "0.5rem",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          fontSize: "0.95rem",
+                          color: "#475569",
+                          transition: "background 0.3s ease",
+                        }}
+                        onMouseOver={(e) =>
+                          (e.currentTarget.style.background =
+                            "linear-gradient(135deg, #d1d5db, #e5e7eb)")
+                        }
+                        onMouseOut={(e) =>
+                          (e.currentTarget.style.background =
+                            "linear-gradient(135deg, #e2e8f0, #f8fafc)")
+                        }
+                      >
+                        <svg
+                          style={{ width: "1.25rem", height: "1.25rem", color: "#6366f1" }}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M7 16V8m0 0l-4 4m4-4l4 4m6-4v8m0 0l4-4m-4 4l-4-4"
+                          />
+                        </svg>
+                        {poFile ? poFile.name : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                      </label>
+                      <input
+                        id="poFile"
+                        type="file"
+                        name={field.name}
+                        accept={field.accept}
+                        onChange={field.onChange}
+                        style={{
+                          display: "none",
+                        }}
+                      />
+                      {poFile && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPoFile(null);
+                            setFileError("");
+                            document.getElementById("poFile").value = null;
+                          }}
+                          style={{
+                            padding: "0.5rem",
+                            background: "none",
+                            border: "none",
+                            color: "#ef4444",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                          title="Remove File"
+                        >
+                          <svg
+                            style={{ width: "1.25rem", height: "1.25rem" }}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <input
                       type={field.type}
@@ -684,6 +781,17 @@ function AddEntry({ onSubmit, onClose }) {
                         cursor: field.disabled ? "not-allowed" : "text",
                       }}
                     />
+                  )}
+                  {fileError && field.name === "poFile" && (
+                    <span
+                      style={{
+                        color: "#ef4444",
+                        fontSize: "0.8rem",
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      {fileError}
+                    </span>
                   )}
                 </div>
               ))}
@@ -774,6 +882,9 @@ function AddEntry({ onSubmit, onClose }) {
                     }}
                   >
                     {field.label}
+                    {field.required && (
+                      <span style={{ color: "#f43f5e" }}>*</span>
+                    )}
                   </label>
                   <input
                     type={field.type}
@@ -783,6 +894,7 @@ function AddEntry({ onSubmit, onClose }) {
                     maxLength={field.maxLength}
                     inputMode={field.inputMode}
                     placeholder={field.placeholder}
+                    required={field.required}
                     style={{
                       padding: "0.75rem",
                       border: "1px solid #e2e8f0",
@@ -862,11 +974,11 @@ function AddEntry({ onSubmit, onClose }) {
                 },
                 {
                   label: "Shipping Address",
-                  required: true,
                   name: "shippingAddress",
-                  disabled: formData.sameAddress,
                   type: "text",
+                  required: true,
                   placeholder: "Enter Shipping Address",
+                  disabled: formData.sameAddress,
                 },
               ].map((field) => (
                 <div
@@ -882,6 +994,9 @@ function AddEntry({ onSubmit, onClose }) {
                     }}
                   >
                     {field.label}
+                    {field.required && (
+                      <span style={{ color: "#f43f5e" }}>*</span>
+                    )}
                   </label>
                   {field.type === "select" ? (
                     <select
@@ -940,6 +1055,7 @@ function AddEntry({ onSubmit, onClose }) {
                       placeholder={field.placeholder}
                       maxLength={field.maxLength}
                       pattern={field.pattern}
+                      required={field.required}
                       style={{
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
@@ -1094,7 +1210,6 @@ function AddEntry({ onSubmit, onClose }) {
                   />
                 </div>
               )}
-
               <div>
                 <label
                   style={{
@@ -1104,7 +1219,7 @@ function AddEntry({ onSubmit, onClose }) {
                   }}
                 >
                   Size
-                </label>{" "}
+                </label>
                 {currentProduct.productType === "Others" ||
                 (currentProduct.productType &&
                   !Object.keys(productOptions).includes(
@@ -1506,9 +1621,7 @@ function AddEntry({ onSubmit, onClose }) {
                       }}
                     >
                       <span>
-                        {product.productType} | {product.size} | {product.spec}{" "}
-                        | Qty: {product.qty} | Price: ₹{product.unitPrice} |
-                        GST: {product.gst} | Warranty: {product.warranty}
+                        {product.productType} | {product.size} | {product.spec} | Qty: {product.qty} | Price: ₹{product.unitPrice} | GST: {product.gst} | Warranty: {product.warranty}
                         {(product.productType === "IFPD" ||
                           product.productType === "Fujifilm-Printer") &&
                           product.modelNos &&
@@ -2077,26 +2190,26 @@ function AddEntry({ onSubmit, onClose }) {
           }
 
           h2 {
-            fontsize: 1.8rem;
+            font-size: 1.8rem;
           }
 
           h3 {
-            fontsize: 1.2rem;
+            font-size: 1.2rem;
           }
 
           label {
-            fontsize: 0.85rem;
+            font-size: 0.85rem;
           }
 
           input,
           select {
-            fontsize: 0.9rem;
+            font-size: 0.9rem;
             padding: 0.6rem;
           }
 
           button {
             padding: 0.6rem 1.2rem;
-            fontsize: 0.9rem;
+            font-size: 0.9rem;
           }
 
           .modal-container::-webkit-scrollbar {
@@ -2113,7 +2226,6 @@ function AddEntry({ onSubmit, onClose }) {
             border-radius: 10px;
           }
 
-          /* Ensure no horizontal overflow */
           .modal-container,
           .form-container,
           .grid-section,
