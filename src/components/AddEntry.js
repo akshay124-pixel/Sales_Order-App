@@ -2244,7 +2244,7 @@ function AddEntry({ onSubmit, onClose }) {
           >
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               style={{
                 padding: "0.75rem 1.5rem",
                 backgroundColor: "#e2e8f0",
