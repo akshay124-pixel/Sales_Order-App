@@ -77,103 +77,110 @@ function AddEntry({ onSubmit, onClose }) {
     fulfillingStatus: "Pending",
   });
 
-// Auto-save key for localStorage
-const AUTO_SAVE_KEY = "addEntryDraft";
+  // Auto-save key for localStorage
+  const AUTO_SAVE_KEY = "addEntryDraft";
 
-// Clear draft on successful submit or close
-const clearDraft = () => {
-  try {
-    localStorage.removeItem(AUTO_SAVE_KEY);
-    console.log("Draft cleared from localStorage");
-  } catch (error) {
-    console.error("Error clearing draft:", error);
-    toast.error("Failed to clear draft.");
-  }
-};
-
-// Load draft from localStorage on mount
-useEffect(() => {
-  try {
-    const savedDraft = localStorage.getItem(AUTO_SAVE_KEY);
-    console.log("Retrieved draft:", savedDraft);
-    if (savedDraft) {
-      const parsedDraft = JSON.parse(savedDraft);
-      console.log("Parsed draft:", parsedDraft);
-      setFormData((prev) => {
-        const updatedFormData = { ...prev, ...parsedDraft.formData };
-        console.log("Restored formData:", updatedFormData);
-        return updatedFormData;
-      });
-      setProducts(parsedDraft.products || []);
-      setCurrentProduct(parsedDraft.currentProduct || {
-        productType: "",
-        size: "",
-        spec: "",
-        qty: "",
-        unitPrice: "",
-        gst: "",
-        modelNos: "",
-        productCode: "",
-        brand: "",
-        warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
-      });
-      setSelectedState(parsedDraft.selectedState || "");
-      setSelectedCity(parsedDraft.selectedCity || "");
-      // toast.info("Restored draft from previous session!");
-    }
-  } catch (error) {
-    console.error("Error loading draft:", error);
-    toast.error("Failed to load draft. Please try again.");
-  }
-}, []);
-
-// Auto-save to localStorage with debounce
-useEffect(() => {
-  const handler = setTimeout(() => {
+  // Clear draft on successful submit or close
+  const clearDraft = () => {
     try {
-      const draft = {
-        formData,
-        products,
-        currentProduct,
-        selectedState,
-        selectedCity,
-      };
-      console.log("Auto-saving:", draft);
-      localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(draft));
-      console.log("Saved to localStorage:", localStorage.getItem(AUTO_SAVE_KEY));
+      localStorage.removeItem(AUTO_SAVE_KEY);
+      console.log("Draft cleared from localStorage");
     } catch (error) {
-      console.error("Error saving draft:", error);
-      toast.error("Failed to save draft. Please try again.");
+      console.error("Error clearing draft:", error);
+      toast.error("Failed to clear draft.");
     }
-  }, 500); 
+  };
 
-  return () => clearTimeout(handler); 
-}, [formData, products, currentProduct, selectedState, selectedCity]);
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedDraft = localStorage.getItem(AUTO_SAVE_KEY);
+      console.log("Retrieved draft:", savedDraft);
+      if (savedDraft) {
+        const parsedDraft = JSON.parse(savedDraft);
+        console.log("Parsed draft:", parsedDraft);
+        setFormData((prev) => {
+          const updatedFormData = { ...prev, ...parsedDraft.formData };
+          console.log("Restored formData:", updatedFormData);
+          return updatedFormData;
+        });
+        setProducts(parsedDraft.products || []);
+        setCurrentProduct(
+          parsedDraft.currentProduct || {
+            productType: "",
+            size: "",
+            spec: "",
+            qty: "",
+            unitPrice: "",
+            gst: "",
+            modelNos: "",
+            productCode: "",
+            brand: "",
+            warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+          }
+        );
+        setSelectedState(parsedDraft.selectedState || "");
+        setSelectedCity(parsedDraft.selectedCity || "");
+        // toast.info("Restored draft from previous session!");
+      }
+    } catch (error) {
+      console.error("Error loading draft:", error);
+      toast.error("Failed to load draft. Please try again.");
+    }
+  }, []);
 
-// Override onClose to clear draft if needed
-const handleClose = () => {
-  const hasDraft =
-    Object.values(formData).some(
-      (value) => value !== "" && value !== false && value !== "Pending"
-    ) || products.length > 0 || poFile;
-  if (hasDraft) {
-    setIsConfirmModalOpen(true);
-  } else {
+  // Auto-save to localStorage with debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      try {
+        const draft = {
+          formData,
+          products,
+          currentProduct,
+          selectedState,
+          selectedCity,
+        };
+        console.log("Auto-saving:", draft);
+        localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(draft));
+        console.log(
+          "Saved to localStorage:",
+          localStorage.getItem(AUTO_SAVE_KEY)
+        );
+      } catch (error) {
+        console.error("Error saving draft:", error);
+        toast.error("Failed to save draft. Please try again.");
+      }
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [formData, products, currentProduct, selectedState, selectedCity]);
+
+  // Override onClose to clear draft if needed
+  const handleClose = () => {
+    const hasDraft =
+      Object.values(formData).some(
+        (value) => value !== "" && value !== false && value !== "Pending"
+      ) ||
+      products.length > 0 ||
+      poFile;
+    if (hasDraft) {
+      setIsConfirmModalOpen(true);
+    } else {
+      onClose();
+    }
+  };
+  // New handlers for ConfirmModal actions
+  const handleConfirmDiscard = () => {
+    clearDraft();
+    setIsConfirmModalOpen(false);
     onClose();
-  }
-};
-// New handlers for ConfirmModal actions
-const handleConfirmDiscard = () => {
-  clearDraft();
-  setIsConfirmModalOpen(false);
-  onClose();
-};
+  };
 
-const handleCancelDiscard = () => {
-  setIsConfirmModalOpen(false); 
-   onClose();
-};
-// Auto Save Ends
+  const handleCancelDiscard = () => {
+    setIsConfirmModalOpen(false);
+    onClose();
+  };
+  // Auto Save Ends
   const gstOptions =
     formData.orderType === "B2G" ? ["18", "28", "including"] : ["18", "28"];
 
@@ -485,7 +492,7 @@ const handleCancelDiscard = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:4000/api/orders",
+        `${process.env.REACT_APP_URL}/api/orders`,
         formDataToSend,
         {
           headers: {
@@ -520,7 +527,7 @@ const handleCancelDiscard = () => {
 
   return (
     <>
-    <ConfirmModal
+      <ConfirmModal
         isOpen={isConfirmModalOpen}
         onConfirm={handleConfirmDiscard}
         onCancel={handleCancelDiscard}
@@ -776,7 +783,8 @@ const handleCancelDiscard = () => {
                         borderRadius: "0.75rem",
                         backgroundColor: "#f8fafc",
                         padding: "0.5rem",
-                        transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+                        transition:
+                          "border-color 0.3s ease, box-shadow 0.3s ease",
                       }}
                     >
                       <label
@@ -784,7 +792,8 @@ const handleCancelDiscard = () => {
                         style={{
                           flex: 1,
                           padding: "0.5rem 1rem",
-                          background: "linear-gradient(135deg, #e2e8f0, #f8fafc)",
+                          background:
+                            "linear-gradient(135deg, #e2e8f0, #f8fafc)",
                           borderRadius: "0.5rem",
                           cursor: "pointer",
                           display: "flex",
@@ -804,7 +813,11 @@ const handleCancelDiscard = () => {
                         }
                       >
                         <svg
-                          style={{ width: "1.25rem", height: "1.25rem", color: "#6366f1" }}
+                          style={{
+                            width: "1.25rem",
+                            height: "1.25rem",
+                            color: "#6366f1",
+                          }}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -816,7 +829,9 @@ const handleCancelDiscard = () => {
                             d="M7 16V8m0 0l-4 4m4-4l4 4m6-4v8m0 0l4-4m-4 4l-4-4"
                           />
                         </svg>
-                        {poFile ? poFile.name : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                        {poFile
+                          ? poFile.name
+                          : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
                       </label>
                       <input
                         id="poFile"
@@ -1726,7 +1741,9 @@ const handleCancelDiscard = () => {
                       }}
                     >
                       <span>
-                        {product.productType} | {product.size} | {product.spec} | Qty: {product.qty} | Price: ₹{product.unitPrice} | GST: {product.gst} | Warranty: {product.warranty}
+                        {product.productType} | {product.size} | {product.spec}{" "}
+                        | Qty: {product.qty} | Price: ₹{product.unitPrice} |
+                        GST: {product.gst} | Warranty: {product.warranty}
                         {(product.productType === "IFPD" ||
                           product.productType === "Fujifilm-Printer") &&
                           product.modelNos &&
