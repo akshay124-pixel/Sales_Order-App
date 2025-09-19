@@ -695,14 +695,6 @@ function AddEntry({ onSubmit, onClose }) {
                   required: true,
                   placeholder: "Select Dispatch Location",
                 },
-                {
-                  label: "Attachment (Optional)",
-                  name: "poFile",
-                  type: "file",
-                  accept: ".pdf,.png,.jpg,.jpeg,.docx",
-                  placeholder: "Upload Attachment (PDF, PNG, JPG, DOCX)",
-                  onChange: handleFileChange,
-                },
                 ...(formData.orderType === "B2G"
                   ? [
                       {
@@ -774,130 +766,6 @@ function AddEntry({ onSubmit, onClose }) {
                         </option>
                       ))}
                     </select>
-                  ) : field.type === "file" ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "0.75rem",
-                        backgroundColor: "#f8fafc",
-                        padding: "0.5rem",
-                        transition:
-                          "border-color 0.3s ease, box-shadow 0.3s ease",
-                        width: "100%",
-                        maxWidth: "300px", // Fixed width to match other fields
-                        height: "2.75rem", // Fixed height to prevent expansion
-                        boxSizing: "border-box",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <label
-                        htmlFor="poFile"
-                        style={{
-                          flex: 1,
-                          padding: "0.5rem 0.75rem",
-                          background:
-                            "linear-gradient(135deg, #e2e8f0, #f8fafc)",
-                          borderRadius: "0.5rem",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          fontSize: "0.95rem",
-                          color: "#475569",
-                          transition: "background 0.3s ease",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          height: "100%", // Ensure label fits container height
-                        }}
-                        onMouseOver={(e) =>
-                          (e.currentTarget.style.background =
-                            "linear-gradient(135deg, #d1d5db, #e5e7eb)")
-                        }
-                        onMouseOut={(e) =>
-                          (e.currentTarget.style.background =
-                            "linear-gradient(135deg, #e2e8f0, #f8fafc)")
-                        }
-                      >
-                        <svg
-                          style={{
-                            width: "1.25rem",
-                            height: "1.25rem",
-                            color: "#6366f1",
-                            flexShrink: 0, // Prevent icon shrinking
-                          }}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M7 16V8m0 0l-4 4m4-4l4 4m6-4v8m0 0l4-4m-4 4l-4-4"
-                          />
-                        </svg>
-                        <span
-                          style={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            flex: 1,
-                          }}
-                        >
-                          {poFile
-                            ? poFile.name
-                            : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
-                        </span>
-                      </label>
-                      <input
-                        id="poFile"
-                        type="file"
-                        name={field.name}
-                        accept={field.accept}
-                        onChange={field.onChange}
-                        style={{
-                          display: "none",
-                        }}
-                      />
-                      {poFile && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPoFile(null);
-                            setFileError("");
-                            document.getElementById("poFile").value = null;
-                          }}
-                          style={{
-                            padding: "0.5rem",
-                            background: "none",
-                            border: "none",
-                            color: "#ef4444",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            flexShrink: 0, // Prevent button shrinking
-                          }}
-                          title="Remove File"
-                        >
-                          <svg
-                            style={{ width: "1.25rem", height: "1.25rem" }}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
                   ) : (
                     <input
                       type={field.type}
@@ -921,17 +789,6 @@ function AddEntry({ onSubmit, onClose }) {
                         cursor: field.disabled ? "not-allowed" : "text",
                       }}
                     />
-                  )}
-                  {fileError && field.name === "poFile" && (
-                    <span
-                      style={{
-                        color: "#ef4444",
-                        fontSize: "0.8rem",
-                        marginTop: "0.25rem",
-                      }}
-                    >
-                      {fileError}
-                    </span>
                   )}
                 </div>
               ))}
@@ -2230,6 +2087,176 @@ function AddEntry({ onSubmit, onClose }) {
                       <option value="30">30 Days</option>
                     </select>
                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: "700",
+                marginBottom: "1rem",
+                letterSpacing: "1px",
+                fontFamily: "'Poppins', sans-serif",
+                textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              📎 Attachment
+            </h3>
+            <div
+              className="grid-section"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: "1.5rem",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <label
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    color: "#475569",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Attachment (Optional)
+                </label>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "0.75rem",
+                    backgroundColor: "#f8fafc",
+                    padding: "0.5rem",
+                    transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+                    width: "100%",
+                    maxWidth: "300px", // Fixed width to match other fields
+                    height: "2.75rem", // Fixed height to prevent expansion
+                    boxSizing: "border-box",
+                    overflow: "hidden",
+                  }}
+                >
+                  <label
+                    htmlFor="poFile"
+                    style={{
+                      flex: 1,
+                      padding: "0.5rem 0.75rem",
+                      background: "linear-gradient(135deg, #e2e8f0, #f8fafc)",
+                      borderRadius: "0.5rem",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      fontSize: "0.95rem",
+                      color: "#475569",
+                      transition: "background 0.3s ease",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      height: "100%", // Ensure label fits container height
+                    }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.background =
+                        "linear-gradient(135deg, #d1d5db, #e5e7eb)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.background =
+                        "linear-gradient(135deg, #e2e8f0, #f8fafc)")
+                    }
+                  >
+                    <svg
+                      style={{
+                        width: "1.25rem",
+                        height: "1.25rem",
+                        color: "#6366f1",
+                        flexShrink: 0, // Prevent icon shrinking
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M7 16V8m0 0l-4 4m4-4l4 4m6-4v8m0 0l4-4m-4 4l-4-4"
+                      />
+                    </svg>
+                    <span
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        flex: 1,
+                      }}
+                    >
+                      {poFile
+                        ? poFile.name
+                        : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                    </span>
+                  </label>
+                  <input
+                    id="poFile"
+                    type="file"
+                    name="poFile"
+                    accept=".pdf,.png,.jpg,.jpeg,.docx"
+                    onChange={handleFileChange}
+                    style={{
+                      display: "none",
+                    }}
+                  />
+                  {poFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPoFile(null);
+                        setFileError("");
+                        document.getElementById("poFile").value = null;
+                      }}
+                      style={{
+                        padding: "0.5rem",
+                        background: "none",
+                        border: "none",
+                        color: "#ef4444",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        flexShrink: 0, // Prevent button shrinking
+                      }}
+                      title="Remove File"
+                    >
+                      <svg
+                        style={{ width: "1.25rem", height: "1.25rem" }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                {fileError && (
+                  <span
+                    style={{
+                      color: "#ef4444",
+                      fontSize: "0.8rem",
+                      marginTop: "0.25rem",
+                    }}
+                  >
+                    {fileError}
+                  </span>
                 )}
               </div>
             </div>
