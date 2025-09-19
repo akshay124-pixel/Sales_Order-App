@@ -61,60 +61,56 @@ function ViewEntry({ isOpen, onClose, entry }) {
     return `${datePart} ${timePart}`;
   };
 
-const isValidPoFilePath = (filePath) => {
-  return (
-    filePath &&
-    typeof filePath === "string" &&
-    filePath.trim() !== "" &&
-    filePath !== "N/A" &&
-    filePath !== "/" &&
-    filePath.includes("/Uploads/") 
-
-  );
-};
+  const isValidPoFilePath = (filePath) => {
+    return (
+      filePath &&
+      typeof filePath === "string" &&
+      filePath.trim() !== "" &&
+      filePath !== "N/A" &&
+      filePath !== "/" &&
+      filePath.includes("/Uploads/")
+    );
+  };
   const handleDownload = useCallback(async () => {
     if (!isValidPoFilePath(entry?.poFilePath)) {
       toast.error("No valid PO file available to download!");
       return;
     }
-  
+
     try {
       const fileUrl = `${process.env.REACT_APP_URL}${
         entry.poFilePath.startsWith("/") ? "" : "/"
       }${entry.poFilePath}`;
-      
+
       // Validate file URL before attempting download
       if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
         toast.error("Invalid file path provided!");
         return;
       }
-  
+
       const response = await fetch(fileUrl, {
         method: "GET",
         headers: {
           Accept: "application/pdf,image/*",
         },
       });
-  
+
       if (!response.ok) {
         throw new Error(
           `Server error: ${response.status} ${response.statusText}`
         );
       }
-  
+
       const contentType = response.headers.get("content-type");
       if (
         !contentType ||
-        ![
-          "application/pdf",
-          "image/png",
-          "image/jpeg",
-          "image/jpg",
-        ].includes(contentType)
+        !["application/pdf", "image/png", "image/jpeg", "image/jpg"].includes(
+          contentType
+        )
       ) {
         throw new Error("Invalid file type returned from server!");
       }
-  
+
       const blob = await response.blob();
       const fileName =
         entry.poFilePath.split("/").pop() ||
@@ -481,7 +477,7 @@ const isValidPoFilePath = (filePath) => {
     { key: "report", label: "Reporting Person" },
     {
       key: "poFilePath",
-      label: "PO File",
+      label: "Attachments",
       renderer: () =>
         isValidPoFilePath(entry.poFilePath) ? (
           <Button
@@ -527,7 +523,7 @@ const isValidPoFilePath = (filePath) => {
             Download
           </Button>
         ) : (
-          <span>No PO file attached</span>
+          <span>No file attached</span>
         ),
     },
   ];
