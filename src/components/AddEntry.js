@@ -785,6 +785,8 @@ function AddEntry({ onSubmit, onClose }) {
                         padding: "0.5rem",
                         transition:
                           "border-color 0.3s ease, box-shadow 0.3s ease",
+                        width: "100%", // Ensure fixed width matching other fields
+                        boxSizing: "border-box",
                       }}
                     >
                       <label
@@ -802,6 +804,7 @@ function AddEntry({ onSubmit, onClose }) {
                           fontSize: "0.95rem",
                           color: "#475569",
                           transition: "background 0.3s ease",
+                          overflow: "hidden", // For the label
                         }}
                         onMouseOver={(e) =>
                           (e.currentTarget.style.background =
@@ -817,6 +820,7 @@ function AddEntry({ onSubmit, onClose }) {
                             width: "1.25rem",
                             height: "1.25rem",
                             color: "#6366f1",
+                            flexShrink: 0, // Prevent icon shrinking
                           }}
                           fill="none"
                           stroke="currentColor"
@@ -829,9 +833,18 @@ function AddEntry({ onSubmit, onClose }) {
                             d="M7 16V8m0 0l-4 4m4-4l4 4m6-4v8m0 0l4-4m-4 4l-4-4"
                           />
                         </svg>
-                        {poFile
-                          ? poFile.name
-                          : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                        <div
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            flex: 1,
+                          }}
+                        >
+                          {poFile
+                            ? poFile.name
+                            : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                        </div>
                       </label>
                       <input
                         id="poFile"
@@ -859,6 +872,7 @@ function AddEntry({ onSubmit, onClose }) {
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
+                            flexShrink: 0, // Prevent button shrinking
                           }}
                           title="Remove File"
                         >
