@@ -786,14 +786,17 @@ function AddEntry({ onSubmit, onClose }) {
                         transition:
                           "border-color 0.3s ease, box-shadow 0.3s ease",
                         width: "100%",
+                        maxWidth: "300px", // Fixed width to match other fields
+                        height: "2.75rem", // Fixed height to prevent expansion
                         boxSizing: "border-box",
+                        overflow: "hidden",
                       }}
                     >
                       <label
                         htmlFor="poFile"
                         style={{
                           flex: 1,
-                          padding: "0.5rem 1rem",
+                          padding: "0.5rem 0.75rem",
                           background:
                             "linear-gradient(135deg, #e2e8f0, #f8fafc)",
                           borderRadius: "0.5rem",
@@ -804,6 +807,10 @@ function AddEntry({ onSubmit, onClose }) {
                           fontSize: "0.95rem",
                           color: "#475569",
                           transition: "background 0.3s ease",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          height: "100%", // Ensure label fits container height
                         }}
                         onMouseOver={(e) =>
                           (e.currentTarget.style.background =
@@ -819,7 +826,7 @@ function AddEntry({ onSubmit, onClose }) {
                             width: "1.25rem",
                             height: "1.25rem",
                             color: "#6366f1",
-                            flexShrink: 0,
+                            flexShrink: 0, // Prevent icon shrinking
                           }}
                           fill="none"
                           stroke="currentColor"
@@ -832,9 +839,18 @@ function AddEntry({ onSubmit, onClose }) {
                             d="M7 16V8m0 0l-4 4m4-4l4 4m6-4v8m0 0l4-4m-4 4l-4-4"
                           />
                         </svg>
-                        {poFile
-                          ? poFile.name
-                          : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                        <span
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            flex: 1,
+                          }}
+                        >
+                          {poFile
+                            ? poFile.name
+                            : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                        </span>
                       </label>
                       <input
                         id="poFile"
@@ -862,7 +878,7 @@ function AddEntry({ onSubmit, onClose }) {
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
-                            flexShrink: 0,
+                            flexShrink: 0, // Prevent button shrinking
                           }}
                           title="Remove File"
                         >
