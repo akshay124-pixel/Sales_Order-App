@@ -2105,7 +2105,7 @@ function AddEntry({ onSubmit, onClose }) {
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.05)",
               }}
             >
-              📎 Attachment
+              📎 Attachment (Optional)
             </h3>
             <div
               className="grid-section"
@@ -2116,16 +2116,6 @@ function AddEntry({ onSubmit, onClose }) {
               }}
             >
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Attachment (Optional)
-                </label>
                 <div
                   style={{
                     display: "flex",
