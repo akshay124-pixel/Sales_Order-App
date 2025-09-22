@@ -312,7 +312,7 @@ const Navbar = ({ isAuthenticated, onLogout, userRole }) => {
                     style={{
                       position: "absolute",
                       top: "100%",
-                      right: 0,
+                      right: -24,
                       backgroundColor: "white",
                       border: "none",
                       borderRadius: "12px",
