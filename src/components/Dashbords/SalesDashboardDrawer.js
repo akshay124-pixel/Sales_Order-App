@@ -40,6 +40,12 @@ const DrawerContainer = styled.div`
   font-family: "Poppins", sans-serif;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    height: 90vh;
+    max-height: 90vh;
+    padding: 10px;
+  }
 `;
 
 const DrawerHeader = styled.div`
@@ -52,6 +58,13 @@ const DrawerHeader = styled.div`
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 10px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px;
+    gap: 8px;
+  }
 `;
 
 const DrawerTitle = styled.h3`
@@ -59,6 +72,10 @@ const DrawerTitle = styled.h3`
   font-weight: 700;
   font-size: 1.2rem;
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const ButtonContainer = styled.div`
@@ -66,6 +83,12 @@ const ButtonContainer = styled.div`
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
 `;
 
 const CloseButton = styled(Button)`
@@ -79,6 +102,12 @@ const CloseButton = styled(Button)`
   font-size: 0.9rem;
   &:hover {
     background: #b02a37;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.8rem;
   }
 `;
 
@@ -94,6 +123,12 @@ const ExportButton = styled(Button)`
   &:hover {
     background: #218838;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.8rem;
+  }
 `;
 
 const DatePickerContainer = styled.div`
@@ -102,6 +137,10 @@ const DatePickerContainer = styled.div`
   flex-direction: column;
   gap: 5px;
   z-index: 2000;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const StyledDatePicker = styled(DatePicker)`
@@ -121,6 +160,12 @@ const StyledDatePicker = styled(DatePicker)`
   &::placeholder {
     color: #6b7280;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 `;
 
 const DatePickerIcon = styled(Calendar)`
@@ -132,6 +177,12 @@ const DatePickerIcon = styled(Calendar)`
   width: 18px;
   height: 18px;
   pointer-events: none;
+
+  @media (max-width: 768px) {
+    right: 8px;
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const DatePickerPopup = styled.div`
@@ -169,6 +220,13 @@ const DatePickerPopup = styled.div`
   .react-datepicker__day--outside-month {
     color: #6b7280;
   }
+
+  @media (max-width: 768px) {
+    .react-datepicker {
+      width: 100%;
+      font-size: 0.8rem;
+    }
+  }
 `;
 
 const ResetButton = styled(Button)`
@@ -183,12 +241,22 @@ const ResetButton = styled(Button)`
   &:hover {
     background: #4b5563;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.8rem;
+  }
 `;
 
 const SalesPersonSelectContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const StyledFormSelect = styled(Form.Select)`
@@ -205,6 +273,12 @@ const StyledFormSelect = styled(Form.Select)`
     border-color: #2575fc;
     box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.3);
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 `;
 
 const TableContainer = styled.div`
@@ -214,12 +288,21 @@ const TableContainer = styled.div`
   background: white;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   max-height: calc(80vh - 100px);
+
+  @media (max-width: 768px) {
+    max-height: calc(90vh - 120px);
+    overflow-x: auto;
+  }
 `;
 
 const DashboardTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+
+  @media (max-width: 768px) {
+    min-width: 1150px; /* Ensure horizontal scrolling */
+  }
 `;
 
 const TotalHeaderRow = styled.tr`
@@ -232,8 +315,11 @@ const TotalHeaderRow = styled.tr`
 const TableHeaderRow = styled.tr`
   background: linear-gradient(135deg, #2575fc, #6a11cb);
   position: sticky;
-  top: 44px;
+  top: 48px;
   z-index: 15;
+  @media (max-width: 768px) {
+    top: 36px;
+  }
 `;
 
 const TeamHeaderRow = styled.tr`
@@ -241,6 +327,40 @@ const TeamHeaderRow = styled.tr`
   position: sticky;
   top: 44px;
   z-index: 15;
+`;
+
+const TotalHeader = styled.th`
+  padding: 12px 15px;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: left;
+  &:nth-child(1) {
+    width: 20%;
+  }
+  &:nth-child(2) {
+    width: 12%;
+  }
+  &:nth-child(3) {
+    width: 16%;
+  }
+  &:nth-child(4) {
+    width: 16%;
+  }
+  &:nth-child(5) {
+    width: 16%;
+  }
+  &:nth-child(6) {
+    width: 12%;
+  }
+  &:nth-child(7) {
+    width: 12%;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 `;
 
 const TableHeader = styled.th`
@@ -271,34 +391,10 @@ const TableHeader = styled.th`
   &:nth-child(7) {
     width: 12%;
   }
-`;
 
-const TotalHeader = styled.th`
-  padding: 12px 15px;
-  color: white;
-  font-weight: 700;
-  font-size: 1rem;
-  text-align: left;
-  &:nth-child(1) {
-    width: 20%;
-  }
-  &:nth-child(2) {
-    width: 12%;
-  }
-  &:nth-child(3) {
-    width: 16%;
-  }
-  &:nth-child(4) {
-    width: 16%;
-  }
-  &:nth-child(5) {
-    width: 16%;
-  }
-  &:nth-child(6) {
-    width: 12%;
-  }
-  &:nth-child(7) {
-    width: 12%;
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 8px;
   }
 `;
 
@@ -309,6 +405,11 @@ const TeamHeader = styled.th`
   font-size: 0.95rem;
   text-transform: uppercase;
   text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
 `;
 
 const TableCell = styled.td`
@@ -340,6 +441,11 @@ const TableCell = styled.td`
   }
   &:nth-child(7) {
     width: 12%;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    padding: 8px;
   }
 `;
 
