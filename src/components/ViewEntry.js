@@ -91,7 +91,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
       const response = await fetch(fileUrl, {
         method: "GET",
         headers: {
-          Accept: "application/pdf,image/*",
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         },
       });
 
@@ -104,9 +105,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
       const contentType = response.headers.get("content-type");
       if (
         !contentType ||
-        !["application/pdf", "image/png", "image/jpeg", "image/jpg"].includes(
-          contentType
-        )
+        ![
+          "application/pdf",
+          "image/png",
+          "image/jpeg",
+          "image/jpg",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ].includes(contentType)
       ) {
         throw new Error("Invalid file type returned from server!");
       }
