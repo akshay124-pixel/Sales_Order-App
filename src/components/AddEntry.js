@@ -2195,7 +2195,7 @@ function AddEntry({ onSubmit, onClose }) {
                     id="poFile"
                     type="file"
                     name="poFile"
-                    accept=".pdf,.png,.jpg,.jpeg,.docx"
+                    accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.xls"
                     onChange={handleFileChange}
                     style={{
                       display: "none",
