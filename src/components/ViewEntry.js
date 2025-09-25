@@ -82,7 +82,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
         entry.poFilePath.startsWith("/") ? "" : "/"
       }${entry.poFilePath}`;
 
-      // Validate file URL before attempting download
+      // Validate file URL
       if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
         toast.error("Invalid file path provided!");
         return;
@@ -103,26 +103,29 @@ function ViewEntry({ isOpen, onClose, entry }) {
       }
 
       const contentType = response.headers.get("content-type");
-      if (
-        !contentType ||
-        ![
-          "application/pdf",
-          "image/png",
-          "image/jpeg",
-          "image/jpg",
-          "application/msword",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "application/vnd.ms-excel",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ].includes(contentType)
-      ) {
+      const validTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+
+      if (!contentType || !validTypes.includes(contentType)) {
         throw new Error("Invalid file type returned from server!");
       }
 
       const blob = await response.blob();
+
+      // ✅ FileName fix
+      const extension = contentType.split("/")[1] || "file";
       const fileName =
         entry.poFilePath.split("/").pop() ||
-        `order_${entry.orderId || "unknown"}.pdf`;
+        `order_${entry.orderId || "unknown"}.${extension}`;
+
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
       link.download = fileName;
@@ -130,6 +133,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(link.href);
+
       toast.success("File download started!");
     } catch (err) {
       toast.error("Failed to download file! Check server or file path.");
