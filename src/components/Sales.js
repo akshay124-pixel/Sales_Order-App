@@ -192,6 +192,8 @@ body {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  touch-action: pan-x pan-y; /* Enable touch scrolling in both directions */
 }
 
 /* Sales table */
@@ -200,7 +202,6 @@ body {
   min-width: ${totalTableWidth}px;
   table-layout: fixed;
   border-collapse: collapse;
-  overflow-x: hidden;
 }
 
 /* Table header */
@@ -291,7 +292,6 @@ body {
 
 /* Action buttons */
 .sales-table .actions-cell button {
-
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -304,11 +304,6 @@ body {
   z-index: 1;
 }
 
-// .sales-table .actions-cell button:hover {
-//   transform: scale(1.1);
-//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-// }
-
 /* Reserve space for scrollbar */
 .sales-table-container thead tr th:last-child {
   padding-right: 20px;
@@ -318,6 +313,35 @@ body {
 .list-container {
   width: 100%;
   min-width: ${totalTableWidth}px;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .sales-table-container {
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    touch-action: pan-x pan-y; /* Enable touch scrolling */
+    overscroll-behavior-x: contain; /* Prevent overscroll bounce */
+    max-width: 100%;
+  }
+
+  .sales-table {
+    min-width: ${totalTableWidth}px; /* Ensure horizontal scroll */
+  }
+
+  .sales-table th,
+  .sales-table td {
+    font-size: 0.85rem; /* Slightly smaller text for mobile */
+    padding: 8px 10px; /* Reduced padding for mobile */
+  }
+
+  .sales-table .actions-cell {
+    gap: 5px; /* Smaller gap for buttons on mobile */
+  }
+
+  .sales-table .actions-cell button {
+    width: 36px; /* Slightly smaller buttons */
+    height: 36px;
+  }
 }
 `;
 
