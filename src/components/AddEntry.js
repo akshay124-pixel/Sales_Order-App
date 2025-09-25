@@ -433,8 +433,8 @@ function AddEntry({ onSubmit, onClose }) {
     e.preventDefault();
 
     const userRole = localStorage.getItem("role");
-    if (!["Sales", "Admin"].includes(userRole)) {
-      toast.error("Only Sales or Admin users can create orders");
+    if (!["Sales", "Admin", "SuperAdmin"].includes(userRole)) {
+      toast.error("Only Sales Admin SuperAdmin users can create orders");
       return;
     }
 
