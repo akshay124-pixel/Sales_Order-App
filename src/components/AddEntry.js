@@ -231,12 +231,19 @@ function AddEntry({ onSubmit, onClose }) {
         "application/pdf",
         "image/png",
         "image/jpeg",
+        "image/jpg",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       ];
       if (!allowedTypes.includes(file.type)) {
-        setFileError("Please upload a PDF, PNG, JPG, or DOCX file");
-        toast.error("Please upload a PDF, PNG, JPG, or DOCX file");
+        setFileError(
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+        );
+        toast.error(
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+        );
         e.target.value = null;
         setPoFile(null);
         return;
@@ -2188,7 +2195,7 @@ function AddEntry({ onSubmit, onClose }) {
                     >
                       {poFile
                         ? poFile.name
-                        : "Upload Attachment (PDF, PNG, JPG, DOCX)"}
+                        : "Upload Attachment (PDF, PNG, JPG, DOCX, XLS, XLSX)"}
                     </span>
                   </label>
                   <input
