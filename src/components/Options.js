@@ -1455,6 +1455,7 @@ export const salesPersonlist = [
   "Muskan",
   "Nikhil Sharma",
   "Nadeem Khan",
+  "Nancy Goyal",
   "Narinder Singh",
   "Parmjeet Singh",
   "Pranab Bhattacharjee",
