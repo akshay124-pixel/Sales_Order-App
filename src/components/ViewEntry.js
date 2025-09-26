@@ -589,7 +589,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
     { key: "chequeId", label: "Cheque ID" },
     { key: "paymentTerms", label: "Payment Terms" },
     { key: "creditDays", label: "Credit Days" },
-    { key: "paymentReceived", label: "Payment Received" },
+    {
+      key: "paymentReceived",
+      label: "Payment Received",
+      condition: entry.paymentReceived === "Received",
+    },
     { key: "invoiceNo", label: "Invoice No" },
     { key: "invoiceDate", label: "Invoice Date", formatter: formatDate },
     { key: "billNumber", label: "Bill Number" },
