@@ -163,6 +163,7 @@ const StyledButton = styled(Button)`
     justify-content: center;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
+    border-radius: 50px;
   }
 `;
 
@@ -196,7 +197,7 @@ const StyledDropdownToggle = styled(Dropdown.Toggle)`
 
   @media (max-width: 768px) {
     flex: 0 0 100%;
-    max-width: none;
+    max-width: 170px;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
   }
@@ -211,7 +212,7 @@ const StyledDropdownMenu = styled(Dropdown.Menu)`
   min-width: 180px;
 
   @media (max-width: 768px) {
-    min-width: 100%;
+    min-width: 170px;
   }
 `;
 
@@ -269,7 +270,7 @@ const StyledFormSelect = styled(Form.Select)`
 
   @media (max-width: 768px) {
     flex: 0 0 100%;
-    max-width: none;
+    max-width: 170px;
     font-size: 0.95rem;
     padding: 0.8rem 1rem;
   }
