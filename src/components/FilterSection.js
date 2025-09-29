@@ -225,7 +225,7 @@ const StyledDropdownItem = styled(Dropdown.Item)`
   transition: background 0.3s ease-in-out;
   display: block;
   width: calc(100% + 12rem);
-  margin: -12.5rem;
+  margin-right: -12.5rem;
   border-radius: 0.5rem;
 
   &:hover {
