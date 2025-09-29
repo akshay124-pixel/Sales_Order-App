@@ -224,7 +224,7 @@ const StyledDropdownItem = styled(Dropdown.Item)`
   font-size: 0.9rem;
   transition: background 0.3s ease-in-out;
   display: block;
-  width: calc(100% - 12rem);
+  width: calc(100% + 12rem);
   margin: -12.5rem;
   border-radius: 0.5rem;
 
