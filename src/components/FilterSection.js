@@ -209,6 +209,7 @@ const StyledDropdownMenu = styled(Dropdown.Menu)`
   background: white;
   border: none;
   padding: 0.5rem;
+  padding-right: 12.5rem;
   min-width: 180px;
 
   @media (max-width: 768px) {
@@ -222,6 +223,10 @@ const StyledDropdownItem = styled(Dropdown.Item)`
   font-weight: 500;
   font-size: 0.9rem;
   transition: background 0.3s ease-in-out;
+  display: block;
+  width: calc(100% - 12rem);
+  margin: -12.5rem;
+  border-radius: 0.5rem;
 
   &:hover {
     background: rgba(59, 130, 246, 0.1);
