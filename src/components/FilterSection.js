@@ -426,6 +426,7 @@ const FilterSection = ({
               "Approved",
               "Accounts Approved",
               "Pending for Approval",
+              "Order on Hold Due to Low Price",
             ].map((option) => (
               <StyledDropdownItem
                 key={option}
