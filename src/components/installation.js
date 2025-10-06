@@ -343,6 +343,11 @@ function Installation() {
         "Charges Status": order.installchargesstatus || "N/A",
         "Installation Status": order.installationStatus || "Pending",
         "Sales Person": order.salesPerson || "N/A",
+        City: order.city || "N/A",
+        State: order.state || "N/A",
+        deliveredDate: order.deliveredDate
+          ? new Date(order.deliveredDate).toLocaleDateString("en-GB")
+          : "N/A",
       };
     });
 
