@@ -160,7 +160,7 @@ const columnWidths = [
   80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
   300, 150, 130, 130, 100, 150, 100, 130, 130, 150, 150, 150, 150, 150, 130,
   150, 150, 150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150,
-  150, 150, 150, 150, 150, 150, 150, 200,
+  150, 150, 150, 150, 150, 150, 150, 150, 200,
 ];
 
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
@@ -381,11 +381,16 @@ const Row = React.memo(({ index, style, data }) => {
 
   const getRowBackground = () => {
     if (isOrderComplete(order)) return "#ffffff"; // White for complete orders
-    if (order.sostatus === "Approved") return "#e6ffed"; // Light green for Approved
+
+    if (order.sostatus === "Approved") {
+      if (order.poFilePath) {
+        return "#d4f4e6"; // Darker version of #e6ffed
+      }
+      return "#e6ffed"; // Light green for Approved
+    }
     if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
     return "#f3e8ff"; // Light purple for incomplete/others
   };
-
   const isTeamMemberOrder = () => {
     return order.createdBy?._id !== userId;
   };
@@ -968,6 +973,11 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[53],
+          content: order.poFilePath ? "Attached" : "Not Attached",
+          title: order.poFilePath ? "Attached" : "Not Attached",
+        },
+        {
+          width: columnWidths[54],
           content: order.remarks || "-",
           title: order.remarks || "-",
         },
@@ -2166,6 +2176,7 @@ const Sales = () => {
     "Sales Person",
     "Company",
     "Created By",
+    "Attachments",
     "Remarks",
   ];
 
