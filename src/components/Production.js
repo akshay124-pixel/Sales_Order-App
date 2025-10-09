@@ -147,8 +147,6 @@ const Production = () => {
 
 
 
-  
-
   const fetchOrders = async () => {
     setLoading(true);
     setError(null);
@@ -607,6 +605,12 @@ const Production = () => {
   const totalPending = filteredOrders.filter(
     (order) => order.fulfillingStatus === "Pending"
   ).length;
+
+
+
+
+
+  
   return (
     <>
       <div
@@ -1097,6 +1101,7 @@ const Production = () => {
                         "Spec",
                         "Serial Nos",
                         "Model Nos",
+                        "Attachment",
                         "Remarks",
                         "Production Status",
                         "Quantity",
@@ -1401,6 +1406,43 @@ const Production = () => {
                             {firstProduct.modelNos?.length > 0
                               ? firstProduct.modelNos.join(", ")
                               : "N/A"}
+                          </td>
+                           <td
+                            style={{
+                            
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.poFilePath ? "Attached" : "Not Attached"}
+                          >
+                          <Badge
+        style={{
+      background: order.poFilePath
+        ? "linear-gradient(135deg, #28a745, #4cd964)" // Green gradient for attached
+        : "linear-gradient(135deg, #ff6b6b, #ff8787)", // Red gradient for not attached
+      color: "#fff",
+      padding: "6px 14px",
+      borderRadius: "20px",
+      fontWeight: "600",
+      fontSize: "0.9rem",
+      boxShadow: "0 2px 5px rgba(0,0,0,0.15)",
+    }}
+            >
+               {order.poFilePath ? "Attached" : "Not Attached"}
+            </Badge>
+
+
+
+
                           </td>
                           <td
                             style={{
@@ -1915,52 +1957,67 @@ const Production = () => {
                       <strong>Dispatch From:</strong>{" "}
                       {viewOrder.dispatchFrom || "N/A"}
                     </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Attachment: </strong>
-                      {viewOrder.poFilePath ?(
-                               <Button
-                                 variant="outline-primary"
-                                 size="sm"
-                                 onClick={handleDownload}
-                                 style={{
-                                   background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                                   padding: "6px 12px",
-                                   borderRadius: "8px",
-                                   display: "flex",
-                                   alignItems: "center",
-                                   gap: "6px",
-                                   fontSize: "0.85rem",
-                                   fontWeight: "600",
-                                   color: "#ffffff",
-                                   border: "1px solid #ffffff22",
-                                   boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-                                   transition:
-                                     "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
-                                   cursor: "pointer",
-                                 }}
-                                 onMouseEnter={(e) => {
-                                   e.target.style.transform = "scale(1.05)";
-                                   e.target.style.boxShadow = "0 4px 12px rgba(106, 17, 203, 0.4)";
-                                   e.target.style.background =
-                                     "linear-gradient(135deg, #3b82f6, #7e22ce)";
-                                 }}
-                                 onMouseLeave={(e) => {
-                                   e.target.style.transform = "scale(1)";
-                                   e.target.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
-                                   e.target.style.background =
-                                     "linear-gradient(135deg, #2575fc, #6a11cb)";
-                                 }}
-                                 onMouseDown={(e) => {
-                                   e.target.style.transform = "scale(0.95)";
-                                 }}
-                                 onMouseUp={(e) => {
-                                   e.target.style.transform = "scale(1.05)";
-                                 }}
-                               >
-                                 <Download size={14} />
-                                 Download
-                               </Button>  ) : " No Attachment Available"}  
-                    </span> 
+                   <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    fontSize: "1rem",
+    color: "#555",
+    gap: "10px",
+  }}
+>
+  <strong style={{ whiteSpace: "nowrap" }}>Attachment:</strong>
+
+  {viewOrder.poFilePath ? (
+    <Button
+      variant="outline-primary"
+      size="sm"
+      onClick={handleDownload}
+      style={{
+        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+        padding: "4px 10px",
+        borderRadius: "8px",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        fontSize: "0.85rem",
+        fontWeight: "600",
+        color: "#ffffff",
+        border: "none",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+        transition:
+          "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+        cursor: "pointer",
+        lineHeight: "1",
+        height: "30px", // 🔥 Perfectly aligns with text baseline
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "scale(1.05)";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(106, 17, 203, 0.4)";
+        e.currentTarget.style.background =
+          "linear-gradient(135deg, #3b82f6, #7e22ce)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+        e.currentTarget.style.background =
+          "linear-gradient(135deg, #2575fc, #6a11cb)";
+      }}
+      onMouseDown={(e) => {
+        e.currentTarget.style.transform = "scale(0.95)";
+      }}
+      onMouseUp={(e) => {
+        e.currentTarget.style.transform = "scale(1.05)";
+      }}
+    >
+      <Download size={14} />
+      Download
+    </Button>
+  ) : (
+    <span style={{ color: "#999" }}>No Attachment</span>
+  )}
+</div>
+
                   </div>
                 </div>
                 <div

@@ -391,9 +391,7 @@ const Row = React.memo(({ index, style, data }) => {
     if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
     return "#f3e8ff"; // Light purple for incomplete/others
   };
-  const isTeamMemberOrder = () => {
-    return order.createdBy?._id !== userId;
-  };
+ 
 
   const getHoverBackground = () => {
     if (isOrderComplete(order)) return "#f0f7ff";
