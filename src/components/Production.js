@@ -8,7 +8,7 @@ import * as XLSX from "xlsx";
 import "../App.css";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
-
+import {  Download } from "lucide-react";
 const DatePickerWrapper = styled.div`
   display: flex;
 
@@ -142,6 +142,12 @@ const Production = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [orderTypeFilter, setOrderTypeFilter] = useState("All");
+
+
+
+
+
+  
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -294,6 +300,74 @@ const Production = () => {
     return acc;
   }, {});
 
+
+
+  // Download Po Fie
+  const handleDownload = useCallback(async () => {
+  
+    try {
+      const fileUrl = `${process.env.REACT_APP_URL}${
+        viewOrder.poFilePath.startsWith("/") ? "" : "/"
+      }${viewOrder.poFilePath}`;
+
+      // Validate file URL
+      if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
+        toast.error("Invalid file path provided!");
+        return;
+      }
+
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const contentType = response.headers.get("content-type");
+      const validTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+
+      if (!contentType || !validTypes.includes(contentType)) {
+        throw new Error("Invalid file type returned from server!");
+      }
+
+      const blob = await response.blob();
+
+      // ✅ FileName fix
+      const extension = contentType.split("/")[1] || "file";
+      const fileName =
+        viewOrder.poFilePath.split("/").pop() ||
+        `order_${viewOrder.orderId || "unknown"}.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success("File download started!");
+    } catch (err) {
+      toast.error("Failed to download file! Check server or file path.");
+      console.error("Download error:", err);
+    }
+  }, [viewOrder]);
   // Handle model number change for a product type
   const handleModelNoChange = (productType, value) => {
     const newUnits = formData.productUnits.map((unit) =>
@@ -1841,6 +1915,52 @@ const Production = () => {
                       <strong>Dispatch From:</strong>{" "}
                       {viewOrder.dispatchFrom || "N/A"}
                     </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Attachment:</strong>
+                      {viewOrder.poFilePath ?(
+                               <Button
+                                 variant="outline-primary"
+                                 size="sm"
+                                 onClick={handleDownload}
+                                 style={{
+                                   background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                                   padding: "6px 12px",
+                                   borderRadius: "8px",
+                                   display: "flex",
+                                   alignItems: "center",
+                                   gap: "6px",
+                                   fontSize: "0.85rem",
+                                   fontWeight: "600",
+                                   color: "#ffffff",
+                                   border: "1px solid #ffffff22",
+                                   boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+                                   transition:
+                                     "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+                                   cursor: "pointer",
+                                 }}
+                                 onMouseEnter={(e) => {
+                                   e.target.style.transform = "scale(1.05)";
+                                   e.target.style.boxShadow = "0 4px 12px rgba(106, 17, 203, 0.4)";
+                                   e.target.style.background =
+                                     "linear-gradient(135deg, #3b82f6, #7e22ce)";
+                                 }}
+                                 onMouseLeave={(e) => {
+                                   e.target.style.transform = "scale(1)";
+                                   e.target.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+                                   e.target.style.background =
+                                     "linear-gradient(135deg, #2575fc, #6a11cb)";
+                                 }}
+                                 onMouseDown={(e) => {
+                                   e.target.style.transform = "scale(0.95)";
+                                 }}
+                                 onMouseUp={(e) => {
+                                   e.target.style.transform = "scale(1.05)";
+                                 }}
+                               >
+                                 <Download size={14} />
+                                 Download
+                               </Button>  ) : " No Attachment Available"}  
+                    </span> 
                   </div>
                 </div>
                 <div
