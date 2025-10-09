@@ -1916,7 +1916,7 @@ const Production = () => {
                       {viewOrder.dispatchFrom || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Attachment:</strong>
+                      <strong>Attachment: </strong>
                       {viewOrder.poFilePath ?(
                                <Button
                                  variant="outline-primary"
