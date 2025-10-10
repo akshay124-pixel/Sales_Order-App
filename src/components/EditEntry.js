@@ -441,13 +441,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         sostatus: data.sostatus || "Pending for Approval",
         stockStatus: data.stockStatus || "In Stock",
       };
-
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -500,13 +501,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         sostatus: updateData.sostatus || "Pending for Approval",
         remarks: updateData.remarks || null,
       };
-
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
