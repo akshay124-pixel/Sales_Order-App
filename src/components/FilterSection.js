@@ -305,7 +305,7 @@ const NotificationBadge = styled.span`
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #ef Dobson;
+  background: #ef4444;
   color: white;
   border-radius: 50%;
   padding: 2px 6px;
