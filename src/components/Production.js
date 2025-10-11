@@ -1957,6 +1957,24 @@ const Production = () => {
                       <strong>Dispatch From:</strong>{" "}
                       {viewOrder.dispatchFrom || "N/A"}
                     </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Approval Timestamp:</strong>{" "}
+              {viewOrder.approvalTimestamp
+                ? new Date(viewOrder.approvalTimestamp).toLocaleString("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                : "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Products Edit Timestamp:</strong>{" "}
+              {viewOrder.productsEditTimestamp
+                ? new Date(viewOrder.productsEditTimestamp).toLocaleString("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                : "N/A"}
+            </span>
                    <div
   style={{
     display: "flex",

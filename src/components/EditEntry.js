@@ -153,6 +153,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       stockStatus: "In Stock",
       sostatus: "Pending for Approval",
       createdBy: "",
+      approvalTimestamp: null, // New field
+      productsEditTimestamp: null, // New field
     }),
     []
   );
@@ -306,6 +308,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             : typeof entryToEdit.createdBy === "string"
             ? entryToEdit.createdBy
             : "",
+            approvalTimestamp: entryToEdit.approvalTimestamp
+          ? new Date(entryToEdit.approvalTimestamp).toISOString().split("T")[0]
+          : null,
+        productsEditTimestamp: entryToEdit.productsEditTimestamp
+          ? new Date(entryToEdit.productsEditTimestamp).toISOString().split("T")[0]
+          : null,
       };
       setFormData(newFormData);
       setUpdateData({
