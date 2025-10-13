@@ -462,7 +462,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       );
 
       const updatedEntry = response.data.data;
-      toast.success("Entry updated successfully!");
+      // Hinglish: Local toast hata diya; socket 'notification' se single toast aayega (no duplicate)
       onEntryUpdated(updatedEntry);
       setView("options");
       onClose();
@@ -522,7 +522,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       );
 
       const updatedEntry = response.data.data;
-      toast.success("Approvals updated successfully!");
+      // Hinglish: Local toast hata diya; realtime notification socket se aayega
       onEntryUpdated(updatedEntry);
       setView("options");
       onClose();
