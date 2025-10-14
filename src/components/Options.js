@@ -17,6 +17,8 @@ export const productOptions = {
       "Android 13, 8GB RAM, 128GB ROM  Inbuilt Camera",
       "Android 14, 8GB RAM, 128GB ROM",
       "Android 14, 8GB RAM, 128GB ROM Inbuilt Camera",
+      "EDLA Android 14, 8GB RAM, 128GB ROM",
+      "EDLA Android 14, 8GB RAM, 128GB ROM Inbuilt Camera",
     ],
   },
   OPS: {
