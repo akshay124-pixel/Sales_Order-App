@@ -634,12 +634,14 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
 
       socket.on("connect", () => {
         console.log("Connected to Socket.IO server, ID:", socket.id);
-        socket.emit("join", "global");
+        // Hinglish: Server per-user/role rooms use object payload -> 'global' ki zarurat nahi
+        socket.emit("join", { userId, role: userRole });
         toast.success("Connected to real-time updates!");
       });
 
       socket.on("orderUpdate", (data) => {
         console.log("Order update received:", data);
+        // Hinglish: Single fetch enough; duplicates bachane ke liye yahin pe limited action rakha hai
         fetchOrders();
       });
 
@@ -662,8 +664,14 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       });
 
       return () => {
+        // Hinglish: Cleanup listeners to avoid duplicate bindings / memory leaks
+        socket.off("connect");
+        socket.off("orderUpdate");
+        socket.off("connect_error");
+        socket.off("disconnect");
+        socket.off("reconnect");
         socket.disconnect();
-        console.log("Socket.IO disconnected");
+        console.log("Socket.IO disconnected and listeners cleaned up");
       };
     }
   }, [isOpen]);

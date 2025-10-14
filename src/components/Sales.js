@@ -391,9 +391,7 @@ const Row = React.memo(({ index, style, data }) => {
     if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
     return "#f3e8ff"; // Light purple for incomplete/others
   };
-  const isTeamMemberOrder = () => {
-    return order.createdBy?._id !== userId;
-  };
+ 
 
   const getHoverBackground = () => {
     if (isOrderComplete(order)) return "#f0f7ff";
@@ -1135,58 +1133,32 @@ const Sales = () => {
 
     socket.on("connect", () => {
       console.log("Socket.IO connected:", socket.id);
-      // TeamBuilder: identify current user + role on socket join (server may segment events)
+      // Hinglish: Server per-user/role based rooms expect object payload, isliye yahan object bhej rahe hain
+      // so that notifications sirf relevant user ko milein.
       socket.emit("join", { userId, role: userRole });
     });
 
     socket.on("connect_error", (error) => {
       console.error("Socket.IO connection error:", error);
     });
-
-    socket.on("newOrder", (payload) => {
-      // Accept only if this user is the owner or assignee
+        // Hinglish: Delete ke liye server 'deleteOrder' event bhejta hai
+    // yahan sirf UI se order remove karenge; toast 'notification' event se aa jayega.
+    socket.on("deleteOrder", ({ _id, createdBy, assignedTo }) => {
       const currentUserId = userId;
-      const owners = [payload?.createdBy, payload?.assignedTo].filter(Boolean);
+      const owners = [createdBy, assignedTo].filter(Boolean);
       if (!owners.includes(currentUserId)) return;
-      setOrders((prev) => {
-        if (prev.some((o) => o._id === payload._id)) return prev;
-        return [payload, ...prev];
-      });
-      if (payload?.notification) {
-        setNotifications((prev) => {
-          if (prev.some((n) => n.id === payload.notification.id)) return prev;
-          const updated = [payload.notification, ...prev].slice(0, 50);
-          localStorage.setItem("notifications", JSON.stringify(updated));
-          return updated;
-        });
-        toast.info(payload.notification.message);
-      }
+      setOrders((prev) => prev.filter((o) => o._id !== _id));
     });
-
-    socket.on("updateOrder", (payload) => {
-      const currentUserId = userId;
-      const owners = [payload?.createdBy, payload?.assignedTo].filter(Boolean);
-      if (!owners.includes(currentUserId)) return;
-      setOrders((prev) =>
-        prev.map((order) =>
-          order._id === payload._id
-            ? {
-                ...order,
-                customername: payload.customername,
-                orderId: payload.orderId,
-              }
-            : order
-        )
-      );
-      if (payload?.notification) {
-        setNotifications((prev) => {
-          if (prev.some((n) => n.id === payload.notification.id)) return prev;
-          const updated = [payload.notification, ...prev].slice(0, 50);
-          localStorage.setItem("notifications", JSON.stringify(updated));
-          return updated;
-        });
-        toast.info(payload.notification.message);
-      }
+    // Hinglish: Realtime notification ke liye backend 'notification' event emit karta hai
+    // isliye yahan direct UI state update + toast kar rahe hain (no duplicates).
+    socket.on("notification", (notif) => {
+      // Dedupe by id to avoid double entries
+      setNotifications((prev) => {
+        if (notif?._id && prev.some((n) => n._id === notif._id)) return prev;
+        const next = [notif, ...prev].slice(0, 50);
+        return next;
+      });
+      if (notif?.message) toast.info(notif.message);
     });
 
     socket.on(
@@ -1208,8 +1180,13 @@ const Sales = () => {
     fetchNotifications();
 
     return () => {
+      // Hinglish: Cleanup zaruri hai taaki duplicate listeners na baney (memory leak prevent)
+      socket.off("connect");
+      socket.off("connect_error");
+      socket.off("notification");
+      socket.off("orderUpdate");
       socket.disconnect();
-      console.log("Socket.IO disconnected");
+      console.log("Socket.IO disconnected and listeners cleaned up");
     };
   }, [fetchOrders, fetchNotifications, userRole, userId]);
 
@@ -1513,64 +1490,28 @@ const Sales = () => {
   );
 
   const handleEntryUpdated = useCallback(
-    async (updatedEntry) => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.put(
-          `${process.env.REACT_APP_URL}/api/edit/${updatedEntry._id}`,
-          updatedEntry,
-          { headers: { Authorization: `Bearer ${token}` } }
+    (updatedEntry) => {
+      // Hinglish: Duplicate API call avoid - EditEntry already server pe update kar chuka hota hai
+      // yahan sirf local state update karenge
+      setOrders((prev) => {
+        const updatedOrders = prev.map((order) =>
+          order._id === updatedEntry._id ? updatedEntry : order
         );
-        const updatedOrder = response.data.data || response.data;
-        setOrders((prev) => {
-          const updatedOrders = prev.map((order) =>
-            order._id === updatedOrder._id ? updatedOrder : order
-          );
-          filterOrders(
-            updatedOrders,
-            searchTerm,
-            approvalFilter,
-            orderTypeFilter,
-            dispatchFilter,
-            salesPersonFilter,
-            dispatchFromFilter,
-            startDate,
-            endDate
-          );
-          return updatedOrders;
-        });
-        setIsEditModalOpen(false);
-        toast.success("Order updated successfully!");
-      } catch (error) {
-        console.error("Error updating order:", error);
-
-        let friendlyMessage = "Unable to update the order. Please try again.";
-
-        if (error.response) {
-          if (error.response.status === 400) {
-            friendlyMessage =
-              "Invalid data provided. Please check and try again.";
-          } else if (error.response.status === 401) {
-            friendlyMessage = "Session expired. Please log in again.";
-          } else if (error.response.status === 403) {
-            friendlyMessage = "You don’t have permission to update this order.";
-          } else if (error.response.status === 404) {
-            friendlyMessage = "Order not found.";
-          } else if (error.response.status >= 500) {
-            friendlyMessage = "Server error. Please try again later.";
-          } else if (error.response.data?.message) {
-            friendlyMessage = error.response.data.message;
-          }
-        } else if (error.request) {
-          friendlyMessage =
-            "No response from server. Check your internet connection.";
-        }
-
-        toast.error(friendlyMessage, {
-          position: "top-right",
-          autoClose: 5000,
-        });
-      }
+        filterOrders(
+          updatedOrders,
+          searchTerm,
+          approvalFilter,
+          orderTypeFilter,
+          dispatchFilter,
+          salesPersonFilter,
+          dispatchFromFilter,
+          startDate,
+          endDate
+        );
+        return updatedOrders;
+      });
+      setIsEditModalOpen(false);
+      // Toast socket 'notification' se aayega (no duplicates)
     },
     [
       filterOrders,

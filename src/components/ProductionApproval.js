@@ -39,17 +39,21 @@ const ProductionApproval = () => {
 
     socket.on("connect", () => {
       console.log("Socket.IO se connect ho gaya!");
+      // Hinglish: Server per-user/role rooms use object payload so relevant updates hi milein
+      const userId = localStorage.getItem("userId");
+      const role = localStorage.getItem("role");
+      socket.emit("join", { userId, role });
     });
 
-    socket.on("updateOrder", ({ _id, customername, orderId, notification }) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order._id === _id
-            ? { ...order, ...notification, customername, orderId }
-            : order
-        )
-      );
-      toast.info(`Order ${orderId} updated: ${notification.message}`);
+    // Hinglish: Backend 'orderUpdate' event use kar raha hai (change streams). Event name yahan sync kiya.
+    socket.on("orderUpdate", ({ operationType, documentId, fullDocument }) => {
+      if (operationType === "update" && fullDocument) {
+        setOrders((prev) =>
+          prev.map((o) => (o._id === documentId ? fullDocument : o))
+        );
+      } else if (operationType === "insert" && fullDocument) {
+        setOrders((prev) => (prev.some((o) => o._id === documentId) ? prev : [fullDocument, ...prev]));
+      }
     });
 
     socket.on("disconnect", () => {
@@ -57,6 +61,10 @@ const ProductionApproval = () => {
     });
 
     return () => {
+      // Hinglish: Cleanup listeners to avoid duplicates / memory leaks
+      socket.off("connect");
+      socket.off("orderUpdate");
+      socket.off("disconnect");
       socket.disconnect();
     };
   }, []);
@@ -184,7 +192,7 @@ const ProductionApproval = () => {
       )
     );
     setIsEditModalOpen(false);
-    toast.success("Order updated successfully!");
+    // Hinglish: Local success toast hata diya; realtime toast socket 'notification' se aayega (no duplicates)
   };
 
   const handleExportToXLSX = () => {

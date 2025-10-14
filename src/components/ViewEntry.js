@@ -60,7 +60,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
     });
     return `${datePart} ${timePart}`;
   };
-
+// Utility function to format timestamps (date + time)
+const formatTimestamp = (dateStr) => {
+  if (!isValidField(dateStr)) return null;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return null;
+  return date.toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+};
   const isValidPoFilePath = (filePath) => {
     return (
       filePath &&
@@ -487,6 +496,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
     },
     { key: "salesPerson", label: "Sales Person" },
     { key: "report", label: "Reporting Person" },
+    { key: "approvalTimestamp", label: "Approval Timestamp", formatter: formatTimestamp },
+    { key: "productsEditTimestamp", label: "Products Edit Timestamp", formatter: formatTimestamp },
     {
       key: "poFilePath",
       label: "Attachments",

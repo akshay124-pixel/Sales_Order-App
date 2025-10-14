@@ -153,6 +153,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       stockStatus: "In Stock",
       sostatus: "Pending for Approval",
       createdBy: "",
+      approvalTimestamp: null, // New field
+      productsEditTimestamp: null, // New field
     }),
     []
   );
@@ -306,6 +308,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             : typeof entryToEdit.createdBy === "string"
             ? entryToEdit.createdBy
             : "",
+            approvalTimestamp: entryToEdit.approvalTimestamp
+          ? new Date(entryToEdit.approvalTimestamp).toISOString().split("T")[0]
+          : null,
+        productsEditTimestamp: entryToEdit.productsEditTimestamp
+          ? new Date(entryToEdit.productsEditTimestamp).toISOString().split("T")[0]
+          : null,
       };
       setFormData(newFormData);
       setUpdateData({
@@ -441,19 +449,20 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         sostatus: data.sostatus || "Pending for Approval",
         stockStatus: data.stockStatus || "In Stock",
       };
-
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       const updatedEntry = response.data.data;
-      toast.success("Entry updated successfully!");
+      // Hinglish: Local toast hata diya; socket 'notification' se single toast aayega (no duplicate)
       onEntryUpdated(updatedEntry);
       setView("options");
       onClose();
@@ -500,19 +509,20 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         sostatus: updateData.sostatus || "Pending for Approval",
         remarks: updateData.remarks || null,
       };
-
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         submissionData,
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       const updatedEntry = response.data.data;
-      toast.success("Approvals updated successfully!");
+      // Hinglish: Local toast hata diya; realtime notification socket se aayega
       onEntryUpdated(updatedEntry);
       setView("options");
       onClose();

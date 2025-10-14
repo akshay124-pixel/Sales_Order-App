@@ -8,7 +8,7 @@ import * as XLSX from "xlsx";
 import "../App.css";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
-
+import {  Download } from "lucide-react";
 const DatePickerWrapper = styled.div`
   display: flex;
 
@@ -142,6 +142,10 @@ const Production = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [orderTypeFilter, setOrderTypeFilter] = useState("All");
+
+
+
+
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -294,6 +298,74 @@ const Production = () => {
     return acc;
   }, {});
 
+
+
+  // Download Po Fie
+  const handleDownload = useCallback(async () => {
+  
+    try {
+      const fileUrl = `${process.env.REACT_APP_URL}${
+        viewOrder.poFilePath.startsWith("/") ? "" : "/"
+      }${viewOrder.poFilePath}`;
+
+      // Validate file URL
+      if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
+        toast.error("Invalid file path provided!");
+        return;
+      }
+
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const contentType = response.headers.get("content-type");
+      const validTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+
+      if (!contentType || !validTypes.includes(contentType)) {
+        throw new Error("Invalid file type returned from server!");
+      }
+
+      const blob = await response.blob();
+
+      // ✅ FileName fix
+      const extension = contentType.split("/")[1] || "file";
+      const fileName =
+        viewOrder.poFilePath.split("/").pop() ||
+        `order_${viewOrder.orderId || "unknown"}.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success("File download started!");
+    } catch (err) {
+      toast.error("Failed to download file! Check server or file path.");
+      console.error("Download error:", err);
+    }
+  }, [viewOrder]);
   // Handle model number change for a product type
   const handleModelNoChange = (productType, value) => {
     const newUnits = formData.productUnits.map((unit) =>
@@ -533,6 +605,12 @@ const Production = () => {
   const totalPending = filteredOrders.filter(
     (order) => order.fulfillingStatus === "Pending"
   ).length;
+
+
+
+
+
+  
   return (
     <>
       <div
@@ -1023,6 +1101,7 @@ const Production = () => {
                         "Spec",
                         "Serial Nos",
                         "Model Nos",
+                        "Attachment",
                         "Remarks",
                         "Production Status",
                         "Quantity",
@@ -1327,6 +1406,43 @@ const Production = () => {
                             {firstProduct.modelNos?.length > 0
                               ? firstProduct.modelNos.join(", ")
                               : "N/A"}
+                          </td>
+                           <td
+                            style={{
+                            
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.poFilePath ? "Attached" : "Not Attached"}
+                          >
+                          <Badge
+        style={{
+      background: order.poFilePath
+        ? "linear-gradient(135deg, #28a745, #4cd964)" // Green gradient for attached
+        : "linear-gradient(135deg, #ff6b6b, #ff8787)", // Red gradient for not attached
+      color: "#fff",
+      padding: "6px 14px",
+      borderRadius: "20px",
+      fontWeight: "600",
+      fontSize: "0.9rem",
+      boxShadow: "0 2px 5px rgba(0,0,0,0.15)",
+    }}
+            >
+               {order.poFilePath ? "Attached" : "Not Attached"}
+            </Badge>
+
+
+
+
                           </td>
                           <td
                             style={{
@@ -1841,6 +1957,85 @@ const Production = () => {
                       <strong>Dispatch From:</strong>{" "}
                       {viewOrder.dispatchFrom || "N/A"}
                     </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Approval Timestamp:</strong>{" "}
+              {viewOrder.approvalTimestamp
+                ? new Date(viewOrder.approvalTimestamp).toLocaleString("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                : "N/A"}
+            </span>
+            <span style={{ fontSize: "1rem", color: "#555" }}>
+              <strong>Products Edit Timestamp:</strong>{" "}
+              {viewOrder.productsEditTimestamp
+                ? new Date(viewOrder.productsEditTimestamp).toLocaleString("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                : "N/A"}
+            </span>
+                   <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    fontSize: "1rem",
+    color: "#555",
+    gap: "10px",
+  }}
+>
+  <strong style={{ whiteSpace: "nowrap" }}>Attachment:</strong>
+
+  {viewOrder.poFilePath ? (
+    <Button
+      variant="outline-primary"
+      size="sm"
+      onClick={handleDownload}
+      style={{
+        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+        padding: "4px 10px",
+        borderRadius: "8px",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        fontSize: "0.85rem",
+        fontWeight: "600",
+        color: "#ffffff",
+        border: "none",
+        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+        transition:
+          "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+        cursor: "pointer",
+        lineHeight: "1",
+        height: "30px", // 🔥 Perfectly aligns with text baseline
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "scale(1.05)";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(106, 17, 203, 0.4)";
+        e.currentTarget.style.background =
+          "linear-gradient(135deg, #3b82f6, #7e22ce)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+        e.currentTarget.style.background =
+          "linear-gradient(135deg, #2575fc, #6a11cb)";
+      }}
+      onMouseDown={(e) => {
+        e.currentTarget.style.transform = "scale(0.95)";
+      }}
+      onMouseUp={(e) => {
+        e.currentTarget.style.transform = "scale(1.05)";
+      }}
+    >
+      <Download size={14} />
+      Download
+    </Button>
+  ) : (
+    <span style={{ color: "#999" }}>No Attachment</span>
+  )}
+</div>
+
                   </div>
                 </div>
                 <div
