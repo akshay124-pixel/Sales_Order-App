@@ -341,6 +341,7 @@ function Installation() {
         "Contact No": order.contactNo || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
         "Charges Status": order.installchargesstatus || "N/A",
+        Charges: order.installation || "N/A",
         "Installation Status": order.installationStatus || "Pending",
         "Sales Person": order.salesPerson || "N/A",
         City: order.city || "N/A",
