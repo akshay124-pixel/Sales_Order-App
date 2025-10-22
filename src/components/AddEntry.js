@@ -1640,10 +1640,7 @@ function AddEntry({ onSubmit, onClose }) {
                         {product.productType} | {product.size} | {product.spec}{" "}
                         | Qty: {product.qty} | Price: ₹{product.unitPrice} |
                         GST: {product.gst} | Warranty: {product.warranty}
-                        {(product.productType === "IFPD" ||
-                          product.productType === "Fujifilm-Printer") &&
-                          product.modelNos &&
-                          ` | Model No: ${product.modelNos}`}
+                        {product.modelNos && ` | Model No: ${product.modelNos}`}
                         {product.productType === "Fujifilm-Printer" &&
                           product.productCode &&
                           ` | Product Code: ${product.productCode}`}
