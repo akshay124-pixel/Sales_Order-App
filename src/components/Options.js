@@ -1495,6 +1495,7 @@ export const salesPersonlist = [
   "Sunil Kumar Singh",
   "Surbhi Chugh",
   "Sushil Kumar",
+  "Utsav Mahesh",
   "Vinay Bhardwaj",
   "Vageesh Bhardwaj",
   "Vaibhav Mishra",
