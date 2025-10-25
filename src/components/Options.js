@@ -1501,6 +1501,7 @@ export const salesPersonlist = [
   "Vinay Bhardwaj",
   "Vageesh Bhardwaj",
   "Vaibhav Mishra",
+  "Vaibhav Mishra (2)",
   "Varun Budhiraja",
   "Vaseem Khan",
   "Vishal Angra",
