@@ -768,8 +768,15 @@ function AddEntry({ onSubmit, onClose }) {
                         Select {field.label.split(" ")[0]}
                       </option>
                       {field.options.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
+                        <option
+                          key={
+                            typeof option === "string" ? option : option.value
+                          }
+                          value={
+                            typeof option === "string" ? option : option.value
+                          }
+                        >
+                          {typeof option === "string" ? option : option.label}
                         </option>
                       ))}
                     </select>
