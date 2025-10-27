@@ -308,11 +308,13 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             : typeof entryToEdit.createdBy === "string"
             ? entryToEdit.createdBy
             : "",
-            approvalTimestamp: entryToEdit.approvalTimestamp
+        approvalTimestamp: entryToEdit.approvalTimestamp
           ? new Date(entryToEdit.approvalTimestamp).toISOString().split("T")[0]
           : null,
         productsEditTimestamp: entryToEdit.productsEditTimestamp
-          ? new Date(entryToEdit.productsEditTimestamp).toISOString().split("T")[0]
+          ? new Date(entryToEdit.productsEditTimestamp)
+              .toISOString()
+              .split("T")[0]
           : null,
       };
       setFormData(newFormData);
@@ -2859,8 +2861,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           >
             <option value="">Select Sales Person</option>
             {salesPersonlist.map((person) => (
-              <option key={person} value={person}>
-                {person}
+              <option key={person.value} value={person.value}>
+                {person.label}
               </option>
             ))}
           </Form.Control>
@@ -2882,8 +2884,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           >
             <option value="">Select Reporting Manager</option>
             {Reportinglist.map((manager) => (
-              <option key={manager} value={manager}>
-                {manager}
+              <option key={manager.value} value={manager.value}>
+                {manager.label}
               </option>
             ))}
           </Form.Control>
