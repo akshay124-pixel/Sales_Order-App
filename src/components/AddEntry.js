@@ -25,6 +25,7 @@ function AddEntry({ onSubmit, onClose }) {
   const [products, setProducts] = useState([]);
   const [poFile, setPoFile] = useState(null);
   const [fileError, setFileError] = useState("");
+  const [isCustomMode, setIsCustomMode] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const [currentProduct, setCurrentProduct] = useState({
@@ -121,6 +122,7 @@ function AddEntry({ onSubmit, onClose }) {
         );
         setSelectedState(parsedDraft.selectedState || "");
         setSelectedCity(parsedDraft.selectedCity || "");
+        setIsCustomMode(parsedDraft.isCustomMode || false);
         // toast.info("Restored draft from previous session!");
       }
     } catch (error) {
@@ -139,6 +141,7 @@ function AddEntry({ onSubmit, onClose }) {
           currentProduct,
           selectedState,
           selectedCity,
+          isCustomMode,
         };
         console.log("Auto-saving:", draft);
         localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(draft));
@@ -153,7 +156,14 @@ function AddEntry({ onSubmit, onClose }) {
     }, 500);
 
     return () => clearTimeout(handler);
-  }, [formData, products, currentProduct, selectedState, selectedCity]);
+  }, [
+    formData,
+    products,
+    currentProduct,
+    selectedState,
+    selectedCity,
+    isCustomMode,
+  ]);
 
   // Override onClose to clear draft if needed
   const handleClose = () => {
@@ -265,6 +275,25 @@ function AddEntry({ onSubmit, onClose }) {
 
   const handleProductChange = (e) => {
     const { name, value } = e.target;
+    if (name === "productType") {
+      if (value === "Others") {
+        setIsCustomMode(true); // Enter custom mode
+        setCurrentProduct((prev) => ({
+          ...prev,
+          productType: "", // Set to empty for input
+          size: "",
+          spec: "",
+          gst: "",
+          modelNos: "",
+          brand: "",
+          warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+        }));
+        return; // Don't proceed to general set
+      } else {
+        // Predefined selected, exit custom mode
+        setIsCustomMode(false);
+      }
+    }
     setCurrentProduct((prev) => {
       const newProduct = {
         ...prev,
@@ -273,7 +302,7 @@ function AddEntry({ onSubmit, onClose }) {
           ? {
               size: "",
               spec: "",
-              gst: value === "IFPD" || value === "Projector" ? "28" : "",
+              gst: "",
               modelNos: "",
               brand: "",
               warranty:
@@ -282,10 +311,7 @@ function AddEntry({ onSubmit, onClose }) {
           : name === "size"
           ? {
               spec: "",
-              gst:
-                prev.productType === "IFPD" || prev.productType === "Projector"
-                  ? "28"
-                  : "",
+              gst: "",
               modelNos: "",
               brand: "",
               warranty:
@@ -309,6 +335,31 @@ function AddEntry({ onSubmit, onClose }) {
       return newProduct;
     });
   };
+  const handleCustomProductChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentProduct((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "productType"
+        ? {
+            size: "",
+            spec: "",
+            gst: "",
+            modelNos: "",
+            brand: "",
+            warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+          }
+        : name === "size"
+        ? {
+            spec: "",
+            gst: "",
+            modelNos: "",
+            brand: "",
+            warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+          }
+        : {}),
+    }));
+  };
 
   const addProduct = () => {
     if (
@@ -324,10 +375,11 @@ function AddEntry({ onSubmit, onClose }) {
       return;
     }
     if (
-      (currentProduct.productType === "IFPD" &&
+      !isCustomMode &&
+      ((currentProduct.productType === "IFPD" &&
         (!currentProduct.modelNos || !currentProduct.brand)) ||
-      (currentProduct.productType === "Fujifilm-Printer" &&
-        !currentProduct.modelNos)
+        (currentProduct.productType === "Fujifilm-Printer" &&
+          !currentProduct.modelNos))
     ) {
       toast.error(
         currentProduct.productType === "IFPD"
@@ -363,6 +415,7 @@ function AddEntry({ onSubmit, onClose }) {
       brand: "",
       warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
     });
+    setIsCustomMode(false);
     setFormData((prev) => ({
       ...prev,
       paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
@@ -1121,9 +1174,15 @@ function AddEntry({ onSubmit, onClose }) {
               style={{
                 display: "grid",
                 gridTemplateColumns:
-                  currentProduct.productType === "IFPD"
-                    ? "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto"
-                    : "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto",
+                  (currentProduct.productType === "IFPD" &&
+                    (isCustomMode
+                      ? "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto" // Custom IFPD: + model text + brand select
+                      : "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr  auto")) || // Predefined IFPD: same
+                  (currentProduct.productType === "Fujifilm-Printer" &&
+                    (isCustomMode
+                      ? "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto" // Custom Printer: + model text + productCode select
+                      : "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto")) || // Predefined Printer: + model + code
+                  "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto", // Base/custom non-special
                 gap: "1rem",
                 marginBottom: "1rem",
               }}
@@ -1142,14 +1201,7 @@ function AddEntry({ onSubmit, onClose }) {
                 </label>
                 <select
                   name="productType"
-                  value={
-                    currentProduct.productType &&
-                    !Object.keys(productOptions).includes(
-                      currentProduct.productType
-                    )
-                      ? "Others"
-                      : currentProduct.productType
-                  }
+                  value={isCustomMode ? "Others" : currentProduct.productType} // Force "Others" in custom mode
                   onChange={handleProductChange}
                   style={{
                     width: "100%",
@@ -1178,11 +1230,7 @@ function AddEntry({ onSubmit, onClose }) {
                   ))}
                 </select>
               </div>
-              {(currentProduct.productType === "Others" ||
-                (currentProduct.productType &&
-                  !Object.keys(productOptions).includes(
-                    currentProduct.productType
-                  ))) && (
+              {isCustomMode && (
                 <div
                   style={{
                     animation: "fadeIn 0.3s ease-in",
@@ -1200,12 +1248,8 @@ function AddEntry({ onSubmit, onClose }) {
                   <input
                     type="text"
                     name="productType"
-                    value={
-                      currentProduct.productType === "Others"
-                        ? ""
-                        : currentProduct.productType
-                    }
-                    onChange={handleProductChange}
+                    value={currentProduct.productType}
+                    onChange={handleCustomProductChange}
                     placeholder="Enter Custom Product Type"
                     style={{
                       width: "100%",
@@ -1231,16 +1275,12 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   Size
                 </label>
-                {currentProduct.productType === "Others" ||
-                (currentProduct.productType &&
-                  !Object.keys(productOptions).includes(
-                    currentProduct.productType
-                  )) ? (
+                {isCustomMode ? ( // Manual input in custom mode
                   <input
                     type="text"
                     name="size"
                     value={currentProduct.size}
-                    onChange={handleProductChange}
+                    onChange={handleCustomProductChange} // Use custom handler for resets
                     placeholder="Enter Size"
                     style={{
                       width: "100%",
@@ -1291,16 +1331,12 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   Specification
                 </label>
-                {currentProduct.productType === "Others" ||
-                (currentProduct.productType &&
-                  !Object.keys(productOptions).includes(
-                    currentProduct.productType
-                  )) ? (
+                {isCustomMode ? ( // Manual input in custom mode
                   <input
                     type="text"
                     name="spec"
                     value={currentProduct.spec}
-                    onChange={handleProductChange}
+                    onChange={handleCustomProductChange} // Use custom handler
                     placeholder="Enter Specification"
                     style={{
                       width: "100%",
@@ -1457,7 +1493,24 @@ function AddEntry({ onSubmit, onClose }) {
                 >
                   Model No *
                 </label>
-                {currentProduct.productType === "IFPD" ? (
+                {isCustomMode ? (
+                  <input
+                    type="text"
+                    name="modelNos"
+                    value={currentProduct.modelNos}
+                    onChange={handleCustomProductChange}
+                    placeholder="Enter Model No"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
+                ) : (
                   <select
                     name="modelNos"
                     value={currentProduct.modelNos}
@@ -1471,29 +1524,18 @@ function AddEntry({ onSubmit, onClose }) {
                     }}
                   >
                     <option value="">Select Model No</option>
-                    {modelNoOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
+                    {currentProduct.productType === "IFPD"
+                      ? modelNoOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      : printerOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                   </select>
-                ) : (
-                  <input
-                    type="text"
-                    name="modelNos"
-                    value={currentProduct.modelNos}
-                    onChange={handleProductChange}
-                    placeholder="Enter Model No"
-                    style={{
-                      width: "100%",
-                      padding: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "0.75rem",
-                      backgroundColor: "#f8fafc",
-                      fontSize: "1rem",
-                      color: "#1e293b",
-                    }}
-                  />
                 )}
               </div>
 
@@ -1511,7 +1553,7 @@ function AddEntry({ onSubmit, onClose }) {
                   <select
                     name="brand"
                     value={currentProduct.brand}
-                    onChange={handleProductChange}
+                    onChange={handleProductChange} // Keep for warranty logic
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -1566,7 +1608,7 @@ function AddEntry({ onSubmit, onClose }) {
                 type="button"
                 onClick={addProduct}
                 style={{
-                  padding: "0.75rem 1.5rem",
+                  padding: "0.75rem 1rem",
                   background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                   color: "#fff",
                   border: "none",
