@@ -1867,6 +1867,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   <h5>Product {index + 1}</h5>
                   {products.length > 1 && (
                     <StyledButton
+                      type="button"
                       variant="danger"
                       onClick={() => removeProduct(index)}
                       style={{ padding: "5px 10px", fontSize: "0.9rem" }}
@@ -2545,6 +2546,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             );
           })}
           <StyledButton
+            type="button"
             variant="primary"
             onClick={addProduct}
             style={{
