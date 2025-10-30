@@ -60,16 +60,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
     });
     return `${datePart} ${timePart}`;
   };
-// Utility function to format timestamps (date + time)
-const formatTimestamp = (dateStr) => {
-  if (!isValidField(dateStr)) return null;
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return null;
-  return date.toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-};
+  // Utility function to format timestamps (date + time)
+  const formatTimestamp = (dateStr) => {
+    if (!isValidField(dateStr)) return null;
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return null;
+    return date.toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
   const isValidPoFilePath = (filePath) => {
     return (
       filePath &&
@@ -287,7 +287,16 @@ const formatTimestamp = (dateStr) => {
       { key: "remarksByBilling", label: "Remarks By Billing" },
       { key: "remarksByInstallation", label: "Remarks By Installation" },
       { key: "verificationRemarks", label: "Verification Remarks" },
-      { key: "salesPerson", label: "Sales Person" },
+      {
+        key: "salesPerson",
+        label: "Sales Person",
+        formatter: (v) => {
+          if (!v) return null;
+          if (typeof v === "string") return v;
+          if (typeof v === "object" && v.label) return v.label;
+          return v.value || "N/A";
+        },
+      },
       { key: "company", label: "Company" },
       {
         key: "createdBy",
@@ -496,8 +505,16 @@ const formatTimestamp = (dateStr) => {
     },
     { key: "salesPerson", label: "Sales Person" },
     { key: "report", label: "Reporting Person" },
-    { key: "approvalTimestamp", label: "Approval Timestamp", formatter: formatTimestamp },
-    { key: "productsEditTimestamp", label: "Products Edit Timestamp", formatter: formatTimestamp },
+    {
+      key: "approvalTimestamp",
+      label: "Approval Timestamp",
+      formatter: formatTimestamp,
+    },
+    {
+      key: "productsEditTimestamp",
+      label: "Products Edit Timestamp",
+      formatter: formatTimestamp,
+    },
     {
       key: "poFilePath",
       label: "Attachments",

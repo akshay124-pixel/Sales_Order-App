@@ -391,7 +391,6 @@ const Row = React.memo(({ index, style, data }) => {
     if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
     return "#f3e8ff"; // Light purple for incomplete/others
   };
- 
 
   const getHoverBackground = () => {
     if (isOrderComplete(order)) return "#f0f7ff";
@@ -946,8 +945,8 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[50],
-          content: order.salesPerson || "-",
-          title: order.salesPerson || "-",
+          content: getLabel(order.salesPerson) || "-",
+          title: getLabel(order.salesPerson) || "-",
         },
         {
           width: columnWidths[51],
@@ -1141,7 +1140,7 @@ const Sales = () => {
     socket.on("connect_error", (error) => {
       console.error("Socket.IO connection error:", error);
     });
-        // Hinglish: Delete ke liye server 'deleteOrder' event bhejta hai
+    // Hinglish: Delete ke liye server 'deleteOrder' event bhejta hai
     // yahan sirf UI se order remove karenge; toast 'notification' event se aa jayega.
     socket.on("deleteOrder", ({ _id, createdBy, assignedTo }) => {
       const currentUserId = userId;
