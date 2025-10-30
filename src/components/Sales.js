@@ -21,6 +21,14 @@ const DeleteModal = React.lazy(() => import("./Delete"));
 const EditEntry = React.lazy(() => import("./EditEntry"));
 const AddEntry = React.lazy(() => import("./AddEntry"));
 
+const getLabel = (field) => {
+  if (!field) return "-";
+  if (typeof field === "string") return field;
+  if (typeof field === "object" && field !== null) {
+    return field.label || field.value || "-";
+  }
+  return "-";
+};
 // Styled Components
 const NotificationWrapper = styled.div`
   position: relative;
