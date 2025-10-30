@@ -21,14 +21,6 @@ const DeleteModal = React.lazy(() => import("./Delete"));
 const EditEntry = React.lazy(() => import("./EditEntry"));
 const AddEntry = React.lazy(() => import("./AddEntry"));
 
-const getLabel = (field) => {
-  if (!field) return "-";
-  if (typeof field === "string") return field;
-  if (typeof field === "object" && field !== null) {
-    return field.label || field.value || "-";
-  }
-  return "-";
-};
 // Styled Components
 const NotificationWrapper = styled.div`
   position: relative;
@@ -854,7 +846,7 @@ const Row = React.memo(({ index, style, data }) => {
                 order.dispatchStatus === "Not Dispatched"
                   ? "warning" // Yellow for Not Dispatched
                   : order.dispatchStatus === "Docket Awaited Dispatched"
-                  ? "info" // Light blue for Docket Awaited Dispatched
+                  ? "info"
                   : order.dispatchStatus === "Dispatched"
                   ? "primary" // Blue for Dispatched
                   : order.dispatchStatus === "Delivered"
@@ -953,8 +945,8 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[50],
-          content: getLabel(order.salesPerson) || "-",
-          title: getLabel(order.salesPerson) || "-",
+          content: order.salesPerson || "-",
+          title: order.salesPerson || "-",
         },
         {
           width: columnWidths[51],

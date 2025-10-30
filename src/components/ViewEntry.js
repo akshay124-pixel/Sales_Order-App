@@ -287,16 +287,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       { key: "remarksByBilling", label: "Remarks By Billing" },
       { key: "remarksByInstallation", label: "Remarks By Installation" },
       { key: "verificationRemarks", label: "Verification Remarks" },
-      {
-        key: "salesPerson",
-        label: "Sales Person",
-        formatter: (v) => {
-          if (!v) return null;
-          if (typeof v === "string") return v;
-          if (typeof v === "object" && v.label) return v.label;
-          return v.value || "N/A";
-        },
-      },
+      { key: "salesPerson", label: "Sales Person" },
       { key: "company", label: "Company" },
       {
         key: "createdBy",
@@ -503,7 +494,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
       formatter: (v) =>
         isValidObjectField(v, "username") ? v.username || v : null,
     },
-    { key: "salesPerson", label: "Sales Person" },
+    {
+      key: "salesPerson",
+      label: "Sales Person",
+      formatter: (v) => {
+        if (!v) return null;
+        if (typeof v === "string") return v;
+        if (typeof v === "object" && v.label) return v.label;
+        return v.value || "N/A";
+      },
+    },
     { key: "report", label: "Reporting Person" },
     {
       key: "approvalTimestamp",
