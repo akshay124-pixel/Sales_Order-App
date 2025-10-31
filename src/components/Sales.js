@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { FaEye, FaBell } from "react-icons/fa";
-import { Button, Badge, OverlayTrigger, Popover } from "react-bootstrap";
+import {
+  FaEye,
+  FaBell,
+  FaHome,
+  FaWrench,
+  FaIndustry,
+  FaTruck,
+} from "react-icons/fa";
+import { Button, Badge, OverlayTrigger, Popover, Card } from "react-bootstrap";
 // TeamBuilder: Team management modal component (import)
 import TeamBuilder from "./TeamBuilder";
 import FilterSection from "./FilterSection";
@@ -153,6 +160,42 @@ const DatePickerWrapper = styled.div`
   .react-datepicker,
   .react-datepicker-popper {
     z-index: 1000 !important;
+  }
+`;
+
+const TrackerGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+`;
+
+const TrackerCard = styled(Card)`
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  .card-body {
+    padding: 20px;
+    text-align: center;
+  }
+  .icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  .count {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  .title {
+    font-size: 1rem;
+    color: #6b7280;
   }
 `;
 
@@ -995,6 +1038,7 @@ const Row = React.memo(({ index, style, data }) => {
     </tr>
   );
 });
+
 const Sales = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -1013,6 +1057,13 @@ const Sales = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [dashboardCounts, setDashboardCounts] = useState({
+    all: 0,
+    installation: 0,
+    production: 0,
+    dispatch: 0,
+  });
+  const [trackerFilter, setTrackerFilter] = useState("all");
   // TeamBuilder: Controls open/close state of the TeamBuilder modal
   const [isTeamBuilderOpen, setIsTeamBuilderOpen] = useState(false);
   const userRole = localStorage.getItem("role");
@@ -1054,6 +1105,25 @@ const Sales = () => {
         : "Unable to load orders. Please try again.";
 
       toast.error(friendlyMessage, { position: "top-right", autoClose: 5000 });
+    }
+  }, []);
+
+  // Fetch dashboard counts (global totals)
+  const fetchDashboardCounts = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${process.env.REACT_APP_URL}/api/dashboard-counts`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setDashboardCounts(
+        response.data || { all: 0, installation: 0, production: 0, dispatch: 0 }
+      );
+    } catch (error) {
+      console.error("Error fetching dashboard counts:", error);
+      toast.error("Failed to fetch dashboard counts!");
     }
   }, []);
 
@@ -1147,6 +1217,7 @@ const Sales = () => {
       const owners = [createdBy, assignedTo].filter(Boolean);
       if (!owners.includes(currentUserId)) return;
       setOrders((prev) => prev.filter((o) => o._id !== _id));
+      fetchDashboardCounts(); // Refresh counts on delete
     });
     // Hinglish: Realtime notification ke liye backend 'notification' event emit karta hai
     // isliye yahan direct UI state update + toast kar rahe hain (no duplicates).
@@ -1172,11 +1243,13 @@ const Sales = () => {
             return [fullDocument, ...prev];
           });
         }
+        fetchDashboardCounts(); // Refresh counts on update/insert
       }
     );
 
     fetchOrders();
     fetchNotifications();
+    fetchDashboardCounts(); // Initial fetch for dashboard counts
 
     return () => {
       // Hinglish: Cleanup zaruri hai taaki duplicate listeners na baney (memory leak prevent)
@@ -1184,10 +1257,11 @@ const Sales = () => {
       socket.off("connect_error");
       socket.off("notification");
       socket.off("orderUpdate");
+      socket.off("deleteOrder");
       socket.disconnect();
       console.log("Socket.IO disconnected and listeners cleaned up");
     };
-  }, [fetchOrders, fetchNotifications, userRole, userId]);
+  }, [fetchOrders, fetchNotifications, userRole, userId, fetchDashboardCounts]);
 
   const calculateTotalResults = useMemo(() => {
     return Math.floor(
@@ -1211,7 +1285,8 @@ const Sales = () => {
       salesPerson,
       dispatchFrom,
       start,
-      end
+      end,
+      dashboardFilter
     ) => {
       let filtered = [...ordersToFilter];
       const searchLower = search.toLowerCase().trim();
@@ -1349,6 +1424,51 @@ const Sales = () => {
         });
       }
 
+      if (dashboardFilter !== "all") {
+        filtered = filtered.filter((order) => {
+          switch (dashboardFilter) {
+            case "production": {
+              // Match backend getDashboardCounts: sostatus Approved, dispatchFrom NOT in list, fulfillingStatus != "Fulfilled"
+              const dispatchFromOptions = [
+                "Patna",
+                "Bareilly",
+                "Ranchi",
+                "Lucknow",
+                "Delhi",
+                "Jaipur",
+                "Rajasthan",
+              ];
+              return (
+                order.sostatus === "Approved" &&
+                !dispatchFromOptions.includes(order.dispatchFrom) &&
+                order.fulfillingStatus !== "Fulfilled"
+              );
+            }
+            case "installation": {
+              // Match backend: Delivered but installation pending/in progress/site not ready/hold
+              const pendingInstallationStatuses = [
+                "Pending",
+                "In Progress",
+                "Site Not Ready",
+                "Hold",
+              ];
+              return (
+                order.dispatchStatus === "Delivered" &&
+                pendingInstallationStatuses.includes(order.installationStatus)
+              );
+            }
+            case "dispatch":
+              // Match backend: fulfillingStatus "Fulfilled" and not Delivered yet
+              return (
+                order.fulfillingStatus === "Fulfilled" &&
+                order.dispatchStatus !== "Delivered"
+              );
+            default:
+              return true;
+          }
+        });
+      }
+
       filtered = filtered.sort(
         (a, b) => new Date(b.soDate) - new Date(a.soDate)
       );
@@ -1368,7 +1488,8 @@ const Sales = () => {
       salesPersonFilter,
       dispatchFromFilter,
       startDate,
-      endDate
+      endDate,
+      trackerFilter
     );
   }, [
     orders,
@@ -1380,6 +1501,7 @@ const Sales = () => {
     dispatchFromFilter,
     startDate,
     endDate,
+    trackerFilter,
     filterOrders,
   ]);
 
@@ -1393,10 +1515,22 @@ const Sales = () => {
     setApprovalFilter("All");
     setOrderTypeFilter("All");
     setDispatchFilter("All");
+    setTrackerFilter("all");
 
     // Filter after a small delay to ensure states are updated
     setTimeout(() => {
-      filterOrders(orders, "", "All", "All", "All", "All", "All", null, null);
+      filterOrders(
+        orders,
+        "",
+        "All",
+        "All",
+        "All",
+        "All",
+        "All",
+        null,
+        null,
+        "all"
+      );
       toast.info("Filters reset!");
     }, 0);
   }, [filterOrders, orders]);
@@ -1406,23 +1540,7 @@ const Sales = () => {
       setIsAddModalOpen(false);
       toast.success("New order added!");
       await fetchOrders();
-      setOrders((prev) => {
-        const updatedOrders = [...prev, newEntry];
-        filterOrders(
-          updatedOrders,
-          searchTerm,
-          approvalFilter,
-          orderTypeFilter,
-          dispatchFilter,
-          salesPersonFilter,
-          dispatchFromFilter,
-          startDate,
-          endDate
-        );
-        return updatedOrders;
-      });
-      setIsAddModalOpen(false);
-      toast.success("New order added!");
+      fetchDashboardCounts(); // Refresh counts after add
     },
     [
       filterOrders,
@@ -1434,7 +1552,9 @@ const Sales = () => {
       dispatchFromFilter,
       startDate,
       endDate,
+      trackerFilter,
       fetchOrders,
+      fetchDashboardCounts,
     ]
   );
 
@@ -1468,10 +1588,12 @@ const Sales = () => {
           salesPersonFilter,
           dispatchFromFilter,
           startDate,
-          endDate
+          endDate,
+          trackerFilter
         );
         return updatedOrders;
       });
+      fetchDashboardCounts(); // Refresh counts after delete
       setIsDeleteModalOpen(false);
       toast.success("Order deleted successfully!");
     },
@@ -1485,6 +1607,8 @@ const Sales = () => {
       dispatchFromFilter,
       startDate,
       endDate,
+      trackerFilter,
+      fetchDashboardCounts,
     ]
   );
 
@@ -1505,10 +1629,12 @@ const Sales = () => {
           salesPersonFilter,
           dispatchFromFilter,
           startDate,
-          endDate
+          endDate,
+          trackerFilter
         );
         return updatedOrders;
       });
+      fetchDashboardCounts(); // Refresh counts after update
       setIsEditModalOpen(false);
       // Toast socket 'notification' se aayega (no duplicates)
     },
@@ -1522,6 +1648,8 @@ const Sales = () => {
       dispatchFromFilter,
       startDate,
       endDate,
+      trackerFilter,
+      fetchDashboardCounts,
     ]
   );
 
@@ -1744,10 +1872,12 @@ const Sales = () => {
               salesPersonFilter,
               dispatchFromFilter,
               startDate,
-              endDate
+              endDate,
+              trackerFilter
             );
             return updatedOrders;
           });
+          fetchDashboardCounts(); // Refresh counts after bulk upload
           toast.success(
             `Successfully uploaded ${response.data.data.length} orders!`
           );
@@ -1785,6 +1915,8 @@ const Sales = () => {
       dispatchFromFilter,
       startDate,
       endDate,
+      trackerFilter,
+      fetchDashboardCounts,
     ]
   );
 
@@ -2021,6 +2153,32 @@ const Sales = () => {
     });
   }, []);
 
+  const renderTrackerCard = (
+    title,
+    count,
+    icon,
+    bgColor,
+    filterKey,
+    isActive = false
+  ) => {
+    const active = trackerFilter === filterKey || isActive;
+    return (
+      <TrackerCard
+        onClick={() => setTrackerFilter(filterKey)}
+        className={active ? "active" : ""}
+        style={{
+          background: bgColor,
+        }}
+      >
+        <Card.Body>
+          <div className="icon">{icon}</div>
+          <div className="count">{count}</div>
+          <div className="title">{title}</div>
+        </Card.Body>
+      </TrackerCard>
+    );
+  };
+
   const notificationPopover = (
     <NotificationPopover id="notification-popover">
       <Popover.Header
@@ -2165,6 +2323,45 @@ const Sales = () => {
           fontFamily: "'Poppins', sans-serif",
         }}
       >
+        {(userRole === "SuperAdmin" || userRole === "Admin") && (
+          <TrackerGrid>
+            {renderTrackerCard(
+              "All Orders",
+              dashboardCounts.all,
+              <FaHome />,
+              "linear-gradient(135deg, #bcd3ff 0%, #d1c4ff 100%)", // Slightly deeper blue-lavender
+              "all",
+              trackerFilter === "all"
+            )}
+
+            {renderTrackerCard(
+              "Production Orders",
+              dashboardCounts.production,
+              <FaIndustry />,
+              "linear-gradient(135deg, #b5ccff 0%, #c8b8ff 100%)", // Soft blue-purple blend
+              "production",
+              trackerFilter === "production"
+            )}
+
+            {renderTrackerCard(
+              "Installation Orders",
+              dashboardCounts.installation,
+              <FaWrench />,
+              "linear-gradient(135deg, #c0d6ff 0%, #d4c2ff 100%)", // Clean and calm tone
+              "installation",
+              trackerFilter === "installation"
+            )}
+
+            {renderTrackerCard(
+              "Dispatch Orders",
+              dashboardCounts.dispatch,
+              <FaTruck />,
+              "linear-gradient(135deg, #c8d9ff 0%, #dbc8ff 100%)", // Frosty blue-violet gradient
+              "dispatch",
+              trackerFilter === "dispatch"
+            )}
+          </TrackerGrid>
+        )}
         <div
           className="my-4"
           style={{

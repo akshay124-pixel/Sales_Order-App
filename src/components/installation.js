@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes } from "react-icons/fa";
@@ -152,13 +152,13 @@ function Installation() {
     }
     if (startDate) {
       filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.soDate);
+        const orderDate = new Date(order.dispatchDate);
         return orderDate >= new Date(startDate);
       });
     }
     if (endDate) {
       filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.soDate);
+        const orderDate = new Date(order.dispatchDate);
         return orderDate <= new Date(endDate);
       });
     }
@@ -173,6 +173,14 @@ function Installation() {
     startDate,
     endDate,
   ]);
+
+  const isDispatchOverdue = useCallback((dispatchDate) => {
+    if (!dispatchDate) return false;
+    const dispatch = new Date(dispatchDate);
+    const now = new Date();
+    const diffInDays = (now - dispatch) / (1000 * 60 * 60 * 24);
+    return diffInDays >= 15;
+  }, []);
 
   // Calculate total pending orders (billStatus === "Pending")
   const totalPending = filteredOrders.filter(
@@ -695,6 +703,7 @@ function Installation() {
                     {[
                       "Order ID",
                       "SO Date",
+                      "Dispatch Date",
                       "Product Details",
                       "Contact Person",
                       "Contact No",
@@ -741,19 +750,29 @@ function Installation() {
                             )
                             .join(", ")
                         : "N/A";
+                      const isOverdue = isDispatchOverdue(order.dispatchDate);
+                      const baseBg = isOverdue
+                        ? "#fff3cd" // Light yellow for overdue rows
+                        : index % 2 === 0
+                        ? "#f8f9fa"
+                        : "#fff";
+                      const hoverBg = isOverdue
+                        ? "#ffeaa7" // Darker yellow on hover
+                        : "#e9ecef";
+                      const leaveBg = baseBg;
+
                       return (
                         <tr
                           key={order._id}
                           style={{
-                            background: index % 2 === 0 ? "#f8f9fa" : "#fff",
+                            background: baseBg,
                             transition: "all 0.3s ease",
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.background = "#e9ecef")
+                            (e.currentTarget.style.background = hoverBg)
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.background =
-                              index % 2 === 0 ? "#f8f9fa" : "#fff")
+                            (e.currentTarget.style.background = leaveBg)
                           }
                         >
                           <td
@@ -792,6 +811,32 @@ function Installation() {
                           >
                             {order.soDate
                               ? new Date(order.soDate)
+                                  .toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })
+                                  .replace(/\//g, "/")
+                              : "N/A"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.dispatchDate || "N/A"}
+                          >
+                            {order.dispatchDate
+                              ? new Date(order.dispatchDate)
                                   .toLocaleDateString("en-GB", {
                                     day: "2-digit",
                                     month: "2-digit",
