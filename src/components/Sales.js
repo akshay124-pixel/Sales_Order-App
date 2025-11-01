@@ -182,8 +182,8 @@ const TrackerCard = styled(Card)`
   }
   &.active {
     box-shadow: 0 8px 25px rgba(37, 117, 252, 0.3);
-    border: 2px solid #2575fc;
-  }
+    border: 2px solid #2575fc;
+  }
   .card-body {
     padding: 20px;
     text-align: center;
