@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button, Form, Badge } from "react-bootstrap";
 import { FaEye } from "react-icons/fa";
-import { io } from "socket.io-client";
+import io from "socket.io-client";
 import ViewEntry from "./ViewEntry";
 import EditProductionApproval from "./EditProductionApproval";
 import axios from "axios";
@@ -16,6 +16,13 @@ const ProductionApproval = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [productMatchCount, setProductMatchCount] = useState(0);
+  const meetsApproval = useCallback((doc) => {
+    if (!doc) return false;
+    return (
+      doc.sostatus === "Accounts Approved" ||
+      (doc.sostatus === "Pending for Approval" && doc.paymentTerms === "Credit")
+    );
+  }, []);
 
   // Socket.IO integration for real-time updates
   useEffect(() => {
@@ -47,13 +54,19 @@ const ProductionApproval = () => {
 
     // Hinglish: Backend 'orderUpdate' event use kar raha hai (change streams). Event name yahan sync kiya.
     socket.on("orderUpdate", ({ operationType, documentId, fullDocument }) => {
-      if (operationType === "update" && fullDocument) {
-        setOrders((prev) =>
-          prev.map((o) => (o._id === documentId ? fullDocument : o))
-        );
-      } else if (operationType === "insert" && fullDocument) {
-        setOrders((prev) => (prev.some((o) => o._id === documentId) ? prev : [fullDocument, ...prev]));
-      }
+      setOrders((prev) => {
+        const id = String(documentId || fullDocument?._id || "");
+        if (!id) return prev;
+        const include = fullDocument && meetsApproval(fullDocument);
+        if (operationType === "delete" || !include) {
+          return prev.filter((o) => String(o._id) !== id);
+        }
+        const idx = prev.findIndex((o) => String(o._id) === id);
+        if (idx === -1) return [fullDocument, ...prev];
+        const next = prev.slice();
+        next[idx] = fullDocument;
+        return next;
+      });
     });
 
     socket.on("disconnect", () => {
@@ -79,7 +92,6 @@ const ProductionApproval = () => {
         }
       );
       setOrders(response.data.data);
-      toast.success("Production approval orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching production approval orders:", error);
 
@@ -186,11 +198,19 @@ const ProductionApproval = () => {
   };
 
   const handleEntryUpdated = (updatedOrder) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order._id === updatedOrder._id ? updatedOrder : order
-      )
-    );
+    setOrders((prev) => {
+      const id = String(updatedOrder?._id || "");
+      if (!id) return prev;
+      const include = meetsApproval(updatedOrder);
+      const idx = prev.findIndex((o) => String(o._id) === id);
+      if (!include) {
+        return idx === -1 ? prev : prev.filter((o) => String(o._id) !== id);
+      }
+      if (idx === -1) return [updatedOrder, ...prev];
+      const next = prev.slice();
+      next[idx] = updatedOrder;
+      return next;
+    });
     setIsEditModalOpen(false);
     // Hinglish: Local success toast hata diya; realtime toast socket 'notification' se aayega (no duplicates)
   };

@@ -5,6 +5,7 @@ import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import "../App.css";
+import io from "socket.io-client";
 
 function Installation() {
   const [orders, setOrders] = useState([]);
@@ -80,6 +81,63 @@ function Installation() {
       isMounted = false;
     };
   }, [fetchInstallationOrders]);
+
+  // Real-time updates via Socket.IO
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const userRole = localStorage.getItem("role");
+    const baseOrigin = (() => {
+      try {
+        const url = new URL(
+          process.env.REACT_APP_URL || window.location.origin
+        );
+        return `${url.protocol}//${url.host}`;
+      } catch (_) {
+        return window.location.origin;
+      }
+    })();
+
+    const socket = io(baseOrigin, {
+      path: "/sales/socket.io",
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      withCredentials: true,
+    });
+
+    const meetsInstallation = (doc) =>
+      doc?.dispatchStatus === "Delivered" &&
+      ["Pending", "In Progress", "Site Not Ready", "Hold"].includes(
+        doc?.installationStatus
+      );
+
+    socket.on("connect", () => {
+      socket.emit("join", { userId, role: userRole });
+    });
+
+    socket.on("orderUpdate", ({ operationType, fullDocument, documentId }) => {
+      setOrders((prev) => {
+        const id = String(documentId || fullDocument?._id || "");
+        if (!id) return prev;
+        const include = fullDocument && meetsInstallation(fullDocument);
+        if (operationType === "delete" || !include) {
+          return prev.filter((o) => String(o._id) !== id);
+        }
+        const idx = prev.findIndex((o) => String(o._id) === id);
+        if (idx === -1) return [fullDocument, ...prev];
+        const next = prev.slice();
+        next[idx] = fullDocument;
+        return next;
+      });
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("orderUpdate");
+      socket.disconnect();
+    };
+  }, []);
 
   const uniqueSalesPersons = [
     "All",
@@ -294,19 +352,28 @@ function Installation() {
       );
       if (response.data.success) {
         const updatedOrder = response.data.data;
-        setOrders((prevOrders) =>
-          prevOrders
-            .map((order) =>
-              order._id === editOrder._id ? updatedOrder : order
-            )
-            .filter((order) => order.installationStatus !== "Completed")
-        );
+        const meetsInstallation = (doc) =>
+          doc?.dispatchStatus === "Delivered" &&
+          ["Pending", "In Progress", "Site Not Ready", "Hold"].includes(
+            doc?.installationStatus
+          );
+        setOrders((prev) => {
+          const id = String(updatedOrder._id);
+          const include = meetsInstallation(updatedOrder);
+          const idx = prev.findIndex((o) => String(o._id) === id);
+          if (!include) {
+            return idx === -1 ? prev : prev.filter((o) => String(o._id) !== id);
+          }
+          if (idx === -1) return [updatedOrder, ...prev];
+          const next = prev.slice();
+          next[idx] = updatedOrder;
+          return next;
+        });
         setShowEditModal(false);
         toast.success("Order updated successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
-        await fetchInstallationOrders();
       } else {
         throw new Error(response.data.message || "Failed to update order");
       }

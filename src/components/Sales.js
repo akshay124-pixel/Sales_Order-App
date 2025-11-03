@@ -7,7 +7,7 @@ import {
   FaIndustry,
   FaTruck,
 } from "react-icons/fa";
-import { Button, Badge, OverlayTrigger, Popover, Card } from "react-bootstrap";
+import { Button, Badge, Popover, Card } from "react-bootstrap";
 // TeamBuilder: Team management modal component (import)
 import TeamBuilder from "./TeamBuilder";
 import FilterSection from "./FilterSection";
@@ -22,6 +22,7 @@ import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import debounce from "lodash/debounce";
 import SalesDashboardDrawer from "./Dashbords/SalesDashboardDrawer";
+import { AnimatePresence, motion } from "framer-motion";
 // Lazy load modals
 const ViewEntry = React.lazy(() => import("./ViewEntry"));
 const DeleteModal = React.lazy(() => import("./Delete"));
@@ -33,6 +34,38 @@ const NotificationWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
+`;
+
+// Modern loader overlay styles (keeps layout unchanged)
+const LoaderOverlay = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+`;
+
+const SpinnerWrap = styled.div`
+  display: grid;
+  place-items: center;
+  gap: 10px;
+`;
+
+const GradientSpinner = styled.div`
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: conic-gradient(#6a11cb, #2575fc, #6a11cb);
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+  mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+  animation: spin 0.9s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
 `;
 
 const NotificationIcon = styled(FaBell)`
@@ -1073,6 +1106,7 @@ const Sales = () => {
   const userRole = localStorage.getItem("role");
   // TeamBuilder: Logged-in user's ID, passed to TeamBuilder for ownership checks
   const userId = localStorage.getItem("userId");
+  const [loading, setLoading] = useState(false);
 
   // Create uniqueSalesPersons array from orders
   const uniqueSalesPersons = useMemo(() => {
@@ -1185,13 +1219,13 @@ const Sales = () => {
     }
   }, []);
 
-  // WebSocket setup
+  // WebSocket setup + initial data load
   useEffect(() => {
     const baseOrigin = (() => {
       try {
         return new URL(process.env.REACT_APP_URL).origin;
       } catch {
-        return process.env.REACT_APP_URL; // fallback
+        return process.env.REACT_APP_URL;
       }
     })();
 
@@ -1206,27 +1240,22 @@ const Sales = () => {
 
     socket.on("connect", () => {
       console.log("Socket.IO connected:", socket.id);
-      // Hinglish: Server per-user/role based rooms expect object payload, isliye yahan object bhej rahe hain
-      // so that notifications sirf relevant user ko milein.
       socket.emit("join", { userId, role: userRole });
     });
 
     socket.on("connect_error", (error) => {
       console.error("Socket.IO connection error:", error);
     });
-    // Hinglish: Delete ke liye server 'deleteOrder' event bhejta hai
-    // yahan sirf UI se order remove karenge; toast 'notification' event se aa jayega.
+
     socket.on("deleteOrder", ({ _id, createdBy, assignedTo }) => {
       const currentUserId = userId;
       const owners = [createdBy, assignedTo].filter(Boolean);
       if (!owners.includes(currentUserId)) return;
       setOrders((prev) => prev.filter((o) => o._id !== _id));
-      fetchDashboardCounts(); // Refresh counts on delete
+      fetchDashboardCounts();
     });
-    // Hinglish: Realtime notification ke liye backend 'notification' event emit karta hai
-    // isliye yahan direct UI state update + toast kar rahe hain (no duplicates).
+
     socket.on("notification", (notif) => {
-      // Dedupe by id to avoid double entries
       setNotifications((prev) => {
         if (notif?._id && prev.some((n) => n._id === notif._id)) return prev;
         const next = [notif, ...prev].slice(0, 50);
@@ -1247,16 +1276,26 @@ const Sales = () => {
             return [fullDocument, ...prev];
           });
         }
-        fetchDashboardCounts(); // Refresh counts on update/insert
+        fetchDashboardCounts();
       }
     );
 
-    fetchOrders();
-    fetchNotifications();
-    fetchDashboardCounts(); // Initial fetch for dashboard counts
+    (async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          fetchOrders(),
+          fetchNotifications(),
+          fetchDashboardCounts(),
+        ]);
+      } catch (e) {
+        // errors handled elsewhere
+      } finally {
+        setLoading(false);
+      }
+    })();
 
     return () => {
-      // Hinglish: Cleanup zaruri hai taaki duplicate listeners na baney (memory leak prevent)
       socket.off("connect");
       socket.off("connect_error");
       socket.off("notification");
@@ -2670,6 +2709,20 @@ const Sales = () => {
               </tr>
             </tbody>
           </table>
+          <AnimatePresence>
+            {loading && (
+              <LoaderOverlay
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SpinnerWrap>
+                  <GradientSpinner />
+                </SpinnerWrap>
+              </LoaderOverlay>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       <footer

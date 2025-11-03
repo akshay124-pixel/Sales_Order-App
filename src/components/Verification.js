@@ -6,6 +6,12 @@ import EditVerification from "./EditVerification";
 import axios from "axios";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
+import io from "socket.io-client";
+
+const formatMoney = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toFixed(2) : "0.00";
+};
 
 const Verification = () => {
   const [orders, setOrders] = useState([]);
@@ -25,7 +31,6 @@ const Verification = () => {
         }
       );
       setOrders(response.data.data);
-      toast.success("Verification orders fetched successfully!");
     } catch (error) {
       console.error("Error fetching verification orders:", error);
       const friendlyMessage =
@@ -42,6 +47,58 @@ const Verification = () => {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const userRole = localStorage.getItem("role");
+    const baseOrigin = (() => {
+      try {
+        const url = new URL(
+          process.env.REACT_APP_URL || window.location.origin
+        );
+        return `${url.protocol}//${url.host}`;
+      } catch (_) {
+        return window.location.origin;
+      }
+    })();
+
+    const socket = io(baseOrigin, {
+      path: "/sales/socket.io",
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      withCredentials: true,
+    });
+
+    socket.on("connect", () => {
+      socket.emit("join", { userId, role: userRole });
+    });
+
+    socket.on("orderUpdate", ({ operationType, fullDocument, documentId }) => {
+      setOrders((prev) => {
+        const meets = fullDocument?.sostatus === "Pending for Approval";
+        if (operationType === "delete" || (!meets && documentId)) {
+          return prev.filter((o) => o._id !== String(documentId));
+        }
+        if (meets && fullDocument?._id) {
+          const id = String(fullDocument._id);
+          const idx = prev.findIndex((o) => String(o._id) === id);
+          if (idx === -1) return [fullDocument, ...prev];
+          const next = prev.slice();
+          next[idx] = fullDocument;
+          return next;
+        }
+        return prev;
+      });
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("orderUpdate");
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     filterOrders();
@@ -101,11 +158,24 @@ const Verification = () => {
   };
 
   const handleEntryUpdated = (updatedOrder) => {
-    setOrders((prevOrders) =>
-      prevOrders
-        .map((order) => (order._id === updatedOrder._id ? updatedOrder : order))
-        .filter((order) => order.sostatus === "Pending for Approval")
-    );
+    setOrders((prevOrders) => {
+      const meets = updatedOrder?.sostatus === "Pending for Approval";
+      const idx = prevOrders.findIndex(
+        (o) => String(o._id) === String(updatedOrder._id)
+      );
+      if (!meets) {
+        // remove from list if it no longer meets verification criteria
+        return idx === -1
+          ? prevOrders
+          : prevOrders.filter(
+              (o) => String(o._id) !== String(updatedOrder._id)
+            );
+      }
+      if (idx === -1) return [updatedOrder, ...prevOrders];
+      const next = prevOrders.slice();
+      next[idx] = updatedOrder;
+      return next;
+    });
     setIsEditModalOpen(false);
     toast.success("Order updated successfully!");
   };
@@ -138,6 +208,10 @@ const Verification = () => {
 
   return (
     <>
+      {/** Shared columns definition to sync widths for thead/tbody and prevent overlap */}
+      {(() => {
+        return null;
+      })()}
       <style>
         {`
           .table-container {
@@ -146,6 +220,10 @@ const Verification = () => {
             overflow-x: auto;
             scrollbar-width: thin;
             scrollbar-color: #2575fc #e6f0fa;
+          }
+          table {
+            table-layout: fixed;
+            border-collapse: separate;
           }
           table thead {
             position: sticky;
@@ -157,6 +235,12 @@ const Verification = () => {
           }
           table tbody {
             background: white;
+          }
+          table th, table td {
+            box-sizing: border-box;
+            vertical-align: middle;
+            height: 50px;
+            line-height: 30px;
           }
           .total-results {
             font-size: 1.1rem;
@@ -252,6 +336,21 @@ const Verification = () => {
               tableLayout: "fixed",
             }}
           >
+            <colgroup>
+              <col style={{ width: "80px" }} />
+              <col style={{ width: "120px" }} />
+              <col style={{ width: "150px" }} />
+              <col style={{ width: "120px" }} />
+              <col style={{ width: "100px" }} />
+              <col style={{ width: "100px" }} />
+              <col style={{ width: "120px" }} />
+              <col style={{ width: "120px" }} />
+              <col style={{ width: "120px" }} />
+              <col style={{ width: "120px" }} />
+              <col style={{ width: "200px" }} />
+              <col style={{ width: "200px" }} />
+              <col style={{ width: "150px" }} />
+            </colgroup>
             <thead>
               <tr>
                 {[
@@ -265,7 +364,7 @@ const Verification = () => {
                   { header: "Payment Collected", width: "120px" },
                   { header: "Payment Due", width: "120px" },
                   { header: "Actions", width: "120px" },
-                  { header: "Approval Status", width: "120px" },
+                  { header: "Approval Status", width: "200px" },
                   { header: "Product Details", width: "200px" },
                   { header: "Verification Remarks", width: "150px" },
                 ].map(({ header, width }) => (
@@ -295,7 +394,7 @@ const Verification = () => {
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order, index) => (
                   <tr
-                    key={order._id || index}
+                    key={order._id}
                     style={{
                       backgroundColor: "#ffffff",
                       transition: "all 0.3s ease",
@@ -381,7 +480,7 @@ const Verification = () => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      ₹{order.total?.toFixed(2) || "0.00"}
+                      ₹{formatMoney(order.total)}
                     </td>
                     <td
                       style={{

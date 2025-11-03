@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Modal, Button, Badge, Accordion, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
@@ -29,6 +29,45 @@ function ViewEntry({ isOpen, onClose, entry }) {
     }
     return true;
   };
+
+  const getCreatedByName = (createdBy) => {
+    if (!isValidField(createdBy)) return null;
+    if (typeof createdBy === "object") {
+      if (isValidField(createdBy.username)) return createdBy.username;
+      if (isValidField(createdBy.name)) return createdBy.name;
+    }
+    return null;
+  };
+  const [createdByName, setCreatedByName] = useState(() => {
+    const initial = getCreatedByName(entry?.createdBy);
+    if (initial) return initial;
+    const key = entry?._id || entry?.orderId || entry?.id || null;
+    if (key) {
+      try {
+        const cached = localStorage.getItem(`createdByName:${key}`);
+        if (cached) return cached;
+      } catch (_) {}
+    }
+    return null;
+  });
+  const createdByCacheKey = entry?._id || entry?.orderId || entry?.id || null;
+  useEffect(() => {
+    if (!createdByCacheKey) return;
+    const name = getCreatedByName(entry?.createdBy);
+    if (name) {
+      setCreatedByName(name);
+      try {
+        localStorage.setItem(`createdByName:${createdByCacheKey}`, name);
+      } catch (_) {}
+    } else {
+      try {
+        const cached = localStorage.getItem(
+          `createdByName:${createdByCacheKey}`
+        );
+        if (cached) setCreatedByName(cached);
+      } catch (_) {}
+    }
+  }, [createdByCacheKey, entry?.createdBy]);
 
   // Utility function to format date fields
   const formatDate = (dateStr) => {
@@ -292,8 +331,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       {
         key: "createdBy",
         label: "Created By",
-        formatter: (v) =>
-          isValidObjectField(v, "username") ? v.username || v : null,
+        formatter: () => (isValidField(createdByName) ? createdByName : null),
       },
       { key: "poFilePath", label: "Attachments" },
     ];
@@ -491,8 +529,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
     {
       key: "createdBy",
       label: "Created By",
-      formatter: (v) =>
-        isValidObjectField(v, "username") ? v.username || v : null,
+      condition: true,
+      formatter: () => (isValidField(createdByName) ? createdByName : "N/A"),
     },
     { key: "salesPerson", label: "Sales Person" },
     { key: "report", label: "Reporting Person" },
@@ -1022,3 +1060,4 @@ function ViewEntry({ isOpen, onClose, entry }) {
 }
 
 export default ViewEntry;
+ 

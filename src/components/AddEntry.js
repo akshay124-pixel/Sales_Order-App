@@ -1510,7 +1510,7 @@ function AddEntry({ onSubmit, onClose }) {
                       color: "#1e293b",
                     }}
                   />
-                ) : (
+                ) : currentProduct.productType === "IFPD" ? (
                   <select
                     name="modelNos"
                     value={currentProduct.modelNos}
@@ -1524,18 +1524,49 @@ function AddEntry({ onSubmit, onClose }) {
                     }}
                   >
                     <option value="">Select Model No</option>
-                    {currentProduct.productType === "IFPD"
-                      ? modelNoOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))
-                      : printerOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
+                    {modelNoOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
+                ) : currentProduct.productType === "Fujifilm-Printer" ? (
+                  <select
+                    name="modelNos"
+                    value={currentProduct.modelNos}
+                    onChange={handleProductChange}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                    }}
+                  >
+                    <option value="">Select Model No</option>
+                    {printerOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    name="modelNos"
+                    value={currentProduct.modelNos}
+                    onChange={handleProductChange}
+                    placeholder="Enter Model No"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "0.75rem",
+                      backgroundColor: "#f8fafc",
+                      fontSize: "1rem",
+                      color: "#1e293b",
+                    }}
+                  />
                 )}
               </div>
 
