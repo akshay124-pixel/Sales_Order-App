@@ -2098,9 +2098,13 @@ const Production = () => {
                             padding: "15px",
                             boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
                             transition: "transform 0.2s ease",
-                            "&:hover": {
-                              transform: "translateY(-2px)",
-                            },
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform =
+                              "translateY(-2px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
                           }}
                         >
                           <h4
@@ -2143,6 +2147,9 @@ const Production = () => {
                                 : "N/A"}
                             </div>
                             <div>
+                              <strong>GST:</strong> {product.gst || "N/A"}
+                            </div>
+                            <div>
                               <strong>Serial Nos:</strong>{" "}
                               {product.serialNos?.length > 0
                                 ? product.serialNos.join(", ")
@@ -2154,22 +2161,22 @@ const Production = () => {
                                 ? product.modelNos.join(", ")
                                 : "N/A"}
                             </div>
-                            {product.brand && (
+                            {product.productCode &&
+                              product.productCode.length > 0 && (
+                                <div>
+                                  <strong>Product Code:</strong>{" "}
+                                  {product.productCode.join(", ")}
+                                </div>
+                              )}
+                            {product.brand && product.brand.trim() !== "" && (
                               <div>
-                                <strong>Brand:</strong>{" "}
-                                {product.brand?.length > 0
-                                  ? product.brand.join(", ")
-                                  : "N/A"}
+                                <strong>Brand:</strong> {product.brand}
                               </div>
                             )}
-                            {product.productCode && (
-                              <div>
-                                <strong>Product Code:</strong>{" "}
-                                {product.productCode?.length > 0
-                                  ? product.productCode.join(", ")
-                                  : "N/A"}
-                              </div>
-                            )}
+                            <div>
+                              <strong>Warranty:</strong>{" "}
+                              {product.warranty || "N/A"}
+                            </div>
                           </div>
                         </div>
                       ))}
