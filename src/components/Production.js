@@ -2154,19 +2154,22 @@ const Production = () => {
                                 ? product.modelNos.join(", ")
                                 : "N/A"}
                             </div>
-                            {product.brand?.length ? (
+                            {product.brand && (
                               <div>
                                 <strong>Brand:</strong>{" "}
-                                {product.brand.join(", ")}
+                                {product.brand?.length > 0
+                                  ? product.brand.join(", ")
+                                  : "N/A"}
                               </div>
-                            ) : null}
-
-                            {product.productCode?.length ? (
+                            )}
+                            {product.productCode && (
                               <div>
                                 <strong>Product Code:</strong>{" "}
-                                {product.productCode.join(", ")}
+                                {product.productCode?.length > 0
+                                  ? product.productCode.join(", ")
+                                  : "N/A"}
                               </div>
-                            ) : null}
+                            )}
                           </div>
                         </div>
                       ))}
