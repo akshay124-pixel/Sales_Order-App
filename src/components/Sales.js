@@ -628,8 +628,7 @@ const Row = React.memo(({ index, style, data }) => {
                 userRole === "SuperAdmin" ||
                 (userRole === "Sales" &&
                   order.sostatus !== "Approved" &&
-                  order.sostatus !== "Accounts Approved" &&
-                  order.sostatus !== "Order on Hold Due to Low Price")) && (
+                  order.sostatus !== "Accounts Approved" )) && (
                 <>
                   <button
                     className="editBtn"
@@ -2677,36 +2676,84 @@ const Sales = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td
-                  colSpan={tableHeaders.length}
-                  style={{ padding: 0, border: "none" }}
-                >
-                  <AutoSizer disableHeight>
-                    {({ width }) => (
-                      <List
-                        className="list-container"
-                        height={600}
-                        itemCount={filteredOrders.length}
-                        itemSize={50}
-                        width={Math.max(width, totalTableWidth)}
-                        itemData={{
-                          orders: filteredOrders,
-                          handleViewClick,
-                          handleEditClick,
-                          handleDeleteClick,
-                          userRole,
-                          userId,
-                          isOrderComplete,
-                          columnWidths,
+                 {filteredOrders.length === 0 && !loading ? (
+                <tr>
+                  <td
+                    colSpan={tableHeaders.length}
+                    style={{
+                      padding: 0,
+                      border: "none",
+                      height: "600px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1.8rem",
+                        color: "#1f2937",
+                        fontWeight: "600",
+                        background: "#f9fafb",
+                      }}
+                    >
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "2rem",
                         }}
                       >
-                        {Row}
-                      </List>
-                    )}
-                  </AutoSizer>
-                </td>
-              </tr>
+                        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
+                          📋
+                        </div>
+                        <div>No data available</div>
+                        <div
+                          style={{
+                            fontSize: "1rem",
+                            color: "#6b7280",
+                            marginTop: "0.5rem",
+                            fontWeight: "400",
+                          }}
+                        >
+                          Try adjusting your filters or add new orders
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                <tr>
+                  <td
+                    colSpan={tableHeaders.length}
+                    style={{ padding: 0, border: "none" }}
+                  >
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <List
+                          className="list-container"
+                          height={600}
+                          itemCount={filteredOrders.length}
+                          itemSize={50}
+                          width={Math.max(width, totalTableWidth)}
+                          itemData={{
+                            orders: filteredOrders,
+                            handleViewClick,
+                            handleEditClick,
+                            handleDeleteClick,
+                            userRole,
+                            userId,
+                            isOrderComplete,
+                            columnWidths,
+                          }}
+                        >
+                          {Row}
+                        </List>
+                      )}
+                    </AutoSizer>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
           <AnimatePresence>
