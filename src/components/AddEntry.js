@@ -1472,7 +1472,6 @@ function AddEntry({ onSubmit, onClose }) {
                   value={currentProduct.warranty}
                   onChange={handleProductChange}
                   placeholder="Enter Warranty (e.g., 1 Year)"
-                
                   style={{
                     width: "100%",
                     padding: "0.75rem",
