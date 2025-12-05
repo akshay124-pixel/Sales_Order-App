@@ -1413,6 +1413,7 @@ export const salesPersonlist = [
   { label: "Harpreet Singh", value: "Harpeet Singh" },
   { label: "J P Sharma", value: "J P Sharma" },
   { label: "Jagan Lal", value: "Jagan Lal" },
+  { label: "Jyoti Rani", value: "Jyoti Rani" },
   { label: "Javvad Akram", value: "Javvad Akram" },
   { label: "Jashanpreet", value: "Jashanpreet" },
   { label: "Kulwinder Singh", value: "Kulwinder Singh" },
