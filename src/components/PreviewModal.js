@@ -229,6 +229,12 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                 <h4 class="text-lg mb-3">Additional Details</h4>
                 <div class="invoice-grid">
                   <div>
+                  <div class="mb-2">
+                      <strong class="text-gray-700">Company:</strong>
+                      <span class="text-gray-900">${
+                        entry.company || "N/A"
+                      }</span>
+                    </div>
                     <div class="mb-2">
                       <strong class="text-gray-700">Transporter:</strong>
                       <span class="text-gray-900">${
@@ -677,6 +683,12 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
             <h4 className="text-lg mb-3">Additional Details</h4>
             <div className="invoice-grid">
               <div>
+                <div className="mb-2">
+                  <strong className="text-gray-700">Company:</strong>{" "}
+                  <span className="text-gray-900">
+                    {entry.company || "N/A"}
+                  </span>
+                </div>
                 <div className="mb-2">
                   <strong className="text-gray-700">Transporter:</strong>{" "}
                   <span className="text-gray-900">
