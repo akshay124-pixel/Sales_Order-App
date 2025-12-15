@@ -1617,11 +1617,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.customerEmail?.message}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="contactNo">
+       <Form.Group controlId="contactNo">
           <Form.Label>📱 Contact Number</Form.Label>
           <Form.Control
-            type="tel" // Use type="tel" for better mobile compatibility
-            maxLength={10} // Restrict to 10 digits
+            type="tel" // Hinglish: Mobile ke liye tel type better hai
+            maxLength={10} // Hinglish: Sirf 10 digits allow karte hain
             {...register("contactNo", {
               pattern: {
                 value: /^\d{10}$/,
@@ -1629,9 +1629,24 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               },
             })}
             onChange={(e) => {
-              // Prevent non-numeric input
+              // Hinglish: Sirf numbers allow karte hain, spaces aur special characters remove kar dete hain
               const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
               debouncedHandleInputChange("contactNo", value);
+            }}
+            // Hinglish: Paste event ko handle karte hain mobile numbers ke liye
+            onPaste={(e) => {
+              e.preventDefault();
+              const paste = (e.clipboardData || window.clipboardData).getData('text');
+              // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
+              const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+              debouncedHandleInputChange("contactNo", value);
+            }}
+            // Hinglish: Keypress event se non-numeric characters ko block karte hain
+            onKeyPress={(e) => {
+              // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
+              if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                e.preventDefault();
+              }
             }}
             isInvalid={!!errors.contactNo}
             placeholder="Enter 10-digit contact number"
@@ -1643,8 +1658,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="alterno">
           <Form.Label>📞 Alternate Contact Number</Form.Label>
           <Form.Control
-            type="tel" // Use type="tel" for better mobile compatibility
-            maxLength={10} // Restrict to 10 digits
+            type="tel" // Hinglish: Mobile ke liye tel type better hai
+            maxLength={10} // Hinglish: Sirf 10 digits allow karte hain
             {...register("alterno", {
               pattern: {
                 value: /^\d{10}$/,
@@ -1652,9 +1667,24 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               },
             })}
             onChange={(e) => {
-              // Prevent non-numeric input
+              // Hinglish: Sirf numbers allow karte hain, spaces aur special characters remove kar dete hain
               const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
               debouncedHandleInputChange("alterno", value);
+            }}
+            // Hinglish: Paste event ko handle karte hain mobile numbers ke liye
+            onPaste={(e) => {
+              e.preventDefault();
+              const paste = (e.clipboardData || window.clipboardData).getData('text');
+              // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
+              const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+              debouncedHandleInputChange("alterno", value);
+            }}
+            // Hinglish: Keypress event se non-numeric characters ko block karte hain
+            onKeyPress={(e) => {
+              // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
+              if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                e.preventDefault();
+              }
             }}
             isInvalid={!!errors.alterno}
             placeholder="Enter 10-digit alternate number"

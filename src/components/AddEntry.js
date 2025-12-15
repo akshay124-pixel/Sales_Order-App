@@ -910,6 +910,7 @@ function AddEntry({ onSubmit, onClose }) {
                   inputMode: "numeric",
                   maxLength: 10,
                   placeholder: "e.g. 9876543210",
+                  customOnChange: true,
                 },
                 {
                   label: "Alternate Contact No",
@@ -918,6 +919,7 @@ function AddEntry({ onSubmit, onClose }) {
                   inputMode: "numeric",
                   maxLength: 10,
                   placeholder: "e.g. 9876543210",
+                  customOnChange: true,
                 },
                 {
                   label: "Customer Email",
@@ -950,15 +952,53 @@ function AddEntry({ onSubmit, onClose }) {
                       <span style={{ color: "#f43f5e" }}>*</span>
                     )}
                   </label>
-                  <input
+                   <input
                     type={field.type}
                     name={field.name}
                     value={formData[field.name] || ""}
-                    onChange={field.onChange || handleChange}
+                    onChange={
+                      field.customOnChange
+                        ? // Hinglish: Mobile number fields ke liye special handler - sirf numbers allow karta hai, spaces nahi
+                          (e) => {
+                            // Hinglish: Sirf digits allow karte hain, spaces aur special characters remove kar dete hain
+                            const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                            setFormData((prev) => ({
+                              ...prev,
+                              [field.name]: value,
+                            }));
+                          }
+                        : handleChange
+                    }
                     maxLength={field.maxLength}
                     inputMode={field.inputMode}
                     placeholder={field.placeholder}
                     required={field.required}
+                    // Hinglish: Paste event ko bhi handle karte hain mobile numbers ke liye
+                    onPaste={
+                      field.customOnChange
+                        ? (e) => {
+                            e.preventDefault();
+                            const paste = (e.clipboardData || window.clipboardData).getData('text');
+                            // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
+                            const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+                            setFormData((prev) => ({
+                              ...prev,
+                              [field.name]: value,
+                            }));
+                          }
+                        : undefined
+                    }
+                    // Hinglish: Keypress event se non-numeric characters ko block karte hain
+                    onKeyPress={
+                      field.customOnChange
+                        ? (e) => {
+                            // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
+                            if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                              e.preventDefault();
+                            }
+                          }
+                        : undefined
+                    }
                     style={{
                       padding: "0.75rem",
                       border: "1px solid #e2e8f0",
