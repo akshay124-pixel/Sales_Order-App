@@ -2806,14 +2806,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Control.Feedback>
         </Form.Group>
        <Form.Group controlId="installationeng">
-  <Form.Label>🧑‍🔧 Installation Engineer Charges</Form.Label>
+  <Form.Label>🧑‍🔧 Installation Engineer</Form.Label>
   <Form.Control
     {...register("installationeng")}
     onChange={(e) =>
       debouncedHandleInputChange("installationeng", e.target.value)
     }
     isInvalid={!!errors.installationeng}
-    placeholder="e.g., 1000"
+    placeholder="e.g., Installer Name"
   />
   <Form.Control.Feedback type="invalid">
     {errors.installationeng?.message}
