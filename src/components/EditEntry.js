@@ -269,6 +269,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : "",
         installation: entryToEdit.installation || "",
         installationStatus: entryToEdit.installationStatus || "Pending",
+        installationeng : entryToEdit.installationeng || "",
         remarksByInstallation: entryToEdit.remarksByInstallation || "",
         dispatchStatus: entryToEdit.dispatchStatus || "Not Dispatched",
         salesPerson: entryToEdit.salesPerson || "",
