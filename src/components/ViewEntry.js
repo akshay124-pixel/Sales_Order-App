@@ -305,6 +305,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       { key: "sostatus", label: "SO Status" },
       { key: "dispatchStatus", label: "Dispatch Status" },
       { key: "installationStatus", label: "Installation Status" },
+      { key: "installationeng", label: "installationeng" },   
       { key: "completionStatus", label: "Production Status" },
       { key: "stockStatus", label: "Stock Status" },
       { key: "demoDate", label: "Demo Date", formatter: formatDate },
@@ -669,6 +670,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
   const logisticsInfoFields = [
     { key: "installationStatus", label: "Installation Status" },
+    { key: "installationeng", label: "installationeng" },
     { key: "remarksByInstallation", label: "Remarks (Installation)" },
     { key: "company", label: "Company" },
     { key: "dispatchFrom", label: "Dispatch From" },
