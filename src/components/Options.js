@@ -1119,6 +1119,7 @@ export const statesAndCities = {
     "Firozabad",
     "Gautam Buddha Nagar",
     "Ghaziabad",
+    "Greater Noida",
     "Ghazipur",
     "Gonda",
     "Gorakhpur",
@@ -1147,9 +1148,7 @@ export const statesAndCities = {
     "Mirzapur",
     "Moradabad",
     "Muzaffar Nagar",
-    "Noida",
-    "Greater Noida",
-    
+    "Noida", 
     "Pilibhit",
     "Pratapgarh",
     "Prayagraj",
