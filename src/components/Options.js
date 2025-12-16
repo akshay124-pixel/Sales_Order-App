@@ -1099,6 +1099,7 @@ export const statesAndCities = {
     "Baghpat",
     "Bahraich",
     "Ballia",
+    "Bulandshahr",
     "Balrampur",
     "Banda",
     "Barabanki",
@@ -1146,6 +1147,9 @@ export const statesAndCities = {
     "Mirzapur",
     "Moradabad",
     "Muzaffar Nagar",
+    "Noida",
+    "Greater Noida",
+    
     "Pilibhit",
     "Pratapgarh",
     "Prayagraj",
