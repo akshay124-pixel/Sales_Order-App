@@ -636,7 +636,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     },
     { key: "installchargesstatus", label: "Install Charges Status" },
     { key: "installation", label: "Installation Charges" },
-    { key: "installationeng", label: "Installation Engineer" },
+ 
     {
       key: "total",
       label: "Total",
@@ -672,6 +672,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
   const logisticsInfoFields = [
     { key: "installationStatus", label: "Installation Status" },
+       { key: "installationeng", label: "Installation Engineer" },
     { key: "remarksByInstallation", label: "Remarks (Installation)" },
     { key: "company", label: "Company" },
     { key: "dispatchFrom", label: "Dispatch From" },
