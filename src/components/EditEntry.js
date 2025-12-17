@@ -1856,28 +1856,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.stockStatus?.message}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="gemOrderNumber">
+       <Form.Group controlId="gemOrderNumber">
           <Form.Label>📄 GEM Order Number</Form.Label>
           <Form.Control
-            type="tel"
-            {...register("gemOrderNumber", {
-              pattern: {
-                value: /^\d+$/,
-                message: "GEM Order Number must contain only numbers",
-              },
-            })}
-            onChange={(e) => {
-              // Only allow numbers
-              const value = e.target.value.replace(/[^0-9]/g, "");
-              e.target.value = value;
-              debouncedHandleInputChange("gemOrderNumber", value);
-            }}
+            {...register("gemOrderNumber")}
+            onChange={(e) =>
+              debouncedHandleInputChange("gemOrderNumber", e.target.value)
+            }
             isInvalid={!!errors.gemOrderNumber}
-            placeholder="Enter numbers only"
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.gemOrderNumber?.message}
-          </Form.Control.Feedback>
         </Form.Group>
         {/* Products Section */}
         <div>
