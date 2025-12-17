@@ -202,7 +202,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 p.spec || "N/A"
               }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${
                 p.gst || "N/A"
-              }, Serial Nos: ${
+              }%, Serial Nos: ${
                 isValidField(p.serialNos) && p.serialNos.length > 0
                   ? p.serialNos.join(", ")
                   : "N/A"
