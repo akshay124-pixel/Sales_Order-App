@@ -1522,6 +1522,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             readOnly
             disabled
             isInvalid={!!errors.createdBy}
+            placeholder="Auto-filled from system"
           />
         </Form.Group>
         <Form.Group controlId="soDate">
@@ -1589,6 +1590,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {...register("name")}
             onChange={(e) => debouncedHandleInputChange("name", e.target.value)}
             isInvalid={!!errors.name}
+            placeholder="e.g., Rahul Sharma"
           />
         </Form.Group>
         <Form.Group controlId="customername">
@@ -1599,6 +1601,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("customername", e.target.value)
             }
             isInvalid={!!errors.customername}
+            placeholder="e.g., ABC Enterprises Pvt Ltd"
           />
         </Form.Group>
         <Form.Group controlId="customerEmail">
@@ -1615,6 +1618,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("customerEmail", e.target.value)
             }
             isInvalid={!!errors.customerEmail}
+            placeholder="e.g., customer@example.com"
           />
           <Form.Control.Feedback type="invalid">
             {errors.customerEmail?.message}
@@ -1794,6 +1798,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("shippingAddress", e.target.value)
             }
             isInvalid={!!errors.shippingAddress}
+            placeholder="e.g., 123, Industrial Area, Sector 5, Near Metro Station"
           />
         </Form.Group>
         <Form.Group controlId="billingAddress">
@@ -1806,6 +1811,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("billingAddress", e.target.value)
             }
             isInvalid={!!errors.billingAddress}
+            placeholder="e.g., 456, Commercial Complex, Main Road, City Center"
           />
         </Form.Group>
         <Form.Group controlId="orderType">
@@ -1864,6 +1870,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("gemOrderNumber", e.target.value)
             }
             isInvalid={!!errors.gemOrderNumber}
+            placeholder="e.g., GEMC-511687-123456"
           />
         </Form.Group>
         {/* Products Section */}
@@ -2029,7 +2036,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             );
                           }}
                           isInvalid={!!errors.products?.[index]?.productType}
-                          placeholder="Enter Custom Product Type"
+                          placeholder="e.g., Projector, Scanner, Webcam"
                           style={{
                             width: "100%",
                             padding: "0.75rem",
@@ -2070,7 +2077,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             )
                           }
                           isInvalid={!!errors.products?.[index]?.size}
-                          placeholder="Enter Size"
+                          placeholder="e.g., 65 inch, 75 inch, A4"
                           style={{
                             width: "100%",
                             padding: "0.75rem",
@@ -2149,7 +2156,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             )
                           }
                           isInvalid={!!errors.products?.[index]?.spec}
-                          placeholder="Enter Specification"
+                          placeholder="e.g., 4K UHD, Android 11, Touch"
                           style={{
                             width: "100%",
                             padding: "0.75rem",
@@ -2362,7 +2369,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           )
                         }
                         isInvalid={!!errors.products?.[index]?.brand}
-                        placeholder="e.g., Samsung, Dell"
+                        placeholder="e.g., Samsung, Dell, HP, Promark"
                         style={{
                           width: "100%",
                           padding: "0.75rem",
@@ -2401,7 +2408,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           )
                         }
                         isInvalid={!!errors.products?.[index]?.warranty}
-                        placeholder="e.g., 1 Year, 2 Years"
+                        placeholder="e.g., 1 Year, 2 Years, 3 Years Onsite"
                         style={{
                           width: "100%",
                           padding: "0.75rem",
@@ -2440,7 +2447,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           )
                         }
                         isInvalid={!!errors.products?.[index]?.serialNos}
-                        placeholder="e.g., SN1, SN2, SN3"
+                        placeholder="e.g., SN001, SN002, SN003 (comma separated)"
                         style={{
                           width: "100%",
                           padding: "0.75rem",
@@ -2512,7 +2519,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             )
                           }
                           isInvalid={!!errors.products?.[index]?.modelNos}
-                          placeholder="e.g., MN1, MN2, MN3"
+                          placeholder="e.g., PRO-65, IFP-75 (comma separated)"
                           style={{
                             width: "100%",
                             padding: "0.75rem",
@@ -2919,7 +2926,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       debouncedHandleInputChange("installationeng", e.target.value)
     }
     isInvalid={!!errors.installationeng}
-    placeholder="e.g., Installer Name"
+    placeholder="e.g., Amit Kumar, Rajesh Singh"
   />
   <Form.Control.Feedback type="invalid">
     {errors.installationeng?.message}
@@ -2996,6 +3003,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               )
             }
             isInvalid={!!errors.remarksByInstallation}
+            placeholder="e.g., Installation completed successfully, customer trained"
           />
         </Form.Group>
         <Form.Group controlId="dispatchStatus">
@@ -3098,6 +3106,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("transporter", e.target.value)
             }
             isInvalid={!!errors.transporter}
+            placeholder="e.g., BlueDart, DTDC, Delhivery"
           />
         </Form.Group>
         <Form.Group controlId="transporterDetails">
@@ -3110,6 +3119,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("transporterDetails", e.target.value)
             }
             isInvalid={!!errors.transporterDetails}
+            placeholder="e.g., Contact: 9876543210, Branch: Delhi Hub"
           />
         </Form.Group>
            <Form.Group controlId="docketNo">
@@ -3120,6 +3130,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("docketNo", e.target.value)
             }
             isInvalid={!!errors.docketNo}
+            placeholder="e.g., AWB123456789"
           />
         </Form.Group>
         <Form.Group controlId="receiptDate">
@@ -3141,6 +3152,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("invoiceNo", e.target.value)
             }
             isInvalid={!!errors.invoiceNo}
+            placeholder="e.g., INV-2024-001234"
           />
         </Form.Group>
         <Form.Group controlId="invoiceDate">
@@ -3310,6 +3322,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarksByProduction", e.target.value)
             }
             isInvalid={!!errors.remarksByProduction}
+            placeholder="e.g., Product ready for dispatch, QC passed"
           />
         </Form.Group>
         <Form.Group controlId="remarksByAccounts">
@@ -3322,6 +3335,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarksByAccounts", e.target.value)
             }
             isInvalid={!!errors.remarksByAccounts}
+            placeholder="e.g., Payment verified, GST reconciled"
           />
         </Form.Group>
         <Form.Group controlId="remarksByBilling">
@@ -3334,6 +3348,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarksByBilling", e.target.value)
             }
             isInvalid={!!errors.remarksByBilling}
+            placeholder="e.g., Invoice generated, E-way bill created"
           />
         </Form.Group>
         <Form.Group controlId="verificationRemarks">
@@ -3346,6 +3361,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("verificationRemarks", e.target.value)
             }
             isInvalid={!!errors.verificationRemarks}
+            placeholder="e.g., Order details verified, customer confirmed"
           />
         </Form.Group>
         <Form.Group controlId="remarks">
@@ -3358,6 +3374,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               debouncedHandleInputChange("remarks", e.target.value)
             }
             isInvalid={!!errors.remarks}
+            placeholder="e.g., Additional notes or special instructions"
           />
         </Form.Group>
       </FormSection>
