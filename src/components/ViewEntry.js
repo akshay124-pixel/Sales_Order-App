@@ -624,7 +624,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     {
       key: "gstText",
       label: "GST",
-      value: gstText,
+      value: `${gstText}%`,
       condition: isValidField(entry.products),
     },
     { key: "freightcs", label: "Freight Charges" },
