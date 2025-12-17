@@ -648,6 +648,7 @@ export const statesAndCities = {
     "Panchkula",
     "Gurugram",
     "Faridabad",
+    "Tohna",
     "Panipat",
     "Ambala",
     "Hisar",
