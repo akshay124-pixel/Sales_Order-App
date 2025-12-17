@@ -120,11 +120,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       freightstatus: "Extra",
       actualFreight: "",
       installchargesstatus: "Extra",
+      installationeng:"",
       orderType: "B2C",
       gemOrderNumber: "",
       deliveryDate: "",
       installation: "",
-      installationeng:"",
       installationStatus: "Pending",
       remarksByInstallation: "",
       dispatchStatus: "Not Dispatched",
@@ -252,6 +252,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentMethod: entryToEdit.paymentMethod || "",
         paymentDue: entryToEdit.paymentDue || "",
         paymentTerms: entryToEdit.paymentTerms || "",
+         installationeng : entryToEdit.installationeng || "",
         creditDays: entryToEdit.creditDays || "",
         neftTransactionId: entryToEdit.neftTransactionId || "",
         chequeId: entryToEdit.chequeId || "",
@@ -269,7 +270,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : "",
         installation: entryToEdit.installation || "",
         installationStatus: entryToEdit.installationStatus || "Pending",
-        installationeng : entryToEdit.installationeng || "",
         remarksByInstallation: entryToEdit.remarksByInstallation || "",
         dispatchStatus: entryToEdit.dispatchStatus || "Not Dispatched",
         salesPerson: entryToEdit.salesPerson || "",
@@ -422,8 +422,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         gemOrderNumber: data.gemOrderNumber || null,
         deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : null,
         installation: data.installation || null,
+         installationeng : data.installationeng || null,
         installationStatus: data.installationStatus || "Pending",
-        installationeng : data.installationeng || null,
         remarksByInstallation: data.remarksByInstallation || null,
         dispatchStatus: data.dispatchStatus || "Not Dispatched",
         salesPerson: data.salesPerson || null,
@@ -1763,16 +1763,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="pinCode">
           <Form.Label>📮 Pin Code</Form.Label>
           <Form.Control
+            type="tel"
+            maxLength={6}
             {...register("pinCode", {
               pattern: {
                 value: /^\d{6}$/,
                 message: "Pin Code must be 6 digits",
               },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("pinCode", e.target.value)
-            }
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+              e.target.value = value;
+              debouncedHandleInputChange("pinCode", value);
+            }}
             isInvalid={!!errors.pinCode}
+            placeholder="Enter 6-digit pin code"
           />
           <Form.Control.Feedback type="invalid">
             {errors.pinCode?.message}
@@ -1853,12 +1859,25 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="gemOrderNumber">
           <Form.Label>📄 GEM Order Number</Form.Label>
           <Form.Control
-            {...register("gemOrderNumber")}
-            onChange={(e) =>
-              debouncedHandleInputChange("gemOrderNumber", e.target.value)
-            }
+            type="tel"
+            {...register("gemOrderNumber", {
+              pattern: {
+                value: /^\d+$/,
+                message: "GEM Order Number must contain only numbers",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("gemOrderNumber", value);
+            }}
             isInvalid={!!errors.gemOrderNumber}
+            placeholder="Enter numbers only"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.gemOrderNumber?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         {/* Products Section */}
         <div>
@@ -2601,16 +2620,31 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="total">
           <Form.Label>💵 Total *</Form.Label>
           <Form.Control
-            type="number"
-            step="0.01"
+            type="tel"
             {...register("total", {
               required: "Total is required",
+              pattern: {
+                value: /^\d+(\.\d{1,2})?$/,
+                message: "Total must be a valid number",
+              },
               min: { value: 0, message: "Total cannot be negative" },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("total", e.target.value)
-            }
+            onChange={(e) => {
+              // Only allow numbers and decimal point
+              const value = e.target.value.replace(/[^0-9.]/g, "");
+              // Ensure only one decimal point and max 2 decimal places
+              const parts = value.split('.');
+              if (parts.length > 2) {
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+              } else if (parts.length === 2 && parts[1].length > 2) {
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+              } else {
+                e.target.value = value;
+              }
+              debouncedHandleInputChange("total", e.target.value);
+            }}
             isInvalid={!!errors.total}
+            placeholder="e.g., 10000.50"
           />
           <Form.Control.Feedback type="invalid">
             {errors.total?.message}
@@ -2619,10 +2653,25 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="paymentCollected">
           <Form.Label>💰 Payment Collected</Form.Label>
           <Form.Control
-            {...register("paymentCollected")}
-            onChange={(e) =>
-              debouncedHandleInputChange("paymentCollected", e.target.value)
-            }
+            type="tel"
+            {...register("paymentCollected", {
+              pattern: {
+                value: /^\d+(\.\d{1,2})?$/,
+                message: "Payment Collected must be a valid number",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers and decimal point
+              const value = e.target.value.replace(/[^0-9.]/g, "");
+              // Ensure only one decimal point
+              const parts = value.split('.');
+              if (parts.length > 2) {
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+              } else {
+                e.target.value = value;
+              }
+              debouncedHandleInputChange("paymentCollected", e.target.value);
+            }}
             isInvalid={!!errors.paymentCollected}
             placeholder="e.g., 5000"
           />
@@ -2656,12 +2705,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="neftTransactionId">
           <Form.Label>📄 NEFT/RTGS Transaction ID</Form.Label>
           <Form.Control
-            {...register("neftTransactionId")}
-            onChange={(e) =>
-              debouncedHandleInputChange("neftTransactionId", e.target.value)
-            }
+            type="tel"
+            {...register("neftTransactionId", {
+              pattern: {
+                value: /^\d+$/,
+                message: "Transaction ID must contain only numbers",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("neftTransactionId", value);
+            }}
             isInvalid={!!errors.neftTransactionId}
             disabled={paymentMethod !== "NEFT" && paymentMethod !== "RTGS"}
+            placeholder="Enter numbers only"
           />
           <Form.Control.Feedback type="invalid">
             {errors.neftTransactionId?.message}
@@ -2670,12 +2729,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="chequeId">
           <Form.Label>📄 Cheque ID</Form.Label>
           <Form.Control
-            {...register("chequeId")}
-            onChange={(e) =>
-              debouncedHandleInputChange("chequeId", e.target.value)
-            }
+            type="tel"
+            {...register("chequeId", {
+              pattern: {
+                value: /^\d+$/,
+                message: "Cheque ID must contain only numbers",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("chequeId", value);
+            }}
             isInvalid={!!errors.chequeId}
             disabled={paymentMethod !== "Cheque"}
+            placeholder="Enter numbers only"
           />
           <Form.Control.Feedback type="invalid">
             {errors.chequeId?.message}
@@ -2684,10 +2753,25 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="paymentDue">
           <Form.Label>💰 Payment Due</Form.Label>
           <Form.Control
-            {...register("paymentDue")}
-            onChange={(e) =>
-              debouncedHandleInputChange("paymentDue", e.target.value)
-            }
+            type="tel"
+            {...register("paymentDue", {
+              pattern: {
+                value: /^\d+(\.\d{1,2})?$/,
+                message: "Payment Due must be a valid number",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers and decimal point
+              const value = e.target.value.replace(/[^0-9.]/g, "");
+              // Ensure only one decimal point
+              const parts = value.split('.');
+              if (parts.length > 2) {
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+              } else {
+                e.target.value = value;
+              }
+              debouncedHandleInputChange("paymentDue", e.target.value);
+            }}
             isInvalid={!!errors.paymentDue}
             placeholder="e.g., 2000"
           />
@@ -2720,17 +2804,25 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="creditDays">
           <Form.Label>⏳ Credit Days</Form.Label>
           <Form.Control
-            type="number"
+            type="tel"
             {...register("creditDays", {
+              pattern: {
+                value: /^\d+$/,
+                message: "Credit Days must be a whole number",
+              },
               min: {
                 value: 0,
                 message: "Credit Days cannot be negative",
               },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("creditDays", e.target.value)
-            }
+            onChange={(e) => {
+              // Only allow whole numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("creditDays", value);
+            }}
             isInvalid={!!errors.creditDays}
+            placeholder="e.g., 30"
           />
           <Form.Control.Feedback type="invalid">
             {errors.creditDays?.message}
@@ -2739,10 +2831,25 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
-            {...register("freightcs")}
-            onChange={(e) =>
-              debouncedHandleInputChange("freightcs", e.target.value)
-            }
+            type="tel"
+            {...register("freightcs", {
+              pattern: {
+                value: /^\d+(\.\d{1,2})?$/,
+                message: "Freight Charges must be a valid number",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers and decimal point
+              const value = e.target.value.replace(/[^0-9.]/g, "");
+              // Ensure only one decimal point
+              const parts = value.split('.');
+              if (parts.length > 2) {
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+              } else {
+                e.target.value = value;
+              }
+              debouncedHandleInputChange("freightcs", e.target.value);
+            }}
             isInvalid={!!errors.freightcs}
             placeholder="e.g., 1000"
           />
@@ -2771,18 +2878,33 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="actualFreight">
           <Form.Label>🚚 Actual Freight</Form.Label>
           <Form.Control
-            type="number"
-            step="0.01"
+            type="tel"
             {...register("actualFreight", {
+              pattern: {
+                value: /^\d+(\.\d{1,2})?$/,
+                message: "Actual Freight must be a valid number",
+              },
               min: {
                 value: 0,
                 message: "Actual Freight cannot be negative",
               },
             })}
-            onChange={(e) =>
-              debouncedHandleInputChange("actualFreight", e.target.value)
-            }
+            onChange={(e) => {
+              // Only allow numbers and decimal point
+              const value = e.target.value.replace(/[^0-9.]/g, "");
+              // Ensure only one decimal point and max 2 decimal places
+              const parts = value.split('.');
+              if (parts.length > 2) {
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+              } else if (parts.length === 2 && parts[1].length > 2) {
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+              } else {
+                e.target.value = value;
+              }
+              debouncedHandleInputChange("actualFreight", e.target.value);
+            }}
             isInvalid={!!errors.actualFreight}
+            placeholder="e.g., 1500.00"
           />
           <Form.Control.Feedback type="invalid">
             {errors.actualFreight?.message}
@@ -2802,11 +2924,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Including">Including</option>
             <option value="Extra">Extra</option>
           </Form.Select>
-          <Form.Control.Feedback type="invalid">
-            {errors.installchargesstatus?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-       <Form.Group controlId="installationeng">
+          <Form.Group controlId="installationeng">
   <Form.Label>🧑‍🔧 Installation Engineer</Form.Label>
   <Form.Control
     {...register("installationeng")}
@@ -2820,14 +2938,32 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     {errors.installationeng?.message}
   </Form.Control.Feedback>
 </Form.Group>
-
-          <Form.Group controlId="installation">
+          <Form.Control.Feedback type="invalid">
+            {errors.installchargesstatus?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="installation">
           <Form.Label>🛠️ Installation Charges</Form.Label>
           <Form.Control
-            {...register("installation")}
-            onChange={(e) =>
-              debouncedHandleInputChange("installation", e.target.value)
-            }
+            type="tel"
+            {...register("installation", {
+              pattern: {
+                value: /^\d+(\.\d{1,2})?$/,
+                message: "Installation Charges must be a valid number",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers and decimal point
+              const value = e.target.value.replace(/[^0-9.]/g, "");
+              // Ensure only one decimal point
+              const parts = value.split('.');
+              if (parts.length > 2) {
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+              } else {
+                e.target.value = value;
+              }
+              debouncedHandleInputChange("installation", e.target.value);
+            }}
             isInvalid={!!errors.installation}
             placeholder="e.g., 500"
           />
@@ -2989,7 +3125,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             isInvalid={!!errors.transporterDetails}
           />
         </Form.Group>
-        <Form.Group controlId="docketNo">
+           <Form.Group controlId="docketNo">
           <Form.Label>📄 Docket No</Form.Label>
           <Form.Control
             {...register("docketNo")}
@@ -3034,22 +3170,48 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="piNumber">
           <Form.Label>📄 PI Number</Form.Label>
           <Form.Control
-            {...register("piNumber")}
-            onChange={(e) =>
-              debouncedHandleInputChange("piNumber", e.target.value)
-            }
+            type="tel"
+            {...register("piNumber", {
+              pattern: {
+                value: /^\d+$/,
+                message: "PI Number must contain only numbers",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("piNumber", value);
+            }}
             isInvalid={!!errors.piNumber}
+            placeholder="Enter numbers only"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.piNumber?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="billNumber">
           <Form.Label>📄 Bill Number</Form.Label>
           <Form.Control
-            {...register("billNumber")}
-            onChange={(e) =>
-              debouncedHandleInputChange("billNumber", e.target.value)
-            }
+            type="tel"
+            {...register("billNumber", {
+              pattern: {
+                value: /^\d+$/,
+                message: "Bill Number must contain only numbers",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("billNumber", value);
+            }}
             isInvalid={!!errors.billNumber}
+            placeholder="Enter numbers only"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.billNumber?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="billStatus">
           <Form.Label>📋 Bill Status</Form.Label>
