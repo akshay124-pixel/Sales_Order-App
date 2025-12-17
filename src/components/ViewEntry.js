@@ -621,12 +621,13 @@ function ViewEntry({ isOpen, onClose, entry }) {
         : null,
       condition: isValidField(entry.products),
     },
-    {
-      key: "gstText",
-      label: "GST",
-      value: `${gstText}%`,
-      condition: isValidField(entry.products),
-    },
+   {
+  key: "gstText",
+  label: "GST",
+  value: gstText ? `${gstText}%` : "",
+  condition: isValidField(entry.products),
+},
+
     { key: "freightcs", label: "Freight Charges" },
     { key: "freightstatus", label: "Freight Status" },
     {
@@ -878,7 +879,12 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   formatter: (v) =>
                                     isValidField(v) ? `₹${v.toFixed(2)}` : null,
                                 },
-                                { key: "gst", label: "GST" },
+                                {
+  key: "gst",
+  label: "GST",
+  formatter: (v) =>
+    isValidField(v) ? `${v}%` : null,
+},
                                 { key: "brand", label: "Brand" },
                                 { key: "warranty", label: "Warranty" },
                                 {
