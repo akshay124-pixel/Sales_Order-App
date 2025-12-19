@@ -520,7 +520,7 @@ function AddEntry({ onSubmit, onClose }) {
       soDate: formData.soDate,
       total,
       freightcs: formData.freightcs || "",
-      installation: formData.installation || "N/A",
+      installation: formData.installation || "",
       orderType: formData.orderType,
       paymentCollected: String(formData.paymentCollected || ""),
       paymentMethod: formData.paymentMethod || "",
