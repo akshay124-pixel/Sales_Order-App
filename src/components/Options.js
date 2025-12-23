@@ -1414,6 +1414,7 @@ export const salesPersonlist = [
   { label: "Gem Team", value: "Gem Team" },
   { label: "Harish Kumar", value: "Harish Kumar" },
   { label: "Heera Singh Daspa", value: "Heera Singh Daspa" },
+  { label: "Himanshu Ghandhi", value: "Himanshu Ghandhi" },
   { label: "Harpreet Singh", value: "Harpeet Singh" },
   { label: "J P Sharma", value: "J P Sharma" },
   { label: "Jagan Lal", value: "Jagan Lal" },
