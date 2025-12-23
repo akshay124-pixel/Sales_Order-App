@@ -3189,29 +3189,18 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.piNumber?.message}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="billNumber">
-          <Form.Label>📄 Bill Number</Form.Label>
-          <Form.Control
-            type="tel"
-            {...register("billNumber", {
-              pattern: {
-                value: /^\d+$/,
-                message: "Bill Number must contain only numbers",
-              },
-            })}
-            onChange={(e) => {
-              // Only allow numbers
-              const value = e.target.value.replace(/[^0-9]/g, "");
-              e.target.value = value;
-              debouncedHandleInputChange("billNumber", value);
-            }}
-            isInvalid={!!errors.billNumber}
-            placeholder="Enter numbers only"
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.billNumber?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
+           <Form.Group controlId="billNumber">
+  <Form.Label>📄 Bill Number</Form.Label>
+  <Form.Control
+    type="text"
+    {...register("billNumber")}
+    onChange={(e) =>
+      debouncedHandleInputChange("billNumber", e.target.value)
+    }
+    placeholder="Enter bill number"
+  />
+</Form.Group>
+
         <Form.Group controlId="billStatus">
           <Form.Label>📋 Bill Status</Form.Label>
           <Controller
