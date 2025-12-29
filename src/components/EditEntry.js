@@ -120,7 +120,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       freightstatus: "Extra",
       actualFreight: "",
       installchargesstatus: "Extra",
-      installationeng:"",
+      installationeng: "",
       orderType: "B2C",
       gemOrderNumber: "",
       deliveryDate: "",
@@ -163,7 +163,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const initialUpdateData = useMemo(
     () => ({
       sostatus: "Pending for Approval",
-      productno:"",
+      productno: "",
       remarks: "",
     }),
     []
@@ -253,7 +253,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentMethod: entryToEdit.paymentMethod || "",
         paymentDue: entryToEdit.paymentDue || "",
         paymentTerms: entryToEdit.paymentTerms || "",
-         installationeng : entryToEdit.installationeng || "",
+        installationeng: entryToEdit.installationeng || "",
         creditDays: entryToEdit.creditDays || "",
         neftTransactionId: entryToEdit.neftTransactionId || "",
         chequeId: entryToEdit.chequeId || "",
@@ -323,7 +323,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       setFormData(newFormData);
       setUpdateData({
         sostatus: entryToEdit.sostatus || "Pending for Approval",
-        productno : entryToEdit.productno || "",
+        productno: entryToEdit.productno || "",
         remarks: entryToEdit.remarks || "",
       });
       reset(newFormData);
@@ -424,7 +424,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         gemOrderNumber: data.gemOrderNumber || null,
         deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : null,
         installation: data.installation || null,
-         installationeng : data.installationeng || null,
+        installationeng: data.installationeng || null,
         installationStatus: data.installationStatus || "Pending",
         remarksByInstallation: data.remarksByInstallation || null,
         dispatchStatus: data.dispatchStatus || "Not Dispatched",
@@ -1627,7 +1627,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.customerEmail?.message}
           </Form.Control.Feedback>
         </Form.Group>
-       <Form.Group controlId="contactNo">
+        <Form.Group controlId="contactNo">
           <Form.Label>📱 Contact Number</Form.Label>
           <Form.Control
             type="tel" // Hinglish: Mobile ke liye tel type better hai
@@ -1646,7 +1646,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             // Hinglish: Paste event ko handle karte hain mobile numbers ke liye
             onPaste={(e) => {
               e.preventDefault();
-              const paste = (e.clipboardData || window.clipboardData).getData('text');
+              const paste = (e.clipboardData || window.clipboardData).getData(
+                "text"
+              );
               // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
               debouncedHandleInputChange("contactNo", value);
@@ -1654,7 +1656,16 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             // Hinglish: Keypress event se non-numeric characters ko block karte hain
             onKeyPress={(e) => {
               // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
-              if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+              if (
+                !/[0-9]/.test(e.key) &&
+                ![
+                  "Backspace",
+                  "Delete",
+                  "ArrowLeft",
+                  "ArrowRight",
+                  "Tab",
+                ].includes(e.key)
+              ) {
                 e.preventDefault();
               }
             }}
@@ -1684,7 +1695,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             // Hinglish: Paste event ko handle karte hain mobile numbers ke liye
             onPaste={(e) => {
               e.preventDefault();
-              const paste = (e.clipboardData || window.clipboardData).getData('text');
+              const paste = (e.clipboardData || window.clipboardData).getData(
+                "text"
+              );
               // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
               debouncedHandleInputChange("alterno", value);
@@ -1692,7 +1705,16 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             // Hinglish: Keypress event se non-numeric characters ko block karte hain
             onKeyPress={(e) => {
               // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
-              if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+              if (
+                !/[0-9]/.test(e.key) &&
+                ![
+                  "Backspace",
+                  "Delete",
+                  "ArrowLeft",
+                  "ArrowRight",
+                  "Tab",
+                ].includes(e.key)
+              ) {
                 e.preventDefault();
               }
             }}
@@ -1865,7 +1887,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.stockStatus?.message}
           </Form.Control.Feedback>
         </Form.Group>
-       <Form.Group controlId="gemOrderNumber">
+        <Form.Group controlId="gemOrderNumber">
           <Form.Label>📄 GEM Order Number</Form.Label>
           <Form.Control
             {...register("gemOrderNumber")}
@@ -2630,11 +2652,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point and max 2 decimal places
-              const parts = value.split('.');
+              const parts = value.split(".");
               if (parts.length > 2) {
-                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
               } else if (parts.length === 2 && parts[1].length > 2) {
-                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
               } else {
                 e.target.value = value;
               }
@@ -2661,9 +2683,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split('.');
+              const parts = value.split(".");
               if (parts.length > 2) {
-                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+                e.target.value = parts[0] + "." + parts.slice(1).join("");
               } else {
                 e.target.value = value;
               }
@@ -2761,9 +2783,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split('.');
+              const parts = value.split(".");
               if (parts.length > 2) {
-                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+                e.target.value = parts[0] + "." + parts.slice(1).join("");
               } else {
                 e.target.value = value;
               }
@@ -2839,9 +2861,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split('.');
+              const parts = value.split(".");
               if (parts.length > 2) {
-                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+                e.target.value = parts[0] + "." + parts.slice(1).join("");
               } else {
                 e.target.value = value;
               }
@@ -2890,11 +2912,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point and max 2 decimal places
-              const parts = value.split('.');
+              const parts = value.split(".");
               if (parts.length > 2) {
-                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
               } else if (parts.length === 2 && parts[1].length > 2) {
-                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
               } else {
                 e.target.value = value;
               }
@@ -2922,19 +2944,19 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Extra">Extra</option>
           </Form.Select>
           <Form.Group controlId="installationeng">
-  <Form.Label>🧑‍🔧 Installation Engineer</Form.Label>
-  <Form.Control
-    {...register("installationeng")}
-    onChange={(e) =>
-      debouncedHandleInputChange("installationeng", e.target.value)
-    }
-    isInvalid={!!errors.installationeng}
-    placeholder="e.g., Amit Kumar, Rajesh Singh"
-  />
-  <Form.Control.Feedback type="invalid">
-    {errors.installationeng?.message}
-  </Form.Control.Feedback>
-</Form.Group>
+            <Form.Label>🧑‍🔧 Installation Engineer</Form.Label>
+            <Form.Control
+              {...register("installationeng")}
+              onChange={(e) =>
+                debouncedHandleInputChange("installationeng", e.target.value)
+              }
+              isInvalid={!!errors.installationeng}
+              placeholder="e.g., Amit Kumar, Rajesh Singh"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.installationeng?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
           <Form.Control.Feedback type="invalid">
             {errors.installchargesstatus?.message}
           </Form.Control.Feedback>
@@ -2953,9 +2975,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split('.');
+              const parts = value.split(".");
               if (parts.length > 2) {
-                e.target.value = parts[0] + '.' + parts.slice(1).join('');
+                e.target.value = parts[0] + "." + parts.slice(1).join("");
               } else {
                 e.target.value = value;
               }
@@ -3125,7 +3147,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             placeholder="e.g., Contact: 9876543210, Branch: Delhi Hub"
           />
         </Form.Group>
-           <Form.Group controlId="docketNo">
+        <Form.Group controlId="docketNo">
           <Form.Label>📄 Docket No</Form.Label>
           <Form.Control
             {...register("docketNo")}
@@ -3192,18 +3214,17 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.piNumber?.message}
           </Form.Control.Feedback>
         </Form.Group>
-           <Form.Group controlId="billNumber">
-  <Form.Label>📄 Bill Number</Form.Label>
-  <Form.Control
-    type="text"
-    {...register("billNumber")}
-    onChange={(e) =>
-      debouncedHandleInputChange("billNumber", e.target.value)
-    }
-    placeholder="Enter bill number"
-  />
-</Form.Group>
-
+        <Form.Group controlId="billNumber">
+          <Form.Label>📄 Bill Number</Form.Label>
+          <Form.Control
+            type="text"
+            {...register("billNumber")}
+            onChange={(e) =>
+              debouncedHandleInputChange("billNumber", e.target.value)
+            }
+            placeholder="Enter bill number"
+          />
+        </Form.Group>
         <Form.Group controlId="billStatus">
           <Form.Label>📋 Bill Status</Form.Label>
           <Controller
@@ -3390,19 +3411,19 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               Order on Hold Due to Low Price
             </option>
           </Form.Select>
-             {(userRole === "Admin" || userRole === "SuperAdmin") && (
-        <Form.Group controlId="productno">
-  <Form.Label>📦 Product Code</Form.Label>
-  <Form.Control
-    type="text"
-    placeholder="Enter Product No"
-    value={updateData.productno}
-    onChange={handleUpdateInputChange}
-    name="productno"
-  />
-</Form.Group>
-         )}
         </Form.Group>
+        {(userRole === "Admin" || userRole === "SuperAdmin") && (
+          <Form.Group controlId="productno">
+            <Form.Label>📦 Product Code</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter Product No"
+              value={updateData.productno}
+              onChange={handleUpdateInputChange}
+              name="productno"
+            />
+          </Form.Group>
+        )}
         <Form.Group controlId="remarks">
           <Form.Label>✏️ Remarks</Form.Label>
           <Form.Control
