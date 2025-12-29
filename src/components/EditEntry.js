@@ -163,6 +163,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const initialUpdateData = useMemo(
     () => ({
       sostatus: "Pending for Approval",
+      productno:"",
       remarks: "",
     }),
     []
@@ -322,6 +323,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       setFormData(newFormData);
       setUpdateData({
         sostatus: entryToEdit.sostatus || "Pending for Approval",
+        productno : entryToEdit.productno || "",
         remarks: entryToEdit.remarks || "",
       });
       reset(newFormData);
@@ -512,6 +514,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     try {
       const submissionData = {
         sostatus: updateData.sostatus || "Pending for Approval",
+        productno: updateData.productno,
         remarks: updateData.remarks || null,
       };
       const token = localStorage.getItem("token");
@@ -3387,6 +3390,18 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               Order on Hold Due to Low Price
             </option>
           </Form.Select>
+             {(userRole === "Admin" || userRole === "SuperAdmin") && (
+        <Form.Group controlId="productno">
+  <Form.Label>📦 Product Code</Form.Label>
+  <Form.Control
+    type="text"
+    placeholder="Enter Product No"
+    value={updateData.productno}
+    onChange={handleUpdateInputChange}
+    name="productno"
+  />
+</Form.Group>
+         )}
         </Form.Group>
         <Form.Group controlId="remarks">
           <Form.Label>✏️ Remarks</Form.Label>

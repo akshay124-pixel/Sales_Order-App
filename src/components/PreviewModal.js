@@ -733,6 +733,14 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     {entry.remarks || "N/A"}
                   </span>
                 </div>
+                 <div className="mb-2">
+                  <strong className="text-gray-700">
+                    Product Code:
+                  </strong>{" "}
+                  <span className="text-gray-900">
+                    {entry.productno || "N/A"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

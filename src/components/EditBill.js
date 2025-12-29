@@ -13,6 +13,7 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
       ? new Date(entryToEdit.invoiceDate)
       : null,
     remarksByBilling: entryToEdit?.remarksByBilling || "",
+    productno: entryToEdit?.productno || "",
     billStatus: entryToEdit?.billStatus || "Pending",
   });
 
@@ -195,6 +196,30 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
               />
             </div>
           </Form.Group>
+          <Form.Group className="mb-3">
+  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+    Product Code <span style={{ color: "red" }}>*</span>
+  </Form.Label>
+  <Form.Control
+    type="text"
+    name="productno"
+    value={formData.productno}
+    onChange={handleChange}
+    placeholder="Enter product number"
+    style={{
+      borderRadius: "10px",
+      padding: "12px",
+      border: "1px solid #ced4da",
+      fontSize: "1rem",
+      transition: "all 0.3s ease",
+    }}
+    onFocus={(e) =>
+      (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
+    }
+    onBlur={(e) => (e.target.style.boxShadow = "none")}
+  />
+</Form.Group>
+
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
               Remarks by Billing Team <span style={{ color: "red" }}>*</span>
