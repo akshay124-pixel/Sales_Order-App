@@ -305,6 +305,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : "",
         remarks: entryToEdit.remarks || "",
         sostatus: entryToEdit.sostatus || "Pending for Approval",
+
         createdBy:
           entryToEdit.createdBy && typeof entryToEdit.createdBy === "object"
             ? entryToEdit.createdBy.username || "Unknown"
@@ -454,6 +455,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
         remarks: data.remarks || null,
         sostatus: data.sostatus || "Pending for Approval",
+
         stockStatus: data.stockStatus || "In Stock",
       };
       const token = localStorage.getItem("token");
@@ -2724,26 +2726,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="neftTransactionId">
           <Form.Label>📄 NEFT/RTGS Transaction ID</Form.Label>
           <Form.Control
-            type="tel"
-            {...register("neftTransactionId", {
-              pattern: {
-                value: /^\d+$/,
-                message: "Transaction ID must contain only numbers",
-              },
-            })}
-            onChange={(e) => {
-              // Only allow numbers
-              const value = e.target.value.replace(/[^0-9]/g, "");
-              e.target.value = value;
-              debouncedHandleInputChange("neftTransactionId", value);
-            }}
-            isInvalid={!!errors.neftTransactionId}
+            type="text"
+            {...register("neftTransactionId")}
             disabled={paymentMethod !== "NEFT" && paymentMethod !== "RTGS"}
-            placeholder="Enter numbers only"
+            placeholder="Enter Transaction ID"
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.neftTransactionId?.message}
-          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="chequeId">
           <Form.Label>📄 Cheque ID</Form.Label>
