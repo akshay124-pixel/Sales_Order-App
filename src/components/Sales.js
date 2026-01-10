@@ -1043,7 +1043,9 @@ const Sales = () => {
     const salesPersons = orders
       .map((order) => order.createdBy?.username?.trim() || "Sales Order Team")
       .filter((salesPerson) => salesPerson && salesPerson.trim() !== "");
-    return ["All", ...new Set(salesPersons)];
+    const unique = Array.from(new Set(salesPersons));
+    unique.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    return ["All", ...unique];
   }, [orders]);
 
   // Debounced search handler
@@ -2063,7 +2065,6 @@ const Sales = () => {
       "salesPerson",
       "company",
       "createdBy",
-
     ];
 
     const areFieldsComplete = requiredFields.every((field) => {
