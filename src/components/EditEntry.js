@@ -45,12 +45,12 @@ const StyledButton = styled.button`
     props.variant === "primary"
       ? "linear-gradient(135deg, #2575fc, #6a11cb)"
       : props.variant === "info"
-      ? "linear-gradient(135deg, #2575fc, #6a11cb)"
-      : props.variant === "danger"
-      ? "#dc3545"
-      : props.variant === "success"
-      ? "#28a745"
-      : "linear-gradient(135deg, rgb(252, 152, 11), rgb(244, 193, 10))"};
+        ? "linear-gradient(135deg, #2575fc, #6a11cb)"
+        : props.variant === "danger"
+          ? "#dc3545"
+          : props.variant === "success"
+            ? "#28a745"
+            : "linear-gradient(135deg, rgb(252, 152, 11), rgb(244, 193, 10))"};
   &:hover {
     opacity: 0.9;
     transform: scale(1.05);
@@ -61,6 +61,15 @@ const FormSection = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
+`;
+
+const StyledNumberInput = styled(Form.Control)`
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  -moz-appearance: textfield;
 `;
 
 const ProductContainer = styled.div`
@@ -218,8 +227,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         gstno: entryToEdit.gstno || "",
         products:
           entryToEdit.products && entryToEdit.products.length > 0
-            ? entryToEdit.products.map((p) => ({
-                productType: p.productType || "",
+            ? entryToEdit.products.map((p) => {
+              const isCustom = !Object.keys(productOptions).includes(p.productType);
+              return {
+                productType: isCustom ? "Others" : p.productType || "",
+                customProductType: isCustom ? p.productType : "",
                 size: p.size || "N/A",
                 spec: p.spec || "N/A",
                 qty: p.qty !== undefined ? String(p.qty) : "",
@@ -232,22 +244,24 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 gst: p.gst || "18",
                 brand: p.brand || "",
                 warranty: p.warranty || "",
-              }))
+              };
+            })
             : [
-                {
-                  productType: "",
-                  size: "N/A",
-                  spec: "N/A",
-                  qty: "",
-                  unitPrice: "",
-                  serialNos: "",
-                  modelNos: "",
-                  productCode: "",
-                  gst: "18",
-                  brand: "",
-                  warranty: "",
-                },
-              ],
+              {
+                productType: "",
+                customProductType: "",
+                size: "N/A",
+                spec: "N/A",
+                qty: "",
+                unitPrice: "",
+                serialNos: "",
+                modelNos: "",
+                productCode: "",
+                gst: "18",
+                brand: "",
+                warranty: "",
+              },
+            ],
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
         paymentCollected: entryToEdit.paymentCollected || "",
         paymentMethod: entryToEdit.paymentMethod || "",
@@ -310,15 +324,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           entryToEdit.createdBy && typeof entryToEdit.createdBy === "object"
             ? entryToEdit.createdBy.username || "Unknown"
             : typeof entryToEdit.createdBy === "string"
-            ? entryToEdit.createdBy
-            : "",
+              ? entryToEdit.createdBy
+              : "",
         approvalTimestamp: entryToEdit.approvalTimestamp
           ? new Date(entryToEdit.approvalTimestamp).toISOString().split("T")[0]
           : null,
         productsEditTimestamp: entryToEdit.productsEditTimestamp
           ? new Date(entryToEdit.productsEditTimestamp)
-              .toISOString()
-              .split("T")[0]
+            .toISOString()
+            .split("T")[0]
           : null,
       };
       setFormData(newFormData);
@@ -382,7 +396,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         customername: data.customername || null,
         gstno: data.gstno || null,
         products: data.products.map((p) => ({
-          productType: p.productType || undefined,
+          productType: p.productType === "Others" ? p.customProductType : p.productType || undefined,
           size: p.size || "N/A",
           spec: p.spec || "N/A",
           qty: p.qty ? Number(p.qty) : undefined,
@@ -392,15 +406,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               : undefined,
           serialNos: p.serialNos
             ? p.serialNos
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             : [],
           modelNos: p.modelNos
             ? p.modelNos
-                .split(",")
-                .map((m) => m.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((m) => m.trim())
+              .filter(Boolean)
             : [],
           productCode: p.productCode,
           gst: p.gst || "18",
@@ -574,6 +588,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       ...products,
       {
         productType: "",
+        customProductType: "",
         size: "N/A",
         spec: "N/A",
         qty: "",
@@ -597,20 +612,21 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       newProducts.length > 0
         ? newProducts
         : [
-            {
-              productType: "",
-              size: "N/A",
-              spec: "N/A",
-              qty: "",
-              unitPrice: "",
-              serialNos: "",
-              modelNos: "",
-              productCode: "",
-              gst: "18",
-              brand: "",
-              warranty: "",
-            },
-          ]
+          {
+            productType: "",
+            customProductType: "",
+            size: "N/A",
+            spec: "N/A",
+            qty: "",
+            unitPrice: "",
+            serialNos: "",
+            modelNos: "",
+            productCode: "",
+            gst: "18",
+            brand: "",
+            warranty: "",
+          },
+        ]
     );
     setFormData((prev) => ({
       ...prev,
@@ -618,19 +634,20 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         newProducts.length > 0
           ? newProducts
           : [
-              {
-                productType: "",
-                size: "N/A",
-                spec: "N/A",
-                qty: "",
-                unitPrice: "",
-                serialNos: "",
-                modelNos: "",
-                gst: "18",
-                brand: "",
-                warranty: "",
-              },
-            ],
+            {
+              productType: "",
+              customProductType: "",
+              size: "N/A",
+              spec: "N/A",
+              qty: "",
+              unitPrice: "",
+              serialNos: "",
+              modelNos: "",
+              gst: "18",
+              brand: "",
+              warranty: "",
+            },
+          ],
     }));
   };
 
@@ -1882,6 +1899,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="">-- Select Stock Status --</option>
                 <option value="In Stock">In Stock</option>
                 <option value="Not in Stock">Not in Stock</option>
+                <option value="Partial Stock">Partial Stock</option>
               </Form.Select>
             )}
           />
@@ -1926,13 +1944,13 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             const availableSizes = isOthers
               ? []
               : selectedProductType
-              ? productOptions[selectedProductType]?.sizes || ["N/A"]
-              : ["N/A"];
+                ? productOptions[selectedProductType]?.sizes || ["N/A"]
+                : ["N/A"];
             const availableSpecs = isOthers
               ? []
               : selectedProductType
-              ? productOptions[selectedProductType]?.specs || ["N/A"]
-              : ["N/A"];
+                ? productOptions[selectedProductType]?.specs || ["N/A"]
+                : ["N/A"];
 
             return (
               <ProductContainer key={index}>
@@ -1980,7 +1998,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             {...field}
                             value={
                               field.value &&
-                              !Object.keys(productOptions).includes(field.value)
+                                !Object.keys(productOptions).includes(field.value)
                                 ? "Others"
                                 : field.value
                             }
@@ -2038,31 +2056,23 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           Custom Product{" "}
                         </Form.Label>
                         <Form.Control
-                          {...register(`products.${index}.productType`, {
+                          {...register(`products.${index}.customProductType`, {
                             required: isOthers
                               ? "Custom Product Type is required"
                               : false,
                           })}
-                          value={
-                            isOthers &&
-                            !Object.keys(productOptions).includes(
-                              watch(`products.${index}.productType`)
-                            )
-                              ? watch(`products.${index}.productType`)
-                              : ""
-                          }
                           onChange={(e) => {
                             setValue(
-                              `products.${index}.productType`,
+                              `products.${index}.customProductType`,
                               e.target.value
                             );
                             debouncedHandleInputChange(
-                              `products.${index}.productType`,
+                              `products.${index}.customProductType`,
                               e.target.value,
                               index
                             );
                           }}
-                          isInvalid={!!errors.products?.[index]?.productType}
+                          isInvalid={!!errors.products?.[index]?.customProductType}
                           placeholder="e.g., Projector, Scanner, Webcam"
                           style={{
                             width: "100%",
@@ -2075,7 +2085,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           }}
                         />
                         <Form.Control.Feedback type="invalid">
-                          {errors.products?.[index]?.productType?.message}
+                          {errors.products?.[index]?.customProductType?.message}
                         </Form.Control.Feedback>
                       </Form.Group>
                     )}
@@ -2251,23 +2261,34 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                       >
                         Quantity <span style={{ color: "#f43f5e" }}>*</span>
                       </Form.Label>
-                      <Form.Control
-                        type="number"
-                        {...register(`products.${index}.qty`, {
-                          required: "Quantity is required",
-                          min: {
-                            value: 1,
-                            message: "Quantity must be at least 1",
-                          },
-                        })}
-                        onChange={(e) =>
+                      <StyledNumberInput
+                        type="text"
+                        placeholder="e.g.100"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        onKeyDown={(e) => {
+                          // Allow only digits & control keys
+                          if (
+                            !/[0-9]/.test(e.key) &&
+                            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const pasted = e.clipboardData.getData("text").replace(/[^0-9]/g, "");
                           debouncedHandleInputChange(
                             `products.${index}.qty`,
-                            e.target.value,
+                            pasted,
                             index
-                          )
-                        }
-                        isInvalid={!!errors.products?.[index]?.qty}
+                          );
+                        }}
+                        {...register(`products.${index}.qty`, {
+                          required: "Quantity is required",
+                          validate: (value) =>
+                            /^[1-9][0-9]*$/.test(value) || "Only positive numbers allowed",
+                        })}
                         style={{
                           width: "100%",
                           padding: "0.75rem",
@@ -2277,7 +2298,18 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           fontSize: "1rem",
                           color: "#1e293b",
                         }}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, "");
+                          e.target.value = value;
+                          debouncedHandleInputChange(
+                            `products.${index}.qty`,
+                            value,
+                            index
+                          );
+                        }}
+                        isInvalid={!!errors.products?.[index]?.qty}
                       />
+
                       <Form.Control.Feedback type="invalid">
                         {errors.products?.[index]?.qty?.message}
                       </Form.Control.Feedback>
@@ -2296,24 +2328,40 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                       >
                         Unit Price <span style={{ color: "#f43f5e" }}>*</span>
                       </Form.Label>
-                      <Form.Control
-                        type="number"
-                        step="0.01"
-                        {...register(`products.${index}.unitPrice`, {
-                          required: "Unit Price is required",
-                          min: {
-                            value: 0,
-                            message: "Unit Price cannot be negative",
-                          },
-                        })}
-                        onChange={(e) =>
+                      <StyledNumberInput
+                        type="text"
+                        placeholder="e.g.100.0"
+                        inputMode="decimal"
+                        autoComplete="off"
+                        onKeyDown={(e) => {
+                          if (
+                            !/[0-9.]/.test(e.key) &&
+                            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+                          ) {
+                            e.preventDefault();
+                          }
+                          // Prevent multiple dots
+                          if (e.key === "." && e.target.value.includes(".")) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          let pasted = e.clipboardData.getData("text");
+                          pasted = pasted.replace(/[^0-9.]/g, "");
+                          if ((pasted.match(/\./g) || []).length > 1) return;
                           debouncedHandleInputChange(
                             `products.${index}.unitPrice`,
-                            e.target.value,
+                            pasted,
                             index
-                          )
-                        }
-                        isInvalid={!!errors.products?.[index]?.unitPrice}
+                          );
+                        }}
+                        {...register(`products.${index}.unitPrice`, {
+                          required: "Unit Price is required",
+                          validate: (value) =>
+                            /^\d+(\.\d{1,2})?$/.test(value) ||
+                            "Only numbers with up to 2 decimals allowed",
+                        })}
                         style={{
                           width: "100%",
                           padding: "0.75rem",
@@ -2323,7 +2371,22 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           fontSize: "1rem",
                           color: "#1e293b",
                         }}
+                        onChange={(e) => {
+                          let value = e.target.value;
+
+                          // allow only 2 decimal places
+                          if (!/^\d*\.?\d{0,2}$/.test(value)) return;
+
+                          e.target.value = value;
+                          debouncedHandleInputChange(
+                            `products.${index}.unitPrice`,
+                            value,
+                            index
+                          );
+                        }}
+                        isInvalid={!!errors.products?.[index]?.unitPrice}
                       />
+
                       <Form.Control.Feedback type="invalid">
                         {errors.products?.[index]?.unitPrice?.message}
                       </Form.Control.Feedback>

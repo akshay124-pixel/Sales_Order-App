@@ -42,10 +42,6 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       onEntryUpdated(response.data.data);
-      toast.success("Bill order updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
       onClose();
     } catch (error) {
       console.error("Error updating bill order:", error);
@@ -197,28 +193,28 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
             </div>
           </Form.Group>
           <Form.Group className="mb-3">
-  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-    Product Code <span style={{ color: "red" }}>*</span>
-  </Form.Label>
-  <Form.Control
-    type="text"
-    name="productno"
-    value={formData.productno}
-    onChange={handleChange}
-    placeholder="Enter product number"
-    style={{
-      borderRadius: "10px",
-      padding: "12px",
-      border: "1px solid #ced4da",
-      fontSize: "1rem",
-      transition: "all 0.3s ease",
-    }}
-    onFocus={(e) =>
-      (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
-    }
-    onBlur={(e) => (e.target.style.boxShadow = "none")}
-  />
-</Form.Group>
+            <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+              Product Code <span style={{ color: "red" }}>*</span>
+            </Form.Label>
+            <Form.Control
+              type="text"
+              name="productno"
+              value={formData.productno}
+              onChange={handleChange}
+              placeholder="Enter product number"
+              style={{
+                borderRadius: "10px",
+                padding: "12px",
+                border: "1px solid #ced4da",
+                fontSize: "1rem",
+                transition: "all 0.3s ease",
+              }}
+              onFocus={(e) =>
+                (e.target.style.boxShadow = "0 0 10px rgba(37, 117, 252, 0.5)")
+              }
+              onBlur={(e) => (e.target.style.boxShadow = "none")}
+            />
+          </Form.Group>
 
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>

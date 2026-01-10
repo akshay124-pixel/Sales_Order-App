@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Badge, Accordion, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
@@ -21,23 +21,30 @@ function ViewEntry({ isOpen, onClose, entry }) {
     return true;
   };
 
-  // Utility function to check if an object (e.g., createdBy) has valid content
-  const isValidObjectField = (obj, key) => {
-    if (!isValidField(obj)) return false;
-    if (typeof obj === "object" && key) {
-      return isValidField(obj[key]);
-    }
-    return true;
-  };
-
-  const getCreatedByName = (createdBy) => {
+  // Utility: get createdBy's username/name, supports id fallback for current user
+  const getCreatedByName = React.useCallback((createdBy) => {
     if (!isValidField(createdBy)) return null;
     if (typeof createdBy === "object") {
       if (isValidField(createdBy.username)) return createdBy.username;
       if (isValidField(createdBy.name)) return createdBy.name;
     }
+    // If createdBy is a string id (from change stream) and matches current user, derive from localStorage
+    try {
+      const currentUserId = localStorage.getItem("userId");
+      if (
+        typeof createdBy === "string" &&
+        currentUserId &&
+        String(createdBy) === String(currentUserId)
+      ) {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user?.username) return user.username;
+        if (user?.name) return user.name;
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
     return null;
-  };
+  }, []);
   const [createdByName, setCreatedByName] = useState(() => {
     const initial = getCreatedByName(entry?.createdBy);
     if (initial) return initial;
@@ -67,7 +74,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
         if (cached) setCreatedByName(cached);
       } catch (_) {}
     }
-  }, [createdByCacheKey, entry?.createdBy]);
+  }, [createdByCacheKey, entry?.createdBy, getCreatedByName]);
 
   // Utility function to format date fields
   const formatDate = (dateStr) => {
@@ -119,7 +126,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       filePath.includes("/Uploads/")
     );
   };
-  const handleDownload = useCallback(async () => {
+  const handleDownload = async () => {
     if (!isValidPoFilePath(entry?.poFilePath)) {
       toast.error("No valid PO file available to download!");
       return;
@@ -187,9 +194,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
       toast.error("Failed to download file! Check server or file path.");
       console.error("Download error:", err);
     }
-  }, [entry]);
+  };
 
-  const handleCopy = useCallback(() => {
+  const handleCopy = () => {
     if (!entry) return;
 
     const productsText = isValidField(entry.products)
@@ -376,7 +383,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
         toast.error("Failed to copy details!");
         console.error("Copy error:", err);
       });
-  }, [entry]);
+  };
 
   if (!entry) return null;
 
@@ -728,6 +735,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
     );
   });
 
+  console.log("Entry:", entry);
+
   return (
     <Modal
       show={isOpen}
@@ -1070,4 +1079,3 @@ function ViewEntry({ isOpen, onClose, entry }) {
 }
 
 export default ViewEntry;
- 

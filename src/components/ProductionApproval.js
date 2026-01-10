@@ -18,11 +18,19 @@ const ProductionApproval = () => {
   const [productMatchCount, setProductMatchCount] = useState(0);
   const meetsApproval = useCallback((doc) => {
     if (!doc) return false;
+
     return (
       doc.sostatus === "Accounts Approved" ||
-      (doc.sostatus === "Pending for Approval" && doc.paymentTerms === "Credit")
+
+      (doc.sostatus === "Pending for Approval" &&
+        doc.paymentTerms === "Credit") ||
+
+      // ✅ NEW: Partial Stock + Approved
+      (doc.sostatus === "Approved" &&
+        doc.stockStatus === "Partial Stock")
     );
   }, []);
+
 
   // Socket.IO integration for real-time updates
   useEffect(() => {
@@ -54,6 +62,25 @@ const ProductionApproval = () => {
 
     // Hinglish: Backend 'orderUpdate' event use kar raha hai (change streams). Event name yahan sync kiya.
     socket.on("orderUpdate", ({ operationType, documentId, fullDocument }) => {
+      // Normalize createdBy when backend sends only an id (change stream)
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const currentUserId = String(localStorage.getItem("userId") || "");
+        if (
+          fullDocument &&
+          fullDocument.createdBy &&
+          typeof fullDocument.createdBy !== "object" &&
+          String(fullDocument.createdBy) === currentUserId
+        ) {
+          fullDocument = {
+            ...fullDocument,
+            createdBy: { _id: currentUserId, username: currentUser.username || currentUser.name || "You" },
+          };
+        }
+      } catch (e) {
+        // ignore
+      }
+
       setOrders((prev) => {
         const id = String(documentId || fullDocument?._id || "");
         if (!id) return prev;
@@ -80,7 +107,7 @@ const ProductionApproval = () => {
       socket.off("disconnect");
       socket.disconnect();
     };
-  }, []);
+  }, [meetsApproval]);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -98,8 +125,8 @@ const ProductionApproval = () => {
       const friendlyMessage = !navigator.onLine
         ? "No internet connection. Please check your network."
         : error.response?.status >= 500
-        ? "Server is currently unreachable. Please try again later."
-        : "Unable to load production approval orders. Please try again.";
+          ? "Server is currently unreachable. Please try again later."
+          : "Unable to load production approval orders. Please try again.";
 
       toast.error(friendlyMessage, { position: "top-right", autoClose: 5000 });
     }
@@ -386,8 +413,8 @@ const ProductionApproval = () => {
                     <td style={{ padding: "15px" }}>
                       {order.products
                         ? order.products
-                            .map((p) => `${p.productType} (${p.qty})`)
-                            .join(", ")
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
                         : "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
@@ -395,21 +422,24 @@ const ProductionApproval = () => {
                         bg={
                           order.sostatus === "Pending for Approval"
                             ? "warning"
-                            : "info"
+                            : order.sostatus === "Approved"
+                              ? "success"   // ✅ GREEN
+                              : "info"
                         }
                         style={{ padding: "6px 12px", fontSize: "0.9rem" }}
                       >
                         {order.sostatus || "-"}
                       </Badge>
                     </td>
+
                     <td style={{ padding: "15px" }}>
                       {order.creditDays || "-"}
                     </td>
                     <td style={{ padding: "15px" }}>
                       {order.deliveryDate
                         ? new Date(order.deliveryDate).toLocaleDateString(
-                            "en-GB"
-                          )
+                          "en-GB"
+                        )
                         : "-"}
                     </td>
                     <td style={{ padding: "15px" }}>

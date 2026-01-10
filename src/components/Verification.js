@@ -76,6 +76,25 @@ const Verification = () => {
     });
 
     socket.on("orderUpdate", ({ operationType, fullDocument, documentId }) => {
+      // Normalize createdBy when backend sends only an id (change stream)
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const currentUserId = String(localStorage.getItem("userId") || "");
+        if (
+          fullDocument &&
+          fullDocument.createdBy &&
+          typeof fullDocument.createdBy !== "object" &&
+          String(fullDocument.createdBy) === currentUserId
+        ) {
+          fullDocument = {
+            ...fullDocument,
+            createdBy: { _id: currentUserId, username: currentUser.username || currentUser.name || "You" },
+          };
+        }
+      } catch (e) {
+        // ignore parsing errors
+      }
+
       setOrders((prev) => {
         const meets = fullDocument?.sostatus === "Pending for Approval";
         if (operationType === "delete" || (!meets && documentId)) {
@@ -100,11 +119,7 @@ const Verification = () => {
     };
   }, []);
 
-  useEffect(() => {
-    filterOrders();
-  }, [orders, searchTerm]);
-
-  const filterOrders = () => {
+  const filterOrders = useCallback(() => {
     let filtered = [...orders];
 
     if (searchTerm) {
@@ -112,9 +127,9 @@ const Verification = () => {
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
-              .map((p) => `${p.productType} (${p.qty})`)
-              .join(", ")
-              .toLowerCase()
+            .map((p) => `${p.productType} (${p.qty})`)
+            .join(", ")
+            .toLowerCase()
           : "";
         const total = order.total ? order.total.toFixed(2).toString() : "0.00";
         const soDate = order.soDate
@@ -145,7 +160,11 @@ const Verification = () => {
     });
 
     setFilteredOrders(filtered);
-  };
+  }, [orders, searchTerm]);
+
+  useEffect(() => {
+    filterOrders();
+  }, [filterOrders]);
 
   const handleViewClick = (order) => {
     setSelectedOrder(order);
@@ -168,8 +187,8 @@ const Verification = () => {
         return idx === -1
           ? prevOrders
           : prevOrders.filter(
-              (o) => String(o._id) !== String(updatedOrder._id)
-            );
+            (o) => String(o._id) !== String(updatedOrder._id)
+          );
       }
       if (idx === -1) return [updatedOrder, ...prevOrders];
       const next = prevOrders.slice();
@@ -177,7 +196,7 @@ const Verification = () => {
       return next;
     });
     setIsEditModalOpen(false);
-    toast.success("Order updated successfully!");
+
   };
 
   const handleExportToXLSX = () => {
@@ -607,8 +626,8 @@ const Verification = () => {
                     >
                       {order.products
                         ? order.products
-                            .map((p) => `${p.productType} (${p.qty})`)
-                            .join(", ")
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
                         : "-"}
                     </td>
                     <td

@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  FaEye,
-  FaBell,
-  FaHome,
-  FaWrench,
-  FaIndustry,
-  FaTruck,
-} from "react-icons/fa";
+import { FaEye, FaHome, FaWrench, FaIndustry, FaTruck } from "react-icons/fa";
 import { Button, Badge, Popover, Card } from "react-bootstrap";
 // TeamBuilder: Team management modal component (import)
 import TeamBuilder from "./TeamBuilder";
@@ -30,12 +23,6 @@ const EditEntry = React.lazy(() => import("./EditEntry"));
 const AddEntry = React.lazy(() => import("./AddEntry"));
 
 // Styled Components
-const NotificationWrapper = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
 // Modern loader overlay styles (keeps layout unchanged)
 const LoaderOverlay = styled(motion.div)`
   position: absolute;
@@ -64,39 +51,6 @@ const GradientSpinner = styled.div`
   @keyframes spin {
     to {
       transform: rotate(1turn);
-    }
-  }
-`;
-
-const NotificationIcon = styled(FaBell)`
-  font-size: 1.9rem;
-  color: blue;
-  cursor: pointer;
-  transition: transform 0.3s ease, color 0.3s ease;
-  &:hover {
-    transform: scale(1.2);
-    color: #ffd700;
-  }
-`;
-
-const NotificationBadge = styled(Badge)`
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  background: #dc3545;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.2);
-    }
-    100% {
-      transform: scale(1);
     }
   }
 `;
@@ -167,34 +121,7 @@ const MarkReadButton = styled(Button)`
   }
 `;
 
-const DatePickerWrapper = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  .react-datepicker-wrapper {
-    width: 150px;
-  }
-  .react-datepicker__input-container input {
-    padding: 14px 20px;
-    border-radius: 30px;
-    border: none;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    font-size: 1rem;
-    font-weight: 500;
-    transition: all 0.4s ease;
-    width: 100%;
-    &:focus {
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-      transform: scale(1.02);
-      outline: none;
-    }
-  }
-  .react-datepicker,
-  .react-datepicker-popper {
-    z-index: 1000 !important;
-  }
-`;
+// DatePickerWrapper was unused here and is defined in other components; removed to satisfy lint rules.
 
 const TrackerGrid = styled.div`
   display: grid;
@@ -432,12 +359,11 @@ const Row = React.memo(({ index, style, data }) => {
     handleEditClick,
     handleDeleteClick,
     userRole,
-    userId,
     isOrderComplete,
     columnWidths,
   } = data;
   const order = orders[index];
-  const complete = isOrderComplete(order);
+  
   const firstProduct =
     order.products && order.products[0] ? order.products[0] : {};
   const productDetails = order.products
@@ -445,21 +371,22 @@ const Row = React.memo(({ index, style, data }) => {
     : "-";
   const totalUnitPrice = order.products
     ? order.products.reduce(
-        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-        0
-      )
+      (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+      0
+    )
     : 0;
   const totalQty = order.products
     ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
     : 0;
   const gstValues = order.products
     ? order.products
-        .map((p) => `${p.gst}`)
-        .filter(Boolean)
-        .join(", ")
+      .map((p) => `${p.gst}`)
+      .filter(Boolean)
+      .join(", ")
     : "-";
 
   const getRowBackground = () => {
+    if (order.dispatchStatus === "Order Cancelled") return "#ffebee"; // Reddish for Cancelled
     if (isOrderComplete(order)) return "#ffffff"; // White for complete orders
 
     if (order.sostatus === "Approved") {
@@ -473,6 +400,7 @@ const Row = React.memo(({ index, style, data }) => {
   };
 
   const getHoverBackground = () => {
+    if (order.dispatchStatus === "Order Cancelled") return "#ffcdd2"; // Darker red on hover
     if (isOrderComplete(order)) return "#f0f7ff";
     if (order.sostatus === "Approved") return "#d1f7dc";
     if (order.sostatus === "Accounts Approved") return "#d1e4ff";
@@ -591,12 +519,12 @@ const Row = React.memo(({ index, style, data }) => {
                 order.sostatus === "Pending for Approval"
                   ? "warning"
                   : order.sostatus === "Accounts Approved"
-                  ? "info"
-                  : order.sostatus === "Approved"
-                  ? "success"
-                  : order.sostatus === "On Hold Due to Low Price"
-                  ? "danger"
-                  : "secondary"
+                    ? "info"
+                    : order.sostatus === "Approved"
+                      ? "success"
+                      : order.sostatus === "On Hold Due to Low Price"
+                        ? "danger"
+                        : "secondary"
               }
             >
               {order.sostatus || "-"}
@@ -604,7 +532,7 @@ const Row = React.memo(({ index, style, data }) => {
           ),
           title: order.sostatus || "-",
         },
-         {
+        {
           width: columnWidths[8],
           content: (
             <div className="actions-cell">
@@ -625,11 +553,11 @@ const Row = React.memo(({ index, style, data }) => {
                 <FaEye />
               </Button>
               {(userRole === "Admin" ||
-        userRole === "SuperAdmin" ||
-        (userRole === "Sales" &&
-          order.sostatus !== "Approved" &&
-          order.sostatus !== "Accounts Approved")) && (
-              
+                userRole === "SuperAdmin" ||
+                (userRole === "Sales" &&
+                  order.sostatus !== "Approved" &&
+                  order.sostatus !== "Accounts Approved")) && (
+
                   <button
                     className="editBtn"
                     onClick={() => handleEditClick(order)}
@@ -652,72 +580,72 @@ const Row = React.memo(({ index, style, data }) => {
                       <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
                     </svg>
                   </button>
-                    )}
-               
-      {(userRole === "Admin" || userRole === "SuperAdmin") && (
-                  <button
-                    className="bin-button"
-                    onClick={() => handleDeleteClick(order)}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                      padding: "0",
-                      background: "#ef4444",
-                      border: "none",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: "50px",
-                    }}
-                  >
-                    <svg
-                      className="bin-top"
-                      viewBox="0 0 39 7"
-                      fill="none"
-                      style={{ width: "20px", height: "5px" }}
-                    >
-                      <line
-                        y1="5"
-                        x2="39"
-                        y2="5"
-                        stroke="white"
-                        strokeWidth="4"
-                      />
-                      <line
-                        x1="12"
-                        y1="1.5"
-                        x2="26.0357"
-                        y2="1.5"
-                        stroke="white"
-                        strokeWidth="3"
-                      />
-                    </svg>
-                    <svg
-                      className="bin-bottom"
-                      viewBox="0 0 33 39"
-                      fill="none"
-                      style={{ width: "20px", height: "20px" }}
-                    >
-                      <mask id="path-1-inside-1_8_19" fill="white">
-                        <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
-                      </mask>
-                      <path
-                        d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                        fill="white"
-                        mask="url(#path-1-inside-1_8_19)"
-                      />
-                      <path d="M12 6L12 29" stroke="white" strokeWidth="4" />
-                      <path d="M21 6V29" stroke="white" strokeWidth="4" />
-                    </svg>
-                  </button>
                 )}
 
-    </div>
-  ),
-  title: "",
-},
+              {(userRole === "Admin" || userRole === "SuperAdmin") && (
+                <button
+                  className="bin-button"
+                  onClick={() => handleDeleteClick(order)}
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    padding: "0",
+                    background: "#ef4444",
+                    border: "none",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "50px",
+                  }}
+                >
+                  <svg
+                    className="bin-top"
+                    viewBox="0 0 39 7"
+                    fill="none"
+                    style={{ width: "20px", height: "5px" }}
+                  >
+                    <line
+                      y1="5"
+                      x2="39"
+                      y2="5"
+                      stroke="white"
+                      strokeWidth="4"
+                    />
+                    <line
+                      x1="12"
+                      y1="1.5"
+                      x2="26.0357"
+                      y2="1.5"
+                      stroke="white"
+                      strokeWidth="3"
+                    />
+                  </svg>
+                  <svg
+                    className="bin-bottom"
+                    viewBox="0 0 33 39"
+                    fill="none"
+                    style={{ width: "20px", height: "20px" }}
+                  >
+                    <mask id="path-1-inside-1_8_19" fill="white">
+                      <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
+                    </mask>
+                    <path
+                      d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                      fill="white"
+                      mask="url(#path-1-inside-1_8_19)"
+                    />
+                    <path d="M12 6L12 29" stroke="white" strokeWidth="4" />
+                    <path d="M21 6V29" stroke="white" strokeWidth="4" />
+                  </svg>
+                </button>
+              )}
+
+            </div>
+          ),
+          title: "",
+        },
         {
           width: columnWidths[6],
           content: order.alterno || "-",
@@ -853,10 +781,10 @@ const Row = React.memo(({ index, style, data }) => {
         {
           width: columnWidths[34],
           content: order.actualFreight
-            ? `₹${order.actualFreight.toFixed(2)}`
+            ? `₹${order.actualFreight}`
             : "-",
           title: order.actualFreight
-            ? `₹${order.actualFreight.toFixed(2)}`
+            ? `₹${order.actualFreight}`
             : "-",
         },
         {
@@ -877,18 +805,18 @@ const Row = React.memo(({ index, style, data }) => {
                 order.installationStatus === "Pending"
                   ? "warning" // Yellow for Pending
                   : order.installationStatus === "In Progress"
-                  ? "info" // Light blue for In Progress
-                  : order.installationStatus === "Completed"
-                  ? "success" // Green for Completed
-                  : order.installationStatus === "Failed"
-                  ? "danger" // Red for Failed
-                  : order.installationStatus === "Hold by Salesperson"
-                  ? "primary" // Blue for Hold by Salesperson
-                  : order.installationStatus === "Hold by Customer"
-                  ? "dark" // Dark gray for Hold by Customer
-                  : order.installationStatus === "Site Not Ready"
-                  ? "light" // Light gray for Site Not Ready
-                  : "secondary" // Default gray
+                    ? "info" // Light blue for In Progress
+                    : order.installationStatus === "Completed"
+                      ? "success" // Green for Completed
+                      : order.installationStatus === "Failed"
+                        ? "danger" // Red for Failed
+                        : order.installationStatus === "Hold by Salesperson"
+                          ? "primary" // Blue for Hold by Salesperson
+                          : order.installationStatus === "Hold by Customer"
+                            ? "dark" // Dark gray for Hold by Customer
+                            : order.installationStatus === "Site Not Ready"
+                              ? "light" // Light gray for Site Not Ready
+                              : "secondary" // Default gray
               }
             >
               {order.installationStatus || "-"}
@@ -928,18 +856,18 @@ const Row = React.memo(({ index, style, data }) => {
                 order.dispatchStatus === "Not Dispatched"
                   ? "warning" // Yellow for Not Dispatched
                   : order.dispatchStatus === "Docket Awaited Dispatched"
-                  ? "info"
-                  : order.dispatchStatus === "Dispatched"
-                  ? "primary" // Blue for Dispatched
-                  : order.dispatchStatus === "Delivered"
-                  ? "success" // Green for Delivered
-                  : order.dispatchStatus === "Hold by Salesperson"
-                  ? "dark" // Dark gray for Hold by Salesperson
-                  : order.dispatchStatus === "Hold by Customer"
-                  ? "light" // Light gray for Hold by Customer
-                  : order.dispatchStatus === "Order Cancelled"
-                  ? "danger" // Red for Order Cancelled
-                  : "secondary" // Default gray
+                    ? "info"
+                    : order.dispatchStatus === "Dispatched"
+                      ? "primary" // Blue for Dispatched
+                      : order.dispatchStatus === "Delivered"
+                        ? "success" // Green for Delivered
+                        : order.dispatchStatus === "Hold by Salesperson"
+                          ? "dark" // Dark gray for Hold by Salesperson
+                          : order.dispatchStatus === "Hold by Customer"
+                            ? "light" // Light gray for Hold by Customer
+                            : order.dispatchStatus === "Order Cancelled"
+                              ? "danger" // Red for Order Cancelled
+                              : "secondary" // Default gray
               }
             >
               {order.dispatchStatus || "-"}
@@ -965,8 +893,8 @@ const Row = React.memo(({ index, style, data }) => {
                 order.stockStatus === "In Stock"
                   ? "success"
                   : order.stockStatus === "Not in Stock"
-                  ? "danger"
-                  : "secondary"
+                    ? "danger"
+                    : "secondary"
               }
             >
               {order.stockStatus || "-"}
@@ -982,10 +910,10 @@ const Row = React.memo(({ index, style, data }) => {
                 order.billStatus === "Pending"
                   ? "warning"
                   : order.billStatus === "Under Billing"
-                  ? "info"
-                  : order.billStatus === "Billing Complete"
-                  ? "success"
-                  : "secondary"
+                    ? "info"
+                    : order.billStatus === "Billing Complete"
+                      ? "success"
+                      : "secondary"
               }
             >
               {order.billStatus || "-"}
@@ -1002,12 +930,12 @@ const Row = React.memo(({ index, style, data }) => {
                   order.fulfillingStatus === "Under Process"
                     ? "linear-gradient(135deg, #f39c12, #f7c200)"
                     : order.fulfillingStatus === "Pending"
-                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                    : order.fulfillingStatus === "Partial Dispatch"
-                    ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                    : order.fulfillingStatus === "Fulfilled"
-                    ? "linear-gradient(135deg, #28a745, #4cd964)"
-                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                      ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                      : order.fulfillingStatus === "Partial Dispatch"
+                        ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                        : order.fulfillingStatus === "Fulfilled"
+                          ? "linear-gradient(135deg, #28a745, #4cd964)"
+                          : "linear-gradient(135deg, #6c757d, #a9a9a9)",
               }}
             >
               {order.fulfillingStatus || "Pending"}
@@ -1041,14 +969,14 @@ const Row = React.memo(({ index, style, data }) => {
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
               : typeof order.createdBy === "string"
-              ? order.createdBy
-              : "-",
+                ? order.createdBy
+                : "-",
           title:
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
               : typeof order.createdBy === "string"
-              ? order.createdBy
-              : "-",
+                ? order.createdBy
+                : "-",
         },
         {
           width: columnWidths[53],
@@ -1141,8 +1069,8 @@ const Sales = () => {
       const friendlyMessage = !navigator.onLine
         ? "No internet connection. Please check your network."
         : error.response?.status >= 500
-        ? "Server is temporarily unavailable. Please try again later."
-        : "Unable to load orders. Please try again.";
+          ? "Server is temporarily unavailable. Please try again later."
+          : "Unable to load orders. Please try again.";
 
       toast.error(friendlyMessage, { position: "top-right", autoClose: 5000 });
     }
@@ -1272,6 +1200,26 @@ const Sales = () => {
         const currentUserId = userId;
         const owners = [createdBy, assignedTo].filter(Boolean);
         if (!owners.includes(currentUserId)) return;
+
+        // Normalize createdBy when backend sends only an id (change stream)
+        try {
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+          const localId = String(localStorage.getItem("userId") || "");
+          if (
+            fullDocument &&
+            fullDocument.createdBy &&
+            typeof fullDocument.createdBy !== "object" &&
+            String(fullDocument.createdBy) === localId
+          ) {
+            fullDocument = {
+              ...fullDocument,
+              createdBy: { _id: localId, username: currentUser.username || currentUser.name || "You" },
+            };
+          }
+        } catch (e) {
+          // ignore
+        }
+
         if (operationType === "insert" && fullDocument) {
           setOrders((prev) => {
             if (prev.some((o) => o._id === documentId)) return prev;
@@ -1583,24 +1531,10 @@ const Sales = () => {
   const handleAddEntry = useCallback(
     async (newEntry) => {
       setIsAddModalOpen(false);
-      toast.success("New order added!");
       await fetchOrders();
       fetchDashboardCounts(); // Refresh counts after add
     },
-    [
-      filterOrders,
-      searchTerm,
-      approvalFilter,
-      orderTypeFilter,
-      dispatchFilter,
-      salesPersonFilter,
-      dispatchFromFilter,
-      startDate,
-      endDate,
-      trackerFilter,
-      fetchOrders,
-      fetchDashboardCounts,
-    ]
+    [fetchOrders, fetchDashboardCounts]
   );
 
   const handleViewClick = useCallback((order) => {
@@ -1640,7 +1574,7 @@ const Sales = () => {
       });
       fetchDashboardCounts(); // Refresh counts after delete
       setIsDeleteModalOpen(false);
-      toast.success("Order deleted successfully!");
+
     },
     [
       filterOrders,
@@ -1743,9 +1677,9 @@ const Sales = () => {
           const headers = parsedData[0].map((h) =>
             h
               ? h
-                  .toLowerCase()
-                  .replace(/\s+/g, "")
-                  .replace(/[^a-z0-9]/g, "")
+                .toLowerCase()
+                .replace(/\s+/g, "")
+                .replace(/[^a-z0-9]/g, "")
               : ""
           );
           const rows = parsedData
@@ -1777,15 +1711,15 @@ const Sales = () => {
                     unitPrice: Number(entry.unitprice) || 0,
                     serialNos: entry.serialnos
                       ? String(entry.serialnos)
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter(Boolean)
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
                       : [],
                     modelNos: entry.modelnos
                       ? String(entry.modelnos)
-                          .split(",")
-                          .map((m) => m.trim())
-                          .filter(Boolean)
+                        .split(",")
+                        .map((m) => m.trim())
+                        .filter(Boolean)
                       : [],
                     gst: String(entry.gst || "18").trim(),
                   },
@@ -1801,15 +1735,15 @@ const Sales = () => {
                   unitPrice: Number(entry.unitprice) || 0,
                   serialNos: entry.serialnos
                     ? String(entry.serialnos)
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean)
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean)
                     : [],
                   modelNos: entry.modelnos
                     ? String(entry.modelnos)
-                        .split(",")
-                        .map((m) => m.trim())
-                        .filter(Boolean)
+                      .split(",")
+                      .map((m) => m.trim())
+                      .filter(Boolean)
                     : [],
                   gst: String(entry.gst || "18").trim(),
                 },
@@ -1993,8 +1927,8 @@ const Sales = () => {
           : "-",
         "Total Price Without GST": order.products
           ? order.products
-              .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
-              .toFixed(2)
+            .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
+            .toFixed(2)
           : "0.00",
         "Total With GST": order.total?.toFixed(2) || "0.00",
         "Payment Due": formatCurrency(order.paymentDue) || "-",
@@ -2016,14 +1950,14 @@ const Sales = () => {
         "Billing Address": order.billingAddress || "-",
         "Unit Price": order.products
           ? order.products
-              .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
-              .toFixed(2)
+            .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
+            .toFixed(2)
           : "0.00",
         GST: order.products
           ? order.products
-              .map((p) => p.gst || "N/A")
-              .filter(Boolean)
-              .join(", ")
+            .map((p) => p.gst || "N/A")
+            .filter(Boolean)
+            .join(", ")
           : "-",
         Brand: order.products
           ? order.products.map((p) => p.brand || "N/A").join(", ")
@@ -2039,7 +1973,6 @@ const Sales = () => {
         "Freight Status": order.freightstatus || "-",
         "Install Charges Status": order.installchargesstatus || "-",
         "Installation Status": order.installationStatus || "-",
-        Transporter: order.transporter || "-",
         Transporter: order.transporter || "-",
         "Transporter Details": order.transporterDetails || "-",
         "Dispatch From": order.dispatchFrom || "-",
@@ -2060,8 +1993,8 @@ const Sales = () => {
           order.createdBy && typeof order.createdBy === "object"
             ? order.createdBy.username || "Unknown"
             : typeof order.createdBy === "string"
-            ? order.createdBy
-            : "-",
+              ? order.createdBy
+              : "-",
         Remarks: order.remarks || "-",
       }));
 
@@ -2130,7 +2063,7 @@ const Sales = () => {
       "salesPerson",
       "company",
       "createdBy",
-      "remarks",
+
     ];
 
     const areFieldsComplete = requiredFields.every((field) => {
@@ -2174,12 +2107,7 @@ const Sales = () => {
     return areFieldsComplete;
   }, []);
 
-  const isBillingComplete = useCallback((order) => {
-    return (
-      order.billStatus === "Completed" ||
-      (order.invoiceNo && order.invoiceDate && order.billNumber)
-    );
-  }, []);
+  // billing completeness check removed (unused) to satisfy lint rules
 
   const formatTimestamp = useCallback((timestamp) => {
     const date = new Date(timestamp);
@@ -2591,29 +2519,29 @@ const Sales = () => {
           {(userRole === "Admin" ||
             userRole === "SuperAdmin" ||
             userRole === "Sales") && (
-            <Button
-              variant="primary"
-              onClick={() => setIsDashboardOpen(true)}
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "30px",
-                fontSize: "1rem",
-                fontWeight: "600",
-                marginLeft: "10px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-            >
-              <ArrowRight size={18} />
-              View Analytics
-            </Button>
-          )}
+              <Button
+                variant="primary"
+                onClick={() => setIsDashboardOpen(true)}
+                style={{
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "30px",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  marginLeft: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+                onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+              >
+                <ArrowRight size={18} />
+                View Analytics
+              </Button>
+            )}
         </div>
 
         <SalesDashboardDrawer
@@ -2679,7 +2607,7 @@ const Sales = () => {
               </tr>
             </thead>
             <tbody>
-                 {filteredOrders.length === 0 && !loading ? (
+              {filteredOrders.length === 0 && !loading ? (
                 <tr>
                   <td
                     colSpan={tableHeaders.length}

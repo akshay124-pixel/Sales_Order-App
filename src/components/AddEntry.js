@@ -300,16 +300,16 @@ function AddEntry({ onSubmit, onClose }) {
         [name]: value,
         ...(name === "productType"
           ? {
-              size: "",
-              spec: "",
-              gst: "",
-              modelNos: "",
-              brand: "",
-              warranty:
-                formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
-            }
+            size: "",
+            spec: "",
+            gst: "",
+            modelNos: "",
+            brand: "",
+            warranty:
+              formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+          }
           : name === "size"
-          ? {
+            ? {
               spec: "",
               gst: "",
               modelNos: "",
@@ -317,20 +317,20 @@ function AddEntry({ onSubmit, onClose }) {
               warranty:
                 formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
             }
-          : name === "brand" &&
-            prev.productType === "IFPD" &&
-            value === "Promark"
-          ? { warranty: "3 Years" }
-          : name === "brand" &&
-            prev.productType === "IFPD" &&
-            value === "White Label"
-          ? { modelNos: "Standard", warranty: "1 Year" }
-          : name === "brand" &&
-            prev.productType === "IFPD" &&
-            value !== "Promark" &&
-            value !== "White Label"
-          ? { modelNos: "", warranty: "1 Year" }
-          : {}),
+            : name === "brand" &&
+              prev.productType === "IFPD" &&
+              value === "Promark"
+              ? { warranty: "3 Years" }
+              : name === "brand" &&
+                prev.productType === "IFPD" &&
+                value === "White Label"
+                ? { modelNos: "Standard", warranty: "1 Year" }
+                : name === "brand" &&
+                  prev.productType === "IFPD" &&
+                  value !== "Promark" &&
+                  value !== "White Label"
+                  ? { modelNos: "", warranty: "1 Year" }
+                  : {}),
       };
       return newProduct;
     });
@@ -342,22 +342,22 @@ function AddEntry({ onSubmit, onClose }) {
       [name]: value,
       ...(name === "productType"
         ? {
-            size: "",
-            spec: "",
-            gst: "",
-            modelNos: "",
-            brand: "",
-            warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
-          }
+          size: "",
+          spec: "",
+          gst: "",
+          modelNos: "",
+          brand: "",
+          warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
+        }
         : name === "size"
-        ? {
+          ? {
             spec: "",
             gst: "",
             modelNos: "",
             brand: "",
             warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
           }
-        : {}),
+          : {}),
     }));
   };
 
@@ -561,7 +561,7 @@ function AddEntry({ onSubmit, onClose }) {
           },
         }
       );
-      toast.success("Order submitted successfully!");
+
       clearDraft();
       onSubmit(response.data);
       onClose();
@@ -757,30 +757,30 @@ function AddEntry({ onSubmit, onClose }) {
                 },
                 ...(formData.orderType === "B2G"
                   ? [
-                      {
-                        label: "GEM Order Number *",
-                        name: "gemOrderNumber",
-                        type: "text",
-                        required: true,
-                        placeholder: "Enter GEM Order Number",
-                      },
-                      {
-                        label: "Delivery Date",
-                        name: "deliveryDate",
-                        type: "date",
-                        placeholder: "Select Delivery Date",
-                      },
-                    ]
+                    {
+                      label: "GEM Order Number *",
+                      name: "gemOrderNumber",
+                      type: "text",
+                      required: true,
+                      placeholder: "Enter GEM Order Number",
+                    },
+                    {
+                      label: "Delivery Date",
+                      name: "deliveryDate",
+                      type: "date",
+                      placeholder: "Select Delivery Date",
+                    },
+                  ]
                   : []),
                 ...(formData.orderType === "Demo"
                   ? [
-                      {
-                        label: "Demo Date *",
-                        name: "demoDate",
-                        type: "date",
-                        required: true,
-                      },
-                    ]
+                    {
+                      label: "Demo Date *",
+                      name: "demoDate",
+                      type: "date",
+                      required: true,
+                    },
+                  ]
                   : []),
               ].map((field) => (
                 <div
@@ -952,21 +952,21 @@ function AddEntry({ onSubmit, onClose }) {
                       <span style={{ color: "#f43f5e" }}>*</span>
                     )}
                   </label>
-                   <input
+                  <input
                     type={field.type}
                     name={field.name}
                     value={formData[field.name] || ""}
                     onChange={
                       field.customOnChange
                         ? // Hinglish: Mobile number fields ke liye special handler - sirf numbers allow karta hai, spaces nahi
-                          (e) => {
-                            // Hinglish: Sirf digits allow karte hain, spaces aur special characters remove kar dete hain
-                            const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
-                            setFormData((prev) => ({
-                              ...prev,
-                              [field.name]: value,
-                            }));
-                          }
+                        (e) => {
+                          // Hinglish: Sirf digits allow karte hain, spaces aur special characters remove kar dete hain
+                          const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                          setFormData((prev) => ({
+                            ...prev,
+                            [field.name]: value,
+                          }));
+                        }
                         : handleChange
                     }
                     maxLength={field.maxLength}
@@ -977,26 +977,26 @@ function AddEntry({ onSubmit, onClose }) {
                     onPaste={
                       field.customOnChange
                         ? (e) => {
-                            e.preventDefault();
-                            const paste = (e.clipboardData || window.clipboardData).getData('text');
-                            // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
-                            const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
-                            setFormData((prev) => ({
-                              ...prev,
-                              [field.name]: value,
-                            }));
-                          }
+                          e.preventDefault();
+                          const paste = (e.clipboardData || window.clipboardData).getData('text');
+                          // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
+                          const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+                          setFormData((prev) => ({
+                            ...prev,
+                            [field.name]: value,
+                          }));
+                        }
                         : undefined
                     }
                     // Hinglish: Keypress event se non-numeric characters ko block karte hain
                     onKeyPress={
                       field.customOnChange
                         ? (e) => {
-                            // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
-                            if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
-                              e.preventDefault();
-                            }
+                          // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
+                          if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                            e.preventDefault();
                           }
+                        }
                         : undefined
                     }
                     style={{
@@ -1168,8 +1168,8 @@ function AddEntry({ onSubmit, onClose }) {
                         fontSize: "1rem",
                         color: "#1e293b",
                         ...(formData[field.name] &&
-                        field.name === "pinCode" &&
-                        !/^\d{6}$/.test(formData[field.name])
+                          field.name === "pinCode" &&
+                          !/^\d{6}$/.test(formData[field.name])
                           ? { borderColor: "red" }
                           : {}),
                       }}
@@ -1428,10 +1428,16 @@ function AddEntry({ onSubmit, onClose }) {
                   Quantity *
                 </label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   name="qty"
                   value={currentProduct.qty}
-                  onChange={handleProductChange}
+                  placeholder="e.g. 10"
+                  onChange={(e) => {
+                    if (/^\d*$/.test(e.target.value)) {
+                      handleProductChange(e);
+                    }
+                  }}
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1452,10 +1458,16 @@ function AddEntry({ onSubmit, onClose }) {
                   Unit Price *
                 </label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   name="unitPrice"
                   value={currentProduct.unitPrice}
-                  onChange={handleProductChange}
+                  placeholder="e.g. 10.00"
+                  onChange={(e) => {
+                    if (/^\d*\.?\d*$/.test(e.target.value)) {
+                      handleProductChange(e);
+                    }
+                  }}
                   style={{
                     width: "100%",
                     padding: "0.75rem",
@@ -1690,12 +1702,12 @@ function AddEntry({ onSubmit, onClose }) {
                   transition: "all 0.3s ease",
                 }}
                 onMouseOver={(e) =>
-                  (e.currentTarget.style.boxShadow =
-                    "0 6px 16px rgba(101, 86, 231, 0.5)")
+                (e.currentTarget.style.boxShadow =
+                  "0 6px 16px rgba(101, 86, 231, 0.5)")
                 }
                 onMouseOut={(e) =>
-                  (e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(101, 86, 231, 0.3)")
+                (e.currentTarget.style.boxShadow =
+                  "0 4px 12px rgba(101, 86, 231, 0.3)")
                 }
               >
                 Add ➕
@@ -1987,11 +1999,35 @@ function AddEntry({ onSubmit, onClose }) {
                     Payment Collected
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     name="paymentCollected"
                     value={formData.paymentCollected}
                     onChange={handleChange}
                     disabled={formData.orderType === "Demo"}
+                    // ✅ Block characters while typing
+                    onKeyDown={(e) => {
+                      if (
+                        !/[0-9]/.test(e.key) &&
+                        ![
+                          "Backspace",
+                          "Delete",
+                          "ArrowLeft",
+                          "ArrowRight",
+                          "Tab",
+                        ].includes(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+
+                    // ✅ Block paste of non-numbers
+                    onPaste={(e) => {
+                      const pasted = e.clipboardData.getData("text");
+                      if (!/^\d+$/.test(pasted)) {
+                        e.preventDefault();
+                      }
+                    }}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -2016,7 +2052,8 @@ function AddEntry({ onSubmit, onClose }) {
                     Payment Due
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     name="paymentDue"
                     value={formData.paymentDue}
                     readOnly
@@ -2184,45 +2221,45 @@ function AddEntry({ onSubmit, onClose }) {
                 )}
                 {(formData.paymentTerms === "Credit" ||
                   formData.paymentTerms === "Partial Advance") && (
-                  <div>
-                    <label
-                      style={{
-                        fontSize: "0.9rem",
-                        fontWeight: "600",
-                        color: "#475569",
-                        marginBottom: "0.5rem",
-                      }}
-                    >
-                      No. of Credit Days{" "}
-                      <span style={{ color: "#dc2626" }}>*</span>
-                    </label>
-                    <select
-                      name="creditDays"
-                      value={formData.creditDays}
-                      onChange={handleChange}
-                      disabled={formData.orderType === "Demo"}
-                      required
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "0.75rem",
-                        backgroundColor:
-                          formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
-                        fontSize: "1rem",
-                        color: "#1e293b",
-                        appearance: "auto",
-                      }}
-                    >
-                      <option value="" disabled>
-                        -- Select Credit Days --
-                      </option>
-                      <option value="7">7 Days</option>
-                      <option value="15">15 Days</option>
-                      <option value="30">30 Days</option>
-                    </select>
-                  </div>
-                )}
+                    <div>
+                      <label
+                        style={{
+                          fontSize: "0.9rem",
+                          fontWeight: "600",
+                          color: "#475569",
+                          marginBottom: "0.5rem",
+                        }}
+                      >
+                        No. of Credit Days{" "}
+                        <span style={{ color: "#dc2626" }}>*</span>
+                      </label>
+                      <select
+                        name="creditDays"
+                        value={formData.creditDays}
+                        onChange={handleChange}
+                        disabled={formData.orderType === "Demo"}
+                        required
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "0.75rem",
+                          backgroundColor:
+                            formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                          fontSize: "1rem",
+                          color: "#1e293b",
+                          appearance: "auto",
+                        }}
+                      >
+                        <option value="" disabled>
+                          -- Select Credit Days --
+                        </option>
+                        <option value="7">7 Days</option>
+                        <option value="15">15 Days</option>
+                        <option value="30">30 Days</option>
+                      </select>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -2287,12 +2324,12 @@ function AddEntry({ onSubmit, onClose }) {
                       height: "100%", // Ensure label fits container height
                     }}
                     onMouseOver={(e) =>
-                      (e.currentTarget.style.background =
-                        "linear-gradient(135deg, #d1d5db, #e5e7eb)")
+                    (e.currentTarget.style.background =
+                      "linear-gradient(135deg, #d1d5db, #e5e7eb)")
                     }
                     onMouseOut={(e) =>
-                      (e.currentTarget.style.background =
-                        "linear-gradient(135deg, #e2e8f0, #f8fafc)")
+                    (e.currentTarget.style.background =
+                      "linear-gradient(135deg, #e2e8f0, #f8fafc)")
                     }
                   >
                     <svg

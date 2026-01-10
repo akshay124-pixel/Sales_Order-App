@@ -223,8 +223,8 @@ const Production = () => {
       filtered = filtered.filter((order) => {
         const productDetails = Array.isArray(order.products)
           ? order.products
-              .map((p) => `${p.productType || ""} (${p.qty || ""})`)
-              .join(", ")
+            .map((p) => `${p.productType || ""} (${p.qty || ""})`)
+            .join(", ")
           : "";
         const firstProduct =
           Array.isArray(order.products) && order.products.length > 0
@@ -324,9 +324,8 @@ const Production = () => {
   // Download Po Fie
   const handleDownload = useCallback(async () => {
     try {
-      const fileUrl = `${process.env.REACT_APP_URL}${
-        viewOrder.poFilePath.startsWith("/") ? "" : "/"
-      }${viewOrder.poFilePath}`;
+      const fileUrl = `${process.env.REACT_APP_URL}${viewOrder.poFilePath.startsWith("/") ? "" : "/"
+        }${viewOrder.poFilePath}`;
 
       // Validate file URL
       if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
@@ -541,19 +540,15 @@ const Production = () => {
     if (!viewOrder) return;
     const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${
-                p.spec || "N/A"
-              }, Serial Nos: ${
-                p.serialNos.length > 0 ? p.serialNos.join(", ") : "N/A"
-              }, Model Nos: ${
-                p.modelNos.length > 0 ? p.modelNos.join(", ") : "N/A"
-              })`
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
+            }, Serial Nos: ${p.serialNos.length > 0 ? p.serialNos.join(", ") : "N/A"
+            }, Model Nos: ${p.modelNos.length > 0 ? p.modelNos.join(", ") : "N/A"
+            })`
+        )
+        .join("\n")
       : "N/A";
     const textToCopy = `
       Order ID: ${viewOrder.orderId || "N/A"}
@@ -583,8 +578,8 @@ const Production = () => {
           : {};
       const productDetails = Array.isArray(order.products)
         ? order.products
-            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
-            .join(", ")
+          .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+          .join(", ")
         : "N/A";
       const totalQty = Array.isArray(order.products)
         ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
@@ -611,7 +606,7 @@ const Production = () => {
             ? firstProduct.modelNos.join(", ")
             : "N/A",
         "Production Status": order.fulfillingStatus || "Pending",
-        Quantity: totalQty,
+        "Total Quantity": totalQty,
       };
     });
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -1142,22 +1137,22 @@ const Production = () => {
                     {filteredOrders.map((order, index) => {
                       const firstProduct =
                         Array.isArray(order.products) &&
-                        order.products.length > 0
+                          order.products.length > 0
                           ? order.products[0]
                           : {};
                       const totalQty = Array.isArray(order.products)
                         ? order.products.reduce(
-                            (sum, p) => sum + (p.qty || 0),
-                            0
-                          )
+                          (sum, p) => sum + (p.qty || 0),
+                          0
+                        )
                         : "N/A";
                       const productDetails = Array.isArray(order.products)
                         ? order.products
-                            .map(
-                              (p) =>
-                                `${p.productType || "N/A"} (${p.qty || "N/A"})`
-                            )
-                            .join(", ")
+                          .map(
+                            (p) =>
+                              `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                          )
+                          .join(", ")
                         : "N/A";
                       return (
                         <tr
@@ -1170,8 +1165,8 @@ const Production = () => {
                             (e.currentTarget.style.background = "#e9ecef")
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.background =
-                              index % 2 === 0 ? "#f8f9fa" : "#fff")
+                          (e.currentTarget.style.background =
+                            index % 2 === 0 ? "#f8f9fa" : "#fff")
                           }
                         >
                           <td
@@ -1209,18 +1204,6 @@ const Production = () => {
                             title={
                               order.soDate
                                 ? new Date(order.soDate).toLocaleDateString(
-                                    "en-IN",
-                                    {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    }
-                                  )
-                                : "N/A"
-                            }
-                          >
-                            {order.soDate
-                              ? new Date(order.soDate).toLocaleDateString(
                                   "en-IN",
                                   {
                                     day: "2-digit",
@@ -1228,6 +1211,18 @@ const Production = () => {
                                     year: "numeric",
                                   }
                                 )
+                                : "N/A"
+                            }
+                          >
+                            {order.soDate
+                              ? new Date(order.soDate).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                }
+                              )
                               : "N/A"}
                           </td>
                           <td
@@ -1496,13 +1491,13 @@ const Production = () => {
                                   order.fulfillingStatus === "Under Process"
                                     ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                     : order.fulfillingStatus === "Pending"
-                                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                    : order.fulfillingStatus ===
-                                      "Partial Dispatch"
-                                    ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                    : order.fulfillingStatus === "Fulfilled"
-                                    ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                                      ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                                      : order.fulfillingStatus ===
+                                        "Partial Dispatch"
+                                        ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                                        : order.fulfillingStatus === "Fulfilled"
+                                          ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                          : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                                 color: "#fff",
                                 padding: "5px 10px",
                                 borderRadius: "12px",
@@ -1661,8 +1656,8 @@ const Production = () => {
                     transition: "all 0.3s ease",
                   }}
                   onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
@@ -1709,8 +1704,8 @@ const Production = () => {
                             transition: "all 0.3s ease",
                           }}
                           onFocus={(e) =>
-                            (e.target.style.boxShadow =
-                              "0 0 10px rgba(37, 117, 252, 0.5)")
+                          (e.target.style.boxShadow =
+                            "0 0 10px rgba(37, 117, 252, 0.5)")
                           }
                           onBlur={(e) => (e.target.style.boxShadow = "none")}
                         />
@@ -1739,9 +1734,8 @@ const Production = () => {
                                 productUnits: newUnits,
                               });
                             }}
-                            placeholder={`Serial No for ${
-                              unit.productType
-                            } Unit ${index + 1}`}
+                            placeholder={`Serial No for ${unit.productType
+                              } Unit ${index + 1}`}
                             style={{
                               borderRadius: "10px",
                               border: "1px solid #ced4da",
@@ -1750,8 +1744,8 @@ const Production = () => {
                               transition: "all 0.3s ease",
                             }}
                             onFocus={(e) =>
-                              (e.target.style.boxShadow =
-                                "0 0 10px rgba(37, 117, 252, 0.5)")
+                            (e.target.style.boxShadow =
+                              "0 0 10px rgba(37, 117, 252, 0.5)")
                             }
                             onBlur={(e) => (e.target.style.boxShadow = "none")}
                           />
@@ -1788,8 +1782,8 @@ const Production = () => {
                     transition: "all 0.3s ease",
                   }}
                   onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 />
@@ -1932,13 +1926,13 @@ const Production = () => {
                       <strong>SO Date:</strong>{" "}
                       {viewOrder.soDate
                         ? new Date(viewOrder.soDate).toLocaleDateString(
-                            "en-IN",
-                            {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            }
-                          )
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )
                         : "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -1973,23 +1967,23 @@ const Production = () => {
                       <strong>Approval Timestamp:</strong>{" "}
                       {viewOrder.approvalTimestamp
                         ? new Date(viewOrder.approvalTimestamp).toLocaleString(
-                            "en-IN",
-                            {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            }
-                          )
+                          "en-IN",
+                          {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          }
+                        )
                         : "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Products Edit Timestamp:</strong>{" "}
                       {viewOrder.productsEditTimestamp
                         ? new Date(
-                            viewOrder.productsEditTimestamp
-                          ).toLocaleString("en-IN", {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })
+                          viewOrder.productsEditTimestamp
+                        ).toLocaleString("en-IN", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })
                         : "N/A"}
                     </span>
                     <div
@@ -2081,7 +2075,7 @@ const Production = () => {
                     Product Information
                   </h3>
                   {Array.isArray(viewOrder.products) &&
-                  viewOrder.products.length > 0 ? (
+                    viewOrder.products.length > 0 ? (
                     <div
                       style={{
                         display: "flex",
@@ -2236,9 +2230,9 @@ const Production = () => {
                       <strong>Total Quantity:</strong>{" "}
                       {Array.isArray(viewOrder.products)
                         ? viewOrder.products.reduce(
-                            (sum, p) => sum + (p.qty || 0),
-                            0
-                          )
+                          (sum, p) => sum + (p.qty || 0),
+                          0
+                        )
                         : "N/A"}
                     </span>
                   </div>

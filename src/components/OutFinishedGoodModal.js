@@ -42,8 +42,8 @@ const OutFinishedGoodModal = ({
       const validDispatchStatus = isBillingComplete
         ? dispatchStatus
         : ["Dispatched", "Delivered"].includes(dispatchStatus)
-        ? "Not Dispatched"
-        : dispatchStatus;
+          ? "Not Dispatched"
+          : dispatchStatus;
 
       // Initialize products with all fields
       const products =
@@ -56,6 +56,9 @@ const OutFinishedGoodModal = ({
           spec: product.spec || "N/A",
         })) || [];
 
+      const deliveredDateValue =
+        initialData?.deliveredDate ?? entryToEdit?.deliveredDate ?? "";
+
       setFormData({
         dispatchFrom: initialData.dispatchFrom || "",
         transporter: initialData.transporter || "",
@@ -64,14 +67,21 @@ const OutFinishedGoodModal = ({
         dispatchDate: initialData.dispatchDate
           ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
-        deliveredDate: initialData.deliveredDate
-          ? new Date(initialData.deliveredDate).toISOString().split("T")[0]
+
+        deliveredDate: deliveredDateValue
+          ? new Date(deliveredDateValue).toISOString().split("T")[0]
           : "",
+
         docketNo: initialData.docketNo || "",
-        actualFreight: initialData.actualFreight || "",
+        actualFreight:
+          initialData.actualFreight ??
+          entryToEdit.actualFreight ??
+          "",
         dispatchStatus: validDispatchStatus,
         products,
       });
+
+
     }
   }, [initialData, entryToEdit]);
 
@@ -184,10 +194,7 @@ const OutFinishedGoodModal = ({
       }
 
       const updatedEntry = response.data.data;
-      toast.success(
-        `Dispatch updated successfully! Status: ${updatedEntry.dispatchStatus}`,
-        { position: "top-right", autoClose: 3000 }
-      );
+
       onSubmit(updatedEntry);
       onClose();
     } catch (err) {
@@ -304,7 +311,7 @@ const OutFinishedGoodModal = ({
           { key: "dispatchDate", label: "Dispatch Date", type: "date" },
           { key: "deliveredDate", label: "Delivery Date", type: "date" },
           { key: "docketNo", label: "Docket No", type: "text" },
-          { key: "actualFreight", label: "Actual Freight", type: "number" },
+          { key: "actualFreight", label: "Actual Freight", type: "text" },
           {
             key: "transporterDetails",
             label: "Transporter Remarks",
@@ -397,11 +404,11 @@ const OutFinishedGoodModal = ({
             <Option value="Order Cancelled">Order Cancelled</Option>
             {(entryToEdit?.billStatus || "Pending").trim().toLowerCase() ===
               "billing complete" && (
-              <>
-                <Option value="Dispatched">Dispatched</Option>
-                <Option value="Delivered">Delivered</Option>
-              </>
-            )}
+                <>
+                  <Option value="Dispatched">Dispatched</Option>
+                  <Option value="Delivered">Delivered</Option>
+                </>
+              )}
           </Select>
         </div>
         {showProductFields && (
@@ -652,12 +659,12 @@ const OutFinishedGoodModal = ({
                   boxShadow: "0 4px 8px rgba(37, 117, 252, 0.2)",
                 }}
                 onMouseEnter={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 6px 12px rgba(37, 117, 252, 0.3)")
+                (e.target.style.boxShadow =
+                  "0 6px 12px rgba(37, 117, 252, 0.3)")
                 }
                 onMouseLeave={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 4px 8px rgba(37, 117, 252, 0.2)")
+                (e.target.style.boxShadow =
+                  "0 4px 8px rgba(37, 117, 252, 0.2)")
                 }
               >
                 {loading ? "Saving..." : "Confirm"}
@@ -681,8 +688,8 @@ const OutFinishedGoodModal = ({
                 boxShadow: "0 4px 8px rgba(37, 117, 252, 0.2)",
               }}
               onMouseEnter={(e) =>
-                (e.target.style.boxShadow =
-                  "0 6px 12px rgba(37, 117, 252, 0.3)")
+              (e.target.style.boxShadow =
+                "0 6px 12px rgba(37, 117, 252, 0.3)")
               }
               onMouseLeave={(e) =>
                 (e.target.style.boxShadow = "0 4px 8px rgba(37, 117, 252, 0.2)")

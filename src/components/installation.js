@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes } from "react-icons/fa";
@@ -6,10 +6,13 @@ import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import "../App.css";
 import io from "socket.io-client";
+import debounce from "lodash/debounce";
 
 function Installation() {
   const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
+  // Optimization: specific state for input vs filtering
+  const [localSearch, setLocalSearch] = useState("");
+  // const [filteredOrders, setFilteredOrders] = useState([]); // Removed: derived via useMemo
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -45,7 +48,7 @@ function Installation() {
       );
       if (response.data.success) {
         setOrders(response.data.data);
-        setFilteredOrders(response.data.data);
+        // setFilteredOrders(response.data.data); // Removed
       } else {
         throw new Error(
           response.data.message || "Could not load installation orders"
@@ -117,6 +120,25 @@ function Installation() {
     });
 
     socket.on("orderUpdate", ({ operationType, fullDocument, documentId }) => {
+      // Normalize createdBy when backend sends only an id (change stream)
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const currentUserId = String(localStorage.getItem("userId") || "");
+        if (
+          fullDocument &&
+          fullDocument.createdBy &&
+          typeof fullDocument.createdBy !== "object" &&
+          String(fullDocument.createdBy) === currentUserId
+        ) {
+          fullDocument = {
+            ...fullDocument,
+            createdBy: { _id: currentUserId, username: currentUser.username || currentUser.name || "You" },
+          };
+        }
+      } catch (e) {
+        // ignore
+      }
+
       setOrders((prev) => {
         const id = String(documentId || fullDocument?._id || "");
         if (!id) return prev;
@@ -139,21 +161,35 @@ function Installation() {
     };
   }, []);
 
-  const uniqueSalesPersons = [
+
+
+  // Optimization: Debounced search updater
+  const updateSearchQuery = useMemo(
+    () => debounce((val) => setSearchQuery(val), 300),
+    []
+  );
+
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setLocalSearch(val);
+    updateSearchQuery(val);
+  };
+
+  const uniqueSalesPersons = useMemo(() => [
     "All",
     ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
-  ];
+  ], [orders]);
 
-  // Update the useEffect for filtering orders to include date range
-  useEffect(() => {
+  // Optimization: Filter logic via useMemo instead of useEffect
+  const filteredOrders = useMemo(() => {
     let filtered = orders;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((order) => {
         const productDetails = Array.isArray(order.products)
           ? order.products
-              .map((p) => `${p.productType || ""} (${p.qty || ""})`)
-              .join(", ")
+            .map((p) => `${p.productType || ""} (${p.qty || ""})`)
+            .join(", ")
           : "";
         return (
           (order.orderId || "").toLowerCase().includes(query) ||
@@ -220,7 +256,7 @@ function Installation() {
         return orderDate <= new Date(endDate);
       });
     }
-    setFilteredOrders(filtered);
+    return filtered;
   }, [
     orders,
     searchQuery,
@@ -232,6 +268,11 @@ function Installation() {
     endDate,
   ]);
 
+  /* 
+  // Removed old useEffect for filtering
+  useEffect(() => { ... }, [...]); 
+  */
+
   const isDispatchOverdue = useCallback((dispatchDate) => {
     if (!dispatchDate) return false;
     const dispatch = new Date(dispatchDate);
@@ -241,11 +282,12 @@ function Installation() {
   }, []);
 
   // Calculate total pending orders (billStatus === "Pending")
-  const totalPending = filteredOrders.filter(
+  const totalPending = useMemo(() => filteredOrders.filter(
     (order) => order.installationStatus === "Pending"
-  ).length;
+  ).length, [filteredOrders]);
+
   // Get unique statuses for filter dropdown
-  const uniqueStatuses = [
+  const uniqueStatuses = useMemo(() => [
     "All",
     "Pending",
     "In Progress",
@@ -257,13 +299,13 @@ function Installation() {
           (status) => !["Pending", "In Progress", "Completed"].includes(status)
         )
     ),
-  ];
+  ], [orders]);
 
-  const handleView = (order) => {
+  const handleView = useCallback((order) => {
     setViewOrder(order);
     setShowViewModal(true);
     setCopied(false);
-  };
+  }, []);
 
   const uniqueOrderTypes = [
     "",
@@ -273,17 +315,14 @@ function Installation() {
     if (!viewOrder) return;
     const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${
-                p.spec || "N/A"
-              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
-                p.modelNos?.join(", ") || "N/A"
-              })`
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
+            }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${p.modelNos?.join(", ") || "N/A"
+            })`
+        )
+        .join("\n")
       : "N/A";
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
@@ -312,7 +351,7 @@ function Installation() {
       });
   }, [viewOrder]);
 
-  const handleEdit = (order) => {
+  const handleEdit = useCallback((order) => {
     setEditOrder(order);
     setFormData({
       installationStatus: order.installationStatus || "Pending",
@@ -322,7 +361,7 @@ function Installation() {
     });
     setErrors({});
     setShowEditModal(true);
-  };
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -385,7 +424,9 @@ function Installation() {
     }
   };
   const handleClearFilters = () => {
-    setSearchQuery("");
+    setLocalSearch(""); // Clear local input
+    updateSearchQuery(""); // Clear debounce immediately
+    setOrderTypeFilter("");
     setOrderTypeFilter("");
     setStatusFilter("All");
     setSalesPersonFilter("All");
@@ -398,8 +439,8 @@ function Installation() {
     const exportData = filteredOrders.map((order) => {
       const productDetails = Array.isArray(order.products)
         ? order.products
-            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
-            .join(", ")
+          .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+          .join(", ")
         : "N/A";
 
       // 👇 Calculate total quantity from products array
@@ -435,6 +476,401 @@ function Installation() {
       `Installation_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
     );
   };
+
+  // Optimization: Memoize the table to prevent re-renders on typing
+  const tableContent = useMemo(() => (
+    <div
+      style={{
+        overflowX: "auto",
+        maxHeight: "550px",
+        border: "1px solid rgba(0, 0, 0, 0.1)",
+        borderRadius: "8px",
+        backgroundColor: "rgba(255, 255, 255, 0.8)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        backdropFilter: "blur(10px)",
+      }}
+    >
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "separate",
+          borderSpacing: "0",
+        }}
+      >
+        <thead
+          style={{
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            color: "#fff",
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
+          }}
+        >
+          <tr>
+            {[
+              "Order ID",
+              "SO Date",
+              "Dispatch Date",
+              "Product Details",
+              "Contact Person",
+              "Contact No",
+              "Shipping Address",
+              "Charges Status",
+              "Installation Status",
+              "Sales Person",
+              "Actions",
+            ].map((header, index) => (
+              <th
+                key={index}
+                style={{
+                  padding: "15px",
+                  textAlign: "center",
+                  fontWeight: "700",
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  borderBottom: "2px solid rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {filteredOrders
+            .slice()
+            .sort((a, b) => {
+              const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
+              const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
+              // If dates are equal or unavailable, sort by _id descending
+              if (dateA.getTime() === dateB.getTime()) {
+                return b._id.localeCompare(a._id);
+              }
+              return dateB - dateA;
+            })
+            .map((order, index) => {
+              const productDetails = Array.isArray(order.products)
+                ? order.products
+                  .map(
+                    (p) =>
+                      `${p.productType || "N/A"} (${p.qty || "N/A"})`
+                  )
+                  .join(", ")
+                : "N/A";
+              const isOverdue = isDispatchOverdue(order.dispatchDate);
+              const baseBg = isOverdue
+                ? "#fff3cd" // Light yellow for overdue rows
+                : index % 2 === 0
+                  ? "#f8f9fa"
+                  : "#fff";
+              const hoverBg = isOverdue
+                ? "#ffeaa7" // Darker yellow on hover
+                : "#e9ecef";
+              const leaveBg = baseBg;
+
+              return (
+                <tr
+                  key={order._id}
+                  style={{
+                    background: baseBg,
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = hoverBg)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = leaveBg)
+                  }
+                >
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.orderId || "N/A"}
+                  >
+                    {order.orderId || "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.orderId || "N/A"}
+                  >
+                    {order.soDate
+                      ? new Date(order.soDate)
+                        .toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                        .replace(/\//g, "/")
+                      : "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.dispatchDate || "N/A"}
+                  >
+                    {order.dispatchDate
+                      ? new Date(order.dispatchDate)
+                        .toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                        .replace(/\//g, "/")
+                      : "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "200px",
+                    }}
+                    title={productDetails}
+                  >
+                    {productDetails}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.name || "N/A"}
+                  >
+                    {order.name || "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.contactNo || "N/A"}
+                  >
+                    {order.contactNo || "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "200px",
+                    }}
+                    title={order.shippingAddress || "N/A"}
+                  >
+                    {order.shippingAddress || "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.installchargesstatus || "N/A"}
+                  >
+                    {order.installchargesstatus || "N/A"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.installationStatus || "Pending"}
+                  >
+                    <Badge
+                      style={{
+                        background:
+                          order.installationStatus === "Pending"
+                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
+                            : order.installationStatus === "In Progress"
+                              ? "linear-gradient(135deg, #f39c12, #f7c200)"
+                              : order.installationStatus === "Completed"
+                                ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                        color: "#fff",
+                        padding: "5px 10px",
+                        borderRadius: "12px",
+                        display: "inline-block",
+                        width: "100%",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {order.installationStatus || "Pending"}
+                    </Badge>
+                  </td>
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      fontSize: "1rem",
+                      borderBottom: "1px solid #eee",
+                      height: "40px",
+                      lineHeight: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: "150px",
+                    }}
+                    title={order.salesPerson || "N/A"}
+                  >
+                    {order.salesPerson || "N/A"}
+                  </td>
+
+                  <td
+                    style={{
+                      padding: "15px",
+                      textAlign: "center",
+                      height: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        marginTop: "20px",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Button
+                        variant="primary"
+                        onClick={() => handleView(order)}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "22px",
+                          padding: "0",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        aria-label="View order details"
+                      >
+                        <FaEye style={{ marginBottom: "3px" }} />
+                      </Button>
+                      <button
+                        className="editBtn"
+                        onClick={() => handleEdit(order)}
+                        style={{
+                          minWidth: "40px",
+                          width: "40px",
+                          height: "40px",
+                          padding: "0",
+                          border: "none",
+                          background:
+                            "linear-gradient(135deg, #6c757d, #5a6268)",
+                          borderRadius: "22px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <svg
+                          height="1em"
+                          viewBox="0 0 512 512"
+                          fill="#fff"
+                        >
+                          <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+        </tbody>
+      </table>
+    </div>
+  ), [filteredOrders, isDispatchOverdue, handleView, handleEdit]);
 
   if (loading) {
     return (
@@ -472,691 +908,420 @@ function Installation() {
   }
 
   return (
-    <div
-      style={{
-        width: "100%",
-        margin: "0",
-        padding: "20px",
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <header
-        style={{
-          padding: "20px",
-          textAlign: "center",
-          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-          color: "#fff",
-          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "2.5rem",
-            fontWeight: "700",
-            textTransform: "uppercase",
-            letterSpacing: "2px",
-            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
-          }}
-        >
-          Installation Dashboard
-        </h1>
-      </header>{" "}
+    <>
       <div
         style={{
+          width: "100%",
+          margin: "0",
+          padding: "20px",
+          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          minHeight: "100vh",
           display: "flex",
-          flexWrap: "wrap",
-          gap: "15px",
-          marginTop: "20px",
-          alignItems: "center",
+          flexDirection: "column",
         }}
       >
-        <div style={{ position: "relative", flex: "1 1 300px" }}>
-          <Form.Control
-            type="text"
-            placeholder="Search orders..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              borderRadius: "20px",
-              padding: "10px 40px 10px 15px",
-              border: "1px solid #ced4da",
-              fontSize: "1rem",
-              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-            }}
-          />
-          {searchQuery && (
-            <FaTimes
-              style={{
-                position: "absolute",
-                right: "15px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                color: "#6c757d",
-              }}
-              onClick={() => setSearchQuery("")}
-            />
-          )}
-        </div>
-        <Form.Control
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          placeholder="Start Date"
+        <header
           style={{
-            flex: "0 1 200px",
-            borderRadius: "20px",
-            padding: "10px",
-            border: "1px solid #ced4da",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        />
-        <Form.Control
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          placeholder="End Date"
-          style={{
-            flex: "0 1 200px",
-            borderRadius: "20px",
-            padding: "10px",
-            border: "1px solid #ced4da",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        />
-        <Form.Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            flex: "0 1 200px",
-            borderRadius: "20px",
-            padding: "10px",
-            border: "1px solid #ced4da",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          {uniqueStatuses.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </Form.Select>{" "}
-        <Form.Select
-          value={InstallationFilter}
-          onChange={(e) => setInstallationFilter(e.target.value)}
-          style={{
-            flex: "0 1 200px",
-            borderRadius: "20px",
-            padding: "10px",
-            border: "1px solid #ced4da",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <option>All</option>
-          <option>To Pay</option>
-          <option>Including</option>
-          <option>Extra</option>
-          <option>Not Available</option>
-        </Form.Select>
-        <Form.Select
-          value={orderTypeFilter}
-          onChange={(e) => setOrderTypeFilter(e.target.value)}
-          style={{
-            flex: "0 1 200px",
-            borderRadius: "20px",
-            padding: "10px",
-            border: "1px solid #ced4da",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          {uniqueOrderTypes.map((orderType) => (
-            <option key={orderType} value={orderType}>
-              {orderType || "All"}
-            </option>
-          ))}
-        </Form.Select>
-        <Form.Select
-          value={salesPersonFilter}
-          onChange={(e) => setSalesPersonFilter(e.target.value)}
-          style={{
-            flex: "0 1 200px",
-            borderRadius: "20px",
-            padding: "10px",
-            border: "1px solid #ced4da",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <option value="All">All Sales Persons</option>
-          {uniqueSalesPersons
-            .filter((salesPerson) => salesPerson !== "All")
-            .map((salesPerson) => (
-              <option key={salesPerson} value={salesPerson}>
-                {salesPerson}
-              </option>
-            ))}
-        </Form.Select>
-        <Button
-          onClick={exportToExcel}
-          style={{
-            background: "linear-gradient(135deg, #28a745, #4cd964)",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "20px",
+            padding: "20px",
+            textAlign: "center",
+            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
             color: "#fff",
-            fontWeight: "600",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-            transition: "all 0.3s ease",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
           }}
-          onMouseEnter={(e) => (e.target.style.transform = "translateY(-2px)")}
-          onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
         >
-          Export to Excel
-        </Button>
-        <Button
-          onClick={handleClearFilters}
-          style={{
-            background: "linear-gradient(135deg, #28a745, #4cd964)",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "20px",
-            color: "#fff",
-            fontWeight: "600",
-            fontSize: "1rem",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-            transition: "all 0.3s ease",
-          }}
-          onMouseEnter={(e) => (e.target.style.transform = "translateY(-2px)")}
-          onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
-        >
-          Clear Filters
-        </Button>
-      </div>
-      <div className="total-results my-3">
-        <span>Total Orders: {filteredOrders.length}</span>
-        <span>Total Pending: {totalPending}</span>
-      </div>
-      <div style={{ padding: "20px", flex: 1 }}>
-        {error && (
-          <div
+          <h1
             style={{
-              background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
-              color: "#fff",
-              padding: "15px",
-              borderRadius: "10px",
-              marginBottom: "20px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+              fontSize: "2.5rem",
+              fontWeight: "700",
+              textTransform: "uppercase",
+              letterSpacing: "2px",
+              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
             }}
           >
-            <span>
-              <strong>Error:</strong> {error}
-            </span>
-            <Button
-              onClick={fetchInstallationOrders}
-              style={{
-                background: "transparent",
-                border: "1px solid #fff",
-                color: "#fff",
-                padding: "5px 15px",
-                borderRadius: "20px",
-                fontWeight: "500",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => (e.target.style.background = "#ffffff30")}
-              onMouseLeave={(e) => (e.target.style.background = "transparent")}
-            >
-              Retry
-            </Button>
-          </div>
-        )}
+            Installation Dashboard
+          </h1>
+        </header>{" "}
+        <div
+          style={{
 
-        {filteredOrders.length === 0 && !error ? (
+            padding: "15px",
+            borderRadius: "15px",
+
+            marginBottom: "20px",
+            marginTop: "20px",
+          }}
+        >
           <div
             style={{
-              background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
-              color: "#fff",
-              padding: "20px",
-              borderRadius: "10px",
-              textAlign: "center",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-              fontSize: "1.3rem",
-              fontWeight: "500",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "10px",
+              alignItems: "flex-end",
             }}
           >
-            No installation orders available at this time.
-          </div>
-        ) : (
-          <>
-            <div
-              style={{
-                overflowX: "auto",
-                maxHeight: "550px",
-                border: "1px solid rgba(0, 0, 0, 0.1)",
-                borderRadius: "8px",
-                backgroundColor: "rgba(255, 255, 255, 0.8)",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <table
+            {/* Search Filter */}
+            <div style={{ flex: "1 1 200px" }}>
+              <label
                 style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: "0",
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  color: "#495057",
+                  marginBottom: "4px",
+                  marginLeft: "10px",
+                  display: "block",
                 }}
               >
-                <thead
+                Search Orders
+              </label>
+              <div style={{ position: "relative" }}>
+                <Form.Control
+                  type="text"
+                  placeholder="Order ID, Name, etc."
+                  value={localSearch}
+                  onChange={handleSearchChange}
                   style={{
-                    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                    color: "#fff",
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 2,
+                    borderRadius: "15px",
+                    padding: "5px 30px 5px 10px",
+                    border: "1px solid #ced4da",
+                    fontSize: "0.9rem",
+                    height: "38px",
                   }}
-                >
-                  <tr>
-                    {[
-                      "Order ID",
-                      "SO Date",
-                      "Dispatch Date",
-                      "Product Details",
-                      "Contact Person",
-                      "Contact No",
-                      "Shipping Address",
-                      "Charges Status",
-                      "Installation Status",
-                      "Sales Person",
-                      "Actions",
-                    ].map((header, index) => (
-                      <th
-                        key={index}
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          fontWeight: "700",
-                          letterSpacing: "1px",
-                          textTransform: "uppercase",
-                          borderBottom: "2px solid rgba(255, 255, 255, 0.2)",
-                        }}
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders
-                    .slice()
-                    .sort((a, b) => {
-                      const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
-                      const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
-                      // If dates are equal or unavailable, sort by _id descending
-                      if (dateA.getTime() === dateB.getTime()) {
-                        return b._id.localeCompare(a._id);
-                      }
-                      return dateB - dateA;
-                    })
-                    .map((order, index) => {
-                      const productDetails = Array.isArray(order.products)
-                        ? order.products
-                            .map(
-                              (p) =>
-                                `${p.productType || "N/A"} (${p.qty || "N/A"})`
-                            )
-                            .join(", ")
-                        : "N/A";
-                      const isOverdue = isDispatchOverdue(order.dispatchDate);
-                      const baseBg = isOverdue
-                        ? "#fff3cd" // Light yellow for overdue rows
-                        : index % 2 === 0
-                        ? "#f8f9fa"
-                        : "#fff";
-                      const hoverBg = isOverdue
-                        ? "#ffeaa7" // Darker yellow on hover
-                        : "#e9ecef";
-                      const leaveBg = baseBg;
-
-                      return (
-                        <tr
-                          key={order._id}
-                          style={{
-                            background: baseBg,
-                            transition: "all 0.3s ease",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.background = hoverBg)
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.background = leaveBg)
-                          }
-                        >
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.orderId || "N/A"}
-                          >
-                            {order.orderId || "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.orderId || "N/A"}
-                          >
-                            {order.soDate
-                              ? new Date(order.soDate)
-                                  .toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })
-                                  .replace(/\//g, "/")
-                              : "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.dispatchDate || "N/A"}
-                          >
-                            {order.dispatchDate
-                              ? new Date(order.dispatchDate)
-                                  .toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })
-                                  .replace(/\//g, "/")
-                              : "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "200px",
-                            }}
-                            title={productDetails}
-                          >
-                            {productDetails}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.name || "N/A"}
-                          >
-                            {order.name || "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.contactNo || "N/A"}
-                          >
-                            {order.contactNo || "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "200px",
-                            }}
-                            title={order.shippingAddress || "N/A"}
-                          >
-                            {order.shippingAddress || "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.installchargesstatus || "N/A"}
-                          >
-                            {order.installchargesstatus || "N/A"}
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.installationStatus || "Pending"}
-                          >
-                            <Badge
-                              style={{
-                                background:
-                                  order.installationStatus === "Pending"
-                                    ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                    : order.installationStatus === "In Progress"
-                                    ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                                    : order.installationStatus === "Completed"
-                                    ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                    : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                                color: "#fff",
-                                padding: "5px 10px",
-                                borderRadius: "12px",
-                                display: "inline-block",
-                                width: "100%",
-                                textOverflow: "ellipsis",
-                                overflow: "hidden",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {order.installationStatus || "Pending"}
-                            </Badge>
-                          </td>
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              color: "#2c3e50",
-                              fontSize: "1rem",
-                              borderBottom: "1px solid #eee",
-                              height: "40px",
-                              lineHeight: "40px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: "150px",
-                            }}
-                            title={order.salesPerson || "N/A"}
-                          >
-                            {order.salesPerson || "N/A"}
-                          </td>
-
-                          <td
-                            style={{
-                              padding: "15px",
-                              textAlign: "center",
-                              height: "40px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              borderBottom: "1px solid #eee",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "20px",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              }}
-                            >
-                              <Button
-                                variant="primary"
-                                onClick={() => handleView(order)}
-                                style={{
-                                  width: "40px",
-                                  height: "40px",
-                                  borderRadius: "22px",
-                                  padding: "0",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}
-                                aria-label="View order details"
-                              >
-                                <FaEye style={{ marginBottom: "3px" }} />
-                              </Button>
-                              <button
-                                className="editBtn"
-                                onClick={() => handleEdit(order)}
-                                style={{
-                                  minWidth: "40px",
-                                  width: "40px",
-                                  height: "40px",
-                                  padding: "0",
-                                  border: "none",
-                                  background:
-                                    "linear-gradient(135deg, #6c757d, #5a6268)",
-                                  borderRadius: "22px",
-                                  cursor: "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <svg
-                                  height="1em"
-                                  viewBox="0 0 512 512"
-                                  fill="#fff"
-                                >
-                                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                                </svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
+                />
+                {searchQuery && (
+                  <FaTimes
+                    style={{
+                      position: "absolute",
+                      right: "10px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                      color: "#adb5bd",
+                    }}
+                    onClick={() => handleSearchChange({ target: { value: "" } })}
+                  />
+                )}
+              </div>
             </div>
-          </>
-        )}
-      </div>
-      <footer
-        style={{
-          padding: "15px",
-          textAlign: "center",
-          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-          color: "white",
-          marginTop: "auto",
-          boxShadow: "0 -2px 5px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <p style={{ margin: 0, fontSize: "0.9rem" }}>
-          © 2025 Sales Order Management. All rights reserved.
-        </p>
-      </footer>
-      {/* View Modal */}
-      <Modal
-        show={showViewModal}
-        onHide={() => setShowViewModal(false)}
-        backdrop="static"
-        keyboard={false}
-        size="lg"
-      >
-        <style>
-          {`
+
+            {/* Start Date */}
+            <div style={{ flex: "0 1 140px" }}>
+              <label
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  color: "#495057",
+                  marginBottom: "4px",
+                  display: "block",
+                }}
+              >
+                Start Date
+              </label>
+              <Form.Control
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={{
+                  borderRadius: "15px",
+                  padding: "5px 10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "0.9rem",
+                  height: "38px",
+                }}
+              />
+            </div>
+
+            {/* End Date */}
+            <div style={{ flex: "0 1 140px" }}>
+              <label
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  color: "#495057",
+                  marginBottom: "4px",
+                  display: "block",
+                }}
+              >
+                End Date
+              </label>
+              <Form.Control
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                style={{
+                  borderRadius: "15px",
+                  padding: "5px 10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "0.9rem",
+                  height: "38px",
+                }}
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div style={{ flex: "0 1 160px" }}>
+              <label
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  color: "#495057",
+                  marginBottom: "4px",
+                  display: "block",
+                }}
+              >
+                Status
+              </label>
+              <Form.Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{
+                  borderRadius: "15px",
+                  padding: "5px 10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "0.9rem",
+                  height: "38px",
+                  cursor: "pointer",
+                }}
+              >
+                {uniqueStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+
+            {/* Charges Filter */}
+            <div style={{ flex: "0 1 140px" }}>
+              <label
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  color: "#495057",
+                  marginBottom: "4px",
+                  display: "block",
+                }}
+              >
+                Charges
+              </label>
+              <Form.Select
+                value={InstallationFilter}
+                onChange={(e) => setInstallationFilter(e.target.value)}
+                style={{
+                  borderRadius: "15px",
+                  padding: "5px 10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "0.9rem",
+                  height: "38px",
+                  cursor: "pointer",
+                }}
+              >
+                <option>All</option>
+                <option>To Pay</option>
+                <option>Including</option>
+                <option>Extra</option>
+                <option>Not Available</option>
+              </Form.Select>
+            </div>
+
+            {/* Order Type Filter */}
+            <div style={{ flex: "0 1 140px" }}>
+              <label
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  color: "#495057",
+                  marginBottom: "4px",
+                  display: "block",
+                }}
+              >
+                Order Type
+              </label>
+              <Form.Select
+                value={orderTypeFilter}
+                onChange={(e) => setOrderTypeFilter(e.target.value)}
+                style={{
+                  borderRadius: "15px",
+                  padding: "5px 10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "0.9rem",
+                  height: "38px",
+                  cursor: "pointer",
+                }}
+              >
+                {uniqueOrderTypes.map((orderType) => (
+                  <option key={orderType} value={orderType}>
+                    {orderType || "All"}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+
+            {/* Sales Person Filter */}
+            <div style={{ flex: "0 1 160px" }}>
+              <label
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  color: "#495057",
+                  marginBottom: "4px",
+                  display: "block",
+                }}
+              >
+                Sales Person
+              </label>
+              <Form.Select
+                value={salesPersonFilter}
+                onChange={(e) => setSalesPersonFilter(e.target.value)}
+                style={{
+                  borderRadius: "15px",
+                  padding: "5px 10px",
+                  border: "1px solid #ced4da",
+                  fontSize: "0.9rem",
+                  height: "38px",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="All">All</option>
+                {uniqueSalesPersons
+                  .filter((salesPerson) => salesPerson !== "All")
+                  .map((salesPerson) => (
+                    <option key={salesPerson} value={salesPerson}>
+                      {salesPerson}
+                    </option>
+                  ))}
+              </Form.Select>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", gap: "10px", marginLeft: "auto" }}>
+              <Button
+                onClick={handleClearFilters}
+                style={{
+                  background: "#f8f9fa",
+                  border: "1px solid #dee2e6",
+                  color: "#495057",
+                  padding: "0 15px",
+                  height: "38px",
+                  borderRadius: "20px",
+                  fontWeight: "600",
+                  fontSize: "0.85rem",
+                  transition: "all 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = "#e9ecef";
+                  e.target.style.borderColor = "#ced4da";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "#f8f9fa";
+                  e.target.style.borderColor = "#dee2e6";
+                }}
+              >
+                <FaTimes style={{ fontSize: "0.8rem" }} /> Clear
+              </Button>
+
+              <Button
+                onClick={exportToExcel}
+                style={{
+                  background: "linear-gradient(135deg, #28a745, #20c997)",
+                  border: "none",
+                  padding: "0 20px",
+                  height: "38px",
+                  borderRadius: "20px",
+                  color: "#fff",
+                  fontWeight: "600",
+                  fontSize: "0.85rem",
+                  boxShadow: "0 4px 10px rgba(40, 167, 69, 0.2)",
+                  transition: "all 0.2s",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.transform = "translateY(-2px)")
+                }
+                onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+              >
+                Export Excel
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="total-results my-3">
+          <span>Total Orders: {filteredOrders.length}</span>
+          <span>Total Pending: {totalPending}</span>
+        </div>
+        <div style={{ padding: "20px", flex: 1 }}>
+          {error && (
+            <div
+              style={{
+                background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+                color: "#fff",
+                padding: "15px",
+                borderRadius: "10px",
+                marginBottom: "20px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <span>
+                <strong>Error:</strong> {error}
+              </span>
+              <Button
+                onClick={fetchInstallationOrders}
+                style={{
+                  background: "transparent",
+                  border: "1px solid #fff",
+                  color: "#fff",
+                  padding: "5px 15px",
+                  borderRadius: "20px",
+                  fontWeight: "500",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.target.style.background = "#ffffff30")}
+                onMouseLeave={(e) => (e.target.style.background = "transparent")}
+              >
+                Retry
+              </Button>
+            </div>
+          )}
+
+          {filteredOrders.length === 0 && !error ? (
+            <div
+              style={{
+                background: "linear-gradient(135deg, #ff6b6b, #ff8787)",
+                color: "#fff",
+                padding: "20px",
+                borderRadius: "10px",
+                textAlign: "center",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                fontSize: "1.3rem",
+                fontWeight: "500",
+              }}
+            >
+              No installation orders available at this time.
+            </div>
+          ) : (
+
+            tableContent
+          )}
+        </div>
+
+        {/* View Modal */}
+        <Modal
+          show={showViewModal}
+          onHide={() => setShowViewModal(false)}
+          backdrop="static"
+          keyboard={false}
+          size="lg"
+        >
+          <style>
+            {`
       @keyframes fadeIn {
         0% { opacity: 0; transform: translateY(10px); }
         100% { opacity: 1; transform: translateY(0); }
@@ -1179,489 +1344,502 @@ function Installation() {
         line-height: 1.4;
       }
     `}
-        </style>
-        <Modal.Header
-          closeButton
-          style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            color: "#fff",
-            padding: "20px",
-            borderBottom: "none",
-            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-          }}
-        >
-          <Modal.Title
+          </style>
+          <Modal.Header
+            closeButton
             style={{
-              fontWeight: "700",
-              fontSize: "1.8rem",
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              textShadow: "1px 1px 3px rgba(0, 0, 0, 0.2)",
-              display: "flex",
-              alignItems: "center",
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              color: "#fff",
+              padding: "20px",
+              borderBottom: "none",
+              boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
             }}
           >
-            <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>📋</span>
-            Installation Order Details
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body
-          style={{
-            padding: "30px",
-            background: "#fff",
-            borderRadius: "0 0 15px 15px",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px",
-            animation: "fadeIn 0.5s ease-in-out",
-          }}
-        >
-          {viewOrder && (
-            <>
-              <div
-                style={{
-                  background: "#f8f9fa",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  animation: "fadeIn 0.5s ease-in-out",
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: "1.3rem",
-                    fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "15px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Installation Info
-                </h3>
+            <Modal.Title
+              style={{
+                fontWeight: "700",
+                fontSize: "1.8rem",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                textShadow: "1px 1px 3px rgba(0, 0, 0, 0.2)",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>📋</span>
+              Installation Order Details
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body
+            style={{
+              padding: "30px",
+              background: "#fff",
+              borderRadius: "0 0 15px 15px",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+              animation: "fadeIn 0.5s ease-in-out",
+            }}
+          >
+            {viewOrder && (
+              <>
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                    gap: "15px",
+                    background: "#f8f9fa",
+                    borderRadius: "10px",
+                    padding: "20px",
+                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                    animation: "fadeIn 0.5s ease-in-out",
                   }}
                 >
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Contact Person:</strong> {viewOrder.name || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Shipping Address:</strong>{" "}
-                    {viewOrder.shippingAddress || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Installation Charges:</strong>{" "}
-                    {viewOrder.installation || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Installation Status:</strong>{" "}
-                    <Badge
-                      style={{
-                        background:
-                          viewOrder.installationStatus === "Pending"
-                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Pending
-                            : viewOrder.installationStatus === "In Progress"
-                            ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for In Progress
-                            : viewOrder.installationStatus === "Completed"
-                            ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Completed
-                            : viewOrder.installationStatus === "Failed"
-                            ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Failed
-                            : viewOrder.installationStatus === "Hold"
-                            ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue for Hold by Salesperson
-                            : viewOrder.installationStatus === "Site Not Ready"
-                            ? "linear-gradient(135deg, #e84393, #ff6b9b)" // Pink/Magenta for Site Not Ready
-                            : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
-                        color: "#fff",
-                        padding: "5px 10px",
-                        borderRadius: "12px",
-                      }}
-                    >
-                      {viewOrder.installationStatus || "Pending"}
-                    </Badge>
-                  </span>
-
-                  {viewOrder.installationStatusDate && (
+                  <h3
+                    style={{
+                      fontSize: "1.3rem",
+                      fontWeight: "600",
+                      color: "#333",
+                      marginBottom: "15px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Installation Info
+                  </h3>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: "15px",
+                    }}
+                  >
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Installation Completion Date:</strong>{" "}
-                      {
-                        new Date(viewOrder.installationStatusDate)
-                          .toISOString()
-                          .split("T")[0]
-                      }
+                      <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
                     </span>
-                  )}
-
-                  {viewOrder.installationeng && (
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Engineer Name:</strong>{" "}
-                      {viewOrder.installationeng}
+                      <strong>Contact Person:</strong> {viewOrder.name || "N/A"}
                     </span>
-                  )}
-
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Remarks By Installation:</strong>{" "}
-                    {viewOrder.remarksByInstallation || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Dispatch Status:</strong>{" "}
-                    {viewOrder.dispatchStatus || "N/A"}
-                  </span>
-
-                  {viewOrder.deliveredDate && (
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Delivered Date:</strong>{" "}
-                      {new Date(viewOrder.deliveredDate).toLocaleDateString(
-                        "en-GB"
-                      ) || "N/A"}
+                      <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Shipping Address:</strong>{" "}
+                      {viewOrder.shippingAddress || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Installation Charges:</strong>{" "}
+                      {viewOrder.installation || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Installation Status:</strong>{" "}
+                      <Badge
+                        style={{
+                          background:
+                            viewOrder.installationStatus === "Pending"
+                              ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Pending
+                              : viewOrder.installationStatus === "In Progress"
+                                ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for In Progress
+                                : viewOrder.installationStatus === "Completed"
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Completed
+                                  : viewOrder.installationStatus === "Failed"
+                                    ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Failed
+                                    : viewOrder.installationStatus === "Hold"
+                                      ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue for Hold by Salesperson
+                                      : viewOrder.installationStatus === "Site Not Ready"
+                                        ? "linear-gradient(135deg, #e84393, #ff6b9b)" // Pink/Magenta for Site Not Ready
+                                        : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
+                          color: "#fff",
+                          padding: "5px 10px",
+                          borderRadius: "12px",
+                        }}
+                      >
+                        {viewOrder.installationStatus || "Pending"}
+                      </Badge>
+                    </span>
+
+                    {viewOrder.installationStatusDate && (
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Installation Completion Date:</strong>{" "}
+                        {
+                          new Date(viewOrder.installationStatusDate)
+                            .toISOString()
+                            .split("T")[0]
+                        }
+                      </span>
+                    )}
+
+                    {viewOrder.installationeng && (
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Engineer Name:</strong>{" "}
+                        {viewOrder.installationeng}
+                      </span>
+                    )}
+
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Remarks By Installation:</strong>{" "}
+                      {viewOrder.remarksByInstallation || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Dispatch Status:</strong>{" "}
+                      {viewOrder.dispatchStatus || "N/A"}
+                    </span>
+
+                    {viewOrder.deliveredDate && (
+                      <span style={{ fontSize: "1rem", color: "#555" }}>
+                        <strong>Delivered Date:</strong>{" "}
+                        {new Date(viewOrder.deliveredDate).toLocaleDateString(
+                          "en-GB"
+                        ) || "N/A"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    background: "#f8f9fa",
+                    borderRadius: "10px",
+                    padding: "20px",
+                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
+                    animation: "fadeIn 0.5s ease-in-out",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "1.3rem",
+                      fontWeight: "600",
+                      color: "#333",
+                      marginBottom: "15px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Product Info
+                  </h3>
+                  {Array.isArray(viewOrder.products) &&
+                    viewOrder.products.length > 0 ? (
+                    viewOrder.products.map((product, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(200px, 1fr))",
+                          gap: "10px",
+                          padding: "10px 0",
+                          borderBottom:
+                            index < viewOrder.products.length - 1
+                              ? "1px solid #eee"
+                              : "none",
+                          alignItems: "start",
+                        }}
+                      >
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Product {index + 1} Type:</strong>{" "}
+                          {product.productType || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Qty:</strong> {product.qty || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Size:</strong> {product.size || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Spec:</strong> {product.spec || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Serial Nos:</strong>
+                          <div className="serial-nos-container">
+                            {product.serialNos && product.serialNos.length > 0 ? (
+                              <ul>
+                                {product.serialNos.map((serial, idx) => (
+                                  <li key={idx}>{serial}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              "N/A"
+                            )}
+                          </div>
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Model Nos:</strong>{" "}
+                          {product.modelNos?.[0] || "N/A"}
+                        </span>
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          <strong>Product Code:</strong>{" "}
+                          {product.productCode?.[0] || "N/A"}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Products:</strong> N/A
                     </span>
                   )}
                 </div>
-              </div>
-              <div
-                style={{
-                  background: "#f8f9fa",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  animation: "fadeIn 0.5s ease-in-out",
-                }}
-              >
-                <h3
+                <Button
+                  onClick={handleCopy}
                   style={{
-                    fontSize: "1.3rem",
+                    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                    border: "none",
+                    padding: "12px",
+                    borderRadius: "25px",
+                    color: "#fff",
                     fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "15px",
+                    fontSize: "1.1rem",
                     textTransform: "uppercase",
+                    transition: "all 0.3s ease",
+                    boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
+                    alignSelf: "flex-end",
                   }}
+                  onMouseEnter={(e) =>
+                    (e.target.style.transform = "translateY(-3px)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.transform = "translateY(0)")
+                  }
                 >
-                  Product Info
-                </h3>
-                {Array.isArray(viewOrder.products) &&
-                viewOrder.products.length > 0 ? (
-                  viewOrder.products.map((product, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: "10px",
-                        padding: "10px 0",
-                        borderBottom:
-                          index < viewOrder.products.length - 1
-                            ? "1px solid #eee"
-                            : "none",
-                        alignItems: "start",
-                      }}
-                    >
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Product {index + 1} Type:</strong>{" "}
-                        {product.productType || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Qty:</strong> {product.qty || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Size:</strong> {product.size || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Spec:</strong> {product.spec || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Serial Nos:</strong>
-                        <div className="serial-nos-container">
-                          {product.serialNos && product.serialNos.length > 0 ? (
-                            <ul>
-                              {product.serialNos.map((serial, idx) => (
-                                <li key={idx}>{serial}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            "N/A"
-                          )}
-                        </div>
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Model Nos:</strong>{" "}
-                        {product.modelNos?.[0] || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Product Code:</strong>{" "}
-                        {product.productCode?.[0] || "N/A"}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Products:</strong> N/A
-                  </span>
-                )}
-              </div>
-              <Button
-                onClick={handleCopy}
-                style={{
-                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                  border: "none",
-                  padding: "12px",
-                  borderRadius: "25px",
-                  color: "#fff",
-                  fontWeight: "600",
-                  fontSize: "1.1rem",
-                  textTransform: "uppercase",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
-                  alignSelf: "flex-end",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.transform = "translateY(-3px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.transform = "translateY(0)")
-                }
-              >
-                {copied ? "✅ Copied!" : "📑 Copy Details"}
-              </Button>
-            </>
-          )}
-        </Modal.Body>
-      </Modal>
-      {/* Edit Modal */}
-      <Modal
-        show={showEditModal}
-        onHide={() => setShowEditModal(false)}
-        centered
-        backdrop="static"
-      >
-        <Modal.Header
-          closeButton
-          style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            color: "#fff",
-            borderBottom: "none",
-            padding: "20px",
-          }}
-        >
-          <Modal.Title
-            style={{
-              fontWeight: "700",
-              fontSize: "1.5rem",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-            }}
-          >
-            Edit Installation Order
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body
-          style={{
-            padding: "30px",
-            background: "#fff",
-            borderRadius: "0 0 15px 15px",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Form onSubmit={handleEditSubmit}>
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Installation Status
-              </Form.Label>
-              <Form.Select
-                value={formData.installationStatus}
-                onChange={(e) => {
-                  const newStatus = e.target.value;
-                  setFormData({
-                    ...formData,
-                    installationStatus: newStatus,
-                  });
-                }}
-                style={{
-                  borderRadius: "10px",
-                  border: errors.installationStatus
-                    ? "1px solid red"
-                    : "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                  transition: "all 0.3s ease",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 0 10px rgba(37, 117, 252, 0.5)")
-                }
-                onBlur={(e) => (e.target.style.boxShadow = "none")}
-              >
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-                <option value="Hold">Hold</option>
-                <option value="Site Not Ready">Site Not Ready</option>
-              </Form.Select>
-              {errors.installationStatus && (
-                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.installationStatus}
-                </Form.Text>
-              )}
-            </Form.Group>
-
-            {formData.installationStatus === "Completed" && (
-              <>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Installation Completion Date{" "}
-                    <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={
-                      formData.installationStatusDate
-                        ? new Date(formData.installationStatusDate)
-                            .toISOString()
-                            .split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        installationStatusDate: e.target.value,
-                      })
-                    }
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                    }}
-                    required
-                  />
-                </Form.Group>
-
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Installation Engineer Name{" "}
-                    <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter engineer name"
-                    value={formData.installationeng}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        installationeng: e.target.value,
-                      })
-                    }
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                    }}
-                    required
-                  />
-                </Form.Group>
+                  {copied ? "✅ Copied!" : "📑 Copy Details"}
+                </Button>
               </>
             )}
-
-            <Form.Group style={{ marginBottom: "20px" }}>
-              <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                Remarks by Installation <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={formData.remarksByInstallation}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    remarksByInstallation: e.target.value,
-                  })
-                }
-                placeholder="Enter remarks"
-                style={{
-                  borderRadius: "10px",
-                  border: errors.remarksByInstallation
-                    ? "1px solid red"
-                    : "1px solid #ced4da",
-                  padding: "12px",
-                  fontSize: "1rem",
-                  transition: "all 0.3s ease",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 0 10px rgba(37, 117, 252, 0.5)")
-                }
-                onBlur={(e) => (e.target.style.boxShadow = "none")}
-                required
-              />
-              {errors.remarksByInstallation && (
-                <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                  {errors.remarksByInstallation}
-                </Form.Text>
-              )}
-            </Form.Group>
-
-            <div
+          </Modal.Body>
+        </Modal>
+        {/* Edit Modal */}
+        <Modal
+          show={showEditModal}
+          onHide={() => setShowEditModal(false)}
+          centered
+          backdrop="static"
+        >
+          <Modal.Header
+            closeButton
+            style={{
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              color: "#fff",
+              borderBottom: "none",
+              padding: "20px",
+            }}
+          >
+            <Modal.Title
               style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "15px",
+                fontWeight: "700",
+                fontSize: "1.5rem",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
               }}
             >
-              <Button
-                onClick={() => setShowEditModal(false)}
+              Edit Installation Order
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body
+            style={{
+              padding: "30px",
+              background: "#fff",
+              borderRadius: "0 0 15px 15px",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <Form onSubmit={handleEditSubmit}>
+              <Form.Group style={{ marginBottom: "20px" }}>
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                  Installation Status
+                </Form.Label>
+                <Form.Select
+                  value={formData.installationStatus}
+                  onChange={(e) => {
+                    const newStatus = e.target.value;
+                    setFormData({
+                      ...formData,
+                      installationStatus: newStatus,
+                    });
+                  }}
+                  style={{
+                    borderRadius: "10px",
+                    border: errors.installationStatus
+                      ? "1px solid red"
+                      : "1px solid #ced4da",
+                    padding: "12px",
+                    fontSize: "1rem",
+                    transition: "all 0.3s ease",
+                  }}
+                  onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Hold">Hold</option>
+                  <option value="Site Not Ready">Site Not Ready</option>
+                </Form.Select>
+                {errors.installationStatus && (
+                  <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                    {errors.installationStatus}
+                  </Form.Text>
+                )}
+              </Form.Group>
+
+              {formData.installationStatus === "Completed" && (
+                <>
+                  <Form.Group style={{ marginBottom: "20px" }}>
+                    <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                      Installation Completion Date{" "}
+                      <span style={{ color: "red" }}>*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={
+                        formData.installationStatusDate
+                          ? new Date(formData.installationStatusDate)
+                            .toISOString()
+                            .split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          installationStatusDate: e.target.value,
+                        })
+                      }
+                      style={{
+                        borderRadius: "10px",
+                        border: "1px solid #ced4da",
+                        padding: "12px",
+                        fontSize: "1rem",
+                      }}
+                      required
+                    />
+                  </Form.Group>
+
+                  <Form.Group style={{ marginBottom: "20px" }}>
+                    <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                      Installation Engineer Name{" "}
+                      <span style={{ color: "red" }}>*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter engineer name"
+                      value={formData.installationeng}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          installationeng: e.target.value,
+                        })
+                      }
+                      style={{
+                        borderRadius: "10px",
+                        border: "1px solid #ced4da",
+                        padding: "12px",
+                        fontSize: "1rem",
+                      }}
+                      required
+                    />
+                  </Form.Group>
+                </>
+              )}
+
+              <Form.Group style={{ marginBottom: "20px" }}>
+                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
+                  Remarks by Installation <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={formData.remarksByInstallation}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      remarksByInstallation: e.target.value,
+                    })
+                  }
+                  placeholder="Enter remarks"
+                  style={{
+                    borderRadius: "10px",
+                    border: errors.remarksByInstallation
+                      ? "1px solid red"
+                      : "1px solid #ced4da",
+                    padding: "12px",
+                    fontSize: "1rem",
+                    transition: "all 0.3s ease",
+                  }}
+                  onFocus={(e) =>
+                  (e.target.style.boxShadow =
+                    "0 0 10px rgba(37, 117, 252, 0.5)")
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
+                  required
+                />
+                {errors.remarksByInstallation && (
+                  <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
+                    {errors.remarksByInstallation}
+                  </Form.Text>
+                )}
+              </Form.Group>
+
+              <div
                 style={{
-                  background: "linear-gradient(135deg, #6c757d, #5a6268)",
-                  border: "none",
-                  padding: "10px 20px",
-                  borderRadius: "20px",
-                  color: "#fff",
-                  fontWeight: "600",
-                  transition: "all 0.3s ease",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "15px",
                 }}
-                onMouseEnter={(e) =>
-                  (e.target.style.transform = "translateY(-2px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.transform = "translateY(0)")
-                }
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                style={{
-                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                  border: "none",
-                  padding: "10px 20px",
-                  borderRadius: "20px",
-                  color: "#fff",
-                  fontWeight: "600",
-                  transition: "all 0.3s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.transform = "translateY(-2px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.transform = "translateY(0)")
-                }
-              >
-                Save Changes
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-    </div>
+                <Button
+                  onClick={() => setShowEditModal(false)}
+                  style={{
+                    background: "linear-gradient(135deg, #6c757d, #5a6268)",
+                    border: "none",
+                    padding: "10px 20px",
+                    borderRadius: "20px",
+                    color: "#fff",
+                    fontWeight: "600",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.target.style.transform = "translateY(-2px)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.transform = "translateY(0)")
+                  }
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  style={{
+                    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                    border: "none",
+                    padding: "10px 20px",
+                    borderRadius: "20px",
+                    color: "#fff",
+                    fontWeight: "600",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.target.style.transform = "translateY(-2px)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.transform = "translateY(0)")
+                  }
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      </div> <footer
+        style={{
+          padding: "15px",
+          textAlign: "center",
+          background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+          color: "white",
+          marginTop: "auto",
+          boxShadow: "0 -2px 5px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <p style={{ margin: 0, fontSize: "0.9rem" }}>
+          © 2025 Sales Order Management. All rights reserved.
+        </p>
+      </footer></>
   );
 }
 

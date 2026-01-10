@@ -39,8 +39,10 @@ const EditProductionApproval = ({
         [name]: type === "checkbox" ? checked : value,
       };
 
+      // ✅ NEW LOGIC
       if (name === "stockStatus" && value === "Not in Stock") {
-        newFormData.deliveryDate = "";
+        newFormData.sostatus = "Accounts Approved"; // auto shift
+        newFormData.deliveryDate = ""; // clear date
       }
       return newFormData;
     });

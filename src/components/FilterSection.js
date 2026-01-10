@@ -486,8 +486,8 @@ const FilterSection = ({
             {dispatchFromFilter === "All"
               ? "Dispatch From"
               : dispatchFromFilter === ""
-              ? "Not Specified"
-              : dispatchFromFilter}
+                ? "Not Specified"
+                : dispatchFromFilter}
           </StyledDropdownToggle>
           <StyledDropdownMenu>
             {dispatchFromOptions.map((option) => (
