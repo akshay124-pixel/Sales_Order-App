@@ -1438,6 +1438,7 @@ export const salesPersonlist = [
   { label: "Pitamber Sharma", value: "Pitamber Sharma" },
   { label: "Priya Sharma", value: "Priya Sharma" },
   { label: "Pihu Juneja", value: "Pihu Juneja" },
+  { label: "Payal Narayan", value: "Payal Narayan" },
   { label: "Piyush Chopra", value: "Piyush Chopra" },
   { label: "PS Brar", value: "PS Brar" },
   { label: "Purnendu Kumar", value: "Purnendu Kumar" },
