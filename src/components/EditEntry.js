@@ -63,15 +63,6 @@ const FormSection = styled.div`
   gap: 20px;
 `;
 
-const StyledNumberInput = styled(Form.Control)`
-  &::-webkit-inner-spin-button,
-  &::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  -moz-appearance: textfield;
-`;
-
 const ProductContainer = styled.div`
   border: 1px solid #ced4da;
   border-radius: 8px;
@@ -172,7 +163,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
   const initialUpdateData = useMemo(
     () => ({
       sostatus: "Pending for Approval",
-      productno: "",
       remarks: "",
     }),
     []
@@ -227,29 +217,24 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         gstno: entryToEdit.gstno || "",
         products:
           entryToEdit.products && entryToEdit.products.length > 0
-            ? entryToEdit.products.map((p) => {
-              const isCustom = !Object.keys(productOptions).includes(p.productType);
-              return {
-                productType: isCustom ? "Others" : p.productType || "",
-                customProductType: isCustom ? p.productType : "",
-                size: p.size || "N/A",
-                spec: p.spec || "N/A",
-                qty: p.qty !== undefined ? String(p.qty) : "",
-                unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "",
-                serialNos:
-                  p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
-                modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
-                productCode:
-                  p.productCode?.length > 0 ? p.productCode.join(", ") : "",
-                gst: p.gst || "18",
-                brand: p.brand || "",
-                warranty: p.warranty || "",
-              };
-            })
+            ? entryToEdit.products.map((p) => ({
+              productType: p.productType || "",
+              size: p.size || "N/A",
+              spec: p.spec || "N/A",
+              qty: p.qty !== undefined ? String(p.qty) : "",
+              unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "",
+              serialNos:
+                p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
+              modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+              productCode:
+                p.productCode?.length > 0 ? p.productCode.join(", ") : "",
+              gst: p.gst || "18",
+              brand: p.brand || "",
+              warranty: p.warranty || "",
+            }))
             : [
               {
                 productType: "",
-                customProductType: "",
                 size: "N/A",
                 spec: "N/A",
                 qty: "",
@@ -319,7 +304,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : "",
         remarks: entryToEdit.remarks || "",
         sostatus: entryToEdit.sostatus || "Pending for Approval",
-
         createdBy:
           entryToEdit.createdBy && typeof entryToEdit.createdBy === "object"
             ? entryToEdit.createdBy.username || "Unknown"
@@ -338,7 +322,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       setFormData(newFormData);
       setUpdateData({
         sostatus: entryToEdit.sostatus || "Pending for Approval",
-        productno: entryToEdit.productno || "",
         remarks: entryToEdit.remarks || "",
       });
       reset(newFormData);
@@ -396,7 +379,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         customername: data.customername || null,
         gstno: data.gstno || null,
         products: data.products.map((p) => ({
-          productType: p.productType === "Others" ? p.customProductType : p.productType || undefined,
+          productType: p.productType || undefined,
           size: p.size || "N/A",
           spec: p.spec || "N/A",
           qty: p.qty ? Number(p.qty) : undefined,
@@ -469,7 +452,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
         remarks: data.remarks || null,
         sostatus: data.sostatus || "Pending for Approval",
-
         stockStatus: data.stockStatus || "In Stock",
       };
       const token = localStorage.getItem("token");
@@ -530,7 +512,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     try {
       const submissionData = {
         sostatus: updateData.sostatus || "Pending for Approval",
-        productno: updateData.productno,
         remarks: updateData.remarks || null,
       };
       const token = localStorage.getItem("token");
@@ -588,7 +569,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       ...products,
       {
         productType: "",
-        customProductType: "",
         size: "N/A",
         spec: "N/A",
         qty: "",
@@ -614,7 +594,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         : [
           {
             productType: "",
-            customProductType: "",
             size: "N/A",
             spec: "N/A",
             qty: "",
@@ -636,7 +615,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : [
             {
               productType: "",
-              customProductType: "",
               size: "N/A",
               spec: "N/A",
               qty: "",
@@ -1662,29 +1640,21 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
               debouncedHandleInputChange("contactNo", value);
             }}
-            // Hinglish: Paste event ko handle karte hain mobile numbers ke liye
             onPaste={(e) => {
-              e.preventDefault();
-              const paste = (e.clipboardData || window.clipboardData).getData(
-                "text"
-              );
-              // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
+              e.preventDefault(); // default paste roko
+
+              const paste = (e.clipboardData || window.clipboardData).getData("text");
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+
+              e.target.value = value;
               debouncedHandleInputChange("contactNo", value);
             }}
+
+
             // Hinglish: Keypress event se non-numeric characters ko block karte hain
             onKeyPress={(e) => {
               // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
-              if (
-                !/[0-9]/.test(e.key) &&
-                ![
-                  "Backspace",
-                  "Delete",
-                  "ArrowLeft",
-                  "ArrowRight",
-                  "Tab",
-                ].includes(e.key)
-              ) {
+              if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
                 e.preventDefault();
               }
             }}
@@ -1706,34 +1676,23 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 message: "Alternate contact number must be exactly 10 digits",
               },
             })}
-            onChange={(e) => {
-              // Hinglish: Sirf numbers allow karte hain, spaces aur special characters remove kar dete hain
-              const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
-              debouncedHandleInputChange("alterno", value);
-            }}
-            // Hinglish: Paste event ko handle karte hain mobile numbers ke liye
+
+
             onPaste={(e) => {
-              e.preventDefault();
-              const paste = (e.clipboardData || window.clipboardData).getData(
-                "text"
-              );
-              // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
+              e.preventDefault(); // default paste roko
+
+              const paste = (e.clipboardData || window.clipboardData).getData("text");
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+
+              e.target.value = value;
               debouncedHandleInputChange("alterno", value);
             }}
+
+
             // Hinglish: Keypress event se non-numeric characters ko block karte hain
             onKeyPress={(e) => {
               // Hinglish: Sirf numbers, backspace, delete, arrow keys allow karte hain
-              if (
-                !/[0-9]/.test(e.key) &&
-                ![
-                  "Backspace",
-                  "Delete",
-                  "ArrowLeft",
-                  "ArrowRight",
-                  "Tab",
-                ].includes(e.key)
-              ) {
+              if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
                 e.preventDefault();
               }
             }}
@@ -1899,7 +1858,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="">-- Select Stock Status --</option>
                 <option value="In Stock">In Stock</option>
                 <option value="Not in Stock">Not in Stock</option>
-                <option value="Partial Stock">Partial Stock</option>
               </Form.Select>
             )}
           />
@@ -2056,23 +2014,31 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           Custom Product{" "}
                         </Form.Label>
                         <Form.Control
-                          {...register(`products.${index}.customProductType`, {
+                          {...register(`products.${index}.productType`, {
                             required: isOthers
                               ? "Custom Product Type is required"
                               : false,
                           })}
+                          value={
+                            isOthers &&
+                              !Object.keys(productOptions).includes(
+                                watch(`products.${index}.productType`)
+                              )
+                              ? watch(`products.${index}.productType`)
+                              : ""
+                          }
                           onChange={(e) => {
                             setValue(
-                              `products.${index}.customProductType`,
+                              `products.${index}.productType`,
                               e.target.value
                             );
                             debouncedHandleInputChange(
-                              `products.${index}.customProductType`,
+                              `products.${index}.productType`,
                               e.target.value,
                               index
                             );
                           }}
-                          isInvalid={!!errors.products?.[index]?.customProductType}
+                          isInvalid={!!errors.products?.[index]?.productType}
                           placeholder="e.g., Projector, Scanner, Webcam"
                           style={{
                             width: "100%",
@@ -2085,7 +2051,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           }}
                         />
                         <Form.Control.Feedback type="invalid">
-                          {errors.products?.[index]?.customProductType?.message}
+                          {errors.products?.[index]?.productType?.message}
                         </Form.Control.Feedback>
                       </Form.Group>
                     )}
@@ -2261,34 +2227,23 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                       >
                         Quantity <span style={{ color: "#f43f5e" }}>*</span>
                       </Form.Label>
-                      <StyledNumberInput
-                        type="text"
-                        placeholder="e.g.100"
-                        inputMode="numeric"
-                        autoComplete="off"
-                        onKeyDown={(e) => {
-                          // Allow only digits & control keys
-                          if (
-                            !/[0-9]/.test(e.key) &&
-                            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
-                          ) {
-                            e.preventDefault();
-                          }
-                        }}
-                        onPaste={(e) => {
-                          e.preventDefault();
-                          const pasted = e.clipboardData.getData("text").replace(/[^0-9]/g, "");
-                          debouncedHandleInputChange(
-                            `products.${index}.qty`,
-                            pasted,
-                            index
-                          );
-                        }}
+                      <Form.Control
+                        type="number"
                         {...register(`products.${index}.qty`, {
                           required: "Quantity is required",
-                          validate: (value) =>
-                            /^[1-9][0-9]*$/.test(value) || "Only positive numbers allowed",
+                          min: {
+                            value: 1,
+                            message: "Quantity must be at least 1",
+                          },
                         })}
+                        onChange={(e) =>
+                          debouncedHandleInputChange(
+                            `products.${index}.qty`,
+                            e.target.value,
+                            index
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.qty}
                         style={{
                           width: "100%",
                           padding: "0.75rem",
@@ -2298,18 +2253,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           fontSize: "1rem",
                           color: "#1e293b",
                         }}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9]/g, "");
-                          e.target.value = value;
-                          debouncedHandleInputChange(
-                            `products.${index}.qty`,
-                            value,
-                            index
-                          );
-                        }}
-                        isInvalid={!!errors.products?.[index]?.qty}
                       />
-
                       <Form.Control.Feedback type="invalid">
                         {errors.products?.[index]?.qty?.message}
                       </Form.Control.Feedback>
@@ -2328,40 +2272,24 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                       >
                         Unit Price <span style={{ color: "#f43f5e" }}>*</span>
                       </Form.Label>
-                      <StyledNumberInput
-                        type="text"
-                        placeholder="e.g.100.0"
-                        inputMode="decimal"
-                        autoComplete="off"
-                        onKeyDown={(e) => {
-                          if (
-                            !/[0-9.]/.test(e.key) &&
-                            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
-                          ) {
-                            e.preventDefault();
-                          }
-                          // Prevent multiple dots
-                          if (e.key === "." && e.target.value.includes(".")) {
-                            e.preventDefault();
-                          }
-                        }}
-                        onPaste={(e) => {
-                          e.preventDefault();
-                          let pasted = e.clipboardData.getData("text");
-                          pasted = pasted.replace(/[^0-9.]/g, "");
-                          if ((pasted.match(/\./g) || []).length > 1) return;
-                          debouncedHandleInputChange(
-                            `products.${index}.unitPrice`,
-                            pasted,
-                            index
-                          );
-                        }}
+                      <Form.Control
+                        type="number"
+                        step="0.01"
                         {...register(`products.${index}.unitPrice`, {
                           required: "Unit Price is required",
-                          validate: (value) =>
-                            /^\d+(\.\d{1,2})?$/.test(value) ||
-                            "Only numbers with up to 2 decimals allowed",
+                          min: {
+                            value: 0,
+                            message: "Unit Price cannot be negative",
+                          },
                         })}
+                        onChange={(e) =>
+                          debouncedHandleInputChange(
+                            `products.${index}.unitPrice`,
+                            e.target.value,
+                            index
+                          )
+                        }
+                        isInvalid={!!errors.products?.[index]?.unitPrice}
                         style={{
                           width: "100%",
                           padding: "0.75rem",
@@ -2371,22 +2299,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           fontSize: "1rem",
                           color: "#1e293b",
                         }}
-                        onChange={(e) => {
-                          let value = e.target.value;
-
-                          // allow only 2 decimal places
-                          if (!/^\d*\.?\d{0,2}$/.test(value)) return;
-
-                          e.target.value = value;
-                          debouncedHandleInputChange(
-                            `products.${index}.unitPrice`,
-                            value,
-                            index
-                          );
-                        }}
-                        isInvalid={!!errors.products?.[index]?.unitPrice}
                       />
-
                       <Form.Control.Feedback type="invalid">
                         {errors.products?.[index]?.unitPrice?.message}
                       </Form.Control.Feedback>
@@ -2717,11 +2630,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point and max 2 decimal places
-              const parts = value.split(".");
+              const parts = value.split('.');
               if (parts.length > 2) {
-                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
               } else if (parts.length === 2 && parts[1].length > 2) {
-                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
               } else {
                 e.target.value = value;
               }
@@ -2748,9 +2661,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split(".");
+              const parts = value.split('.');
               if (parts.length > 2) {
-                e.target.value = parts[0] + "." + parts.slice(1).join("");
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
               } else {
                 e.target.value = value;
               }
@@ -2789,11 +2702,26 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="neftTransactionId">
           <Form.Label>📄 NEFT/RTGS Transaction ID</Form.Label>
           <Form.Control
-            type="text"
-            {...register("neftTransactionId")}
+            type="tel"
+            {...register("neftTransactionId", {
+              pattern: {
+                value: /^\d+$/,
+                message: "Transaction ID must contain only numbers",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("neftTransactionId", value);
+            }}
+            isInvalid={!!errors.neftTransactionId}
             disabled={paymentMethod !== "NEFT" && paymentMethod !== "RTGS"}
-            placeholder="Enter Transaction ID"
+            placeholder="Enter numbers only"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.neftTransactionId?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="chequeId">
           <Form.Label>📄 Cheque ID</Form.Label>
@@ -2833,9 +2761,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split(".");
+              const parts = value.split('.');
               if (parts.length > 2) {
-                e.target.value = parts[0] + "." + parts.slice(1).join("");
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
               } else {
                 e.target.value = value;
               }
@@ -2911,9 +2839,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split(".");
+              const parts = value.split('.');
               if (parts.length > 2) {
-                e.target.value = parts[0] + "." + parts.slice(1).join("");
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
               } else {
                 e.target.value = value;
               }
@@ -2962,11 +2890,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point and max 2 decimal places
-              const parts = value.split(".");
+              const parts = value.split('.');
               if (parts.length > 2) {
-                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
               } else if (parts.length === 2 && parts[1].length > 2) {
-                e.target.value = parts[0] + "." + parts[1].slice(0, 2);
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
               } else {
                 e.target.value = value;
               }
@@ -3025,9 +2953,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               // Only allow numbers and decimal point
               const value = e.target.value.replace(/[^0-9.]/g, "");
               // Ensure only one decimal point
-              const parts = value.split(".");
+              const parts = value.split('.');
               if (parts.length > 2) {
-                e.target.value = parts[0] + "." + parts.slice(1).join("");
+                e.target.value = parts[0] + '.' + parts.slice(1).join('');
               } else {
                 e.target.value = value;
               }
@@ -3267,13 +3195,25 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="billNumber">
           <Form.Label>📄 Bill Number</Form.Label>
           <Form.Control
-            type="text"
-            {...register("billNumber")}
-            onChange={(e) =>
-              debouncedHandleInputChange("billNumber", e.target.value)
-            }
-            placeholder="Enter bill number"
+            type="tel"
+            {...register("billNumber", {
+              pattern: {
+                value: /^\d+$/,
+                message: "Bill Number must contain only numbers",
+              },
+            })}
+            onChange={(e) => {
+              // Only allow numbers
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              e.target.value = value;
+              debouncedHandleInputChange("billNumber", value);
+            }}
+            isInvalid={!!errors.billNumber}
+            placeholder="Enter numbers only"
           />
+          <Form.Control.Feedback type="invalid">
+            {errors.billNumber?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="billStatus">
           <Form.Label>📋 Bill Status</Form.Label>
@@ -3462,18 +3402,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             </option>
           </Form.Select>
         </Form.Group>
-        {(userRole === "Admin" || userRole === "SuperAdmin") && (
-          <Form.Group controlId="productno">
-            <Form.Label>📦 Product Code</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter Product No"
-              value={updateData.productno}
-              onChange={handleUpdateInputChange}
-              name="productno"
-            />
-          </Form.Group>
-        )}
         <Form.Group controlId="remarks">
           <Form.Label>✏️ Remarks</Form.Label>
           <Form.Control
