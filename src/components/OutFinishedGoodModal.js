@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { getDirtyValues } from "../utils/formUtils"; // Import Diff Utility
 import { Modal, Button, Input, Select, Collapse } from "antd";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -19,12 +20,15 @@ const OutFinishedGoodModal = ({
     transporterDetails: "",
     billNumber: "",
     dispatchDate: new Date().toISOString().split("T")[0],
+    stamp: "",
     deliveredDate: "",
     docketNo: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
+    dispatchStatus: "Not Dispatched",
     products: [],
   });
+  const [originalFormData, setOriginalFormData] = useState({}); // Capture original state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -59,7 +63,7 @@ const OutFinishedGoodModal = ({
       const deliveredDateValue =
         initialData?.deliveredDate ?? entryToEdit?.deliveredDate ?? "";
 
-      setFormData({
+      const initializedData = {
         dispatchFrom: initialData.dispatchFrom || "",
         transporter: initialData.transporter || "",
         transporterDetails: initialData.transporterDetails || "",
@@ -71,7 +75,7 @@ const OutFinishedGoodModal = ({
         deliveredDate: deliveredDateValue
           ? new Date(deliveredDateValue).toISOString().split("T")[0]
           : "",
-
+        stamp: initialData.stamp || "Not Received",
         docketNo: initialData.docketNo || "",
         actualFreight:
           initialData.actualFreight ??
@@ -79,13 +83,25 @@ const OutFinishedGoodModal = ({
           "",
         dispatchStatus: validDispatchStatus,
         products,
+      };
+
+      setFormData(initializedData);
+
+      // PATCH FIX: Ensure originalFormData reflects the TRUE database state (empty date)
+      // so that the default "Today" in formData counts as a change.
+      setOriginalFormData({
+        ...initializedData,
+        dispatchDate: initialData.dispatchDate
+          ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
+          : "",
       });
 
 
     }
   }, [initialData, entryToEdit]);
 
-  const handleChange = (e) => {
+  // PERFORMANCE: Stable callback references prevent unnecessary re-renders
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     if (name === "actualFreight") {
       if (value === "" || (!isNaN(value) && Number(value) >= 0)) {
@@ -94,9 +110,9 @@ const OutFinishedGoodModal = ({
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-  };
+  }, []);
 
-  const handleProductChange = (index, field, value) => {
+  const handleProductChange = useCallback((index, field, value) => {
     setFormData((prev) => {
       const updatedProducts = [...prev.products];
       if (["serialNos", "modelNos"].includes(field)) {
@@ -115,19 +131,19 @@ const OutFinishedGoodModal = ({
       }
       return { ...prev, products: updatedProducts };
     });
-  };
+  }, []);
 
-  const handleDispatchFromChange = (value) => {
+  const handleDispatchFromChange = useCallback((value) => {
     setFormData((prev) => ({ ...prev, dispatchFrom: value }));
-  };
+  }, []);
 
-  const handleTransporterChange = (value) => {
+  const handleTransporterChange = useCallback((value) => {
     setFormData((prev) => ({ ...prev, transporter: value }));
-  };
+  }, []);
 
-  const handleDispatchStatusChange = (value) => {
+  const handleDispatchStatusChange = useCallback((value) => {
     setFormData((prev) => ({ ...prev, dispatchStatus: value }));
-  };
+  }, []);
 
   const handleSubmit = async () => {
     if (!showConfirm) {
@@ -167,6 +183,7 @@ const OutFinishedGoodModal = ({
             ? Number(formData.actualFreight)
             : undefined,
         dispatchStatus: formData.dispatchStatus || undefined,
+        stamp: formData.stamp,
         products: formData.products.map((product) => ({
           productType: product.productType || undefined,
           serialNos: product.serialNos.length ? product.serialNos : undefined,
@@ -178,10 +195,36 @@ const OutFinishedGoodModal = ({
         })),
       };
 
-      const response = await axios.put(
+      // ---------------------------------------------------------
+      // PATCH REFACTOR: Only send changed fields
+      // ---------------------------------------------------------
+      const dirtyValues = getDirtyValues(originalFormData, formData);
+
+      // SAFEGUARD: Force include dispatchDate if it was auto-populated (Today) vs empty DB
+      if (formData.dispatchDate && !originalFormData.dispatchDate) {
+        dirtyValues.dispatchDate = formData.dispatchDate;
+      }
+
+      if (Object.keys(dirtyValues).length === 0) {
+        toast.info("No changes to save.");
+        setLoading(false);
+        setShowConfirm(false);
+        return;
+      }
+
+      // Filter submissionData to only include dirty fields
+      const finalPayload = {};
+      Object.keys(dirtyValues).forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(submissionData, key)) {
+          finalPayload[key] = submissionData[key];
+        }
+      });
+
+      const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
-        submissionData,
+        finalPayload,
         {
+
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -384,7 +427,16 @@ const OutFinishedGoodModal = ({
               display: "block",
             }}
           >
-            Dispatch Status
+            Dispatch Status<div style={{ marginTop: "0px", paddingLeft: "0px" }}>
+              <small
+                style={{
+                  color: "#888",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Delivered available after Signed Stamp received.
+              </small>
+            </div>
           </label>
           <Select
             key={
@@ -406,11 +458,40 @@ const OutFinishedGoodModal = ({
               "billing complete" && (
                 <>
                   <Option value="Dispatched">Dispatched</Option>
-                  <Option value="Delivered">Delivered</Option>
+
+                  {formData.stamp === "Received" && (
+                    <Option value="Delivered">Delivered</Option>
+                  )}
                 </>
               )}
+
           </Select>
         </div>
+        <div>
+          <label
+            style={{
+              fontSize: "1rem",
+              fontWeight: "600",
+              color: "#333",
+              marginBottom: "5px",
+              display: "block",
+            }}
+          >
+            Signed Stamp Receiving
+          </label>
+          <Select
+            key={(entryToEdit?.stamp || "Not Received") + formData.stamp}
+            value={formData.stamp || "Not Received"}
+            onChange={(value) => setFormData({ ...formData, stamp: value })}
+            style={{ width: "100%", borderRadius: "8px" }}
+            disabled={loading}
+          >
+            <Option value="Not Received">Not Received</Option>
+            <Option value="Received">Received</Option>
+
+          </Select>
+        </div>
+
         {showProductFields && (
           <div>
             <Collapse

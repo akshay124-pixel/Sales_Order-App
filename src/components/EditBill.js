@@ -22,9 +22,7 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDateChange = (date) => {
-    setFormData((prev) => ({ ...prev, invoiceDate: date }));
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +34,7 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
           ? formData.invoiceDate.toISOString()
           : null,
       };
-      const response = await axios.put(
+      const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -185,13 +183,19 @@ const EditBill = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
             <div className="custom-datepicker">
               <DatePicker
                 selected={formData.invoiceDate}
-                onChange={handleDateChange}
+                onChange={(date) =>
+                  setFormData((prev) => ({ ...prev, invoiceDate: date }))
+                }
                 className="form-control"
                 dateFormat="dd/MM/yyyy"
                 placeholderText="Select invoice date"
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
               />
             </div>
           </Form.Group>
+
           <Form.Group className="mb-3">
             <Form.Label style={{ fontWeight: "600", color: "#333" }}>
               Product Code <span style={{ color: "red" }}>*</span>

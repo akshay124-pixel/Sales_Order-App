@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
-import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
+import { Button, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import ViewEntry from "./ViewEntry";
+import EditAccountForm from "./EditAccountForm";
 import io from "socket.io-client";
 import debounce from "lodash/debounce";
 // Check Staging
@@ -19,18 +20,6 @@ function Accounts() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
-  const [formData, setFormData] = useState({
-    total: "",
-    paymentReceived: "Not Received",
-    remarksByAccounts: "",
-    installationStatus: "Pending",
-    paymentCollected: "",
-    paymentMethod: "",
-    paymentDue: "",
-    neftTransactionId: "",
-    chequeId: "",
-  });
-  const [errors, setErrors] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [startDate, setStartDate] = useState("");
@@ -70,15 +59,7 @@ function Accounts() {
     }
   }, []);
 
-  useEffect(() => {
-    if (formData.paymentReceived === "Received") {
-      setFormData((prev) => ({
-        ...prev,
-        paymentDue: "0",
-        paymentCollected: Number(prev.total || 0).toFixed(2),
-      }));
-    }
-  }, [formData.paymentReceived]);
+
 
   useEffect(() => {
     fetchAccountsOrders();
@@ -271,146 +252,35 @@ function Accounts() {
 
   const handleEdit = useCallback((order) => {
     setEditOrder(order);
-    setFormData({
-      total: order.total || "",
-      paymentReceived: order.paymentReceived || "Not Received",
-      remarksByAccounts: order.remarksByAccounts || "",
-      installationStatus: order.installationStatus || "Pending",
-      paymentCollected:
-        order.paymentReceived === "Received"
-          ? Number(order.total || 0).toFixed(2)
-          : order.paymentCollected || "",
-      paymentMethod: order.paymentMethod || "",
-      paymentDue:
-        order.paymentReceived === "Received" ? "0" : order.paymentDue || "",
-      neftTransactionId: order.neftTransactionId || "",
-      chequeId: order.chequeId || "",
-    });
-    setErrors({});
     setShowEditModal(true);
   }, []);
 
-  const validateForm = () => {
-    const newErrors = {};
+  const handleOrderUpdated = useCallback((updatedOrder) => {
+    const meetsAccounts = (doc) =>
+      doc?.installationStatus === "Completed" &&
+      (doc?.paymentReceived || "Not Received") !== "Received";
 
-    if (
-      !formData.remarksByAccounts ||
-      formData.remarksByAccounts.trim() === ""
-    ) {
-      newErrors.remarksByAccounts = "Remarks are required";
-    }
-    if (
-      formData.paymentMethod &&
-      !["Cash", "NEFT", "RTGS", "Cheque", ""].includes(formData.paymentMethod)
-    ) {
-      newErrors.paymentMethod = "Invalid Payment Method";
-    }
-    if (
-      formData.paymentMethod === "NEFT" &&
-      (!formData.neftTransactionId || formData.neftTransactionId.trim() === "")
-    ) {
-      newErrors.neftTransactionId =
-        "NEFT Transaction ID is required for NEFT payments";
-    }
-    if (
-      formData.paymentMethod === "Cheque" &&
-      (!formData.chequeId || formData.chequeId.trim() === "")
-    ) {
-      newErrors.chequeId = "Cheque ID is required for Cheque payments";
-    }
-    if (
-      formData.paymentReceived === "Received" &&
-      (!formData.paymentCollected || Number(formData.paymentCollected) <= 0)
-    ) {
-      newErrors.paymentCollected =
-        "Payment Collected must be greater than 0 when Payment Received is set";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setOrders((prev) => {
+      const id = String(updatedOrder._id);
+      const include = meetsAccounts(updatedOrder);
+      const idx = prev.findIndex((o) => String(o._id) === id);
 
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    try {
-      const submissionData = {
-        total: Number(formData.total) || undefined,
-        paymentReceived: formData.paymentReceived,
-        remarksByAccounts: formData.remarksByAccounts,
-        paymentCollected: formData.paymentCollected
-          ? Number(formData.paymentCollected)
-          : undefined,
-        paymentMethod: formData.paymentMethod || undefined,
-        paymentDue: formData.paymentDue
-          ? Number(formData.paymentDue)
-          : undefined,
-        neftTransactionId: formData.neftTransactionId || undefined,
-        chequeId: formData.chequeId || undefined,
-        installationStatus: formData.installationStatus || undefined,
-      };
-
-      const response = await axios.put(
-        `${process.env.REACT_APP_URL}/api/edit/${editOrder?._id}`,
-        submissionData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (response.data.success) {
-        const updatedOrder = response.data.data;
-        const meetsAccounts = (doc) =>
-          doc?.installationStatus === "Completed" &&
-          (doc?.paymentReceived || "Not Received") !== "Received";
-        setOrders((prev) => {
-          const id = String(updatedOrder._id);
-          const include = meetsAccounts(updatedOrder);
-          const idx = prev.findIndex((o) => String(o._id) === id);
-          if (!include) {
-            return idx === -1 ? prev : prev.filter((o) => String(o._id) !== id);
-          }
-          if (idx === -1) return [updatedOrder, ...prev];
-          const next = prev.slice();
-          next[idx] = updatedOrder;
-          return next;
-        });
-        setShowEditModal(false);
-        toast.success("Order updated successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      } else {
-        throw new Error(response.data.message || "Failed to update order");
-      }
-    } catch (error) {
-      console.error("Error updating order:", error);
-
-      let errorMessage = "Something went wrong while updating the order.";
-
-      if (error.response) {
-        if (error.response.status === 400) {
-          errorMessage = "Invalid data provided. Please check your inputs.";
-        } else if (error.response.status === 401) {
-          errorMessage = "Your session has expired. Please log in again.";
-        } else if (error.response.status === 404) {
-          errorMessage = "The order you are trying to update was not found.";
-        } else if (error.response.status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage = error.response.data?.message || errorMessage;
-        }
-      } else if (error.request) {
-        errorMessage = "Unable to connect to the server. Check your internet.";
+      if (!include) {
+        // If it no longer meets criteria, remove it
+        return idx === -1 ? prev : prev.filter((o) => String(o._id) !== id);
       }
 
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000,
-      });
-    }
-  };
+      // If it's new or exists, update/add it
+      if (idx === -1) return [updatedOrder, ...prev];
+
+      const next = prev.slice();
+      // Only update if currently in the list
+      next[idx] = updatedOrder;
+      return next;
+    });
+  }, []);
+
+
 
   const exportToExcel = useCallback(() => {
     const exportData = filteredOrders.map((order) => {
@@ -1149,411 +1019,12 @@ function Accounts() {
             <span>Total Pending: {totalPending}</span>
           </div>
           {tableContent}
-          <Modal
+          <EditAccountForm
             show={showEditModal}
             onHide={() => setShowEditModal(false)}
-            centered
-            backdrop="static"
-          >
-            <Modal.Header
-              closeButton
-              style={{
-                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                color: "#fff",
-                borderBottom: "none",
-                padding: "20px",
-              }}
-            >
-              <Modal.Title
-                style={{
-                  fontWeight: "700",
-                  fontSize: "1.5rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                }}
-              >
-                Edit Payment Collection
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body
-              style={{
-                padding: "30px",
-                background: "#fff",
-                borderRadius: "0 0 15px 15px",
-                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <Form onSubmit={handleEditSubmit}>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Total Payment
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    step="0.01"
-                    value={formData.total}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        total: e.target.value,
-                      })
-                    }
-                    placeholder="Enter total amount"
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.total
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  />
-                  {errors.total && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.total}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Payment Collected
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    step="0.01"
-                    value={formData.paymentCollected}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        paymentCollected: e.target.value,
-                      })
-                    }
-                    placeholder="Enter payment collected"
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.paymentCollected
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    disabled={formData.paymentReceived === "Received"}
-                  />
-                  {errors.paymentCollected && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.paymentCollected}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Payment Method
-                  </Form.Label>
-                  <Form.Select
-                    value={formData.paymentMethod}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        paymentMethod: e.target.value,
-                      })
-                    }
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.paymentMethod
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  >
-                    <option value="">-- Select Payment Method --</option>
-                    <option value="Cash">Cash</option>
-                    <option value="NEFT">NEFT</option>
-                    <option value="RTGS">RTGS</option>
-                    <option value="Cheque">Cheque</option>
-                  </Form.Select>
-                  {errors.paymentMethod && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.paymentMethod}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Payment Due
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    step="0.01"
-                    value={formData.paymentDue}
-                    onChange={(e) =>
-                      setFormData({ ...formData, paymentDue: e.target.value })
-                    }
-                    placeholder="Enter payment due"
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.paymentDue
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    disabled={formData.paymentReceived === "Received"}
-                  />
-                  {errors.paymentDue && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.paymentDue}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    NEFT Transaction ID
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.neftTransactionId}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        neftTransactionId: e.target.value,
-                      })
-                    }
-                    placeholder="Enter NEFT transaction ID"
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.neftTransactionId
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    disabled={formData.paymentMethod !== "NEFT"}
-                  />
-                  {errors.neftTransactionId && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.neftTransactionId}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Cheque ID
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.chequeId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, chequeId: e.target.value })
-                    }
-                    placeholder="Enter cheque ID"
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.chequeId
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    disabled={formData.paymentMethod !== "Cheque"}
-                  />
-                  {errors.chequeId && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.chequeId}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Payment Received
-                  </Form.Label>
-                  <Form.Select
-                    value={formData.paymentReceived}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        paymentReceived: e.target.value,
-                      })
-                    }
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  >
-                    <option value="Not Received">Not Received</option>
-                    <option value="Received">Received</option>
-                  </Form.Select>
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Remarks by Accounts <span style={{ color: "red" }}>*</span>
-                  </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={formData.remarksByAccounts}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        remarksByAccounts: e.target.value,
-                      })
-                    }
-                    placeholder="Enter remarks"
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.remarksByAccounts
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                    required
-                  />
-                  {errors.remarksByAccounts && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.remarksByAccounts}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                    Installation Status
-                  </Form.Label>
-                  <Form.Select
-                    value={formData.installationStatus}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        installationStatus: e.target.value,
-                      })
-                    }
-                    style={{
-                      borderRadius: "10px",
-                      border: errors.installationStatus
-                        ? "1px solid red"
-                        : "1px solid #ced4da",
-                      padding: "12px",
-                      fontSize: "1rem",
-                      transition: "all 0.3s ease",
-                    }}
-                    onFocus={(e) =>
-                    (e.target.style.boxShadow =
-                      "0 0 10px rgba(37, 117, 252, 0.5)")
-                    }
-                    onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Failed">Failed</option>
-                  </Form.Select>
-                  {errors.installationStatus && (
-                    <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                      {errors.installationStatus}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: "15px",
-                  }}
-                >
-                  <Button
-                    onClick={() => setShowEditModal(false)}
-                    style={{
-                      background: "linear-gradient(135deg, #6c757d, #5a6268)",
-                      border: "none",
-                      padding: "10px 20px",
-                      borderRadius: "20px",
-                      color: "#fff",
-                      fontWeight: "600",
-                      transition: "all 0.3s ease",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.target.style.transform = "translateY(-2px)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.target.style.transform = "translateY(0)")
-                    }
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    style={{
-                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                      border: "none",
-                      padding: "10px 20px",
-                      borderRadius: "20px",
-                      color: "#fff",
-                      fontWeight: "600",
-                      transition: "all 0.3s ease",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.target.style.transform = "translateY(-2px)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.target.style.transform = "translateY(0)")
-                    }
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </Form>
-            </Modal.Body>
-          </Modal>
+            order={editOrder}
+            onOrderUpdated={handleOrderUpdated}
+          />
         </div>
       </div>
       <footer

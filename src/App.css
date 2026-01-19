@@ -528,20 +528,68 @@
 /* Footer End */
 
 /* Install */
- .total-results {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #333;
-   
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  
+.total-results {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
 /* End Install */
+/* Install Email Button */
+.mail-btn {
+  transition: transform 0.3s ease;
+}
+
+.mail-btn:hover {
+  transform: scale(1.1);
+}
+
+.mail-btn.loading {
+  pointer-events: none;
+}
+
+.loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ends Install Email Button */
+/* Install Email Spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Ends Install Email Spinner */

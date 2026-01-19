@@ -1852,7 +1852,7 @@ function AddEntry({ onSubmit, onClose }) {
                   label: "Installation Charges Status",
                   name: "installchargesstatus",
                   type: "select",
-                  options: ["To Pay", "Including", "Extra"],
+                  options: ["To Pay", "Including", "Extra", "Not in Scope"],
                   placeholder: "Select status",
                 },
               ].map((field) => (

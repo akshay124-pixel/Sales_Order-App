@@ -459,7 +459,7 @@ const Production = () => {
     const submitData = { ...formData, products };
     delete submitData.productUnits;
     try {
-      const response = await axios.put(
+      const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${editOrder?._id}`,
         submitData,
         {

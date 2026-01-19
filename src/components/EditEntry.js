@@ -11,6 +11,7 @@ import { Reportinglist } from "./Options";
 import { productOptions } from "./Options";
 import { printerOptions } from "./Options";
 import { productCode } from "./Options";
+import { getDirtyValues } from "../utils/formUtils"; // Import the Diff Utility
 
 const StyledModal = styled(Modal)`
   .modal-content {
@@ -197,6 +198,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       completionStatus: "In Progress",
       fulfillmentDate: "",
       remarks: "",
+      stamp: "Not Received",
+      installationReport: "No",
       stockStatus: "In Stock",
       sostatus: "Pending for Approval",
       createdBy: "",
@@ -215,7 +218,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     []
   );
 
-  const [formData, setFormData] = useState(initialFormData);
+  const [, setFormData] = useState(initialFormData);
+  const [originalFormData, setOriginalFormData] = useState(initialFormData); // Store original state for diffing
   const [updateData, setUpdateData] = useState(initialUpdateData);
   const [view, setView] = useState("options");
   const [loading, setLoading] = useState(false);
@@ -234,6 +238,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     reset,
     watch,
     setValue,
+    getValues,
   } = useForm({
     mode: "onChange",
     defaultValues: initialFormData,
@@ -306,6 +311,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         paymentMethod: entryToEdit.paymentMethod || "",
         paymentDue: entryToEdit.paymentDue || "",
         paymentTerms: entryToEdit.paymentTerms || "",
+        stamp: entryToEdit.stamp || "Not Received",
+        installationReport: entryToEdit.installationReport || "No",
         installationeng: entryToEdit.installationeng || "",
         creditDays: entryToEdit.creditDays || "",
         neftTransactionId: entryToEdit.neftTransactionId || "",
@@ -375,29 +382,21 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
       };
       setFormData(newFormData);
+      setOriginalFormData(newFormData); // Capture baseline for diffing
       setUpdateData({
         sostatus: entryToEdit.sostatus || "Pending for Approval",
         productno: entryToEdit.productno || "",
         remarks: entryToEdit.remarks || "",
       });
       reset(newFormData);
-      setView("options");
-      setError(null);
-      setShowConfirm(false);
     }
+    setView("options");
+    setError(null);
+    setShowConfirm(false);
   }, [isOpen, entryToEdit, reset]);
 
-  useEffect(() => {
-    // Deterministic business rule for Production Status
-    const nextStatus = evaluateProductionStatus(dispatchFrom, fulfillingStatus);
-
-    if (nextStatus !== fulfillingStatus) {
-      setValue("fulfillingStatus", nextStatus, {
-        shouldValidate: true,
-        shouldDirty: true
-      });
-    }
-  }, [dispatchFrom, setValue, fulfillingStatus]);
+  // Business Rule: Production Status Automation removed from useEffect to prevent reset on load.
+  // Logic is now handled in dispatchFrom onChange event.
 
   const debouncedHandleInputChange = useCallback(
     debounce((name, value, index) => {
@@ -494,6 +493,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         installationStatus: data.installationStatus || "Pending",
         remarksByInstallation: data.remarksByInstallation || null,
         dispatchStatus: data.dispatchStatus || "Not Dispatched",
+        stamp: data.stamp || null,
+        installationReport: data.installationReport || null,
         salesPerson: data.salesPerson || null,
         report: data.report || null,
         company: data.company || "Promark",
@@ -505,7 +506,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         billingAddress: data.billingAddress || null,
         invoiceNo: data.invoiceNo || null,
         invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : null,
-        fulfillingStatus: data.fulfillingStatus || "Pending",
+        fulfillingStatus:
+          entryToEdit.fulfillingStatus === "Fulfilled"
+            ? undefined
+            : data.fulfillingStatus || "Pending",
         remarksByProduction: data.remarksByProduction || null,
         remarksByAccounts: data.remarksByAccounts || null,
         paymentReceived: data.paymentReceived || "Not Received",
@@ -523,10 +527,34 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
         stockStatus: data.stockStatus || "In Stock",
       };
+
+      // ---------------------------------------------------------
+      // PATCH REFACTOR: Only send changed fields
+      // ---------------------------------------------------------
+      const dirtyFieldsMap = getDirtyValues(originalFormData, data); // Calculate changed fields
+      const dirtyKeys = Object.keys(dirtyFieldsMap);
+
+      if (dirtyKeys.length === 0) {
+        toast.info("No changes detected.");
+        setLoading(false);
+        setShowConfirm(false);
+        return;
+      }
+
+      // Construct final payload by picking only dirty keys from the processed submissionData
+      const finalPayload = {};
+      dirtyKeys.forEach((key) => {
+        // If the key exists in submissionData, add it.
+        // We use submissionData because it has the correct type conversions (Dates, Numbers, mapped Arrays)
+        if (Object.prototype.hasOwnProperty.call(submissionData, key)) {
+          finalPayload[key] = submissionData[key];
+        }
+      });
+
       const token = localStorage.getItem("token");
-      const response = await axios.put(
+      const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
-        submissionData,
+        finalPayload, // Send filtered payload
         {
           headers: {
             "Content-Type": "application/json",
@@ -585,7 +613,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         remarks: updateData.remarks || null,
       };
       const token = localStorage.getItem("token");
-      const response = await axios.put(
+      const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         submissionData,
         {
@@ -1614,26 +1642,45 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         </Form.Group>
         <Form.Group controlId="dispatchFrom">
           <Form.Label>📍 Dispatch From</Form.Label>
-          <Form.Select
-            {...register("dispatchFrom")}
-            onChange={(e) =>
-              debouncedHandleInputChange("dispatchFrom", e.target.value)
-            }
-            isInvalid={!!errors.dispatchFrom}
-            aria-label="Dispatch From"
-          >
-            <option value="" disabled>
-              -- Select Dispatch Location --
-            </option>
-            <option value="Patna">Patna</option>
-            <option value="Bareilly">Bareilly</option>
-            <option value="Morinda">Morinda</option>
-            <option value="Ranchi">Ranchi</option>
-            <option value="Lucknow">Lucknow</option>
-            <option value="Delhi">Delhi</option>
-            <option value="Jaipur">Jaipur</option>
-            <option value="Rajasthan">Rajasthan</option>
-          </Form.Select>
+          <Controller
+            name="dispatchFrom"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange("dispatchFrom", e.target.value);
+
+                  // Business Rule: Update Production Status when Dispatch location changes
+                  const newVal = e.target.value;
+                  const currentStatus = getValues("fulfillingStatus");
+                  const nextStatus = evaluateProductionStatus(newVal, currentStatus);
+
+                  if (nextStatus !== currentStatus) {
+                    setValue("fulfillingStatus", nextStatus, {
+                      shouldValidate: true,
+                      shouldDirty: true
+                    });
+                  }
+                }}
+                isInvalid={!!errors.dispatchFrom}
+                aria-label="Dispatch From"
+              >
+                <option value="" disabled>
+                  -- Select Dispatch Location --
+                </option>
+                <option value="Patna">Patna</option>
+                <option value="Bareilly">Bareilly</option>
+                <option value="Morinda">Morinda</option>
+                <option value="Ranchi">Ranchi</option>
+                <option value="Lucknow">Lucknow</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Jaipur">Jaipur</option>
+                <option value="Rajasthan">Rajasthan</option>
+              </Form.Select>
+            )}
+          />
         </Form.Group>
         <Form.Group controlId="dispatchDate">
           <Form.Label>📅 Dispatch Date</Form.Label>
@@ -2948,6 +2995,49 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.creditDays?.message}
           </Form.Control.Feedback>
         </Form.Group>
+        <Form.Group controlId="stamp">
+          <Form.Label>📦 Signed Stamp Receiving</Form.Label>
+          <Form.Select
+            {...register("stamp")}
+            onChange={(e) =>
+              debouncedHandleInputChange("stamp", e.target.value)
+            }
+            isInvalid={!!errors.stamp}
+            defaultValue="Not Received"
+          >
+            <option value="Received">Received</option>
+            <option value="Not Received">Not Received</option>
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            {errors.stamp?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="installationReport">
+          <Form.Label>📝 Installation Report</Form.Label>
+          <Controller
+            name="installationReport"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange(
+                    "installationReport",
+                    e.target.value
+                  );
+                }}
+                isInvalid={!!errors.installationReport}
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </Form.Select>
+            )}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.installationReport?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
@@ -3043,6 +3133,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="To Pay">To Pay</option>
             <option value="Including">Including</option>
             <option value="Extra">Extra</option>
+            <option value="Not in Scope">Not in Scope</option>
           </Form.Select>
 
           <Form.Control.Feedback type="invalid">
@@ -3148,11 +3239,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 isInvalid={!!errors.dispatchStatus}
               >
                 <option value="Not Dispatched">Not Dispatched</option>
+                <option value="Docket Awaited Dispatched">Docket Awaited Dispatched</option>
+                <option value="Hold by Salesperson">Hold by Salesperson</option>
+                <option value="Hold by Customer">Hold by Customer</option>
+                <option value="Order Cancelled">Order Cancelled</option>
                 <option value="Dispatched">Dispatched</option>
                 <option value="Delivered">Delivered</option>
-                <option value="Docket Awaited Dispatched">
-                  Docket Awaited Dispatched
-                </option>
               </Form.Select>
             )}
           />

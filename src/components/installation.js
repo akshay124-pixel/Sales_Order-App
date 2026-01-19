@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
-import { FaEye, FaTimes } from "react-icons/fa";
+import { FaEye, FaTimes, FaDownload } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import "../App.css";
 import io from "socket.io-client";
+import InstallationEditModal from "./InstallationEditModal";
+import InstallationRow from "./InstallationRow";
 import debounce from "lodash/debounce";
 
 function Installation() {
@@ -20,13 +22,8 @@ function Installation() {
   const [copied, setCopied] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
-  const [formData, setFormData] = useState({
-    installationStatus: "Pending",
-    remarksByInstallation: "",
-    installationStatusDate: "",
-    installationeng: "",
-  });
-  const [errors, setErrors] = useState({});
+  const [mailingInProgress, setMailingInProgress] = useState("");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -47,9 +44,16 @@ function Installation() {
         }
       );
       if (response.data.success) {
-        setOrders(response.data.data);
-        // setFilteredOrders(response.data.data); // Removed
-      } else {
+        const filteredData = response.data.data.filter(
+          (doc) =>
+            doc.dispatchStatus === "Delivered" &&
+            doc.installchargesstatus !== "Not in Scope" &&
+            doc.installationReport !== "Yes"
+        );
+
+        setOrders(filteredData);
+      }
+      else {
         throw new Error(
           response.data.message || "Could not load installation orders"
         );
@@ -111,9 +115,8 @@ function Installation() {
 
     const meetsInstallation = (doc) =>
       doc?.dispatchStatus === "Delivered" &&
-      ["Pending", "In Progress", "Site Not Ready", "Hold"].includes(
-        doc?.installationStatus
-      );
+      doc?.installchargesstatus !== "Not in Scope" &&
+      doc?.installationReport !== "Yes"; // FIX: Only hide if Installation Report is Yes
 
     socket.on("connect", () => {
       socket.emit("join", { userId, role: userRole });
@@ -180,35 +183,48 @@ function Installation() {
     ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
   ], [orders]);
 
-  // Optimization: Filter logic via useMemo instead of useEffect
+  // Optimization: Pre-calculate sorting and searching fields
+  const processedOrders = useMemo(() => {
+    return orders.map((order) => {
+      const soDateTs = order.soDate ? new Date(order.soDate).getTime() : 0;
+      // Pre-build search string for faster filtering
+      const searchStr = [
+        order.orderId || "",
+        order.name || "",
+        order.contactNo || "",
+        order.shippingAddress || "",
+        order.installation || "",
+        order.installationStatus || "",
+        Array.isArray(order.products)
+          ? order.products
+            .map(
+              (p) =>
+                `${p.productType || ""} ${p.qty || ""} ${p.size || ""} ${p.spec || ""
+                } ${p.serialNos?.join("") || ""} ${p.modelNos?.join("") || ""}`
+            )
+            .join(" ")
+          : "",
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return {
+        ...order,
+        _soDateTs: soDateTs,
+        _searchStr: searchStr,
+        _normalizedInstallation: String(order.installation || "")
+          .trim()
+          .toLowerCase(),
+      };
+    });
+  }, [orders]);
+
+  // Optimization: Filter logic via useMemo using processed orders
   const filteredOrders = useMemo(() => {
-    let filtered = orders;
+    let filtered = processedOrders;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((order) => {
-        const productDetails = Array.isArray(order.products)
-          ? order.products
-            .map((p) => `${p.productType || ""} (${p.qty || ""})`)
-            .join(", ")
-          : "";
-        return (
-          (order.orderId || "").toLowerCase().includes(query) ||
-          (order.name || "").toLowerCase().includes(query) ||
-          (order.contactNo || "").toLowerCase().includes(query) ||
-          (order.shippingAddress || "").toLowerCase().includes(query) ||
-          (order.installation || "").toLowerCase().includes(query) ||
-          (order.installationStatus || "").toLowerCase().includes(query) ||
-          productDetails.toLowerCase().includes(query) ||
-          (order.products?.[0]?.size || "").toLowerCase().includes(query) ||
-          (order.products?.[0]?.spec || "").toLowerCase().includes(query) ||
-          (order.products?.[0]?.serialNos?.join(", ") || "")
-            .toLowerCase()
-            .includes(query) ||
-          (order.products?.[0]?.modelNos?.join(", ") || "")
-            .toLowerCase()
-            .includes(query)
-        );
-      });
+      filtered = filtered.filter((order) => order._searchStr.includes(query));
     }
     if (statusFilter !== "All") {
       filtered = filtered.filter(
@@ -224,9 +240,7 @@ function Installation() {
     if (InstallationFilter !== "All") {
       filtered = filtered.filter((order) => {
         if (InstallationFilter === "Not Available") {
-          const installation = order.installation
-            ? String(order.installation).trim().toLowerCase()
-            : "";
+          const installation = order._normalizedInstallation;
           return (
             !installation ||
             installation === "0" ||
@@ -258,7 +272,7 @@ function Installation() {
     }
     return filtered;
   }, [
-    orders,
+    processedOrders,
     searchQuery,
     statusFilter,
     orderTypeFilter,
@@ -267,6 +281,17 @@ function Installation() {
     startDate,
     endDate,
   ]);
+
+  // Optimization: Separate sorting from filtering and rendering
+  const sortedOrders = useMemo(() => {
+    return [...filteredOrders].sort((a, b) => {
+      // Use pre-calculated timestamps
+      if (a._soDateTs === b._soDateTs) {
+        return (b._id || "").localeCompare(a._id || "");
+      }
+      return b._soDateTs - a._soDateTs;
+    });
+  }, [filteredOrders]);
 
   /* 
   // Removed old useEffect for filtering
@@ -301,11 +326,68 @@ function Installation() {
     ),
   ], [orders]);
 
+  const handleOrderUpdate = useCallback((updatedOrder) => {
+    setOrders((prevOrders) => {
+      // Agar Installation Report = Yes ho gaya, turant list se hata do
+      if (updatedOrder.installationReport === "Yes") {
+        return prevOrders.filter((o) => o._id !== updatedOrder._id);
+      }
+
+      // Warna normal update
+      return prevOrders.map((o) =>
+        o._id === updatedOrder._id ? updatedOrder : o
+      );
+    });
+  }, []);
+
+
   const handleView = useCallback((order) => {
     setViewOrder(order);
     setShowViewModal(true);
     setCopied(false);
   }, []);
+
+  const handleDownload = async (filePath) => {
+    if (!filePath || typeof filePath !== "string") {
+      toast.error("Invalid file path!");
+      return;
+    }
+
+    try {
+      const fileUrl = `${process.env.REACT_APP_URL}${filePath.startsWith("/") ? "" : "/"
+        }${filePath}`;
+
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch file");
+      }
+
+      const blob = await response.blob();
+      const contentType = response.headers.get("content-type") || "application/octet-stream";
+      const extension = contentType.split("/")[1] || "file";
+      const fileName = filePath.split("/").pop() || `download.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success("Download started!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Download failed. Check server.");
+    }
+  };
 
   const uniqueOrderTypes = [
     "",
@@ -353,76 +435,32 @@ function Installation() {
 
   const handleEdit = useCallback((order) => {
     setEditOrder(order);
-    setFormData({
-      installationStatus: order.installationStatus || "Pending",
-      remarksByInstallation: order.remarksByInstallation || "",
-      installationStatusDate: order.installationStatusDate || "",
-      installationeng: order.installationeng || "",
-    });
-    setErrors({});
     setShowEditModal(true);
   }, []);
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (
-      !formData.remarksByInstallation ||
-      formData.remarksByInstallation.trim() === ""
-    ) {
-      newErrors.remarksByInstallation = "Remarks are required";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
+  const handleSendMail = useCallback(async (order) => {
+    setMailingInProgress(order._id);
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_URL}/api/edit/${editOrder?._id}`,
-        formData,
+      const response = await axios.post(
+        `${process.env.REACT_APP_URL}/api/send-completion-mail`,
+        { orderId: order._id },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
+
       if (response.data.success) {
-        const updatedOrder = response.data.data;
-        const meetsInstallation = (doc) =>
-          doc?.dispatchStatus === "Delivered" &&
-          ["Pending", "In Progress", "Site Not Ready", "Hold"].includes(
-            doc?.installationStatus
-          );
-        setOrders((prev) => {
-          const id = String(updatedOrder._id);
-          const include = meetsInstallation(updatedOrder);
-          const idx = prev.findIndex((o) => String(o._id) === id);
-          if (!include) {
-            return idx === -1 ? prev : prev.filter((o) => String(o._id) !== id);
-          }
-          if (idx === -1) return [updatedOrder, ...prev];
-          const next = prev.slice();
-          next[idx] = updatedOrder;
-          return next;
-        });
-        setShowEditModal(false);
-        toast.success("Order updated successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        toast.success(`Mail sent for Order #${order.orderId || order._id}`);
       } else {
-        throw new Error(response.data.message || "Failed to update order");
+        toast.error(response.data.message || "Failed to send mail");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update order", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      console.error("Mail Error:", error);
+      toast.error("Error sending mail");
+    } finally {
+      setMailingInProgress("");
     }
-  };
+  }, []);
   const handleClearFilters = () => {
     setLocalSearch(""); // Clear local input
     updateSearchQuery(""); // Clear debounce immediately
@@ -537,340 +575,22 @@ function Installation() {
           </tr>
         </thead>
         <tbody>
-          {filteredOrders
-            .slice()
-            .sort((a, b) => {
-              const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
-              const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
-              // If dates are equal or unavailable, sort by _id descending
-              if (dateA.getTime() === dateB.getTime()) {
-                return b._id.localeCompare(a._id);
-              }
-              return dateB - dateA;
-            })
-            .map((order, index) => {
-              const productDetails = Array.isArray(order.products)
-                ? order.products
-                  .map(
-                    (p) =>
-                      `${p.productType || "N/A"} (${p.qty || "N/A"})`
-                  )
-                  .join(", ")
-                : "N/A";
-              const isOverdue = isDispatchOverdue(order.dispatchDate);
-              const baseBg = isOverdue
-                ? "#fff3cd" // Light yellow for overdue rows
-                : index % 2 === 0
-                  ? "#f8f9fa"
-                  : "#fff";
-              const hoverBg = isOverdue
-                ? "#ffeaa7" // Darker yellow on hover
-                : "#e9ecef";
-              const leaveBg = baseBg;
-
-              return (
-                <tr
-                  key={order._id}
-                  style={{
-                    background: baseBg,
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = hoverBg)
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = leaveBg)
-                  }
-                >
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.orderId || "N/A"}
-                  >
-                    {order.orderId || "N/A"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.orderId || "N/A"}
-                  >
-                    {order.soDate
-                      ? new Date(order.soDate)
-                        .toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                        .replace(/\//g, "/")
-                      : "N/A"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.dispatchDate || "N/A"}
-                  >
-                    {order.dispatchDate
-                      ? new Date(order.dispatchDate)
-                        .toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
-                        .replace(/\//g, "/")
-                      : "N/A"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "200px",
-                    }}
-                    title={productDetails}
-                  >
-                    {productDetails}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.name || "N/A"}
-                  >
-                    {order.name || "N/A"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.contactNo || "N/A"}
-                  >
-                    {order.contactNo || "N/A"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "200px",
-                    }}
-                    title={order.shippingAddress || "N/A"}
-                  >
-                    {order.shippingAddress || "N/A"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.installchargesstatus || "N/A"}
-                  >
-                    {order.installchargesstatus || "N/A"}
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.installationStatus || "Pending"}
-                  >
-                    <Badge
-                      style={{
-                        background:
-                          order.installationStatus === "Pending"
-                            ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                            : order.installationStatus === "In Progress"
-                              ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                              : order.installationStatus === "Completed"
-                                ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                        color: "#fff",
-                        padding: "5px 10px",
-                        borderRadius: "12px",
-                        display: "inline-block",
-                        width: "100%",
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {order.installationStatus || "Pending"}
-                    </Badge>
-                  </td>
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      fontSize: "1rem",
-                      borderBottom: "1px solid #eee",
-                      height: "40px",
-                      lineHeight: "40px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "150px",
-                    }}
-                    title={order.salesPerson || "N/A"}
-                  >
-                    {order.salesPerson || "N/A"}
-                  </td>
-
-                  <td
-                    style={{
-                      padding: "15px",
-                      textAlign: "center",
-                      height: "40px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderBottom: "1px solid #eee",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        marginTop: "20px",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Button
-                        variant="primary"
-                        onClick={() => handleView(order)}
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "22px",
-                          padding: "0",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                        aria-label="View order details"
-                      >
-                        <FaEye style={{ marginBottom: "3px" }} />
-                      </Button>
-                      <button
-                        className="editBtn"
-                        onClick={() => handleEdit(order)}
-                        style={{
-                          minWidth: "40px",
-                          width: "40px",
-                          height: "40px",
-                          padding: "0",
-                          border: "none",
-                          background:
-                            "linear-gradient(135deg, #6c757d, #5a6268)",
-                          borderRadius: "22px",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <svg
-                          height="1em"
-                          viewBox="0 0 512 512"
-                          fill="#fff"
-                        >
-                          <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+          {sortedOrders.map((order, index) => (
+            <InstallationRow
+              key={order._id}
+              order={order}
+              index={index}
+              isDispatchOverdue={isDispatchOverdue}
+              handleView={handleView}
+              handleEdit={handleEdit}
+              handleSendMail={handleSendMail}
+              mailingInProgress={mailingInProgress}
+            />
+          ))}
         </tbody>
       </table>
     </div>
-  ), [filteredOrders, isDispatchOverdue, handleView, handleEdit]);
+  ), [sortedOrders, isDispatchOverdue, handleView, handleEdit]);
 
   if (loading) {
     return (
@@ -1418,6 +1138,54 @@ function Installation() {
                       <strong>Contact Person:</strong> {viewOrder.name || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Customer Email:</strong> {viewOrder.customerEmail || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Installation Report:</strong>{" "}
+                      {viewOrder.installationFile ? (
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            marginTop: "5px",
+                          }}
+                        >
+                          <Button
+                            size="sm"
+                            onClick={() => handleDownload(viewOrder.installationFile)}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              padding: "6px 14px",
+                              borderRadius: "20px",
+                              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                              color: "#fff",
+                              fontWeight: "600",
+                              fontSize: "0.85rem",
+                              border: "none",
+                              boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+                              transition: "all 0.3s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.transform = "translateY(-1px) scale(1.02)";
+                              e.target.style.boxShadow = "0 5px 12px rgba(0,0,0,0.3)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.transform = "translateY(0) scale(1)";
+                              e.target.style.boxShadow = "0 3px 8px rgba(0,0,0,0.2)";
+                            }}
+                          >
+                            <FaDownload size={12} />
+                            Download Report
+                          </Button>
+                        </div>
+                      ) : (
+                        "N/A"
+                      )}
+
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
@@ -1602,230 +1370,12 @@ function Installation() {
           </Modal.Body>
         </Modal>
         {/* Edit Modal */}
-        <Modal
+        <InstallationEditModal
           show={showEditModal}
           onHide={() => setShowEditModal(false)}
-          centered
-          backdrop="static"
-        >
-          <Modal.Header
-            closeButton
-            style={{
-              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-              color: "#fff",
-              borderBottom: "none",
-              padding: "20px",
-            }}
-          >
-            <Modal.Title
-              style={{
-                fontWeight: "700",
-                fontSize: "1.5rem",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-              }}
-            >
-              Edit Installation Order
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body
-            style={{
-              padding: "30px",
-              background: "#fff",
-              borderRadius: "0 0 15px 15px",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <Form onSubmit={handleEditSubmit}>
-              <Form.Group style={{ marginBottom: "20px" }}>
-                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                  Installation Status
-                </Form.Label>
-                <Form.Select
-                  value={formData.installationStatus}
-                  onChange={(e) => {
-                    const newStatus = e.target.value;
-                    setFormData({
-                      ...formData,
-                      installationStatus: newStatus,
-                    });
-                  }}
-                  style={{
-                    borderRadius: "10px",
-                    border: errors.installationStatus
-                      ? "1px solid red"
-                      : "1px solid #ced4da",
-                    padding: "12px",
-                    fontSize: "1rem",
-                    transition: "all 0.3s ease",
-                  }}
-                  onFocus={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 0 10px rgba(37, 117, 252, 0.5)")
-                  }
-                  onBlur={(e) => (e.target.style.boxShadow = "none")}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Hold">Hold</option>
-                  <option value="Site Not Ready">Site Not Ready</option>
-                </Form.Select>
-                {errors.installationStatus && (
-                  <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                    {errors.installationStatus}
-                  </Form.Text>
-                )}
-              </Form.Group>
-
-              {formData.installationStatus === "Completed" && (
-                <>
-                  <Form.Group style={{ marginBottom: "20px" }}>
-                    <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                      Installation Completion Date{" "}
-                      <span style={{ color: "red" }}>*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={
-                        formData.installationStatusDate
-                          ? new Date(formData.installationStatusDate)
-                            .toISOString()
-                            .split("T")[0]
-                          : ""
-                      }
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          installationStatusDate: e.target.value,
-                        })
-                      }
-                      style={{
-                        borderRadius: "10px",
-                        border: "1px solid #ced4da",
-                        padding: "12px",
-                        fontSize: "1rem",
-                      }}
-                      required
-                    />
-                  </Form.Group>
-
-                  <Form.Group style={{ marginBottom: "20px" }}>
-                    <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                      Installation Engineer Name{" "}
-                      <span style={{ color: "red" }}>*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter engineer name"
-                      value={formData.installationeng}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          installationeng: e.target.value,
-                        })
-                      }
-                      style={{
-                        borderRadius: "10px",
-                        border: "1px solid #ced4da",
-                        padding: "12px",
-                        fontSize: "1rem",
-                      }}
-                      required
-                    />
-                  </Form.Group>
-                </>
-              )}
-
-              <Form.Group style={{ marginBottom: "20px" }}>
-                <Form.Label style={{ fontWeight: "600", color: "#333" }}>
-                  Remarks by Installation <span style={{ color: "red" }}>*</span>
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={formData.remarksByInstallation}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      remarksByInstallation: e.target.value,
-                    })
-                  }
-                  placeholder="Enter remarks"
-                  style={{
-                    borderRadius: "10px",
-                    border: errors.remarksByInstallation
-                      ? "1px solid red"
-                      : "1px solid #ced4da",
-                    padding: "12px",
-                    fontSize: "1rem",
-                    transition: "all 0.3s ease",
-                  }}
-                  onFocus={(e) =>
-                  (e.target.style.boxShadow =
-                    "0 0 10px rgba(37, 117, 252, 0.5)")
-                  }
-                  onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  required
-                />
-                {errors.remarksByInstallation && (
-                  <Form.Text style={{ color: "red", fontSize: "0.875rem" }}>
-                    {errors.remarksByInstallation}
-                  </Form.Text>
-                )}
-              </Form.Group>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "15px",
-                }}
-              >
-                <Button
-                  onClick={() => setShowEditModal(false)}
-                  style={{
-                    background: "linear-gradient(135deg, #6c757d, #5a6268)",
-                    border: "none",
-                    padding: "10px 20px",
-                    borderRadius: "20px",
-                    color: "#fff",
-                    fontWeight: "600",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "translateY(-2px)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.transform = "translateY(0)")
-                  }
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  style={{
-                    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                    border: "none",
-                    padding: "10px 20px",
-                    borderRadius: "20px",
-                    color: "#fff",
-                    fontWeight: "600",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "translateY(-2px)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.transform = "translateY(0)")
-                  }
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </Form>
-          </Modal.Body>
-        </Modal>
+          order={editOrder}
+          onUpdate={handleOrderUpdate}
+        />
       </div> <footer
         style={{
           padding: "15px",

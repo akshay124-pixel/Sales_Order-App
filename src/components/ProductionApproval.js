@@ -53,7 +53,7 @@ const ProductionApproval = () => {
     });
 
     socket.on("connect", () => {
-      console.log("Socket.IO se connect ho gaya!");
+      console.log("Socket.IO is connected!");
       // Hinglish: Server per-user/role rooms use object payload so relevant updates hi milein
       const userId = localStorage.getItem("userId");
       const role = localStorage.getItem("role");
@@ -97,7 +97,7 @@ const ProductionApproval = () => {
     });
 
     socket.on("disconnect", () => {
-      console.log("Socket.IO se disconnect ho gaya!");
+      console.log("Socket.IO is disconnected!");
     });
 
     return () => {

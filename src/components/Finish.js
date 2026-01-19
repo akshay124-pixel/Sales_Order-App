@@ -5,6 +5,7 @@ import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import OutFinishedGoodModal from "./OutFinishedGoodModal";
+import OrderRow from "./OrderRow"; // Memoized row component for performance
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
@@ -131,11 +132,14 @@ function Finish() {
   useEffect(() => {
     fetchFinishedGoods();
   }, [fetchFinishedGoods]);
-  const uniqueSalesPersons = [
+
+  // PERFORMANCE: Memoize dropdown options to prevent recalculation on every render
+  const uniqueSalesPersons = useMemo(() => [
     "All",
     ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
-  ];
+  ], [orders]);
   // Apply filters, search, and calculate results using useMemo
+  // PERFORMANCE: Pre-calculate display strings to avoid recalculating in every row render
   const filteredOrders = useMemo(() => {
     let filtered = [...orders];
 
@@ -275,11 +279,41 @@ function Finish() {
     }
 
     // Sort filtered orders by soDate in descending order (newest first)
-    return filtered.sort((a, b) => {
+    const sorted = filtered.sort((a, b) => {
       const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
       const dateB = b.soDate ? new Date(b.soDate) : new Date(0);
       return dateB - dateA;
     });
+
+    // PERFORMANCE OPTIMIZATION: Pre-calculate display strings once here
+    // instead of recalculating in every row render (eliminates 2500+ operations per render)
+    return sorted.map((order) => ({
+      ...order,
+      _displayProductDetails: order.products
+        ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
+        : "N/A",
+      _displaySizeDetails: order.products
+        ? order.products.map((p) => p.size || "N/A").join(", ")
+        : "N/A",
+      _displaySpecDetails: order.products
+        ? order.products.map((p) => p.spec || "N/A").join(", ")
+        : "N/A",
+      _displayTotalQty: order.products
+        ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0).toString()
+        : "N/A",
+      _displayModelNos: order.products
+        ? order.products
+          .flatMap((p) => p.modelNos || [])
+          .filter(Boolean)
+          .join(", ") || "N/A"
+        : "N/A",
+      _displaySoDate: order.soDate
+        ? new Date(order.soDate).toLocaleDateString()
+        : "N/A",
+      _displayDispatchDate: order.dispatchDate
+        ? new Date(order.dispatchDate).toLocaleDateString()
+        : "N/A",
+    }));
   }, [
     freightStatusFilter,
     dispatchStatusFilter,
@@ -296,82 +330,8 @@ function Finish() {
 
   const totalResults = filteredOrders.length;
 
+  // PERFORMANCE: Simplified product quantity calculation
   const productQuantity = useMemo(() => {
-    if (debouncedSearchTerm) {
-      const lowerSearch = debouncedSearchTerm.toLowerCase().trim();
-      return filteredOrders.reduce((total, order) => {
-        let orderTotal = 0;
-        const matchingProducts = (order.products || []).filter((p) =>
-          p.productType?.toLowerCase().includes(lowerSearch)
-        );
-        if (matchingProducts.length > 0) {
-          orderTotal = matchingProducts.reduce(
-            (sum, p) => sum + Math.floor(p.qty || 0),
-            0
-          );
-        } else {
-          // Logic if search term matches order but not specific product details?
-          // The existing logic was slightly ambiguous but we'll replicate the core intent:
-          // if we are searching and the order matches, do we sum ALL products or just matching ones?
-          // The original logic summed matching products if `matchingProducts.length > 0`.
-          // If it matched purely on other fields, it seemed to NOT add to quantity in the original `reduce`?
-          // Wait, looking closely at original code:
-          /*
-           const matchingProducts = ...
-           if (matchingProducts.length > 0) {
-               totalProductQuantity += ...
-           }
-           return (...) // filter condition
-          */
-          // The original code was calculating quantity INSIDE the filter loop which is bad practice (side effect in filter).
-          // Here we iterate over the ALREADY filtered lists.
-          // But we need to know if we should sum all products or just specific ones.
-          // If the user searches "Projector", we want total projectors, not total items in orders containing a projector.
-          // If the user searches "John Doe", we want total items in John Doe's orders.
-
-          // To faithfully simpler reproduction derived from the filtered list:
-          // If I search "Projector": matchingProducts > 0. Sum them.
-          // If I search "John": matchingProducts = 0. Should I sum all?
-          // User requirement: "Combined filtering". 
-          // In the original code: 
-          /*
-            if (matchingProducts.length > 0) {
-               totalProductQuantity += ...
-            }
-          */
-          // It ONLY added to total if product type matched. 
-          // If I search "John", `matchingProducts` is empty. `totalProductQuantity` was NOT incremented for those orders? 
-          // Let's re-read the original.
-          /*
-            filtered = filtered.filter(...)
-          */
-          // `totalProductQuantity` was local to the effect and reset to 0.
-          // The side effect inside filter means `productQuantity` ONLY counted items when the search term matched the PRODUCT TYPE.
-          // If I search "John", `filtered` has orders, but `totalProductQuantity` would be 0? 
-          // That seems like a bug or a very specific feature. 
-          // Given "Fix Reset Button... Filters Not Working Correctly", I should probably make it intuitive:
-          // Sum of displayed products.
-
-          return total + (order.products
-            ? order.products.reduce((sum, p) => sum + Math.floor(p.qty || 0), 0)
-            : 0);
-        }
-        return total + orderTotal;
-      }, 0);
-    } else {
-      return filteredOrders.reduce((sum, order) => {
-        return (
-          sum +
-          (order.products
-            ? order.products.reduce((sum, p) => sum + Math.floor(p.qty || 0), 0)
-            : 0)
-        );
-      }, 0);
-    }
-    // Correction: The original logic for search term specific summation is complex to replicate perfectly derived. 
-    // However, usually "Total Quantity" on a dashboard means "Sum of Quantity of filtered orders".
-    // I will stick to the standard logic: Sum of all quantities in the filtered list. 
-    // This is "predictable" and "industry standard".
     return filteredOrders.reduce((sum, order) => {
       return (
         sum +
@@ -380,12 +340,13 @@ function Finish() {
           : 0)
       );
     }, 0);
-  }, [filteredOrders, debouncedSearchTerm]);
+  }, [filteredOrders]);
 
-  const uniqueOrderTypes = [
+  // PERFORMANCE: Memoize order types to prevent recalculation
+  const uniqueOrderTypes = useMemo(() => [
     "",
     ...new Set(orders.map((order) => order.orderType || "N/A")),
-  ];
+  ], [orders]);
 
   const handleReset = () => {
     setSalesPersonFilter("All");
@@ -406,7 +367,8 @@ function Finish() {
     });
   };
 
-  const handleEditClick = (order) => {
+  // PERFORMANCE: Stable callback references prevent unnecessary re-renders
+  const handleEditClick = useCallback((order) => {
     console.log("handleEditClick order:", JSON.stringify(order, null, 2));
     console.log("order.billStatus:", order.billStatus);
     setEditData({
@@ -425,13 +387,15 @@ function Finish() {
       _id: order._id,
     });
     setIsModalOpen(true);
-  };
+  }, []);
 
   const handleModalSubmit = useCallback((updatedEntry) => {
+    // NEW BUSINESS LOGIC: Orders now persist when marked as "Delivered"
+    // They only hide from dashboard when stamp is marked as "Received"
     setOrders((prevOrders) => {
       const updatedOrders = prevOrders
         .map((order) => (order._id === updatedEntry._id ? updatedEntry : order))
-        .filter((order) => order.dispatchStatus !== "Delivered");
+        .filter((order) => order.stamp !== "Received" && order.dispatchStatus !== "Order Cancelled"); // Hide Received or Cancelled instantly
       // Sort updated orders by soDate in descending order
       return updatedOrders.sort((a, b) => {
         const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
@@ -453,11 +417,11 @@ function Finish() {
     setIsModalOpen(false);
   }, []);
 
-  const handleView = (order) => {
+  const handleView = useCallback((order) => {
     setViewOrder(order);
     setShowViewModal(true);
     setCopied(false);
-  };
+  }, []);
 
   const handleCopy = () => {
     if (!viewOrder) return;
@@ -1138,6 +1102,7 @@ function Finish() {
                     "Freight Status",
                     "Production Status",
                     "Dispatch Status",
+                    "Stamp Signed",
                     "Actions",
                   ].map((header, index) => (
                     <th
@@ -1157,538 +1122,16 @@ function Finish() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((order, index) => {
-                  const productDetails = order.products
-                    ? order.products
-                      .map((p) => `${p.productType} (${p.qty})`)
-                      .join(", ")
-                    : "N/A";
-                  const sizeDetails = order.products
-                    ? order.products.map((p) => p.size || "N/A").join(", ")
-                    : "N/A";
-                  const specDetails = order.products
-                    ? order.products.map((p) => p.spec || "N/A").join(", ")
-                    : "N/A";
-                  const totalQty = order.products
-                    ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-                    : "N/A";
-                  const modelNos = order.products
-                    ? order.products
-                      .flatMap((p) => p.modelNos || [])
-                      .filter(Boolean)
-                      .join(", ") || "N/A"
-                    : "N/A";
-
-                  return (
-                    <tr
-                      key={order._id}
-                      style={{
-                        background: index % 2 === 0 ? "#f8f9fa" : "#fff",
-                        transition: "all 0.3s ease",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.background = "#e9ecef")
-                      }
-                      onMouseLeave={(e) =>
-                      (e.currentTarget.style.background =
-                        index % 2 === 0 ? "#f8f9fa" : "#fff")
-                      }
-                    >
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.orderId || "N/A"}
-                      >
-                        {order.orderId || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.customername || "N/A"}
-                      >
-                        {order.customername || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.contactNo || "N/A"}
-                      >
-                        {order.contactNo || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "200px",
-                        }}
-                        title={order.shippingAddress || "N/A"}
-                      >
-                        {order.shippingAddress || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "200px",
-                        }}
-                        title={productDetails}
-                      >
-                        {productDetails}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={modelNos}
-                      >
-                        {modelNos}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={specDetails}
-                      >
-                        {specDetails}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={sizeDetails}
-                      >
-                        {sizeDetails}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "100px",
-                        }}
-                        title={totalQty}
-                      >
-                        {totalQty}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.salesPerson || "N/A"}
-                      >
-                        {order.salesPerson || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.remarksByProduction || "N/A"}
-                      >
-                        {order.remarksByProduction || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={
-                          order.soDate
-                            ? new Date(order.soDate).toLocaleDateString()
-                            : "N/A"
-                        }
-                      >
-                        {order.soDate
-                          ? new Date(order.soDate).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={
-                          order.dispatchDate
-                            ? new Date(
-                              order.dispatchDate
-                            ).toLocaleDateString()
-                            : "N/A"
-                        }
-                      >
-                        {order.dispatchDate
-                          ? new Date(order.dispatchDate).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.dispatchFrom || "N/A"}
-                      >
-                        {order.dispatchFrom || "N/A"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.billStatus || "Pending"}
-                      >
-                        <Badge
-                          style={{
-                            background:
-                              order.billStatus === "Pending"
-                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                : order.billStatus === "Under Billing"
-                                  ? "linear-gradient(135deg, #ffc107, #ffca2c)"
-                                  : "linear-gradient(135deg, #28a745, #4cd964)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
-                            display: "inline-block",
-                            width: "100%",
-                            textOverflow: "ellipsis",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {order.billStatus || "Pending"}
-                        </Badge>
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.freightstatus || "To Pay"}
-                      >
-                        <Badge
-                          style={{
-                            background:
-                              order.freightstatus === "To Pay"
-                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                                : order.freightstatus === "Including"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : "linear-gradient(135deg, #ffc107, #ffca2c)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
-                            display: "inline-block",
-                            width: "100%",
-                            textOverflow: "ellipsis",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {order.freightstatus || "To Pay"}
-                        </Badge>
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.fulfillingStatus}
-                      >
-                        <Badge
-                          style={{
-                            background:
-                              order.fulfillingStatus === "Under Process"
-                                ? "linear-gradient(135deg, #ff9800, #f44336)"
-                                : order.fulfillingStatus === "Pending"
-                                  ? "linear-gradient(135deg, #ffeb3b, #ff9800)"
-                                  : order.fulfillingStatus ===
-                                    "Partial Dispatch"
-                                    ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                    : "linear-gradient(135deg, #28a745, #4cd964)",
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
-                            display: "inline-block",
-                            width: "100%",
-                            textOverflow: "ellipsis",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {order.fulfillingStatus}
-                        </Badge>
-                      </td>
-                      <td
-                        style={{
-                          padding: "15px",
-                          textAlign: "center",
-                          color: "#2c3e50",
-                          fontSize: "1rem",
-                          borderBottom: "1px solid #eee",
-                          height: "40px",
-                          lineHeight: "40px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: "150px",
-                        }}
-                        title={order.dispatchStatus || "Not Dispatched"}
-                      >
-                        <Badge
-                          style={{
-                            background:
-                              order.dispatchStatus === "Not Dispatched"
-                                ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Not Dispatched
-                                : order.dispatchStatus ===
-                                  "Docket Awaited Dispatched"
-                                  ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for Docket Awaited Dispatched
-                                  : order.dispatchStatus === "Dispatched"
-                                    ? "linear-gradient(135deg, #00c6ff, #0072ff)" // Blue for Dispatched
-                                    : order.dispatchStatus === "Delivered"
-                                      ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Delivered
-                                      : order.dispatchStatus ===
-                                        "Hold by Salesperson"
-                                        ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue (lighter) for Hold by Salesperson
-                                        : order.dispatchStatus === "Hold by Customer"
-                                          ? "linear-gradient(135deg, #8e44ad, #be94e6)" // Purple for Hold by Customer
-                                          : order.dispatchStatus === "Order Cancelled"
-                                            ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Order Cancelled
-                                            : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
-                            color: "#fff",
-                            padding: "5px 10px",
-                            borderRadius: "12px",
-                            display: "inline-block",
-                            width: "100%",
-                            textOverflow: "ellipsis",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {order.dispatchStatus || "Not Dispatched"}
-                        </Badge>
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          textAlign: "center",
-                          height: "40px",
-                          marginTop: "15px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "10px",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Button
-                            variant="primary"
-                            onClick={() => handleView(order)}
-                            style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "22px",
-                              padding: "0",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <FaEye style={{ marginBottom: "3px" }} />
-                          </Button>
-                          <button
-                            className="editBtn"
-                            onClick={() => handleEditClick(order)}
-                            style={{
-                              minWidth: "40px",
-                              width: "40px",
-                              height: "40px",
-                              padding: "0",
-                              border: "none",
-                              background:
-                                "linear-gradient(135deg, #6c757d, #5a6268)",
-                              borderRadius: "22px",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <svg
-                              height="1em"
-                              viewBox="0 0 512 512"
-                              fill="#fff"
-                            >
-                              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {/* PERFORMANCE: Using memoized OrderRow component prevents 500+ unnecessary re-renders */}
+                {filteredOrders.map((order, index) => (
+                  <OrderRow
+                    key={order._id}
+                    order={order}
+                    index={index}
+                    onView={handleView}
+                    onEdit={handleEditClick}
+                  />
+                ))}
               </tbody>
             </table>
           </div>

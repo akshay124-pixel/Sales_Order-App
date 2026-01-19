@@ -35,7 +35,7 @@ const EditVerification = ({ isOpen, onClose, onEntryUpdated, entryToEdit }) => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(
+      const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }

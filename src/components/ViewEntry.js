@@ -53,7 +53,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       try {
         const cached = localStorage.getItem(`createdByName:${key}`);
         if (cached) return cached;
-      } catch (_) {}
+      } catch (_) { }
     }
     return null;
   });
@@ -65,14 +65,14 @@ function ViewEntry({ isOpen, onClose, entry }) {
       setCreatedByName(name);
       try {
         localStorage.setItem(`createdByName:${createdByCacheKey}`, name);
-      } catch (_) {}
+      } catch (_) { }
     } else {
       try {
         const cached = localStorage.getItem(
           `createdByName:${createdByCacheKey}`
         );
         if (cached) setCreatedByName(cached);
-      } catch (_) {}
+      } catch (_) { }
     }
   }, [createdByCacheKey, entry?.createdBy, getCreatedByName]);
 
@@ -126,16 +126,18 @@ function ViewEntry({ isOpen, onClose, entry }) {
       filePath.includes("/Uploads/")
     );
   };
-  const handleDownload = async () => {
-    if (!isValidPoFilePath(entry?.poFilePath)) {
-      toast.error("No valid PO file available to download!");
+  const handleDownload = async (filePath) => {
+    // Determine path to use: passed arg or default to poFilePath if it's the specific PO check
+    const targetPath = filePath || entry?.poFilePath;
+
+    if (!isValidPoFilePath(targetPath)) {
+      toast.error("No valid file available to download!");
       return;
     }
 
     try {
-      const fileUrl = `${process.env.REACT_APP_URL}${
-        entry.poFilePath.startsWith("/") ? "" : "/"
-      }${entry.poFilePath}`;
+      const fileUrl = `${process.env.REACT_APP_URL}${targetPath.startsWith("/") ? "" : "/"
+        }${targetPath}`;
 
       // Validate file URL
       if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
@@ -178,7 +180,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       // ✅ FileName fix
       const extension = contentType.split("/")[1] || "file";
       const fileName =
-        entry.poFilePath.split("/").pop() ||
+        targetPath.split("/").pop() ||
         `order_${entry.orderId || "unknown"}.${extension}`;
 
       const link = document.createElement("a");
@@ -201,39 +203,34 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
     const productsText = isValidField(entry.products)
       ? entry.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${
-                p.spec || "N/A"
-              }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${
-                p.gst || "N/A"
-              }%, Serial Nos: ${
-                isValidField(p.serialNos) && p.serialNos.length > 0
-                  ? p.serialNos.join(", ")
-                  : "N/A"
-              }, Model Nos: ${
-                isValidField(p.modelNos) && p.modelNos.length > 0
-                  ? p.modelNos.join(", ")
-                  : "N/A"
-              }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
+            }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${p.gst || "N/A"
+            }%, Serial Nos: ${isValidField(p.serialNos) && p.serialNos.length > 0
+              ? p.serialNos.join(", ")
+              : "N/A"
+            }, Model Nos: ${isValidField(p.modelNos) && p.modelNos.length > 0
+              ? p.modelNos.join(", ")
+              : "N/A"
+            }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`
+        )
+        .join("\n")
       : "N/A";
 
     const totalUnitPrice = isValidField(entry.products)
       ? entry.products.reduce(
-          (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-          0
-        )
+        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+        0
+      )
       : null;
 
     const gstText = isValidField(entry.products)
       ? entry.products
-          .map((p) => p.gst)
-          .filter(Boolean)
-          .join(", ")
+        .map((p) => p.gst)
+        .filter(Boolean)
+        .join(", ")
       : null;
 
     // Define all fields for copying
@@ -278,7 +275,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       },
       { key: "installchargesstatus", label: "Install Charges Status" },
       { key: "installation", label: "Installation" },
-        { key: "installationeng", label: "Installation Engineer" },   
+      { key: "installationeng", label: "Installation Engineer" },
       {
         key: "total",
         label: "Total",
@@ -313,7 +310,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       { key: "sostatus", label: "SO Status" },
       { key: "dispatchStatus", label: "Dispatch Status" },
       { key: "fStatus", label: "Installation Status" },
-    
+
       { key: "completionStatus", label: "Production Status" },
       { key: "stockStatus", label: "Stock Status" },
       { key: "demoDate", label: "Demo Date", formatter: formatDate },
@@ -359,8 +356,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
           value !== undefined
             ? value
             : formatter
-            ? formatter(entry[key])
-            : entry[key];
+              ? formatter(entry[key])
+              : entry[key];
         return isValidField(val) ? `${label}: ${val}` : null;
       })
       .filter(Boolean)
@@ -389,16 +386,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
   const totalUnitPrice = isValidField(entry.products)
     ? entry.products.reduce(
-        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-        0
-      )
+      (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+      0
+    )
     : null;
 
   const gstText = isValidField(entry.products)
     ? entry.products
-        .map((p) => p.gst)
-        .filter(Boolean)
-        .join(", ")
+      .map((p) => p.gst)
+      .filter(Boolean)
+      .join(", ")
     : null;
 
   // Define fields that should use badges
@@ -446,6 +443,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     installchargesstatus: {
       Including: "success",
       "To Pay": "warning",
+      "Not in Scope": "warning",
       default: "primary",
     },
     paymentMethod: {
@@ -520,7 +518,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     { key: "docketNo", label: "Docket No" },
     { key: "sostatus", label: "SO Status" },
     { key: "dispatchStatus", label: "Dispatch Status" },
-    { key: "completionStatus", label: "Completion Status" },
+    // { key: "completionStatus", label: "Completion Status" },
     { key: "stockStatus", label: "Stock Status" },
     { key: "demoDate", label: "Demo Date", formatter: formatDate },
     { key: "demostatus", label: "Demo Status" },
@@ -561,7 +559,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
           <Button
             variant="outline-primary"
             size="sm"
-            onClick={handleDownload}
+            onClick={() => handleDownload(entry.poFilePath)}
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               padding: "6px 12px",
@@ -628,12 +626,12 @@ function ViewEntry({ isOpen, onClose, entry }) {
         : null,
       condition: isValidField(entry.products),
     },
-   {
-  key: "gstText",
-  label: "GST",
-  value: gstText ? `${gstText}%` : "",
-  condition: isValidField(entry.products),
-},
+    {
+      key: "gstText",
+      label: "GST",
+      value: gstText ? `${gstText}%` : "",
+      condition: isValidField(entry.products),
+    },
 
     { key: "freightcs", label: "Freight Charges" },
     { key: "freightstatus", label: "Freight Status" },
@@ -644,7 +642,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     },
     { key: "installchargesstatus", label: "Install Charges Status" },
     { key: "installation", label: "Installation Charges" },
- 
+
     {
       key: "total",
       label: "Total",
@@ -680,13 +678,53 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
   const logisticsInfoFields = [
     { key: "installationStatus", label: "Installation Status" },
-       { key: "installationeng", label: "Installation Engineer" },
+    { key: "installationeng", label: "Installation Engineer" },
     { key: "remarksByInstallation", label: "Remarks (Installation)" },
     { key: "company", label: "Company" },
     { key: "dispatchFrom", label: "Dispatch From" },
     { key: "transporter", label: "Transporter" },
     { key: "transporterDetails", label: "Transporter Details" },
     { key: "docketNo", label: "Docket Number" },
+
+    {
+      key: "installationFile",
+      label: "Installation Report",
+      condition: !!entry.installationFile,
+      renderer: () =>
+        entry.installationFile ? (
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => handleDownload(entry.installationFile)}
+            style={{
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              padding: "6px 14px",
+              borderRadius: "20px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "0.85rem",
+              fontWeight: "600",
+              color: "#ffffff",
+              border: "none",
+              boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translateY(-1px) scale(1.02)";
+              e.target.style.boxShadow = "0 5px 12px rgba(0,0,0,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "translateY(0) scale(1)";
+              e.target.style.boxShadow = "0 3px 8px rgba(0,0,0,0.2)";
+            }}
+          >
+            <Download size={14} />
+            Download Report
+          </Button>
+        ) : null,
+    },
   ];
 
   // Filter sections to only show those with at least one valid field
@@ -728,8 +766,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
         condition !== undefined
           ? condition
           : renderer
-          ? renderer()
-          : isValidField(
+            ? renderer()
+            : isValidField(
               value || (formatter ? formatter(entry[key]) : entry[key])
             )
     );
@@ -889,11 +927,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                     isValidField(v) ? `₹${v.toFixed(2)}` : null,
                                 },
                                 {
-  key: "gst",
-  label: "GST",
-  formatter: (v) =>
-    isValidField(v) ? `${v}%` : null,
-},
+                                  key: "gst",
+                                  label: "GST",
+                                  formatter: (v) =>
+                                    isValidField(v) ? `${v}%` : null,
+                                },
                                 { key: "brand", label: "Brand" },
                                 { key: "warranty", label: "Warranty" },
                                 {
@@ -918,8 +956,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   formatter: (v) =>
                                     product.productType ===
                                       "Fujifilm-Printer" &&
-                                    isValidField(v) &&
-                                    v.length > 0
+                                      isValidField(v) &&
+                                      v.length > 0
                                       ? v.join(", ")
                                       : null,
                                 },
@@ -959,12 +997,12 @@ function ViewEntry({ isOpen, onClose, entry }) {
                             condition !== undefined
                               ? condition
                               : renderer
-                              ? renderer()
-                              : isValidField(
+                                ? renderer()
+                                : isValidField(
                                   value ||
-                                    (formatter
-                                      ? formatter(entry[key])
-                                      : entry[key])
+                                  (formatter
+                                    ? formatter(entry[key])
+                                    : entry[key])
                                 )
                         )
                         .map(({ key, label, value, formatter, renderer }) => {
@@ -991,25 +1029,25 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   <Badge
                                     bg={
                                       typeof badgeStyle[displayValue] ===
-                                      "string"
+                                        "string"
                                         ? badgeStyle[displayValue] ||
-                                          badgeStyle.default
+                                        badgeStyle.default
                                         : undefined
                                     }
                                     style={
                                       typeof badgeStyle[displayValue] ===
-                                      "object"
+                                        "object"
                                         ? {
-                                            background:
-                                              badgeStyle[displayValue].bg,
-                                            color:
-                                              badgeStyle[displayValue].color,
-                                            padding: "5px 10px",
-                                            borderRadius: "12px",
-                                            fontWeight: "500",
-                                          }
+                                          background:
+                                            badgeStyle[displayValue].bg,
+                                          color:
+                                            badgeStyle[displayValue].color,
+                                          padding: "5px 10px",
+                                          borderRadius: "12px",
+                                          fontWeight: "500",
+                                        }
                                         : key === "fulfillingStatus"
-                                        ? {
+                                          ? {
                                             background:
                                               badgeStyle[displayValue]?.bg ||
                                               badgeStyle.default.bg,
@@ -1020,7 +1058,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                             borderRadius: "12px",
                                             fontWeight: "500",
                                           }
-                                        : {}
+                                          : {}
                                     }
                                   >
                                     {displayValue}

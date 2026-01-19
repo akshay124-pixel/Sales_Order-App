@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getDirtyValues } from "../utils/formUtils"; // Import Diff Utility
 import { Modal, Form, Button } from "react-bootstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -15,18 +16,21 @@ const EditProductionApproval = ({
     deliveryDate: "",
     stockStatus: "In Stock",
   });
+  const [originalFormData, setOriginalFormData] = useState({}); // Capture original
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (entryToEdit) {
-      setFormData({
+      const initialData = {
         sostatus: entryToEdit.sostatus || "",
         remarksByProduction: entryToEdit.remarksByProduction || "",
         deliveryDate: entryToEdit.deliveryDate
           ? new Date(entryToEdit.deliveryDate).toISOString().slice(0, 10)
           : "",
         stockStatus: entryToEdit.stockStatus || "In Stock",
-      });
+      };
+      setFormData(initialData);
+      setOriginalFormData(initialData);
       setErrors({});
     }
   }, [entryToEdit]);
@@ -44,6 +48,10 @@ const EditProductionApproval = ({
         newFormData.sostatus = "Accounts Approved"; // auto shift
         newFormData.deliveryDate = ""; // clear date
       }
+      if (name === "sostatus" && value === "Approved" && !formData.deliveryDate) {
+        toast.info("Please select Delivery Date to approve the order");
+      }
+
       return newFormData;
     });
     // Clear error for the field being edited
@@ -57,9 +65,11 @@ const EditProductionApproval = ({
       "Accounts Approved",
       "Approved",
     ];
+
     if (!formData.sostatus || !validStatuses.includes(formData.sostatus)) {
       newErrors.sostatus = "Please select a valid approval status";
     }
+
     if (
       formData.stockStatus !== "Not in Stock" &&
       formData.sostatus === "Pending for Approval"
@@ -67,6 +77,12 @@ const EditProductionApproval = ({
       newErrors.sostatus =
         "Pending for Approval is only allowed when stock status is Not in Stock";
     }
+
+    // ✅ NEW: Delivery Date required when Approved
+    if (formData.sostatus === "Approved" && !formData.deliveryDate) {
+      newErrors.deliveryDate = "Delivery Date is required when status is Approved";
+    }
+
     return newErrors;
   };
 
@@ -79,18 +95,21 @@ const EditProductionApproval = ({
     }
 
     try {
+      const dirtyValues = getDirtyValues(originalFormData, formData);
+      if (Object.keys(dirtyValues).length === 0) {
+        toast.info("No changes to save.");
+        onClose();
+        return;
+      }
+
       const token = localStorage.getItem("token");
-      const response = await axios.put(
+      const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
-        formData,
+        dirtyValues,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log("Updated order:", response.data.data);
       onEntryUpdated(response.data.data); // Pass updated order to parent
-      toast.success("Verification order updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
@@ -214,24 +233,38 @@ const EditProductionApproval = ({
               }}
             >
               Planned Delivery Date
+              {formData.sostatus === "Approved" && (
+                <span style={{ color: "#dc3545" }}> *</span>
+              )}
             </Form.Label>
+
             <Form.Control
               type="date"
               name="deliveryDate"
               value={formData.deliveryDate}
               onChange={handleChange}
               disabled={isNotInStock}
+              required={formData.sostatus === "Approved"}
               style={{
                 padding: "12px",
                 borderRadius: "8px",
-                border: "1px solid #d1d5db",
+                border: errors.deliveryDate
+                  ? "2px solid #dc3545"
+                  : "1px solid #d1d5db",
                 background: isNotInStock ? "#e9ecef" : "white",
                 fontSize: "1rem",
                 transition: "border-color 0.3s ease",
               }}
               aria-label="Planned delivery date"
             />
+
+            {errors.deliveryDate && (
+              <Form.Text style={{ color: "#dc3545", fontSize: "0.875rem" }}>
+                {errors.deliveryDate}
+              </Form.Text>
+            )}
           </Form.Group>
+
 
           <Form.Group className="mb-4">
             <Form.Label

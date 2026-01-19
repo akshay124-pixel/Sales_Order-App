@@ -363,7 +363,7 @@ const Row = React.memo(({ index, style, data }) => {
     columnWidths,
   } = data;
   const order = orders[index];
-  
+
   const firstProduct =
     order.products && order.products[0] ? order.products[0] : {};
   const productDetails = order.products
@@ -1464,9 +1464,12 @@ const Sales = () => {
         });
       }
 
-      filtered = filtered.sort(
-        (a, b) => new Date(b.soDate) - new Date(a.soDate)
-      );
+      filtered = filtered.sort((a, b) => {
+        if (new Date(a.createdAt) < new Date(b.createdAt)) return 1;
+        if (new Date(a.createdAt) > new Date(b.createdAt)) return -1;
+        return 0;
+      });
+
       setFilteredOrders(filtered);
     },
     []
@@ -2025,87 +2028,104 @@ const Sales = () => {
   }, [filteredOrders, formatCurrency]);
 
   const isOrderComplete = useCallback((order) => {
-    const requiredFields = [
+    // Helper to check if a value is "empty"
+    const isEmpty = (val) =>
+      val === undefined ||
+      val === null ||
+      (typeof val === "string" && val.trim() === "");
+
+    // 1. Core Sales Validation
+    const coreFields = [
       "orderId",
       "soDate",
       "customername",
-      "name",
       "contactNo",
-      "customerEmail",
-      "sostatus",
+      "salesPerson",
+      "company",
+      "orderType",
+    ];
+    const isCoreValid = coreFields.every((f) => !isEmpty(order[f]));
+
+    // Products Validation
+    const isProductsValid =
+      Array.isArray(order.products) &&
+      order.products.length > 0 &&
+      order.products.every(
+        (p) =>
+          !isEmpty(p.productType) &&
+          p.qty !== undefined &&
+          p.qty > 0 &&
+          p.unitPrice !== undefined &&
+          p.unitPrice >= 0 &&
+          !isEmpty(p.size) &&
+          !isEmpty(p.spec) &&
+          !isEmpty(p.gst)
+      );
+
+    // 2. Location & Contact Validation
+    const locationFields = [
+      "shippingAddress",
+      "billingAddress",
       "city",
       "state",
       "pinCode",
-      "shippingAddress",
-      "billingAddress",
-      "products",
-      "total",
-      "paymentCollected",
-      "paymentMethod",
-      "paymentDue",
-      "paymentTerms",
-      "paymentReceived",
-      "freightcs",
-      "freightstatus",
-      "actualFreight",
-      "installchargesstatus",
-      "installation",
-      "installationStatus",
-      "transporter",
-      "dispatchFrom",
-      "dispatchDate",
-      "dispatchStatus",
-      "orderType",
-      "report",
-      "stockStatus",
-      "billStatus",
-      "fulfillingStatus",
-      "billNumber",
-      "piNumber",
-      "salesPerson",
-      "company",
-      "createdBy",
     ];
+    const isLocationValid = locationFields.every((f) => !isEmpty(order[f]));
 
-    const areFieldsComplete = requiredFields.every((field) => {
-      const value = order[field];
-      if (field === "products") {
-        return (
-          Array.isArray(value) &&
-          value.length > 0 &&
-          value.every(
-            (product) =>
-              product.productType &&
-              product.productType.trim() !== "" &&
-              product.qty !== undefined &&
-              product.qty > 0 &&
-              product.unitPrice !== undefined &&
-              product.unitPrice >= 0 &&
-              product.size &&
-              product.size.trim() !== "" &&
-              product.spec &&
-              product.spec.trim() !== "" &&
-              product.gst !== undefined &&
-              product.gst.trim() !== ""
-          )
-        );
-      }
-      if (field === "createdBy") {
-        return (
-          value &&
-          (typeof value === "string"
-            ? value.trim() !== ""
-            : value.username && value.username.trim() !== "")
-        );
-      }
-      return (
-        value !== undefined &&
-        value !== null &&
-        (value !== "" || value === 0 || value === "N/A" || value === false)
-      );
-    });
+    // 3. Accounts Validation
+    // Bill must be complete and Payment must be received
+    const isAccountsValid =
+      (order.billStatus === "Billing Complete" ||
+        order.billStatus?.toLowerCase() === "billing complete") &&
+      !isEmpty(order.billNumber || order.invoiceNo) &&
+      (order.paymentReceived === "Received" ||
+        order.paymentReceived?.toLowerCase() === "received") &&
+      !isEmpty(order.paymentMethod) &&
+      !isEmpty(order.paymentCollected) &&
+      Number(order.paymentCollected) > 0;
 
-    return areFieldsComplete;
+    // 4. Production Validation
+    const isProductionValid =
+      order.fulfillingStatus === "Fulfilled" ||
+      order.fulfillingStatus?.toLowerCase() === "fulfilled";
+
+    // 5. Dispatch Validation
+    // Must be Delivered and have basic dispatch details
+    const isDispatchValid =
+      (order.dispatchStatus === "Delivered" ||
+        order.dispatchStatus?.toLowerCase() === "delivered") &&
+      !isEmpty(order.dispatchFrom) &&
+      !isEmpty(order.dispatchDate) &&
+      !isEmpty(order.transporter) &&
+      !isEmpty(order.actualFreight);
+
+    // 6. Installation Validation
+    // Only required if installation is NOT "No", "N/A" or empty
+    let isInstallationValid = true;
+    const installReq = order.installation;
+    if (
+      installReq &&
+      installReq !== "No" &&
+      installReq !== "N/A" &&
+      installReq.trim() !== ""
+    ) {
+      isInstallationValid =
+        (order.installationStatus === "Completed" ||
+          order.installationStatus?.toLowerCase() === "completed") &&
+        !isEmpty(order.installationeng);
+      // NOTE: 'report' or 'installationReport' check can be added if strictly required
+    }
+
+    // Combined Check
+    return (
+      isCoreValid &&
+      isProductsValid &&
+      isLocationValid &&
+      isAccountsValid &&
+      isProductionValid &&
+      isDispatchValid &&
+      isInstallationValid
+    );
   }, []);
 
   // billing completeness check removed (unused) to satisfy lint rules

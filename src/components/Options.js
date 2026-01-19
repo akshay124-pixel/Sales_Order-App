@@ -665,7 +665,6 @@ export const statesAndCities = {
     "Pinjore",
     "Rewari",
     "Yamunanagar",
-    "Mahendragarh",
     "Sirsa",
     "Dabwali",
     "Narwana",
