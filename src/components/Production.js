@@ -1938,6 +1938,12 @@ const Production = () => {
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Customer Name:</strong>{" "}
                       {viewOrder.customername || "N/A"}
+                    </span><span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>City:</strong>{" "}
+                      {viewOrder.city || "N/A"}
+                    </span><span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>State:</strong>{" "}
+                      {viewOrder.state || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Shipping Address:</strong>{" "}
