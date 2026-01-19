@@ -2013,6 +2013,7 @@ const Sales = () => {
         "Freight Charges": order.freightcs || "-",
         "Freight Status": order.freightstatus || "-",
         "Install Charges Status": order.installchargesstatus || "-",
+        "Installation Report": order.installationReport || "-",
         "Installation Status": order.installationStatus || "-",
         Transporter: order.transporter || "-",
         "Transporter Details": order.transporterDetails || "-",
@@ -2020,7 +2021,7 @@ const Sales = () => {
         "Dispatch Date": order.dispatchDate
           ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
           : "-",
-
+        "Stamp Signed": order.stamp || "-",
         "Order Type": order.orderType || "-",
         Report: order.report || "-",
         "Stock Status": order.stockStatus || "-",

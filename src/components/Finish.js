@@ -510,6 +510,7 @@ function Finish() {
         ? new Date(order.dispatchDate).toLocaleDateString()
         : "N/A",
       "Dispatch From": order.dispatchFrom || "N/A",
+      "Stamp Signed": order.stamp || "N/A",
       "Docket No": order.docketNo || "N/A",
       Transporter: order.transporter || "N/A",
       "Billing Status": order.billStatus || "Pending",

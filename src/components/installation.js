@@ -495,6 +495,7 @@ function Installation() {
         "Charges Status": order.installchargesstatus || "N/A",
         Charges: order.installation || "N/A",
         "Installation Status": order.installationStatus || "Pending",
+        "Installation Report": order.installationReport || "N/A",
         "Sales Person": order.salesPerson || "N/A",
         City: order.city || "N/A",
         State: order.state || "N/A",

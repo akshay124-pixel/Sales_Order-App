@@ -45,7 +45,6 @@ const OutFinishedGoodModal = ({
           : dispatchStatus;
 
       // Initialize products with ALL schema fields for backend-safe validation
-      // This prevents "Invalid data" errors when sending products back to server
       const products = (entryToEdit.products || []).map((p) => ({
         productType: p.productType || "",
         serialNos: Array.isArray(p.serialNos) ? p.serialNos : [],
