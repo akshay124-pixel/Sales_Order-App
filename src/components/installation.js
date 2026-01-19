@@ -47,8 +47,7 @@ function Installation() {
         const filteredData = response.data.data.filter(
           (doc) =>
             doc.dispatchStatus === "Delivered" &&
-            doc.installchargesstatus !== "Not in Scope" &&
-            doc.installationReport !== "Yes"
+            doc.installchargesstatus !== "Not in Scope"
         );
 
         setOrders(filteredData);
@@ -115,8 +114,7 @@ function Installation() {
 
     const meetsInstallation = (doc) =>
       doc?.dispatchStatus === "Delivered" &&
-      doc?.installchargesstatus !== "Not in Scope" &&
-      doc?.installationReport !== "Yes"; // FIX: Only hide if Installation Report is Yes
+      doc?.installchargesstatus !== "Not in Scope"
 
     socket.on("connect", () => {
       socket.emit("join", { userId, role: userRole });
@@ -329,7 +327,7 @@ function Installation() {
   const handleOrderUpdate = useCallback((updatedOrder) => {
     setOrders((prevOrders) => {
       // Agar Installation Report = Yes ho gaya, turant list se hata do
-      if (updatedOrder.installationReport === "Yes") {
+      if (updatedOrder.installationStatus === "Completed") {
         return prevOrders.filter((o) => o._id !== updatedOrder._id);
       }
 
