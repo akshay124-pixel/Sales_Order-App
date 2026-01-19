@@ -110,6 +110,7 @@ const EditProductionApproval = ({
       );
       console.log("Updated order:", response.data.data);
       onEntryUpdated(response.data.data); // Pass updated order to parent
+      toast.success("Order Approved successfully.");
       onClose();
     } catch (error) {
       console.error("Error updating verification order:", error);
