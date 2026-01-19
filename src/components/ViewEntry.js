@@ -504,6 +504,17 @@ function ViewEntry({ isOpen, onClose, entry }) {
       Promine: "warning",
       default: "primary",
     },
+    installationReport: {
+      Yes: "success",
+      Installed: "info",
+      No: "warning",
+      default: "secondary",
+    },
+    stamp: {
+      Received: "success",
+      "Not Received": "warning",
+      default: "secondary",
+    },
   };
 
   // Define fields for each accordion section
@@ -685,7 +696,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
     { key: "transporter", label: "Transporter" },
     { key: "transporterDetails", label: "Transporter Details" },
     { key: "docketNo", label: "Docket Number" },
-
+    { key: "stamp", label: "Stamp Signed Received" },
+    { key: "installationReport", label: "Installation Report" },
     {
       key: "installationFile",
       label: "Installation Report",

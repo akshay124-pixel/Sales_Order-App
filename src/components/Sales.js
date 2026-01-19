@@ -167,7 +167,7 @@ const columnWidths = [
   80, 130, 190, 150, 200, 200, 200, 150, 150, 200, 130, 130, 130, 150, 300, 300,
   300, 150, 130, 130, 100, 150, 100, 130, 130, 150, 150, 150, 150, 150, 130,
   150, 150, 150, 150, 150, 150, 150, 150, 200, 150, 130, 150, 130, 130, 150,
-  150, 150, 150, 150, 150, 150, 150, 150, 200,
+  150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 200,
 ];
 
 const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
@@ -945,26 +945,62 @@ const Row = React.memo(({ index, style, data }) => {
         },
         {
           width: columnWidths[48],
+          content: (
+            <Badge
+              bg={
+                order.installationReport === "Yes"
+                  ? "success"
+                  : order.installationReport === "Installed"
+                    ? "info"
+                    : order.installationReport === "No"
+                      ? "warning"
+                      : "secondary"
+              }
+            >
+              {order.installationReport || "No"}
+            </Badge>
+          ),
+          title: order.installationReport || "No",
+        },
+        {
+          width: columnWidths[49],
+          content: (
+            <Badge
+              bg={
+                order.stamp === "Received"
+                  ? "success"
+                  : order.stamp === "Not Received"
+                    ? "warning"
+                    : "secondary"
+              }
+            >
+              {order.stamp || "Not Received"}
+            </Badge>
+          ),
+          title: order.stamp || "Not Received",
+        },
+        {
+          width: columnWidths[50],
           content: order.billNumber || "-",
           title: order.billNumber || "-",
         },
         {
-          width: columnWidths[49],
+          width: columnWidths[51],
           content: order.piNumber || "-",
           title: order.piNumber || "-",
         },
         {
-          width: columnWidths[50],
+          width: columnWidths[52],
           content: order.salesPerson || "-",
           title: order.salesPerson || "-",
         },
         {
-          width: columnWidths[51],
+          width: columnWidths[53],
           content: order.company || "-",
           title: order.company || "-",
         },
         {
-          width: columnWidths[52],
+          width: columnWidths[54],
           content:
             order.createdBy && typeof order.createdBy === "object"
               ? order.createdBy.username || "Unknown"
@@ -979,12 +1015,12 @@ const Row = React.memo(({ index, style, data }) => {
                 : "-",
         },
         {
-          width: columnWidths[53],
+          width: columnWidths[55],
           content: order.poFilePath ? "Attached" : "Not Attached",
           title: order.poFilePath ? "Attached" : "Not Attached",
         },
         {
-          width: columnWidths[54],
+          width: columnWidths[56],
           content: order.remarks || "-",
           title: order.remarks || "-",
         },
@@ -2263,6 +2299,8 @@ const Sales = () => {
     "Stock Status",
     "Bill Status",
     "Production Status",
+    "Install Report",
+    "Stamp Signed",
     "Bill Number",
     "PI Number",
     "Sales Person",
