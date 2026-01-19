@@ -1785,7 +1785,7 @@ const Sales = () => {
               orderType: String(entry.ordertype || "B2C").trim(),
               gemOrderNumber: String(entry.gemordernumber || "").trim(),
               deliveryDate: parseExcelDate(entry.deliverydate) || "",
-              installation: String(entry.installation || "N/A").trim(),
+              installation: String(entry.installation || "").trim(),
               installationStatus: String(
                 entry.installationstatus || "Pending"
               ).trim(),
