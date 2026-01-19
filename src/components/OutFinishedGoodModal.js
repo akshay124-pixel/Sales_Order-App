@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { getDirtyValues } from "../utils/formUtils"; // Import Diff Utility
+import { getDirtyValues } from "../utils/formUtils"; // Refined Diff Utility
 import { Modal, Button, Input, Select, Collapse } from "antd";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -19,88 +19,73 @@ const OutFinishedGoodModal = ({
     transporter: "",
     transporterDetails: "",
     billNumber: "",
-    dispatchDate: new Date().toISOString().split("T")[0],
-    stamp: "",
+    dispatchDate: "",
+    stamp: "Not Received",
     deliveredDate: "",
     docketNo: "",
     actualFreight: "",
     dispatchStatus: "Not Dispatched",
-    dispatchStatus: "Not Dispatched",
     products: [],
   });
-  const [originalFormData, setOriginalFormData] = useState({}); // Capture original state
+  const [originalFormData, setOriginalFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
-    console.log("entryToEdit:", JSON.stringify(entryToEdit, null, 2));
-    console.log("billStatus:", entryToEdit?.billStatus);
-    console.log("initialData:", JSON.stringify(initialData, null, 2));
     if (initialData && entryToEdit) {
-      const billStatus = (entryToEdit?.billStatus || "Pending")
-        .trim()
-        .toLowerCase();
+      const billStatus = (entryToEdit?.billStatus || "Pending").trim().toLowerCase();
       const isBillingComplete = billStatus === "billing complete";
-      const dispatchStatus = initialData.dispatchStatus || "Not Dispatched";
+
+      const dispatchStatus = initialData.dispatchStatus || entryToEdit.dispatchStatus || "Not Dispatched";
       const validDispatchStatus = isBillingComplete
         ? dispatchStatus
         : ["Dispatched", "Delivered"].includes(dispatchStatus)
           ? "Not Dispatched"
           : dispatchStatus;
 
-      // Initialize products with all fields
-      const products =
-        entryToEdit.products?.map((product) => ({
-          productType: product.productType || "",
-          serialNos: product.serialNos || [],
-          modelNos: product.modelNos || [],
-          unitPrice: product.unitPrice || "",
-          size: product.size || "N/A",
-          spec: product.spec || "N/A",
-        })) || [];
-
-      const deliveredDateValue =
-        initialData?.deliveredDate ?? entryToEdit?.deliveredDate ?? "";
+      // Initialize products with ALL schema fields for backend-safe validation
+      // This prevents "Invalid data" errors when sending products back to server
+      const products = (entryToEdit.products || []).map((p) => ({
+        productType: p.productType || "",
+        serialNos: Array.isArray(p.serialNos) ? p.serialNos : [],
+        modelNos: Array.isArray(p.modelNos) ? p.modelNos : [],
+        unitPrice: p.unitPrice ?? "",
+        qty: p.qty ?? 1,
+        gst: p.gst || "18",
+        warranty: p.warranty || "1 Year",
+        size: p.size || "N/A",
+        spec: p.spec || "N/A",
+        brand: p.brand || "",
+      }));
 
       const initializedData = {
-        dispatchFrom: initialData.dispatchFrom || "",
-        transporter: initialData.transporter || "",
-        transporterDetails: initialData.transporterDetails || "",
-        billNumber: initialData.billNumber || "",
+        dispatchFrom: initialData.dispatchFrom || entryToEdit.dispatchFrom || "",
+        transporter: initialData.transporter || entryToEdit.transporter || "",
+        transporterDetails: initialData.transporterDetails || entryToEdit.transporterDetails || "",
+        billNumber: entryToEdit.billNumber || "", // Kept for data mapping, though not in original UI
         dispatchDate: initialData.dispatchDate
           ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
-          : new Date().toISOString().split("T")[0],
-
-        deliveredDate: deliveredDateValue
-          ? new Date(deliveredDateValue).toISOString().split("T")[0]
-          : "",
-        stamp: initialData.stamp || "Not Received",
-        docketNo: initialData.docketNo || "",
-        actualFreight:
-          initialData.actualFreight ??
-          entryToEdit.actualFreight ??
-          "",
+          : entryToEdit.dispatchDate
+            ? new Date(entryToEdit.dispatchDate).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
+        deliveredDate: initialData.deliveredDate
+          ? new Date(initialData.deliveredDate).toISOString().split("T")[0]
+          : entryToEdit.deliveredDate
+            ? new Date(entryToEdit.deliveredDate).toISOString().split("T")[0]
+            : "",
+        stamp: initialData.stamp || entryToEdit.stamp || "Not Received",
+        docketNo: initialData.docketNo || entryToEdit.docketNo || "",
+        actualFreight: initialData.actualFreight ?? entryToEdit.actualFreight ?? "",
         dispatchStatus: validDispatchStatus,
         products,
       };
 
       setFormData(initializedData);
-
-      // PATCH FIX: Ensure originalFormData reflects the TRUE database state (empty date)
-      // so that the default "Today" in formData counts as a change.
-      setOriginalFormData({
-        ...initializedData,
-        dispatchDate: initialData.dispatchDate
-          ? new Date(initialData.dispatchDate).toISOString().split("T")[0]
-          : "",
-      });
-
-
+      setOriginalFormData(initializedData);
     }
   }, [initialData, entryToEdit]);
 
-  // PERFORMANCE: Stable callback references prevent unnecessary re-renders
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     if (name === "actualFreight") {
@@ -118,44 +103,22 @@ const OutFinishedGoodModal = ({
       if (["serialNos", "modelNos"].includes(field)) {
         updatedProducts[index] = {
           ...updatedProducts[index],
-          [field]: value
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
+          [field]: value.split(",").map((item) => item.trim()).filter(Boolean),
         };
       } else {
-        updatedProducts[index] = {
-          ...updatedProducts[index],
-          [field]: value,
-        };
+        updatedProducts[index] = { ...updatedProducts[index], [field]: value };
       }
       return { ...prev, products: updatedProducts };
     });
   }, []);
 
-  const handleDispatchFromChange = useCallback((value) => {
-    setFormData((prev) => ({ ...prev, dispatchFrom: value }));
-  }, []);
-
-  const handleTransporterChange = useCallback((value) => {
-    setFormData((prev) => ({ ...prev, transporter: value }));
-  }, []);
-
-  const handleDispatchStatusChange = useCallback((value) => {
-    setFormData((prev) => ({ ...prev, dispatchStatus: value }));
-  }, []);
-
   const handleSubmit = async () => {
     if (!showConfirm) {
       if (
-        (formData.dispatchStatus === "Dispatched" ||
-          formData.dispatchStatus === "Delivered") &&
-        entryToEdit?.billStatus !== "Billing Complete"
+        (formData.dispatchStatus === "Dispatched" || formData.dispatchStatus === "Delivered") &&
+        (entryToEdit?.billStatus || "").trim().toLowerCase() !== "billing complete"
       ) {
-        setError(
-          "Cannot set Dispatch Status to Dispatched or Delivered until Billing Status is Billing Complete!"
-        );
-        toast.error("Billing Status must be Billing Complete!");
+        toast.error("Billing Status must be Billing Complete before Dispatching!");
         return;
       }
       setShowConfirm(true);
@@ -166,44 +129,7 @@ const OutFinishedGoodModal = ({
     setError(null);
 
     try {
-      const submissionData = {
-        dispatchFrom: formData.dispatchFrom || undefined,
-        transporter: formData.transporter || undefined,
-        transporterDetails: formData.transporterDetails || undefined,
-        billNumber: formData.billNumber || undefined,
-        dispatchDate: formData.dispatchDate
-          ? new Date(formData.dispatchDate).toISOString()
-          : undefined,
-        deliveredDate: formData.deliveredDate
-          ? new Date(formData.deliveredDate).toISOString()
-          : undefined,
-        docketNo: formData.docketNo || undefined,
-        actualFreight:
-          formData.actualFreight !== ""
-            ? Number(formData.actualFreight)
-            : undefined,
-        dispatchStatus: formData.dispatchStatus || undefined,
-        stamp: formData.stamp,
-        products: formData.products.map((product) => ({
-          productType: product.productType || undefined,
-          serialNos: product.serialNos.length ? product.serialNos : undefined,
-          modelNos: product.modelNos.length ? product.modelNos : undefined,
-          unitPrice:
-            product.unitPrice !== "" ? Number(product.unitPrice) : undefined,
-          size: product.size !== "N/A" ? product.size : undefined,
-          spec: product.spec !== "N/A" ? product.spec : undefined,
-        })),
-      };
-
-      // ---------------------------------------------------------
-      // PATCH REFACTOR: Only send changed fields
-      // ---------------------------------------------------------
       const dirtyValues = getDirtyValues(originalFormData, formData);
-
-      // SAFEGUARD: Force include dispatchDate if it was auto-populated (Today) vs empty DB
-      if (formData.dispatchDate && !originalFormData.dispatchDate) {
-        dirtyValues.dispatchDate = formData.dispatchDate;
-      }
 
       if (Object.keys(dirtyValues).length === 0) {
         toast.info("No changes to save.");
@@ -212,19 +138,48 @@ const OutFinishedGoodModal = ({
         return;
       }
 
-      // Filter submissionData to only include dirty fields
       const finalPayload = {};
+
       Object.keys(dirtyValues).forEach((key) => {
-        if (Object.prototype.hasOwnProperty.call(submissionData, key)) {
-          finalPayload[key] = submissionData[key];
+        const value = formData[key];
+
+        if (key === "products") {
+          finalPayload.products = value.map((p) => ({
+            productType: p.productType || undefined,
+            qty: Number(p.qty) || 1,
+            unitPrice: p.unitPrice !== "" ? Number(p.unitPrice) : 0,
+            gst: p.gst || "18",
+            warranty: p.warranty || "1 Year",
+            serialNos: p.serialNos?.length ? p.serialNos : [],
+            modelNos: p.modelNos?.length ? p.modelNos : [],
+            size: p.size && p.size !== "N/A" ? p.size : undefined,
+            spec: p.spec && p.spec !== "N/A" ? p.spec : undefined,
+            brand: p.brand || undefined,
+          }));
+        } else if (key === "actualFreight") {
+          finalPayload.actualFreight = value !== "" ? Number(value) : undefined;
+        } else if (key.endsWith("Date")) {
+          finalPayload[key] = value ? new Date(value).toISOString() : undefined;
+        } else {
+          // General field: Omit if empty to prevent DB overwrite with ""
+          if (value !== "" && value !== null && value !== undefined) {
+            finalPayload[key] = value;
+          }
         }
       });
+
+      // Avoid sending empty payload after sanitization
+      if (Object.keys(finalPayload).length === 0) {
+        toast.info("No modifications detected.");
+        setLoading(false);
+        setShowConfirm(false);
+        return;
+      }
 
       const response = await axios.patch(
         `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
         finalPayload,
         {
-
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -236,68 +191,27 @@ const OutFinishedGoodModal = ({
         throw new Error(response.data.message || "Failed to update dispatch");
       }
 
-      const updatedEntry = response.data.data;
-
-      onSubmit(updatedEntry);
+      // toast.success("Dispatch updated successfully!");
+      onSubmit(response.data.data);
       onClose();
     } catch (err) {
-      console.error("Dispatch submission error:", err);
-
-      let userFriendlyMessage =
-        "Failed to update dispatch. Please try again later.";
-
-      if (err.response) {
-        if (err.response.status === 400) {
-          userFriendlyMessage =
-            "Invalid data provided. Please check and try again.";
-        } else if (err.response.status === 401) {
-          userFriendlyMessage = "Your session expired. Please log in again.";
-        } else if (err.response.status === 403) {
-          userFriendlyMessage =
-            "You do not have permission to update this dispatch.";
-        } else if (err.response.status === 404) {
-          userFriendlyMessage = "Dispatch entry not found.";
-        } else if (err.response.status >= 500) {
-          userFriendlyMessage = "Server error. Please try again later.";
-        } else if (err.response.data?.message) {
-          userFriendlyMessage = err.response.data.message;
-        }
-      } else if (err.request) {
-        userFriendlyMessage =
-          "No response from server. Check your internet connection.";
-      }
-
-      setError(userFriendlyMessage);
-      toast.error(userFriendlyMessage, {
-        position: "top-right",
-        autoClose: 5000,
-      });
+      console.error("PATCH Error:", err);
+      const msg = err.response?.data?.error || err.response?.data?.message || "Something went wrong.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
       setShowConfirm(false);
     }
   };
 
-  const isBillingComplete = entryToEdit?.billStatus === "Billing Complete";
-  const showProductFields =
-    formData.dispatchFrom && formData.dispatchFrom !== "Morinda";
+  const isBillingComplete = (entryToEdit?.billStatus || "").trim().toLowerCase() === "billing complete";
+  const showProductFields = formData.dispatchFrom && formData.dispatchFrom !== "Morinda";
 
   return (
     <Modal
       title={
-        <h2
-          style={{
-            textAlign: "center",
-            fontWeight: "800",
-            fontSize: "2.2rem",
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            letterSpacing: "1.5px",
-            textShadow: "1px 1px 3px rgba(0, 0, 0, 0.05)",
-            marginBottom: "1.5rem",
-          }}
-        >
+        <h2 style={{ textAlign: "center", fontWeight: "800", fontSize: "2.2rem", background: "linear-gradient(135deg, #2575fc, #6a11cb)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "1.5px", textShadow: "1px 1px 3px rgba(0, 0, 0, 0.05)", marginBottom: "1.5rem" }}>
           🚚 Dispatch
         </h2>
       }
@@ -305,74 +219,36 @@ const OutFinishedGoodModal = ({
       onCancel={onClose}
       footer={null}
       style={{ borderRadius: "15px", overflow: "hidden" }}
-      bodyStyle={{
-        padding: "30px",
-        background: "#fff",
-        borderRadius: "0 0 15px 15px",
-      }}
+      bodyStyle={{ padding: "30px", background: "#fff", borderRadius: "0 0 15px 15px" }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "15px",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        {error && (
-          <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
-        )}
+      <div style={{ display: "flex", flexDirection: "column", gap: "15px", fontFamily: "Arial, sans-serif" }}>
+        {error && <div style={{ color: "red", textAlign: "center", fontWeight: "600", marginBottom: "10px" }}>{error}</div>}
+
         <div>
-          <label
-            style={{
-              fontSize: "1rem",
-              fontWeight: "600",
-              color: "#333",
-              marginBottom: "5px",
-              display: "block",
-            }}
-          >
-            Dispatch From
-          </label>
+          <label style={{ fontSize: "1rem", fontWeight: "600", color: "#333", marginBottom: "5px", display: "block" }}>Dispatch From</label>
           <Select
             value={formData.dispatchFrom || undefined}
-            onChange={handleDispatchFromChange}
+            onChange={(val) => setFormData(p => ({ ...p, dispatchFrom: val }))}
             placeholder="Select dispatch location"
             style={{ width: "100%", borderRadius: "8px" }}
             disabled={loading}
             allowClear
           >
-            <Option value="Patna">Patna</Option>
-            <Option value="Bareilly">Bareilly</Option>
-            <Option value="Ranchi">Ranchi</Option>
-            <Option value="Morinda">Morinda</Option>
-            <Option value="Lucknow">Lucknow</Option>
-            <Option value="Delhi">Delhi</Option>
+            {["Patna", "Bareilly", "Ranchi", "Morinda", "Lucknow", "Delhi"].map(loc => (
+              <Option key={loc} value={loc}>{loc}</Option>
+            ))}
           </Select>
         </div>
+
         {[
           { key: "dispatchDate", label: "Dispatch Date", type: "date" },
           { key: "deliveredDate", label: "Delivery Date", type: "date" },
           { key: "docketNo", label: "Docket No", type: "text" },
           { key: "actualFreight", label: "Actual Freight", type: "text" },
-          {
-            key: "transporterDetails",
-            label: "Transporter Remarks",
-            type: "text",
-          },
+          { key: "transporterDetails", label: "Transporter Remarks", type: "text" },
         ].map((field) => (
           <div key={field.key}>
-            <label
-              style={{
-                fontSize: "1rem",
-                fontWeight: "600",
-                color: "#333",
-                display: "block",
-                marginBottom: "5px",
-              }}
-            >
-              {field.label}
-            </label>
+            <label style={{ fontSize: "1rem", fontWeight: "600", color: "#333", display: "block", marginBottom: "5px" }}>{field.label}</label>
             <Input
               placeholder={`Enter ${field.label.toLowerCase()}`}
               type={field.type}
@@ -384,306 +260,90 @@ const OutFinishedGoodModal = ({
             />
           </div>
         ))}
+
         <div>
-          <label
-            style={{
-              fontSize: "1rem",
-              fontWeight: "600",
-              color: "#333",
-              marginBottom: "5px",
-              display: "block",
-            }}
-          >
-            Transporter
-          </label>
+          <label style={{ fontSize: "1rem", fontWeight: "600", color: "#333", marginBottom: "5px", display: "block" }}>Transporter</label>
           <Select
             value={formData.transporter || undefined}
-            onChange={handleTransporterChange}
+            onChange={(val) => setFormData(p => ({ ...p, transporter: val }))}
             placeholder="Select transporter"
             style={{ width: "100%", borderRadius: "8px" }}
             disabled={loading}
             allowClear
           >
-            <Option value="BlueDart">BlueDart</Option>
-            <Option value="Om Logistics">Om Logistics</Option>
-            <Option value="Rivigo">Rivigo</Option>
-            <Option value="Safex">Safex</Option>
-            <Option value="Delhivery">Delhivery</Option>
-            <Option value="Maruti">Maruti</Option>
-            <Option value="Self-Pickup">Self-Pickup</Option>
-            <Option value="By-Dedicated-Transport">
-              By-Dedicated-Transport
-            </Option>
-            <Option value="Others">Others</Option>
+            {["BlueDart", "Om Logistics", "Rivigo", "Safex", "Delhivery", "Maruti", "Self-Pickup", "By-Dedicated-Transport", "Others"].map(t => (
+              <Option key={t} value={t}>{t}</Option>
+            ))}
           </Select>
         </div>
+
         <div>
-          <label
-            style={{
-              fontSize: "1rem",
-              fontWeight: "600",
-              color: "#333",
-              marginBottom: "5px",
-              display: "block",
-            }}
-          >
-            Dispatch Status<div style={{ marginTop: "0px", paddingLeft: "0px" }}>
-              <small
-                style={{
-                  color: "#888",
-                  fontSize: "0.85rem",
-                }}
-              >
-                Delivered available after Signed Stamp received.
-              </small>
+          <label style={{ fontSize: "1rem", fontWeight: "600", color: "#333", marginBottom: "5px", display: "block" }}>
+            Dispatch Status
+            <div style={{ marginTop: "0px", paddingLeft: "0px" }}>
+              <small style={{ color: "#888", fontSize: "0.85rem" }}>Delivered available after Signed Stamp received.</small>
             </div>
           </label>
           <Select
-            key={
-              (entryToEdit?.billStatus || "Pending") + formData.dispatchStatus
-            }
             value={formData.dispatchStatus || "Not Dispatched"}
-            onChange={handleDispatchStatusChange}
+            onChange={(val) => setFormData(p => ({ ...p, dispatchStatus: val }))}
             style={{ width: "100%", borderRadius: "8px" }}
             disabled={loading}
           >
             <Option value="Not Dispatched">Not Dispatched</Option>
-            <Option value="Docket Awaited Dispatched">
-              Docket-Awaited-Dispatched
-            </Option>
+            <Option value="Docket Awaited Dispatched">Docket-Awaited-Dispatched</Option>
             <Option value="Hold by Salesperson">Hold by Salesperson</Option>
             <Option value="Hold by Customer">Hold by Customer</Option>
             <Option value="Order Cancelled">Order Cancelled</Option>
-            {(entryToEdit?.billStatus || "Pending").trim().toLowerCase() ===
-              "billing complete" && (
-                <>
-                  <Option value="Dispatched">Dispatched</Option>
-
-                  {formData.stamp === "Received" && (
-                    <Option value="Delivered">Delivered</Option>
-                  )}
-                </>
-              )}
-
+            {isBillingComplete && (
+              <>
+                <Option value="Dispatched">Dispatched</Option>
+                {formData.stamp === "Received" && <Option value="Delivered">Delivered</Option>}
+              </>
+            )}
           </Select>
         </div>
 
-        {(entryToEdit?.billStatus || "Pending").trim().toLowerCase() ===
-          "billing complete" && (
-            <div>
-              <label
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  color: "#333",
-                  marginBottom: "5px",
-                  display: "block",
-                }}
-              >
-                Signed Stamp Receiving
-              </label>
-              <Select
-                key={(entryToEdit?.stamp || "Not Received") + formData.stamp}
-                value={formData.stamp || "Not Received"}
-                onChange={(value) => setFormData({ ...formData, stamp: value })}
-                style={{ width: "100%", borderRadius: "8px" }}
-                disabled={loading}
-              >
-                <Option value="Not Received">Not Received</Option>
-                <Option value="Received">Received</Option>
+        {isBillingComplete && (
+          <div>
+            <label style={{ fontSize: "1rem", fontWeight: "600", color: "#333", marginBottom: "5px", display: "block" }}>Signed Stamp Receiving</label>
+            <Select
+              value={formData.stamp || "Not Received"}
+              onChange={(val) => setFormData(p => ({ ...p, stamp: val }))}
+              style={{ width: "100%", borderRadius: "8px" }}
+              disabled={loading}
+            >
+              <Option value="Not Received">Not Received</Option>
+              <Option value="Received">Received</Option>
+            </Select>
+          </div>
+        )}
 
-              </Select>
-            </div>
-          )}
         {showProductFields && (
           <div>
-            <Collapse
-              accordion
-              style={{ background: "#f9f9f9", borderRadius: "8px" }}
-            >
-              <Panel
-                header="Product Details"
-                key="1"
-                style={{ fontWeight: "600", fontSize: "1rem" }}
-              >
+            <Collapse accordion style={{ background: "#f9f9f9", borderRadius: "8px" }}>
+              <Panel header={<span style={{ fontWeight: "600", fontSize: "1rem" }}>Product Details</span>} key="1">
                 {formData.products.map((product, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      border: "1px solid #e8e8e8",
-                      padding: "15px",
-                      borderRadius: "8px",
-                      marginBottom: "15px",
-                    }}
-                  >
-                    <div>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Product Type
-                      </label>
-                      <Input
-                        placeholder="Enter product type"
-                        value={product.productType}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "productType",
-                            e.target.value
-                          )
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div style={{ marginTop: "10px" }}>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Serial Numbers
-                      </label>
-                      <Input
-                        placeholder="Enter serial numbers (comma-separated)"
-                        value={product.serialNos.join(", ")}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "serialNos",
-                            e.target.value
-                          )
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div style={{ marginTop: "10px" }}>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Model Numbers
-                      </label>
-                      <Input
-                        placeholder="Enter model numbers (comma-separated)"
-                        value={product.modelNos.join(", ")}
-                        onChange={(e) =>
-                          handleProductChange(index, "modelNos", e.target.value)
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div style={{ marginTop: "10px" }}>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Unit Price
-                      </label>
-                      <Input
-                        placeholder="Enter unit price"
-                        type="number"
-                        value={product.unitPrice}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "unitPrice",
-                            e.target.value
-                          )
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div style={{ marginTop: "10px" }}>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Size
-                      </label>
-                      <Input
-                        placeholder="Enter size"
-                        value={product.size}
-                        onChange={(e) =>
-                          handleProductChange(index, "size", e.target.value)
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div style={{ marginTop: "10px" }}>
-                      <label
-                        style={{
-                          fontSize: "1rem",
-                          fontWeight: "600",
-                          color: "#333",
-                          marginBottom: "5px",
-                          display: "block",
-                        }}
-                      >
-                        Specification
-                      </label>
-                      <Input
-                        placeholder="Enter specification"
-                        value={product.spec}
-                        onChange={(e) =>
-                          handleProductChange(index, "spec", e.target.value)
-                        }
-                        style={{
-                          borderRadius: "8px",
-                          padding: "10px",
-                          fontSize: "1rem",
-                        }}
-                        disabled={loading}
-                      />
+                  <div key={index} style={{ border: "1px solid #e8e8e8", padding: "15px", borderRadius: "8px", marginBottom: "15px", background: "#fff" }}>
+                    <div style={{ fontWeight: "700", color: "#2575fc", marginBottom: "10px" }}>{product.productType}</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      {[
+                        { label: "Serial Numbers", field: "serialNos", value: product.serialNos.join(", ") },
+                        { label: "Model Numbers", field: "modelNos", value: product.modelNos.join(", ") },
+                        { label: "Size", field: "size", value: product.size },
+                        { label: "Specification", field: "spec", value: product.spec },
+                      ].map((item) => (
+                        <div key={item.field}>
+                          <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "#666", display: "block", marginBottom: "2px" }}>{item.label}</label>
+                          <Input
+                            placeholder={`Enter ${item.label.toLowerCase()}`}
+                            value={item.value}
+                            onChange={(e) => handleProductChange(index, item.field, e.target.value)}
+                            style={{ borderRadius: "6px" }}
+                            disabled={loading}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -691,6 +351,7 @@ const OutFinishedGoodModal = ({
             </Collapse>
           </div>
         )}
+
         <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
           <Button
             onClick={onClose}
