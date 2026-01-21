@@ -317,8 +317,8 @@ const InstallationRow = memo(
             <Button
               variant="info"
               onClick={() => handleSendMail(order)}
-              disabled={mailingInProgress === order._id}
-              className="mail-btn"
+             disabled={String(mailingInProgress) === String(order._id)}
+                        className={`mail-btn ${String(mailingInProgress) === String(order._id) ? "loading" : ""}`}
               style={{
                 width: "40px",
                 height: "40px",
@@ -328,16 +328,13 @@ const InstallationRow = memo(
                 alignItems: "center",
                 justifyContent: "center",
                 background: "linear-gradient(135deg, #0dcaf0, #0aa2c0)",
-                border: "none",
+                border: "none", 
+                position: "relative",
               }}
               title="Send Installation Assignment Mail"
             >
-              {mailingInProgress === order._id ? (
-                <Spinner
-                  animation="border"
-                  size="sm"
-                  style={{ color: "white" }}
-                />
+               {String(mailingInProgress) === String(order._id) ? (
+                            <div className="spinner"></div>
               ) : (
                 <FaEnvelope style={{ color: "white", fontSize: "16px" }} />
               )}
