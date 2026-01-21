@@ -657,7 +657,7 @@ function Installation() {
         </tbody>
       </table>
     </div>
-  ), [sortedOrders, isDispatchOverdue, handleView, handleEdit]);
+  ), [sortedOrders, isDispatchOverdue, handleView, handleEdit, handleSendMail, mailingInProgress]);
 
   if (loading) {
     return (
