@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes, FaDownload } from "react-icons/fa";
@@ -9,6 +9,8 @@ import io from "socket.io-client";
 import InstallationEditModal from "./InstallationEditModal";
 import InstallationRow from "./InstallationRow";
 import debounce from "lodash/debounce";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function Installation() {
   const [orders, setOrders] = useState([]);
@@ -23,7 +25,8 @@ function Installation() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
   const [mailingInProgress, setMailingInProgress] = useState("");
-
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const pdfRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -162,6 +165,72 @@ function Installation() {
     };
   }, []);
 
+  // Exprt Pdf View Modal
+  const handleExportPDF = async () => {
+    if (!viewOrder) return;
+    setIsGeneratingPDF(true);
+    try {
+      const input = pdfRef.current;
+      if (!input) return;
+
+      // Use a very high scale for maximum sharpness when fitting to one page
+      const canvas = await html2canvas(input, {
+        scale: 4,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      // Calculate dimensions to fit exactly on one page while maintaining aspect ratio
+      const canvasRatio = canvas.width / canvas.height;
+      const pageRatio = pageWidth / pageHeight;
+
+      let finalImgWidth, finalImgHeight;
+
+      if (canvasRatio > pageRatio) {
+        // Limited by width
+        finalImgWidth = pageWidth;
+        finalImgHeight = pageWidth / canvasRatio;
+      } else {
+        // Limited by height
+        finalImgHeight = pageHeight;
+        finalImgWidth = pageHeight * canvasRatio;
+      }
+
+      // Center the image on the page
+      const xOffset = (pageWidth - finalImgWidth) / 2;
+      const yOffset = (pageHeight - finalImgHeight) / 2;
+
+      pdf.addImage(imgData, "JPEG", xOffset, yOffset, finalImgWidth, finalImgHeight, undefined, 'FAST');
+
+      // Footer (Page 1 of 1 as requested)
+      pdf.setFontSize(10);
+      pdf.setTextColor(150);
+      const dateStr = new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      pdf.text(`Generated on: ${dateStr}`, 15, pageHeight - 10);
+      pdf.text(`Page 1 of 1`, pageWidth - 30, pageHeight - 10);
+
+      pdf.save(`Installation_Order_${viewOrder.orderId}.pdf`);
+      toast.success("PDF exported successfully!");
+    } catch (error) {
+      console.error("PDF Export Error:", error);
+      toast.error("Failed to export PDF.");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
 
   // Optimization: Debounced search updater
@@ -495,7 +564,6 @@ function Installation() {
         "Charges Status": order.installchargesstatus || "N/A",
         Charges: order.installation || "N/A",
         "Installation Status": order.installationStatus || "Pending",
-        "Installation Report": order.installationReport || "N/A",
         "Sales Person": order.salesPerson || "N/A",
         City: order.city || "N/A",
         State: order.state || "N/A",
@@ -1062,33 +1130,183 @@ function Installation() {
         color: #555;
         line-height: 1.4;
       }
+      /* Print Styles */
+      .pdf-print-container {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+        background: #fff;
+        color: #333;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.5;
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+      }
+      .pdf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #2575fc;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .pdf-title {
+        color: #2575fc;
+        margin: 0;
+        font-size: 24px;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+      .pdf-logo {
+        height: 60px;
+        width: auto;
+      }
+      .pdf-section {
+        margin-bottom: 25px;
+      }
+      .pdf-section-title {
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-left: 4px solid #6a11cb;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        font-size: 16px;
+      }
+      .pdf-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+      .pdf-item {
+        font-size: 14px;
+      }
+      .pdf-item strong {
+        color: #555;
+      }
+      .pdf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      .pdf-table th {
+        background: #f1f3f5;
+        text-align: left;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        font-size: 13px;
+      }
+      .pdf-table td {
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        font-size: 13px;
+        vertical-align: top;
+      }
+      .pdf-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #fff;
+      }
+      .serial-list {
+        margin: 0;
+        padding-left: 15px;
+        list-style-type: disc;
+      }
+      .serial-list li {
+        font-size: 12px;
+      }
     `}
           </style>
           <Modal.Header
-            closeButton
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               color: "#fff",
-              padding: "20px",
+              padding: "15px 20px",
               borderBottom: "none",
               boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
             }}
           >
-            <Modal.Title
+            <div
               style={{
-                fontWeight: "700",
-                fontSize: "1.8rem",
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                textShadow: "1px 1px 3px rgba(0, 0, 0, 0.2)",
+                width: "100%",
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>📋</span>
-              Installation Order Details
-            </Modal.Title>
+              {/* LEFT – Title */}
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span style={{ marginRight: "10px", fontSize: "1.3rem" }}>📋</span>
+                <span
+                  style={{
+                    fontWeight: "700",
+                    fontSize: "1.5rem",
+                    letterSpacing: "0.5px",
+                    textTransform: "uppercase",
+                    textShadow: "1px 1px 3px rgba(0, 0, 0, 0.2)",
+                  }}
+                >
+                  Installation Details
+                </span>
+              </div>
+
+              {/* RIGHT – Export + Close */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <Button
+                  onClick={handleExportPDF}
+                  disabled={isGeneratingPDF}
+                  size="sm"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.2)",
+                    border: "1px solid rgba(255, 255, 255, 0.4)",
+                    padding: "6px 15px",
+                    borderRadius: "20px",
+                    color: "#fff",
+                    fontWeight: "600",
+                    fontSize: "0.85rem",
+                    textTransform: "uppercase",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)")
+                  }
+                >
+                  {isGeneratingPDF ? (
+                    <>
+                      <Spinner size="sm" animation="border" /> Exporting...
+                    </>
+                  ) : (
+                    <>📄 Export PDF</>
+                  )}
+                </Button>
+
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#fff",
+                    fontSize: "1.5rem",
+                    cursor: "pointer",
+                    lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
           </Modal.Header>
+
           <Modal.Body
             style={{
               padding: "30px",
@@ -1103,13 +1321,92 @@ function Installation() {
           >
             {viewOrder && (
               <>
+                {/* Printable Template (Off-screen) */}
+                <div ref={pdfRef} className="pdf-print-container">
+                  <div className="pdf-header">
+                    <div>
+                      <h1 className="pdf-title">Installation Order</h1>
+                      <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
+                        Official Installation Record
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <img src="/logo.png" alt="Company Logo" className="pdf-logo" onError={(e) => e.target.style.display = 'none'} />
+                      <div style={{ marginTop: "10px", fontWeight: "bold", fontSize: "16px" }}>
+                        Order ID: {viewOrder.orderId || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pdf-section">
+                    <div className="pdf-section-title">Installation Info</div>
+                    <div className="pdf-grid">
+                      <div className="pdf-item"><strong>Contact Person:</strong> {viewOrder.name || "N/A"}</div>
+                      <div className="pdf-item"><strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}</div>
+                      <div className="pdf-item"><strong>Customer Email:</strong> {viewOrder.customerEmail || "N/A"}</div>
+                      <div className="pdf-item"><strong>Sales Person:</strong> {viewOrder.salesPerson || "N/A"}</div>
+                      <div className="pdf-item" style={{ gridColumn: "span 2" }}><strong>Shipping Address:</strong> {viewOrder.shippingAddress || "N/A"}</div>
+                      <div className="pdf-item"><strong>Installation Status:</strong> {viewOrder.installationStatus || "Pending"}</div>
+                      <div className="pdf-item"><strong>Engineer Name:</strong> {viewOrder.installationeng || "N/A"}</div>
+                      <div className="pdf-item"><strong>Charges Status:</strong> {viewOrder.installchargesstatus || "N/A"}</div>
+                      <div className="pdf-item"><strong>Dispatch Status:</strong> {viewOrder.dispatchStatus || "N/A"}</div>
+                    </div>
+                  </div>
+
+                  <div className="pdf-section">
+                    <div className="pdf-section-title">Product Info</div>
+                    <table className="pdf-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: "40px" }}>#</th>
+                          <th>Product Type</th>
+                          <th>Qty</th>
+                          <th>Size / Spec</th>
+                          <th>Serial Numbers</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.isArray(viewOrder.products) && viewOrder.products.length > 0 ? (
+                          viewOrder.products.map((p, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>{p.productType || "N/A"}</td>
+                              <td>{p.qty || "N/A"}</td>
+                              <td>{p.size || "N/A"} / {p.spec || "N/A"}</td>
+                              <td>
+                                {p.serialNos && p.serialNos.length > 0 ? (
+                                  <ul className="serial-list">
+                                    {p.serialNos.map((s, si) => <li key={si}>{s}</li>)}
+                                  </ul>
+                                ) : "N/A"}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr><td colSpan="5" style={{ textAlign: "center" }}>No products found</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {viewOrder.remarksByInstallation && (
+                    <div className="pdf-section">
+                      <div className="pdf-section-title">Remarks</div>
+                      <div className="pdf-item" style={{ padding: "10px", background: "#f8f9fa", borderRadius: "5px" }}>
+                        {viewOrder.remarksByInstallation}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Visible Content in Modal */}
+
                 <div
                   style={{
                     background: "#f8f9fa",
                     borderRadius: "10px",
                     padding: "20px",
                     boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                    animation: "fadeIn 0.5s ease-in-out",
                   }}
                 >
                   <h3
@@ -1142,58 +1439,36 @@ function Installation() {
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Installation Report:</strong>{" "}
                       {viewOrder.installationFile ? (
-                        <div
+                        <Button
+                          size="sm"
+                          onClick={() => handleDownload(viewOrder.installationFile)}
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
-                            marginTop: "5px",
+                            gap: "6px",
+                            padding: "4px 12px",
+                            marginLeft: "10px",
+                            borderRadius: "20px",
+                            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                            color: "#fff",
+                            border: "none",
+                            fontSize: "0.8rem"
                           }}
                         >
-                          <Button
-                            size="sm"
-                            onClick={() => handleDownload(viewOrder.installationFile)}
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              padding: "6px 14px",
-                              borderRadius: "20px",
-                              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                              color: "#fff",
-                              fontWeight: "600",
-                              fontSize: "0.85rem",
-                              border: "none",
-                              boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
-                              transition: "all 0.3s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.transform = "translateY(-1px) scale(1.02)";
-                              e.target.style.boxShadow = "0 5px 12px rgba(0,0,0,0.3)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.transform = "translateY(0) scale(1)";
-                              e.target.style.boxShadow = "0 3px 8px rgba(0,0,0,0.2)";
-                            }}
-                          >
-                            <FaDownload size={12} />
-                            Download Report
-                          </Button>
-                        </div>
+                          <FaDownload size={10} /> Download
+                        </Button>
                       ) : (
                         "N/A"
                       )}
-
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Shipping Address:</strong>{" "}
-                      {viewOrder.shippingAddress || "N/A"}
+                      <strong>Shipping Address:</strong> {viewOrder.shippingAddress || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Installation Charges:</strong>{" "}
-                      {viewOrder.installation || "N/A"}
+                      <strong>Installation Charges:</strong> {viewOrder.installation || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Installation Status:</strong>{" "}
@@ -1201,18 +1476,12 @@ function Installation() {
                         style={{
                           background:
                             viewOrder.installationStatus === "Pending"
-                              ? "linear-gradient(135deg, #ff6b6b, #ff8787)" // Red for Pending
+                              ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
                               : viewOrder.installationStatus === "In Progress"
-                                ? "linear-gradient(135deg, #f39c12, #f7c200)" // Orange/Yellow for In Progress
+                                ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                 : viewOrder.installationStatus === "Completed"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)" // Green for Completed
-                                  : viewOrder.installationStatus === "Failed"
-                                    ? "linear-gradient(135deg, #6c757d, #5a6268)" // Gray for Failed
-                                    : viewOrder.installationStatus === "Hold"
-                                      ? "linear-gradient(135deg, #007bff, #4dabf7)" // Blue for Hold by Salesperson
-                                      : viewOrder.installationStatus === "Site Not Ready"
-                                        ? "linear-gradient(135deg, #e84393, #ff6b9b)" // Pink/Magenta for Site Not Ready
-                                        : "linear-gradient(135deg, #6c757d, #a9a9a9)", // Default gray
+                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                           color: "#fff",
                           padding: "5px 10px",
                           borderRadius: "12px",
@@ -1221,51 +1490,15 @@ function Installation() {
                         {viewOrder.installationStatus || "Pending"}
                       </Badge>
                     </span>
-
-                    {viewOrder.installationStatusDate && (
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Installation Completion Date:</strong>{" "}
-                        {
-                          new Date(viewOrder.installationStatusDate)
-                            .toISOString()
-                            .split("T")[0]
-                        }
-                      </span>
-                    )}
-
-                    {viewOrder.installationeng && (
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Engineer Name:</strong>{" "}
-                        {viewOrder.installationeng}
-                      </span>
-                    )}
-
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Remarks By Installation:</strong>{" "}
-                      {viewOrder.remarksByInstallation || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Dispatch Status:</strong>{" "}
-                      {viewOrder.dispatchStatus || "N/A"}
-                    </span>
-
-                    {viewOrder.deliveredDate && (
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Delivered Date:</strong>{" "}
-                        {new Date(viewOrder.deliveredDate).toLocaleDateString(
-                          "en-GB"
-                        ) || "N/A"}
-                      </span>
-                    )}
                   </div>
                 </div>
+
                 <div
                   style={{
                     background: "#f8f9fa",
                     borderRadius: "10px",
                     padding: "20px",
                     boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                    animation: "fadeIn 0.5s ease-in-out",
                   }}
                 >
                   <h3
@@ -1279,91 +1512,63 @@ function Installation() {
                   >
                     Product Info
                   </h3>
-                  {Array.isArray(viewOrder.products) &&
-                    viewOrder.products.length > 0 ? (
+                  {Array.isArray(viewOrder.products) && viewOrder.products.length > 0 ? (
                     viewOrder.products.map((product, index) => (
                       <div
                         key={index}
                         style={{
                           display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fit, minmax(200px, 1fr))",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                           gap: "10px",
                           padding: "10px 0",
-                          borderBottom:
-                            index < viewOrder.products.length - 1
-                              ? "1px solid #eee"
-                              : "none",
-                          alignItems: "start",
+                          borderBottom: index < viewOrder.products.length - 1 ? "1px solid #eee" : "none",
                         }}
                       >
                         <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Product {index + 1} Type:</strong>{" "}
-                          {product.productType || "N/A"}
+                          <strong>Product {index + 1}:</strong> {product.productType || "N/A"}
                         </span>
                         <span style={{ fontSize: "1rem", color: "#555" }}>
                           <strong>Qty:</strong> {product.qty || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Size:</strong> {product.size || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Spec:</strong> {product.spec || "N/A"}
                         </span>
                         <span style={{ fontSize: "1rem", color: "#555" }}>
                           <strong>Serial Nos:</strong>
                           <div className="serial-nos-container">
                             {product.serialNos && product.serialNos.length > 0 ? (
                               <ul>
-                                {product.serialNos.map((serial, idx) => (
-                                  <li key={idx}>{serial}</li>
-                                ))}
+                                {product.serialNos.map((serial, idx) => <li key={idx}>{serial}</li>)}
                               </ul>
-                            ) : (
-                              "N/A"
-                            )}
+                            ) : "N/A"}
                           </div>
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Model Nos:</strong>{" "}
-                          {product.modelNos?.[0] || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Product Code:</strong>{" "}
-                          {product.productCode?.[0] || "N/A"}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Products:</strong> N/A
-                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>N/A</span>
                   )}
                 </div>
-                <Button
-                  onClick={handleCopy}
-                  style={{
-                    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                    border: "none",
-                    padding: "12px",
-                    borderRadius: "25px",
-                    color: "#fff",
-                    fontWeight: "600",
-                    fontSize: "1.1rem",
-                    textTransform: "uppercase",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
-                    alignSelf: "flex-end",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "translateY(-3px)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.transform = "translateY(0)")
-                  }
-                >
-                  {copied ? "✅ Copied!" : "📑 Copy Details"}
-                </Button>
+
+                <div style={{ marginTop: "20px" }}>
+                  <Button
+                    onClick={handleCopy}
+                    style={{
+                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                      border: "none",
+                      padding: "12px",
+                      borderRadius: "10px",
+                      color: "#fff",
+                      fontWeight: "600",
+                      fontSize: "1rem",
+                      textTransform: "uppercase",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                      width: "100%",
+                      transition: "all 0.3s ease"
+                    }}
+                    onMouseEnter={(e) => e.target.style.transform = "translateY(-2px)"}
+                    onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
+                  >
+                    {copied ? "✅ Details Copied to Clipboard!" : "📑 Copy Details to Clipboard"}
+                  </Button>
+                </div>
               </>
             )}
           </Modal.Body>
