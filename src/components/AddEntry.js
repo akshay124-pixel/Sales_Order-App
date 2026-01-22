@@ -239,6 +239,7 @@ function AddEntry({ onSubmit, onClose }) {
     if (file) {
       const allowedTypes = [
         "application/pdf",
+        "application/x-pdf",
         "image/png",
         "image/jpeg",
         "image/jpg",
@@ -247,7 +248,10 @@ function AddEntry({ onSubmit, onClose }) {
         "application/vnd.ms-excel",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       ];
-      if (!allowedTypes.includes(file.type)) {
+      const allowedExtensions = ["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx"];
+      const fileExt = file.name.split(".").pop().toLowerCase();
+
+      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
         setFileError(
           "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
         );

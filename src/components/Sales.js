@@ -2129,12 +2129,13 @@ const Sales = () => {
     // 5. Dispatch Validation
     // Must be Delivered and have basic dispatch details
     const isDispatchValid =
-      (order.dispatchStatus === "Delivered" ||
-        order.dispatchStatus?.toLowerCase() === "delivered") &&
+      order.dispatchStatus === "Delivered" &&
+      order.stamp === "Received" &&
       !isEmpty(order.dispatchFrom) &&
       !isEmpty(order.dispatchDate) &&
       !isEmpty(order.transporter) &&
       !isEmpty(order.actualFreight);
+
 
     // 6. Installation Validation
     // Only required if installation is NOT "No", "N/A" or empty
