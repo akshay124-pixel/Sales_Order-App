@@ -770,6 +770,7 @@ export const statesAndCities = {
     "Munroe Island",
   ],
   "Madhya Pradesh": [
+    "Shajapur",
     "Bhopal",
     "Indore",
     "Gwalior",
