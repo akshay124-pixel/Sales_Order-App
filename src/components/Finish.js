@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
-import { Button, Modal, Badge, Form } from "react-bootstrap";
+import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
@@ -9,6 +9,9 @@ import OrderRow from "./OrderRow"; // Memoized row component for performance
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
 
 // Styled Component for DatePicker
 const DatePickerWrapper = styled.div`
@@ -58,6 +61,8 @@ function Finish() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [salesPersonFilter, setSalesPersonFilter] = useState("All");
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const pdfRef = useRef(null);
 
   // Debounce search term update
   useEffect(() => {
@@ -416,6 +421,72 @@ function Finish() {
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
   }, []);
+
+  const handleExportPDF = async () => {
+    if (!viewOrder) return;
+    setIsGeneratingPDF(true);
+    try {
+      const input = pdfRef.current;
+      if (!input) return;
+
+      // Use a very high scale for maximum sharpness when fitting to one page
+      const canvas = await html2canvas(input, {
+        scale: 4,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      // Calculate dimensions to fit exactly on one page while maintaining aspect ratio
+      const canvasRatio = canvas.width / canvas.height;
+      const pageRatio = pageWidth / pageHeight;
+
+      let finalImgWidth, finalImgHeight;
+
+      if (canvasRatio > pageRatio) {
+        // Limited by width
+        finalImgWidth = pageWidth;
+        finalImgHeight = pageWidth / canvasRatio;
+      } else {
+        // Limited by height
+        finalImgHeight = pageHeight;
+        finalImgWidth = pageHeight * canvasRatio;
+      }
+
+      // Center the image on the page
+      const xOffset = (pageWidth - finalImgWidth) / 2;
+      const yOffset = (pageHeight - finalImgHeight) / 2;
+
+      pdf.addImage(imgData, "JPEG", xOffset, yOffset, finalImgWidth, finalImgHeight, undefined, 'FAST');
+
+      // Footer
+      pdf.setFontSize(10);
+      pdf.setTextColor(150);
+      const dateStr = new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      pdf.text(`Generated on: ${dateStr}`, 15, pageHeight - 10);
+      pdf.text(`Page 1 of 1`, pageWidth - 30, pageHeight - 10);
+
+      pdf.save(`Order_${viewOrder.orderId}.pdf`);
+      toast.success("PDF exported successfully!");
+    } catch (error) {
+      console.error("PDF Export Error:", error);
+      toast.error("Failed to export PDF.");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   const handleView = useCallback((order) => {
     setViewOrder(order);
@@ -1174,32 +1245,173 @@ function Finish() {
         color: #555;
         line-height: 1.4;
       }
+      /* Print Styles */
+      .pdf-print-container {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+        background: #fff;
+        color: #333;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.5;
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+      }
+      .pdf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #2575fc;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .pdf-title {
+        color: #2575fc;
+        margin: 0;
+        font-size: 24px;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+      .pdf-logo {
+        height: 60px;
+        width: auto;
+      }
+      .pdf-section {
+        margin-bottom: 25px;
+      }
+      .pdf-section-title {
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-left: 4px solid #6a11cb;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        font-size: 16px;
+      }
+      .pdf-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+      .pdf-item {
+        font-size: 14px;
+      }
+      .pdf-item strong {
+        color: #555;
+      }
+      .pdf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      .pdf-table th {
+        background: #f1f3f5;
+        text-align: left;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        font-size: 13px;
+      }
+      .pdf-table td {
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        font-size: 13px;
+        vertical-align: top;
+      }
+      .serial-list {
+        margin: 0;
+        padding-left: 15px;
+        list-style-type: disc;
+      }
+      .serial-list li {
+        font-size: 12px;
+      }
     `}
         </style>
         <Modal.Header
-          closeButton
           style={{
             background: "linear-gradient(135deg, #2575fc, #6a11cb)",
             color: "#fff",
-            padding: "20px",
+            padding: "15px 20px",
             borderBottom: "none",
             boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
           }}
         >
-          <Modal.Title
+          <div
             style={{
-              fontWeight: "700",
-              fontSize: "1.8rem",
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              textShadow: "1px 1px 3px rgba(0, 0, 0, 0.2)",
+              width: "100%",
               display: "flex",
               alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>📋</span>
-            Order Details
-          </Modal.Title>
+            {/* LEFT – Title */}
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ marginRight: "10px", fontSize: "1.3rem" }}>📋</span>
+              <span
+                style={{
+                  fontWeight: "700",
+                  fontSize: "1.5rem",
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  textShadow: "1px 1px 3px rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                Order Details
+              </span>
+            </div>
+
+            {/* RIGHT – Export + Close */}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <Button
+                onClick={handleExportPDF}
+                disabled={isGeneratingPDF}
+                size="sm"
+                style={{
+                  background: "rgba(255, 255, 255, 0.2)",
+                  border: "1px solid rgba(255, 255, 255, 0.4)",
+                  padding: "6px 15px",
+                  borderRadius: "20px",
+                  color: "#fff",
+                  fontWeight: "600",
+                  fontSize: "0.85rem",
+                  textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)")
+                }
+              >
+                {isGeneratingPDF ? (
+                  <>
+                    <Spinner size="sm" animation="border" /> Exporting...
+                  </>
+                ) : (
+                  <>📄 Export PDF</>
+                )}
+              </Button>
+
+              <button
+                onClick={() => setShowViewModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#fff",
+                  fontSize: "1.5rem",
+                  cursor: "pointer",
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          </div>
         </Modal.Header>
         <Modal.Body
           style={{
@@ -1215,6 +1427,84 @@ function Finish() {
         >
           {viewOrder && (
             <>
+              {/* Printable Template (Off-screen) */}
+              <div ref={pdfRef} className="pdf-print-container">
+                <div className="pdf-header">
+                  <div>
+                    <h1 className="pdf-title">Dispatch Order</h1>
+                    <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
+                      Official Dispatch Record
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <img src="/logo.png" alt="Company Logo" className="pdf-logo" onError={(e) => e.target.style.display = 'none'} />
+                    <div style={{ marginTop: "10px", fontWeight: "bold", fontSize: "16px" }}>
+                      Order ID: {viewOrder.orderId || "N/A"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pdf-section">
+                  <div className="pdf-section-title">Order Info</div>
+                  <div className="pdf-grid">
+                    <div className="pdf-item"><strong>Customer Name:</strong> {viewOrder.customername || "N/A"}</div>
+                    <div className="pdf-item"><strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}</div>
+                    <div className="pdf-item"><strong>SO Date:</strong> {viewOrder.soDate ? new Date(viewOrder.soDate).toLocaleDateString() : "N/A"}</div>
+                    <div className="pdf-item"><strong>Dispatch Date:</strong> {viewOrder.dispatchDate ? new Date(viewOrder.dispatchDate).toLocaleDateString() : "N/A"}</div>
+                    <div className="pdf-item" style={{ gridColumn: "span 2" }}><strong>Shipping Address:</strong> {viewOrder.shippingAddress || "N/A"}</div>
+                    <div className="pdf-item"><strong>Sales Person:</strong> {viewOrder.salesPerson || "N/A"}</div>
+                    <div className="pdf-item"><strong>Dispatch From:</strong> {viewOrder.dispatchFrom || "N/A"}</div>
+                    <div className="pdf-item"><strong>Transporter:</strong> {viewOrder.transporter || "N/A"}</div>
+                    <div className="pdf-item"><strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}</div>
+                  </div>
+                </div>
+
+                <div className="pdf-section">
+                  <div className="pdf-section-title">Product Info</div>
+                  <table className="pdf-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: "40px" }}>#</th>
+                        <th>Product Type</th>
+                        <th>Qty</th>
+                        <th>Size / Spec</th>
+                        <th>Serial Numbers</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viewOrder.products && viewOrder.products.length > 0 ? (
+                        viewOrder.products.map((p, idx) => (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>{p.productType || "N/A"}</td>
+                            <td>{p.qty || "N/A"}</td>
+                            <td>{p.size || "N/A"} / {p.spec || "N/A"}</td>
+                            <td>
+                              {p.serialNos && p.serialNos.length > 0 ? (
+                                <ul className="serial-list">
+                                  {p.serialNos.map((s, si) => <li key={si}>{s}</li>)}
+                                </ul>
+                              ) : "N/A"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan="5" style={{ textAlign: "center" }}>No products found</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {viewOrder.remarksByProduction && (
+                  <div className="pdf-section">
+                    <div className="pdf-section-title">Production Remarks</div>
+                    <div className="pdf-item" style={{ padding: "10px", background: "#f8f9fa", borderRadius: "5px" }}>
+                      {viewOrder.remarksByProduction}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Product Info Section */}
               <div
                 style={{

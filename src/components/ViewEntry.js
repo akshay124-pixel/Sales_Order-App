@@ -2,10 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Badge, Accordion, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
-import { Copy, Download } from "lucide-react";
+import { Copy, Download, FileText } from "lucide-react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
+import { Spinner } from "react-bootstrap";
 
 function ViewEntry({ isOpen, onClose, entry }) {
   const [copied, setCopied] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const pdfRef = useRef(null);
 
   // Utility function to check if a field is valid (not null, undefined, empty, or "N/A")
   const isValidField = (value) => {
@@ -380,6 +386,66 @@ function ViewEntry({ isOpen, onClose, entry }) {
         toast.error("Failed to copy details!");
         console.error("Copy error:", err);
       });
+  };
+
+  const handleExportPDF = async () => {
+    if (!entry) return;
+    setIsGeneratingPDF(true);
+    try {
+      const input = pdfRef.current;
+      if (!input) return;
+
+      const canvas = await html2canvas(input, {
+        scale: 4,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      const canvasRatio = canvas.width / canvas.height;
+      const pageRatio = pageWidth / pageHeight;
+
+      let finalImgWidth, finalImgHeight;
+
+      if (canvasRatio > pageRatio) {
+        finalImgWidth = pageWidth;
+        finalImgHeight = pageWidth / canvasRatio;
+      } else {
+        finalImgHeight = pageHeight;
+        finalImgWidth = pageHeight * canvasRatio;
+      }
+
+      const xOffset = (pageWidth - finalImgWidth) / 2;
+      const yOffset = (pageHeight - finalImgHeight) / 2;
+
+      pdf.addImage(imgData, "JPEG", xOffset, yOffset, finalImgWidth, finalImgHeight, undefined, 'FAST');
+
+      pdf.setFontSize(10);
+      pdf.setTextColor(150);
+      const dateStr = new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      pdf.text(`Generated on: ${dateStr}`, 15, pageHeight - 10);
+      pdf.text(`Page 1 of 1`, pageWidth - 30, pageHeight - 10);
+
+      pdf.save(`Order_${entry.orderId || "Details"}.pdf`);
+      toast.success("PDF exported successfully!");
+    } catch (error) {
+      console.error("PDF Export Error:", error);
+      toast.error("Failed to export PDF.");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   if (!entry) return null;
@@ -798,28 +864,111 @@ function ViewEntry({ isOpen, onClose, entry }) {
       centered
       style={{ backdropFilter: "blur(5px)" }}
     >
+      <style>
+        {`
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      /* Print Styles */
+      .pdf-print-container {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+        background: #fff;
+        color: #333;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.5;
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+      }
+      .pdf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #2575fc;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .pdf-title {
+        color: #2575fc;
+        margin: 0;
+        font-size: 24px;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+      .pdf-logo {
+        height: 60px;
+        width: auto;
+      }
+      .pdf-section {
+        margin-bottom: 20px;
+      }
+      .pdf-section-title {
+        background: #f8f9fa;
+        padding: 6px 10px;
+        border-left: 4px solid #6a11cb;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        font-size: 15px;
+      }
+      .pdf-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .pdf-item {
+        font-size: 13px;
+      }
+      .pdf-item strong {
+        color: #444;
+      }
+      .pdf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+      }
+      .pdf-table th {
+        background: #f1f3f5;
+        text-align: left;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+        font-size: 12px;
+      }
+      .pdf-table td {
+        padding: 8px;
+        border: 1px solid #dee2e6;
+        font-size: 12px;
+        vertical-align: top;
+      }
+    `}
+      </style>
       <Modal.Header
         style={{
           background: "linear-gradient(135deg, #2575fc, #6a11cb)",
           color: "#fff",
-          padding: "1.5rem 2rem",
+          padding: "1.2rem 2rem",
           border: "none",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
         }}
       >
         <Modal.Title
           id="view-entry-modal-title"
           style={{
             fontWeight: "700",
-            fontSize: "1.8rem",
-            letterSpacing: "1.2px",
+            fontSize: "1.6rem",
+            letterSpacing: "1px",
             textTransform: "uppercase",
             fontFamily: "'Poppins', sans-serif",
             display: "flex",
             alignItems: "center",
             gap: "10px",
+            margin: 0,
           }}
         >
           <span role="img" aria-label="clipboard">
@@ -827,21 +976,62 @@ function ViewEntry({ isOpen, onClose, entry }) {
           </span>
           Sales Order #{entry.orderId || "N/A"}
         </Modal.Title>
-        <Button
-          variant="light"
-          onClick={onClose}
-          style={{
-            borderRadius: "50%",
-            width: "40px",
-            height: "40px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
-          }}
-        >
-          ✕
-        </Button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          <Button
+            onClick={handleExportPDF}
+            disabled={isGeneratingPDF}
+            style={{
+              background: "rgba(255, 255, 255, 0.2)",
+              border: "1px solid rgba(255, 255, 255, 0.3)",
+              borderRadius: "50px",
+              padding: "6px 20px",
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)")
+            }
+          >
+            {isGeneratingPDF ? (
+              <>
+                <Spinner size="sm" animation="border" /> Exporting...
+              </>
+            ) : (
+              <>
+                <FileText size={18} /> Export PDF
+              </>
+            )}
+          </Button>
+
+          <Button
+            variant="light"
+            onClick={onClose}
+            style={{
+              borderRadius: "50%",
+              width: "36px",
+              height: "36px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+              border: "none",
+              fontSize: "1.2rem",
+              lineHeight: 1,
+              padding: 0,
+            }}
+          >
+            ✕
+          </Button>
+        </div>
       </Modal.Header>
 
       <Modal.Body
@@ -849,13 +1039,184 @@ function ViewEntry({ isOpen, onClose, entry }) {
           padding: "2rem",
           background: "linear-gradient(180deg, #f8fafc, #e2e8f0)",
           borderRadius: "0 0 15px 15px",
-          minHeight: "600px",
+          minHeight: "500px",
           maxHeight: "80vh",
           overflowY: "auto",
           scrollbarWidth: "thin",
           scrollbarColor: "#2575fc #e6f0fa",
+          animation: "fadeIn 0.5s ease-out",
         }}
       >
+        {/* Printable Template (Off-screen) */}
+        <div ref={pdfRef} className="pdf-print-container">
+          <div className="pdf-header">
+            <div>
+              <h1 className="pdf-title">Sales Order</h1>
+              <div
+                style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}
+              >
+                Official Business Record
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="pdf-logo"
+                onError={(e) => (e.target.style.display = "none")}
+              />
+              <div
+                style={{
+                  marginTop: "10px",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                }}
+              >
+                Order ID: {entry.orderId || "N/A"}
+              </div>
+            </div>
+          </div>
+
+          <div className="pdf-section">
+            <div className="pdf-section-title">Order Information</div>
+            <div className="pdf-grid">
+              <div className="pdf-item"><strong>SO Date:</strong> {formatDateTime(entry.soDate) || "N/A"}</div>
+              <div className="pdf-item"><strong>Order Type:</strong> {entry.orderType || "N/A"}</div>
+              <div className="pdf-item"><strong>GEM Order No:</strong> {entry.gemOrderNumber || "N/A"}</div>
+              <div className="pdf-item"><strong>Sales Person:</strong> {entry.salesPerson || "N/A"}</div>
+              <div className="pdf-item"><strong>Reporting Person:</strong> {entry.report || "N/A"}</div>
+              <div className="pdf-item"><strong>Branch/Company:</strong> {entry.company || "N/A"}</div>
+              <div className="pdf-item"><strong>Created By:</strong> {createdByName || "N/A"}</div>
+              <div className="pdf-item"><strong>Stock Status:</strong> {entry.stockStatus || "N/A"}</div>
+              <div className="pdf-item"><strong>SO Status:</strong> {entry.sostatus || "N/A"}</div>
+              <div className="pdf-item"><strong>Dispatch Status:</strong> {entry.dispatchStatus || "N/A"}</div>
+              <div className="pdf-item"><strong>PI Number:</strong> {entry.piNumber || "N/A"}</div>
+              <div className="pdf-item"><strong>Bill Number:</strong> {entry.billNumber || "N/A"}</div>
+            </div>
+          </div>
+
+          <div className="pdf-section">
+            <div className="pdf-section-title">Customer Details</div>
+            <div className="pdf-grid">
+              <div className="pdf-item"><strong>Customer Name:</strong> {entry.customername || "N/A"}</div>
+              <div className="pdf-item"><strong>Contact Person:</strong> {entry.name || "N/A"}</div>
+              <div className="pdf-item"><strong>Contact No:</strong> {entry.contactNo || "N/A"}</div>
+              <div className="pdf-item"><strong>Alternate No:</strong> {entry.alterno || "N/A"}</div>
+              <div className="pdf-item"><strong>Email:</strong> {entry.customerEmail || "N/A"}</div>
+              <div className="pdf-item"><strong>GST No:</strong> {entry.gstno || "N/A"}</div>
+              <div className="pdf-item"><strong>City/State:</strong> {entry.city || "N/A"}, {entry.state || "N/A"} ({entry.pinCode || "N/A"})</div>
+              <div className="pdf-item" style={{ gridColumn: "span 2" }}><strong>Shipping Address:</strong> {entry.shippingAddress || "N/A"}</div>
+              <div className="pdf-item" style={{ gridColumn: "span 2" }}><strong>Billing Address:</strong> {entry.billingAddress || "N/A"}</div>
+            </div>
+          </div>
+
+          <div className="pdf-section">
+            <div className="pdf-section-title">Product & Technical Details</div>
+            <table className="pdf-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "30px" }}>#</th>
+                  <th>Description</th>
+                  <th>Qty</th>
+                  <th>Size/Spec</th>
+                  <th>Unit Price</th>
+                  <th>GST</th>
+                  <th>Details (SN/MN)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entry.products && entry.products.length > 0 ? (
+                  entry.products.map((p, idx) => (
+                    <tr key={idx}>
+                      <td>{idx + 1}</td>
+                      <td>
+                        <strong>{p.productType || "N/A"}</strong>
+                        <br />
+                        <small>{p.brand || "N/A"}</small>
+                      </td>
+                      <td>{p.qty || 0}</td>
+                      <td>{p.size || p.spec || "N/A"}</td>
+                      <td>₹{p.unitPrice?.toFixed(2) || "0.00"}</td>
+                      <td>{p.gst || 0}%</td>
+                      <td>
+                        {isValidField(p.serialNos) && (
+                          <div style={{ fontSize: "10px" }}>
+                            <strong>SN:</strong> {p.serialNos.join(", ")}
+                          </div>
+                        )}
+                        {isValidField(p.modelNos) && (
+                          <div style={{ fontSize: "10px" }}>
+                            <strong>MN:</strong> {p.modelNos.join(", ")}
+                          </div>
+                        )}
+                        {p.productType === "Fujifilm-Printer" &&
+                          isValidField(p.productCode) && (
+                            <div style={{ fontSize: "10px" }}>
+                              <strong>Code:</strong> {p.productCode.join(", ")}
+                            </div>
+                          )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: "center" }}>
+                      No products found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="pdf-section">
+            <div className="pdf-section-title">Financial & Payment Information</div>
+            <div className="pdf-grid">
+              <div className="pdf-item"><strong>Total Unit Value:</strong> ₹{totalUnitPrice?.toFixed(2) || "0.00"}</div>
+              <div className="pdf-item"><strong>Order Total:</strong> ₹{entry.total?.toFixed(2) || "0.00"}</div>
+              <div className="pdf-item"><strong>Payment Method:</strong> {entry.paymentMethod || "N/A"}</div>
+              <div className="pdf-item"><strong>Payment Terms:</strong> {entry.paymentTerms || "N/A"}</div>
+              <div className="pdf-item"><strong>Payment Collected:</strong> {entry.paymentCollected || "N/A"}</div>
+              <div className="pdf-item"><strong>Payment Due:</strong> {entry.paymentDue || "N/A"}</div>
+              <div className="pdf-item"><strong>NEFT/Trans ID:</strong> {entry.neftTransactionId || "N/A"}</div>
+              <div className="pdf-item"><strong>Cheque ID:</strong> {entry.chequeId || "N/A"}</div>
+              <div className="pdf-item"><strong>Credit Days:</strong> {entry.creditDays || "0"}</div>
+              <div className="pdf-item"><strong>Invoice No/Date:</strong> {entry.invoiceNo || "N/A"} ({formatDate(entry.invoiceDate) || "N/A"})</div>
+              <div className="pdf-item"><strong>Freight:</strong> ₹{entry.actualFreight?.toFixed(2) || "0.00"} ({entry.freightstatus || "N/A"})</div>
+              <div className="pdf-item"><strong>Installation Charges:</strong> {entry.installation || "N/A"} ({entry.installchargesstatus || "N/A"})</div>
+            </div>
+          </div>
+
+          <div className="pdf-section">
+            <div className="pdf-section-title">Production, Logistics & Installation</div>
+            <div className="pdf-grid">
+              <div className="pdf-item"><strong>Production Status:</strong> {entry.fulfillingStatus || "N/A"}</div>
+              <div className="pdf-item"><strong>Fulfillment Date:</strong> {formatDate(entry.fulfillmentDate) || "N/A"}</div>
+              <div className="pdf-item"><strong>Dispatch From/Date:</strong> {entry.dispatchFrom || "N/A"} ({formatDate(entry.dispatchDate) || "N/A"})</div>
+              <div className="pdf-item"><strong>Transporter/Details:</strong> {entry.transporter || "N/A"} ({entry.transporterDetails || "N/A"})</div>
+              <div className="pdf-item"><strong>Docket No:</strong> {entry.docketNo || "N/A"}</div>
+              <div className="pdf-item"><strong>Delivery Date:</strong> {formatDate(entry.deliveryDate) || "N/A"}</div>
+              <div className="pdf-item"><strong>Installation Status:</strong> {entry.installationStatus || "N/A"}</div>
+              <div className="pdf-item"><strong>Engineer:</strong> {entry.installationeng || "N/A"}</div>
+              <div className="pdf-item"><strong>Receipt Date:</strong> {formatDate(entry.receiptDate) || "N/A"}</div>
+              <div className="pdf-item"><strong>Demo Date/Status:</strong> {formatDate(entry.demoDate) || "N/A"} ({entry.demostatus || "N/A"})</div>
+            </div>
+          </div>
+
+          {(entry.remarks || entry.remarksByProduction || entry.remarksByAccounts || entry.remarksByBilling || entry.remarksByInstallation || entry.verificationRemarks) && (
+            <div className="pdf-section">
+              <div className="pdf-section-title">Official Remarks</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                {entry.remarks && <div className="pdf-item"><strong>General:</strong> {entry.remarks}</div>}
+                {entry.remarksByProduction && <div className="pdf-item"><strong>Production:</strong> {entry.remarksByProduction}</div>}
+                {entry.remarksByAccounts && <div className="pdf-item"><strong>Accounts:</strong> {entry.remarksByAccounts}</div>}
+                {entry.remarksByBilling && <div className="pdf-item"><strong>Billing:</strong> {entry.remarksByBilling}</div>}
+                {entry.remarksByInstallation && <div className="pdf-item"><strong>Installation:</strong> {entry.remarksByInstallation}</div>}
+                {entry.verificationRemarks && <div className="pdf-item"><strong>Verification:</strong> {entry.verificationRemarks}</div>}
+              </div>
+            </div>
+          )}
+        </div>
         {sections.length === 0 ? (
           <p style={{ color: "#555", textAlign: "center" }}>
             No valid data available to display.

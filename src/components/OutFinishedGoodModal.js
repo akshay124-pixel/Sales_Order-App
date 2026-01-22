@@ -279,9 +279,9 @@ const OutFinishedGoodModal = ({
         <div>
           <label style={{ fontSize: "1rem", fontWeight: "600", color: "#333", marginBottom: "5px", display: "block" }}>
             Dispatch Status
-            <div style={{ marginTop: "0px", paddingLeft: "0px" }}>
+            {/* <div style={{ marginTop: "0px", paddingLeft: "0px" }}>
               <small style={{ color: "#888", fontSize: "0.85rem" }}>Delivered available after Signed Stamp received.</small>
-            </div>
+            </div> */}
           </label>
           <Select
             value={formData.dispatchStatus || "Not Dispatched"}
@@ -297,13 +297,13 @@ const OutFinishedGoodModal = ({
             {isBillingComplete && (
               <>
                 <Option value="Dispatched">Dispatched</Option>
-                {formData.stamp === "Received" && <Option value="Delivered">Delivered</Option>}
+                <Option value="Delivered">Delivered</Option>
               </>
             )}
           </Select>
         </div>
 
-        {isBillingComplete && (
+        {formData.dispatchStatus === "Delivered" && (
           <div>
             <label style={{ fontSize: "1rem", fontWeight: "600", color: "#333", marginBottom: "5px", display: "block" }}>Signed Stamp Receiving</label>
             <Select

@@ -2995,49 +2995,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.creditDays?.message}
           </Form.Control.Feedback>
         </Form.Group>
-        <Form.Group controlId="stamp">
-          <Form.Label>📦 Signed Stamp Receiving</Form.Label>
-          <Form.Select
-            {...register("stamp")}
-            onChange={(e) =>
-              debouncedHandleInputChange("stamp", e.target.value)
-            }
-            isInvalid={!!errors.stamp}
-            defaultValue="Not Received"
-          >
-            <option value="Received">Received</option>
-            <option value="Not Received">Not Received</option>
-          </Form.Select>
-          <Form.Control.Feedback type="invalid">
-            {errors.stamp?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="installationReport">
-          <Form.Label>📝 Installation Report</Form.Label>
-          <Controller
-            name="installationReport"
-            control={control}
-            render={({ field }) => (
-              <Form.Select
-                {...field}
-                onChange={(e) => {
-                  field.onChange(e);
-                  debouncedHandleInputChange(
-                    "installationReport",
-                    e.target.value
-                  );
-                }}
-                isInvalid={!!errors.installationReport}
-              >
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </Form.Select>
-            )}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.installationReport?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
+
+
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
@@ -3208,6 +3167,32 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             )}
           />
         </Form.Group>
+        <Form.Group controlId="installationReport">
+          <Form.Label>📝 Installation Report</Form.Label>
+          <Controller
+            name="installationReport"
+            control={control}
+            render={({ field }) => (
+              <Form.Select
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  debouncedHandleInputChange(
+                    "installationReport",
+                    e.target.value
+                  );
+                }}
+                isInvalid={!!errors.installationReport}
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </Form.Select>
+            )}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.installationReport?.message}
+          </Form.Control.Feedback>
+        </Form.Group>
         <Form.Group controlId="remarksByInstallation">
           <Form.Label>✏️ Remarks by Installation</Form.Label>
           <Form.Control
@@ -3248,6 +3233,23 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               </Form.Select>
             )}
           />
+        </Form.Group>
+        <Form.Group controlId="stamp">
+          <Form.Label>📦 Signed Stamp Receiving</Form.Label>
+          <Form.Select
+            {...register("stamp")}
+            onChange={(e) =>
+              debouncedHandleInputChange("stamp", e.target.value)
+            }
+            isInvalid={!!errors.stamp}
+            defaultValue="Not Received"
+          >
+            <option value="Received">Received</option>
+            <option value="Not Received">Not Received</option>
+          </Form.Select>
+          <Form.Control.Feedback type="invalid">
+            {errors.stamp?.message}
+          </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="salesPerson">
           <Form.Label>👤 Sales Person</Form.Label>
