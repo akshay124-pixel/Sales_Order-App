@@ -91,11 +91,11 @@ const ProductHeader = styled.div`
 /**
  * Business Rule: Production Status Automation
  * Determines the production status based on the selected dispatch location.
- * 
+ *
  * Rules:
  * - If dispatching from ANY location EXCEPT "Morinda" -> Status must be "Fulfilled".
  * - If dispatching from "Morinda" -> Status is user-editable (resets to "Pending" if previously auto-fulfilled).
- * 
+ *
  * @param {string} dispatchFrom - The selected dispatch source.
  * @param {string} currentStatus - The current production (fulfilling) status.
  * @returns {string} The computed production status.
@@ -206,7 +206,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       approvalTimestamp: null, // New field
       productsEditTimestamp: null, // New field
     }),
-    []
+    [],
   );
 
   const initialUpdateData = useMemo(
@@ -215,7 +215,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       productno: "",
       remarks: "",
     }),
-    []
+    [],
   );
 
   const [, setFormData] = useState(initialFormData);
@@ -272,40 +272,43 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         products:
           entryToEdit.products && entryToEdit.products.length > 0
             ? entryToEdit.products.map((p) => {
-              const isCustom = !Object.keys(productOptions).includes(p.productType);
-              return {
-                productType: isCustom ? "Others" : p.productType || "",
-                customProductType: isCustom ? p.productType : "",
-                size: p.size || "N/A",
-                spec: p.spec || "N/A",
-                qty: p.qty !== undefined ? String(p.qty) : "",
-                unitPrice: p.unitPrice !== undefined ? String(p.unitPrice) : "",
-                serialNos:
-                  p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
-                modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
-                productCode:
-                  p.productCode?.length > 0 ? p.productCode.join(", ") : "",
-                gst: p.gst || "18",
-                brand: p.brand || "",
-                warranty: p.warranty || "",
-              };
-            })
+                const isCustom = !Object.keys(productOptions).includes(
+                  p.productType,
+                );
+                return {
+                  productType: isCustom ? "Others" : p.productType || "",
+                  customProductType: isCustom ? p.productType : "",
+                  size: p.size || "N/A",
+                  spec: p.spec || "N/A",
+                  qty: p.qty !== undefined ? String(p.qty) : "",
+                  unitPrice:
+                    p.unitPrice !== undefined ? String(p.unitPrice) : "",
+                  serialNos:
+                    p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
+                  modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+                  productCode:
+                    p.productCode?.length > 0 ? p.productCode.join(", ") : "",
+                  gst: p.gst || "18",
+                  brand: p.brand || "",
+                  warranty: p.warranty || "",
+                };
+              })
             : [
-              {
-                productType: "",
-                customProductType: "",
-                size: "N/A",
-                spec: "N/A",
-                qty: "",
-                unitPrice: "",
-                serialNos: "",
-                modelNos: "",
-                productCode: "",
-                gst: "18",
-                brand: "",
-                warranty: "",
-              },
-            ],
+                {
+                  productType: "",
+                  customProductType: "",
+                  size: "N/A",
+                  spec: "N/A",
+                  qty: "",
+                  unitPrice: "",
+                  serialNos: "",
+                  modelNos: "",
+                  productCode: "",
+                  gst: "18",
+                  brand: "",
+                  warranty: "",
+                },
+              ],
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
         paymentCollected: entryToEdit.paymentCollected || "",
         paymentMethod: entryToEdit.paymentMethod || "",
@@ -377,8 +380,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
         productsEditTimestamp: entryToEdit.productsEditTimestamp
           ? new Date(entryToEdit.productsEditTimestamp)
-            .toISOString()
-            .split("T")[0]
+              .toISOString()
+              .split("T")[0]
           : null,
       };
       setFormData(newFormData);
@@ -417,7 +420,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         }));
       }
     }, 300),
-    []
+    [],
   );
 
   const handleUpdateInputChange = useCallback((e) => {
@@ -446,7 +449,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         customername: data.customername || null,
         gstno: data.gstno || null,
         products: data.products.map((p) => ({
-          productType: p.productType === "Others" ? p.customProductType : p.productType || undefined,
+          productType:
+            p.productType === "Others"
+              ? p.customProductType
+              : p.productType || undefined,
           size: p.size || "N/A",
           spec: p.spec || "N/A",
           qty: p.qty ? Number(p.qty) : undefined,
@@ -456,15 +462,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               : undefined,
           serialNos: p.serialNos
             ? p.serialNos
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
             : [],
           modelNos: p.modelNos
             ? p.modelNos
-              .split(",")
-              .map((m) => m.trim())
-              .filter(Boolean)
+                .split(",")
+                .map((m) => m.trim())
+                .filter(Boolean)
             : [],
           productCode: p.productCode,
           gst: p.gst || "18",
@@ -560,7 +566,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const updatedEntry = response.data.data;
@@ -621,7 +627,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const updatedEntry = response.data.data;
@@ -691,28 +697,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       newProducts.length > 0
         ? newProducts
         : [
-          {
-            productType: "",
-            customProductType: "",
-            size: "N/A",
-            spec: "N/A",
-            qty: "",
-            unitPrice: "",
-            serialNos: "",
-            modelNos: "",
-            productCode: "",
-            gst: "18",
-            brand: "",
-            warranty: "",
-          },
-        ]
-    );
-    setFormData((prev) => ({
-      ...prev,
-      products:
-        newProducts.length > 0
-          ? newProducts
-          : [
             {
               productType: "",
               customProductType: "",
@@ -722,11 +706,33 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               unitPrice: "",
               serialNos: "",
               modelNos: "",
+              productCode: "",
               gst: "18",
               brand: "",
               warranty: "",
             },
           ],
+    );
+    setFormData((prev) => ({
+      ...prev,
+      products:
+        newProducts.length > 0
+          ? newProducts
+          : [
+              {
+                productType: "",
+                customProductType: "",
+                size: "N/A",
+                spec: "N/A",
+                qty: "",
+                unitPrice: "",
+                serialNos: "",
+                modelNos: "",
+                gst: "18",
+                brand: "",
+                warranty: "",
+              },
+            ],
     }));
   };
 
@@ -1050,6 +1056,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         "Munroe Island",
       ],
       "Madhya Pradesh": [
+        "Shajapur",
         "Bhopal",
         "Indore",
         "Gwalior",
@@ -1285,30 +1292,45 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         "Rampura Phul",
       ],
       Rajasthan: [
-        "Baran",
-        "Newai",
-        "Gaganagar",
-        "Suratgarh",
-        "Jaipur",
-        "Udaipur",
-        "Jodhpur",
-        "Kota",
-        "Ajmer",
-        "Bikaner",
-        "Alwar",
-        "Bharatpur",
-        "Sikar",
-        "Pali",
-        "Nagaur",
-        "Jhunjhunu",
-        "Chittorgarh",
-        "Tonk",
-        "Barmer",
-        "Jaisalmer",
-        "Dholpur",
-        "Bhilwara",
+        "Sri Ganganagar",
         "Hanumangarh",
+        "Churu",
+        "Jhunjhunu",
+        "Sikar",
+        "Deedwana Kuchaman",
+        "Nagaur",
+        "Bikaner",
+        "Phalodi",
+        "Jaisalmer",
+        "Barmer",
+        "Balotra",
+        "Jodhpur",
+        "Pali",
+        "Jalore",
+        "Sirohi",
+        "Udaipur",
+        "Salumber",
+        "Dungarpur",
+        "Banswara",
+        "Pratapgarh",
+        "Chittorgarh",
+        "Rajsamand",
+        "Bhilwara",
+        "Ajmer",
+        "Beawar",
+        "Tonk",
+        "Bundi",
+        "Kota",
+        "Baran",
+        "Jhalawar",
+        "Jaipur",
+        "Dausa",
         "Sawai Madhopur",
+        "Karauli",
+        "Dholpur",
+        "Bharatpur",
+        "Deeg",
+        "Alwar",
       ],
       Sikkim: [
         "Gangtok",
@@ -1591,7 +1613,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         "Nettapakkam",
       ],
     }),
-    []
+    [],
   );
 
   const renderOptions = () => (
@@ -1655,12 +1677,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   // Business Rule: Update Production Status when Dispatch location changes
                   const newVal = e.target.value;
                   const currentStatus = getValues("fulfillingStatus");
-                  const nextStatus = evaluateProductionStatus(newVal, currentStatus);
+                  const nextStatus = evaluateProductionStatus(
+                    newVal,
+                    currentStatus,
+                  );
 
                   if (nextStatus !== currentStatus) {
                     setValue("fulfillingStatus", nextStatus, {
                       shouldValidate: true,
-                      shouldDirty: true
+                      shouldDirty: true,
                     });
                   }
                 }}
@@ -1764,7 +1789,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             onPaste={(e) => {
               e.preventDefault();
               const paste = (e.clipboardData || window.clipboardData).getData(
-                "text"
+                "text",
               );
               // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
@@ -1813,7 +1838,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             onPaste={(e) => {
               e.preventDefault();
               const paste = (e.clipboardData || window.clipboardData).getData(
-                "text"
+                "text",
               );
               // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
@@ -2096,7 +2121,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             {...field}
                             value={
                               field.value &&
-                                !Object.keys(productOptions).includes(field.value)
+                              !Object.keys(productOptions).includes(field.value)
                                 ? "Others"
                                 : field.value
                             }
@@ -2105,7 +2130,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                               debouncedHandleInputChange(
                                 `products.${index}.productType`,
                                 e.target.value,
-                                index
+                                index,
                               );
                               // Reset size and spec when product type changes
                               setValue(`products.${index}.size`, "N/A");
@@ -2128,7 +2153,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                                 <option key={type} value={type}>
                                   {type}
                                 </option>
-                              )
+                              ),
                             )}
                           </Form.Select>
                         )}
@@ -2162,15 +2187,17 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           onChange={(e) => {
                             setValue(
                               `products.${index}.customProductType`,
-                              e.target.value
+                              e.target.value,
                             );
                             debouncedHandleInputChange(
                               `products.${index}.customProductType`,
                               e.target.value,
-                              index
+                              index,
                             );
                           }}
-                          isInvalid={!!errors.products?.[index]?.customProductType}
+                          isInvalid={
+                            !!errors.products?.[index]?.customProductType
+                          }
                           placeholder="e.g., Projector, Scanner, Webcam"
                           style={{
                             width: "100%",
@@ -2208,7 +2235,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             debouncedHandleInputChange(
                               `products.${index}.size`,
                               e.target.value,
-                              index
+                              index,
                             )
                           }
                           isInvalid={!!errors.products?.[index]?.size}
@@ -2235,7 +2262,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                                 debouncedHandleInputChange(
                                   `products.${index}.size`,
                                   e.target.value,
-                                  index
+                                  index,
                                 );
                               }}
                               isInvalid={!!errors.products?.[index]?.size}
@@ -2287,7 +2314,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             debouncedHandleInputChange(
                               `products.${index}.spec`,
                               e.target.value,
-                              index
+                              index,
                             )
                           }
                           isInvalid={!!errors.products?.[index]?.spec}
@@ -2314,7 +2341,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                                 debouncedHandleInputChange(
                                   `products.${index}.spec`,
                                   e.target.value,
-                                  index
+                                  index,
                                 );
                               }}
                               isInvalid={!!errors.products?.[index]?.spec}
@@ -2368,24 +2395,33 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           // Allow only digits & control keys
                           if (
                             !/[0-9]/.test(e.key) &&
-                            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+                            ![
+                              "Backspace",
+                              "Delete",
+                              "ArrowLeft",
+                              "ArrowRight",
+                              "Tab",
+                            ].includes(e.key)
                           ) {
                             e.preventDefault();
                           }
                         }}
                         onPaste={(e) => {
                           e.preventDefault();
-                          const pasted = e.clipboardData.getData("text").replace(/[^0-9]/g, "");
+                          const pasted = e.clipboardData
+                            .getData("text")
+                            .replace(/[^0-9]/g, "");
                           debouncedHandleInputChange(
                             `products.${index}.qty`,
                             pasted,
-                            index
+                            index,
                           );
                         }}
                         {...register(`products.${index}.qty`, {
                           required: "Quantity is required",
                           validate: (value) =>
-                            /^[1-9][0-9]*$/.test(value) || "Only positive numbers allowed",
+                            /^[1-9][0-9]*$/.test(value) ||
+                            "Only positive numbers allowed",
                         })}
                         style={{
                           width: "100%",
@@ -2402,7 +2438,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           debouncedHandleInputChange(
                             `products.${index}.qty`,
                             value,
-                            index
+                            index,
                           );
                         }}
                         isInvalid={!!errors.products?.[index]?.qty}
@@ -2434,7 +2470,13 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                         onKeyDown={(e) => {
                           if (
                             !/[0-9.]/.test(e.key) &&
-                            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+                            ![
+                              "Backspace",
+                              "Delete",
+                              "ArrowLeft",
+                              "ArrowRight",
+                              "Tab",
+                            ].includes(e.key)
                           ) {
                             e.preventDefault();
                           }
@@ -2451,7 +2493,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           debouncedHandleInputChange(
                             `products.${index}.unitPrice`,
                             pasted,
-                            index
+                            index,
                           );
                         }}
                         {...register(`products.${index}.unitPrice`, {
@@ -2479,7 +2521,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           debouncedHandleInputChange(
                             `products.${index}.unitPrice`,
                             value,
-                            index
+                            index,
                           );
                         }}
                         isInvalid={!!errors.products?.[index]?.unitPrice}
@@ -2511,7 +2553,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           debouncedHandleInputChange(
                             `products.${index}.gst`,
                             e.target.value,
-                            index
+                            index,
                           )
                         }
                         isInvalid={!!errors.products?.[index]?.gst}
@@ -2553,7 +2595,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           debouncedHandleInputChange(
                             `products.${index}.brand`,
                             e.target.value,
-                            index
+                            index,
                           )
                         }
                         isInvalid={!!errors.products?.[index]?.brand}
@@ -2592,7 +2634,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           debouncedHandleInputChange(
                             `products.${index}.warranty`,
                             e.target.value,
-                            index
+                            index,
                           )
                         }
                         isInvalid={!!errors.products?.[index]?.warranty}
@@ -2631,7 +2673,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           debouncedHandleInputChange(
                             `products.${index}.serialNos`,
                             e.target.value,
-                            index
+                            index,
                           )
                         }
                         isInvalid={!!errors.products?.[index]?.serialNos}
@@ -2670,12 +2712,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           onChange={(e) => {
                             setValue(
                               `products.${index}.modelNos`,
-                              e.target.value
+                              e.target.value,
                             );
                             debouncedHandleInputChange(
                               `products.${index}.modelNos`,
                               e.target.value,
-                              index
+                              index,
                             );
                           }}
                           isInvalid={!!errors.products?.[index]?.modelNos}
@@ -2703,7 +2745,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             debouncedHandleInputChange(
                               `products.${index}.modelNos`,
                               e.target.value,
-                              index
+                              index,
                             )
                           }
                           isInvalid={!!errors.products?.[index]?.modelNos}
@@ -2743,12 +2785,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           onChange={(e) => {
                             setValue(
                               `products.${index}.productCode`,
-                              e.target.value
+                              e.target.value,
                             );
                             debouncedHandleInputChange(
                               `products.${index}.productCode`,
                               e.target.value,
-                              index
+                              index,
                             );
                           }}
                           isInvalid={!!errors.products?.[index]?.productCode}
@@ -2995,8 +3037,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             {errors.creditDays?.message}
           </Form.Control.Feedback>
         </Form.Group>
-
-
         <Form.Group controlId="freightcs">
           <Form.Label>🚚 Freight Charges</Form.Label>
           <Form.Control
@@ -3154,7 +3194,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   field.onChange(e);
                   debouncedHandleInputChange(
                     "installationStatus",
-                    e.target.value
+                    e.target.value,
                   );
                 }}
                 isInvalid={!!errors.installationStatus}
@@ -3179,7 +3219,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   field.onChange(e);
                   debouncedHandleInputChange(
                     "installationReport",
-                    e.target.value
+                    e.target.value,
                   );
                 }}
                 isInvalid={!!errors.installationReport}
@@ -3202,7 +3242,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             onChange={(e) =>
               debouncedHandleInputChange(
                 "remarksByInstallation",
-                e.target.value
+                e.target.value,
               )
             }
             isInvalid={!!errors.remarksByInstallation}
@@ -3224,7 +3264,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 isInvalid={!!errors.dispatchStatus}
               >
                 <option value="Not Dispatched">Not Dispatched</option>
-                <option value="Docket Awaited Dispatched">Docket Awaited Dispatched</option>
+                <option value="Docket Awaited Dispatched">
+                  Docket Awaited Dispatched
+                </option>
                 <option value="Hold by Salesperson">Hold by Salesperson</option>
                 <option value="Hold by Customer">Hold by Customer</option>
                 <option value="Order Cancelled">Order Cancelled</option>
@@ -3498,7 +3540,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   field.onChange(e);
                   debouncedHandleInputChange(
                     "fulfillingStatus",
-                    e.target.value
+                    e.target.value,
                   );
                 }}
                 isInvalid={!!errors.fulfillingStatus}
@@ -3588,7 +3630,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           />
         </Form.Group>
       </FormSection>
-    </Form >
+    </Form>
   );
 
   const renderUpdateForm = () => (
