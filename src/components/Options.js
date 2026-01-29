@@ -485,7 +485,6 @@ export const productOptions = {
       "Type: Floor Stand, Height: 690-1000mm, Base Dia: 230mm, Weight: Not Less Than 3Kg",
     ],
   },
- 
 
   "Desktop Computer": {
     sizes: ["24 inch Monitor"],
@@ -1150,7 +1149,7 @@ export const statesAndCities = {
     "Mirzapur",
     "Moradabad",
     "Muzaffar Nagar",
-    "Noida", 
+    "Noida",
     "Pilibhit",
     "Pratapgarh",
     "Prayagraj",
@@ -1473,6 +1472,7 @@ export const salesPersonlist = [
   { label: "Sushil Kumar", value: "Sushil Kumar" },
   { label: "Sukhvir Singh", value: "Sukhvir Singh" },
   { label: "Savita Mamgain", value: "Savita Mamgain" },
+  { label: "Sonali Dalal", value: "Sonali Dalal" },
   { label: "Utsav Mahesh", value: "Utsav Mahesh" },
   { label: "Vinay Bhardwaj", value: "Vinay Bhardwaj" },
   { label: "Vageesh Bhardwaj", value: "Vageesh Bhardwaj" },
