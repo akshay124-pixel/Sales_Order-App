@@ -1473,6 +1473,7 @@ export const salesPersonlist = [
   { label: "Sukhvir Singh", value: "Sukhvir Singh" },
   { label: "Savita Mamgain", value: "Savita Mamgain" },
   { label: "Sonali Dalal", value: "Sonali Dalal" },
+  { label: "Srishti Yadav", value: "Srishti Yadav" },
   { label: "Utsav Mahesh", value: "Utsav Mahesh" },
   { label: "Vinay Bhardwaj", value: "Vinay Bhardwaj" },
   { label: "Vageesh Bhardwaj", value: "Vageesh Bhardwaj" },
