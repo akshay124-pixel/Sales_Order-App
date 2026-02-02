@@ -312,12 +312,8 @@ function AddEntry({ onSubmit, onClose }) {
             warranty:
               formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
           }
-          : name === "size"
+           : name === "size"
             ? {
-              spec: "",
-              gst: "",
-              modelNos: "",
-              brand: "",
               warranty:
                 formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
             }
@@ -339,6 +335,7 @@ function AddEntry({ onSubmit, onClose }) {
       return newProduct;
     });
   };
+
   const handleCustomProductChange = (e) => {
     const { name, value } = e.target;
     setCurrentProduct((prev) => ({
@@ -346,19 +343,10 @@ function AddEntry({ onSubmit, onClose }) {
       [name]: value,
       ...(name === "productType"
         ? {
-          size: "",
-          spec: "",
-          gst: "",
-          modelNos: "",
-          brand: "",
           warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
         }
         : name === "size"
           ? {
-            spec: "",
-            gst: "",
-            modelNos: "",
-            brand: "",
             warranty: formData.orderType === "B2G" ? "As Per Tender" : "1 Year",
           }
           : {}),
