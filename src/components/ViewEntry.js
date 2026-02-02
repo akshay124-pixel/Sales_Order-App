@@ -59,7 +59,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       try {
         const cached = localStorage.getItem(`createdByName:${key}`);
         if (cached) return cached;
-      } catch (_) {}
+      } catch (_) { }
     }
     return null;
   });
@@ -71,14 +71,14 @@ function ViewEntry({ isOpen, onClose, entry }) {
       setCreatedByName(name);
       try {
         localStorage.setItem(`createdByName:${createdByCacheKey}`, name);
-      } catch (_) {}
+      } catch (_) { }
     } else {
       try {
         const cached = localStorage.getItem(
           `createdByName:${createdByCacheKey}`,
         );
         if (cached) setCreatedByName(cached);
-      } catch (_) {}
+      } catch (_) { }
     }
   }, [createdByCacheKey, entry?.createdBy, getCreatedByName]);
 
@@ -142,9 +142,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
     }
 
     try {
-      const fileUrl = `${process.env.REACT_APP_URL}${
-        targetPath.startsWith("/") ? "" : "/"
-      }${targetPath}`;
+      const fileUrl = `${process.env.REACT_APP_URL}${targetPath.startsWith("/") ? "" : "/"
+        }${targetPath}`;
 
       // Validate file URL
       if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
@@ -210,39 +209,34 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
     const productsText = isValidField(entry.products)
       ? entry.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${
-                p.spec || "N/A"
-              }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${
-                p.gst || "N/A"
-              }%, Serial Nos: ${
-                isValidField(p.serialNos) && p.serialNos.length > 0
-                  ? p.serialNos.join(", ")
-                  : "N/A"
-              }, Model Nos: ${
-                isValidField(p.modelNos) && p.modelNos.length > 0
-                  ? p.modelNos.join(", ")
-                  : "N/A"
-              }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`,
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
+            }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${p.gst || "N/A"
+            }%, Serial Nos: ${isValidField(p.serialNos) && p.serialNos.length > 0
+              ? p.serialNos.join(", ")
+              : "N/A"
+            }, Model Nos: ${isValidField(p.modelNos) && p.modelNos.length > 0
+              ? p.modelNos.join(", ")
+              : "N/A"
+            }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`,
+        )
+        .join("\n")
       : "N/A";
 
     const totalUnitPrice = isValidField(entry.products)
       ? entry.products.reduce(
-          (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-          0,
-        )
+        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+        0,
+      )
       : null;
 
     const gstText = isValidField(entry.products)
       ? entry.products
-          .map((p) => p.gst)
-          .filter(Boolean)
-          .join(", ")
+        .map((p) => p.gst)
+        .filter(Boolean)
+        .join(", ")
       : null;
 
     // Define all fields for copying
@@ -424,7 +418,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
       const pxPerMm = canvasHeight / imgHeight;
       const SAFE_BOTTOM_MM = 8;
-      const pageContentHeightPx = (CONTENT_HEIGHT - SAFE_BOTTOM_MM) * pxPerMm;
+      const pageContentHeightPx =
+        (CONTENT_HEIGHT - SAFE_BOTTOM_MM) * pxPerMm;
+
 
       let sourceY = 0;
       let pageIndex = 0;
@@ -480,16 +476,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
   const totalUnitPrice = isValidField(entry.products)
     ? entry.products.reduce(
-        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-        0,
-      )
+      (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+      0,
+    )
     : null;
 
   const gstText = isValidField(entry.products)
     ? entry.products
-        .map((p) => p.gst)
-        .filter(Boolean)
-        .join(", ")
+      .map((p) => p.gst)
+      .filter(Boolean)
+      .join(", ")
     : null;
 
   // Define fields that should use badges
@@ -874,8 +870,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
           : renderer
             ? renderer()
             : isValidField(
-                value || (formatter ? formatter(entry[key]) : entry[key]),
-              ),
+              value || (formatter ? formatter(entry[key]) : entry[key]),
+            ),
     );
   });
 
@@ -1362,44 +1358,44 @@ function ViewEntry({ isOpen, onClose, entry }) {
             entry.remarksByBilling ||
             entry.remarksByInstallation ||
             entry.verificationRemarks) && (
-            <div className="pdf-section">
-              <div className="pdf-section-title">Official Remarks</div>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: "5px" }}
-              >
-                {entry.remarks && (
-                  <div className="pdf-item">
-                    <strong>General:</strong> {entry.remarks}
-                  </div>
-                )}
-                {entry.remarksByProduction && (
-                  <div className="pdf-item">
-                    <strong>Production:</strong> {entry.remarksByProduction}
-                  </div>
-                )}
-                {entry.remarksByAccounts && (
-                  <div className="pdf-item">
-                    <strong>Accounts:</strong> {entry.remarksByAccounts}
-                  </div>
-                )}
-                {entry.remarksByBilling && (
-                  <div className="pdf-item">
-                    <strong>Billing:</strong> {entry.remarksByBilling}
-                  </div>
-                )}
-                {entry.remarksByInstallation && (
-                  <div className="pdf-item">
-                    <strong>Installation:</strong> {entry.remarksByInstallation}
-                  </div>
-                )}
-                {entry.verificationRemarks && (
-                  <div className="pdf-item">
-                    <strong>Verification:</strong> {entry.verificationRemarks}
-                  </div>
-                )}
+              <div className="pdf-section">
+                <div className="pdf-section-title">Official Remarks</div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: "5px" }}
+                >
+                  {entry.remarks && (
+                    <div className="pdf-item">
+                      <strong>General:</strong> {entry.remarks}
+                    </div>
+                  )}
+                  {entry.remarksByProduction && (
+                    <div className="pdf-item">
+                      <strong>Production:</strong> {entry.remarksByProduction}
+                    </div>
+                  )}
+                  {entry.remarksByAccounts && (
+                    <div className="pdf-item">
+                      <strong>Accounts:</strong> {entry.remarksByAccounts}
+                    </div>
+                  )}
+                  {entry.remarksByBilling && (
+                    <div className="pdf-item">
+                      <strong>Billing:</strong> {entry.remarksByBilling}
+                    </div>
+                  )}
+                  {entry.remarksByInstallation && (
+                    <div className="pdf-item">
+                      <strong>Installation:</strong> {entry.remarksByInstallation}
+                    </div>
+                  )}
+                  {entry.verificationRemarks && (
+                    <div className="pdf-item">
+                      <strong>Verification:</strong> {entry.verificationRemarks}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
         {sections.length === 0 ? (
           <p style={{ color: "#555", textAlign: "center" }}>
@@ -1513,8 +1509,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   formatter: (v) =>
                                     product.productType ===
                                       "Fujifilm-Printer" &&
-                                    isValidField(v) &&
-                                    v.length > 0
+                                      isValidField(v) &&
+                                      v.length > 0
                                       ? v.join(", ")
                                       : null,
                                 },
@@ -1556,11 +1552,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
                               : renderer
                                 ? renderer()
                                 : isValidField(
-                                    value ||
-                                      (formatter
-                                        ? formatter(entry[key])
-                                        : entry[key]),
-                                  ),
+                                  value ||
+                                  (formatter
+                                    ? formatter(entry[key])
+                                    : entry[key]),
+                                ),
                         )
                         .map(({ key, label, value, formatter, renderer }) => {
                           const displayValue =
@@ -1586,36 +1582,36 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   <Badge
                                     bg={
                                       typeof badgeStyle[displayValue] ===
-                                      "string"
+                                        "string"
                                         ? badgeStyle[displayValue] ||
-                                          badgeStyle.default
+                                        badgeStyle.default
                                         : undefined
                                     }
                                     style={
                                       typeof badgeStyle[displayValue] ===
-                                      "object"
+                                        "object"
                                         ? {
+                                          background:
+                                            badgeStyle[displayValue].bg,
+                                          color:
+                                            badgeStyle[displayValue].color,
+                                          padding: "5px 10px",
+                                          borderRadius: "12px",
+                                          fontWeight: "500",
+                                        }
+                                        : key === "fulfillingStatus"
+                                          ? {
                                             background:
-                                              badgeStyle[displayValue].bg,
+                                              badgeStyle[displayValue]?.bg ||
+                                              badgeStyle.default.bg,
                                             color:
-                                              badgeStyle[displayValue].color,
+                                              badgeStyle[displayValue]
+                                                ?.color ||
+                                              badgeStyle.default.color,
                                             padding: "5px 10px",
                                             borderRadius: "12px",
                                             fontWeight: "500",
                                           }
-                                        : key === "fulfillingStatus"
-                                          ? {
-                                              background:
-                                                badgeStyle[displayValue]?.bg ||
-                                                badgeStyle.default.bg,
-                                              color:
-                                                badgeStyle[displayValue]
-                                                  ?.color ||
-                                                badgeStyle.default.color,
-                                              padding: "5px 10px",
-                                              borderRadius: "12px",
-                                              fontWeight: "500",
-                                            }
                                           : {}
                                     }
                                   >

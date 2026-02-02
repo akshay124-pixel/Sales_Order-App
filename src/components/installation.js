@@ -169,68 +169,104 @@ function Installation() {
   const handleExportPDF = async () => {
     if (!viewOrder) return;
     setIsGeneratingPDF(true);
+
     try {
       const input = pdfRef.current;
       if (!input) return;
 
-      // Use a very high scale for maximum sharpness when fitting to one page
       const canvas = await html2canvas(input, {
-        scale: 4,
+        scale: 2,
         useCORS: true,
-        logging: false,
         backgroundColor: "#ffffff",
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 1.0);
       const pdf = new jsPDF("p", "mm", "a4");
 
-      const pageWidth = 210;
-      const pageHeight = 297;
+      const PAGE_WIDTH = 210;
+      const PAGE_HEIGHT = 297;
 
-      // Calculate dimensions to fit exactly on one page while maintaining aspect ratio
-      const canvasRatio = canvas.width / canvas.height;
-      const pageRatio = pageWidth / pageHeight;
+      const MARGIN_TOP = 15;
+      const MARGIN_BOTTOM = 15;
+      const SAFE_BOTTOM = 8; // 🔥 prevents half-cut lines
 
-      let finalImgWidth, finalImgHeight;
+      const CONTENT_HEIGHT =
+        PAGE_HEIGHT - MARGIN_TOP - MARGIN_BOTTOM - SAFE_BOTTOM;
 
-      if (canvasRatio > pageRatio) {
-        // Limited by width
-        finalImgWidth = pageWidth;
-        finalImgHeight = pageWidth / canvasRatio;
-      } else {
-        // Limited by height
-        finalImgHeight = pageHeight;
-        finalImgWidth = pageHeight * canvasRatio;
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      const imgWidth = PAGE_WIDTH;
+      const imgHeight = (canvasHeight * imgWidth) / canvasWidth;
+
+      const pxPerMm = canvasHeight / imgHeight;
+      const pageContentHeightPx = CONTENT_HEIGHT * pxPerMm;
+
+      let sourceY = 0;
+      let pageIndex = 0;
+
+      while (sourceY < canvasHeight) {
+        const pageCanvas = document.createElement("canvas");
+        const ctx = pageCanvas.getContext("2d");
+
+        pageCanvas.width = canvasWidth;
+        pageCanvas.height = Math.min(
+          pageContentHeightPx,
+          canvasHeight - sourceY
+        );
+
+        ctx.drawImage(
+          canvas,
+          0,
+          sourceY,
+          canvasWidth,
+          pageCanvas.height,
+          0,
+          0,
+          canvasWidth,
+          pageCanvas.height
+        );
+
+        const imgData = pageCanvas.toDataURL("image/jpeg", 0.98);
+
+        if (pageIndex > 0) pdf.addPage();
+
+        const renderedHeightMm =
+          (pageCanvas.height * imgWidth) / canvasWidth;
+
+        const yPosition = pageIndex === 0 ? 0 : MARGIN_TOP;
+
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          0,
+          yPosition,
+          imgWidth,
+          renderedHeightMm
+        );
+
+        // Footer
+        pdf.setFontSize(9);
+        pdf.setTextColor(150);
+        pdf.text(
+          `Page ${pageIndex + 1}`,
+          PAGE_WIDTH - 25,
+          PAGE_HEIGHT - 8
+        );
+
+        sourceY += pageCanvas.height;
+        pageIndex++;
       }
 
-      // Center the image on the page
-      const xOffset = (pageWidth - finalImgWidth) / 2;
-      const yOffset = (pageHeight - finalImgHeight) / 2;
-
-      pdf.addImage(imgData, "JPEG", xOffset, yOffset, finalImgWidth, finalImgHeight, undefined, 'FAST');
-
-      // Footer (Page 1 of 1 as requested)
-      pdf.setFontSize(10);
-      pdf.setTextColor(150);
-      const dateStr = new Date().toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      pdf.text(`Generated on: ${dateStr}`, 15, pageHeight - 10);
-      pdf.text(`Page 1 of 1`, pageWidth - 30, pageHeight - 10);
-
-      pdf.save(`Installation_Order_${viewOrder.orderId}.pdf`);
+      pdf.save(`Installation_Order_${viewOrder.orderId || "Details"}.pdf`);
       toast.success("PDF exported successfully!");
-    } catch (error) {
-      console.error("PDF Export Error:", error);
+    } catch (err) {
+      console.error("PDF Export Error:", err);
       toast.error("Failed to export PDF.");
     } finally {
       setIsGeneratingPDF(false);
     }
   };
+
 
 
   // Optimization: Debounced search updater
@@ -1134,12 +1170,17 @@ function Installation() {
       .pdf-print-container {
         width: 210mm;
         min-height: 297mm;
-        padding: 20mm;
+        
+  /* Printable padding */
+  padding: 15mm 15mm 12mm 15mm;
         background: #fff;
         color: #333;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         line-height: 1.5;
         position: absolute;
+          /* 🔥 CRITICAL */
+  min-height: unset;
+  height: auto;
         left: -9999px;
         top: -9999px;
       }
@@ -1181,6 +1222,7 @@ function Installation() {
       }
       .pdf-item {
         font-size: 14px;
+        page-break-inside: avoid;
       }
       .pdf-item strong {
         color: #555;
