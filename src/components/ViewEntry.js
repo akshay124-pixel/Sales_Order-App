@@ -59,7 +59,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       try {
         const cached = localStorage.getItem(`createdByName:${key}`);
         if (cached) return cached;
-      } catch (_) { }
+      } catch (_) {}
     }
     return null;
   });
@@ -71,14 +71,14 @@ function ViewEntry({ isOpen, onClose, entry }) {
       setCreatedByName(name);
       try {
         localStorage.setItem(`createdByName:${createdByCacheKey}`, name);
-      } catch (_) { }
+      } catch (_) {}
     } else {
       try {
         const cached = localStorage.getItem(
-          `createdByName:${createdByCacheKey}`
+          `createdByName:${createdByCacheKey}`,
         );
         if (cached) setCreatedByName(cached);
-      } catch (_) { }
+      } catch (_) {}
     }
   }, [createdByCacheKey, entry?.createdBy, getCreatedByName]);
 
@@ -142,8 +142,9 @@ function ViewEntry({ isOpen, onClose, entry }) {
     }
 
     try {
-      const fileUrl = `${process.env.REACT_APP_URL}${targetPath.startsWith("/") ? "" : "/"
-        }${targetPath}`;
+      const fileUrl = `${process.env.REACT_APP_URL}${
+        targetPath.startsWith("/") ? "" : "/"
+      }${targetPath}`;
 
       // Validate file URL
       if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
@@ -161,7 +162,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
       if (!response.ok) {
         throw new Error(
-          `Server error: ${response.status} ${response.statusText}`
+          `Server error: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -209,34 +210,39 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
     const productsText = isValidField(entry.products)
       ? entry.products
-        .map(
-          (p, i) =>
-            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
-            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
-            }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${p.gst || "N/A"
-            }%, Serial Nos: ${isValidField(p.serialNos) && p.serialNos.length > 0
-              ? p.serialNos.join(", ")
-              : "N/A"
-            }, Model Nos: ${isValidField(p.modelNos) && p.modelNos.length > 0
-              ? p.modelNos.join(", ")
-              : "N/A"
-            }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`
-        )
-        .join("\n")
+          .map(
+            (p, i) =>
+              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
+                p.qty || "N/A"
+              }, Size: ${p.size || "N/A"}, Spec: ${
+                p.spec || "N/A"
+              }, Unit Price: ₹${p.unitPrice?.toFixed(2) || "0.00"}, GST: ${
+                p.gst || "N/A"
+              }%, Serial Nos: ${
+                isValidField(p.serialNos) && p.serialNos.length > 0
+                  ? p.serialNos.join(", ")
+                  : "N/A"
+              }, Model Nos: ${
+                isValidField(p.modelNos) && p.modelNos.length > 0
+                  ? p.modelNos.join(", ")
+                  : "N/A"
+              }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`,
+          )
+          .join("\n")
       : "N/A";
 
     const totalUnitPrice = isValidField(entry.products)
       ? entry.products.reduce(
-        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-        0
-      )
+          (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+          0,
+        )
       : null;
 
     const gstText = isValidField(entry.products)
       ? entry.products
-        .map((p) => p.gst)
-        .filter(Boolean)
-        .join(", ")
+          .map((p) => p.gst)
+          .filter(Boolean)
+          .join(", ")
       : null;
 
     // Define all fields for copying
@@ -355,7 +361,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             ? condition
             : isValidField(value || entry[key])) &&
           (value !== undefined ||
-            (entry[key] !== null && entry[key] !== undefined))
+            (entry[key] !== null && entry[key] !== undefined)),
       )
       .map(({ label, key, value, formatter }) => {
         const val =
@@ -387,62 +393,84 @@ function ViewEntry({ isOpen, onClose, entry }) {
         console.error("Copy error:", err);
       });
   };
-
   const handleExportPDF = async () => {
     if (!entry) return;
     setIsGeneratingPDF(true);
+
     try {
       const input = pdfRef.current;
-      if (!input) return;
 
       const canvas = await html2canvas(input, {
-        scale: 4,
+        scale: 2,
         useCORS: true,
-        logging: false,
         backgroundColor: "#ffffff",
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 1.0);
       const pdf = new jsPDF("p", "mm", "a4");
 
-      const pageWidth = 210;
-      const pageHeight = 297;
+      const PAGE_WIDTH = 210;
+      const PAGE_HEIGHT = 297;
 
-      const canvasRatio = canvas.width / canvas.height;
-      const pageRatio = pageWidth / pageHeight;
+      const MARGIN_TOP = 15;
+      const MARGIN_BOTTOM = 15;
 
-      let finalImgWidth, finalImgHeight;
+      const CONTENT_HEIGHT = PAGE_HEIGHT - MARGIN_TOP - MARGIN_BOTTOM;
 
-      if (canvasRatio > pageRatio) {
-        finalImgWidth = pageWidth;
-        finalImgHeight = pageWidth / canvasRatio;
-      } else {
-        finalImgHeight = pageHeight;
-        finalImgWidth = pageHeight * canvasRatio;
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      const imgWidth = PAGE_WIDTH;
+      const imgHeight = (canvasHeight * imgWidth) / canvasWidth;
+
+      const pxPerMm = canvasHeight / imgHeight;
+      const SAFE_BOTTOM_MM = 8;
+      const pageContentHeightPx = (CONTENT_HEIGHT - SAFE_BOTTOM_MM) * pxPerMm;
+
+      let sourceY = 0;
+      let pageIndex = 0;
+
+      while (sourceY < canvasHeight) {
+        const pageCanvas = document.createElement("canvas");
+        const ctx = pageCanvas.getContext("2d");
+
+        pageCanvas.width = canvasWidth;
+        pageCanvas.height = Math.min(
+          pageContentHeightPx,
+          canvasHeight - sourceY,
+        );
+
+        ctx.drawImage(
+          canvas,
+          0,
+          sourceY,
+          canvasWidth,
+          pageCanvas.height,
+          0,
+          0,
+          canvasWidth,
+          pageCanvas.height,
+        );
+
+        const imgData = pageCanvas.toDataURL("image/jpeg", 0.98);
+
+        if (pageIndex > 0) pdf.addPage();
+
+        const renderedHeightMm = (pageCanvas.height * imgWidth) / canvasWidth;
+
+        const yPosition = pageIndex === 0 ? 0 : MARGIN_TOP;
+
+        pdf.addImage(imgData, "JPEG", 0, yPosition, imgWidth, renderedHeightMm);
+
+        sourceY += pageCanvas.height;
+
+        pageIndex++;
       }
 
-      const xOffset = (pageWidth - finalImgWidth) / 2;
-      const yOffset = (pageHeight - finalImgHeight) / 2;
-
-      pdf.addImage(imgData, "JPEG", xOffset, yOffset, finalImgWidth, finalImgHeight, undefined, 'FAST');
-
-      pdf.setFontSize(10);
-      pdf.setTextColor(150);
-      const dateStr = new Date().toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      pdf.text(`Generated on: ${dateStr}`, 15, pageHeight - 10);
-      pdf.text(`Page 1 of 1`, pageWidth - 30, pageHeight - 10);
-
-      pdf.save(`Order_${entry.orderId || "Details"}.pdf`);
+      pdf.save(`Sales_Order_${entry.orderId || "Details"}.pdf`);
       toast.success("PDF exported successfully!");
-    } catch (error) {
-      console.error("PDF Export Error:", error);
-      toast.error("Failed to export PDF.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export PDF");
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -452,16 +480,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
 
   const totalUnitPrice = isValidField(entry.products)
     ? entry.products.reduce(
-      (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
-      0
-    )
+        (sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0),
+        0,
+      )
     : null;
 
   const gstText = isValidField(entry.products)
     ? entry.products
-      .map((p) => p.gst)
-      .filter(Boolean)
-      .join(", ")
+        .map((p) => p.gst)
+        .filter(Boolean)
+        .join(", ")
     : null;
 
   // Define fields that should use badges
@@ -846,8 +874,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
           : renderer
             ? renderer()
             : isValidField(
-              value || (formatter ? formatter(entry[key]) : entry[key])
-            )
+                value || (formatter ? formatter(entry[key]) : entry[key]),
+              ),
     );
   });
 
@@ -871,18 +899,26 @@ function ViewEntry({ isOpen, onClose, entry }) {
         100% { opacity: 1; transform: translateY(0); }
       }
       /* Print Styles */
-      .pdf-print-container {
-        width: 210mm;
-        min-height: 297mm;
-        padding: 20mm;
-        background: #fff;
-        color: #333;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.5;
-        position: absolute;
-        left: -9999px;
-        top: -9999px;
-      }
+     .pdf-print-container {
+  width: 210mm;
+
+  /* 🔥 ONLY ONE padding */
+  padding: 15mm 15mm 10mm 15mm;
+
+  background: #fff;
+  color: #333;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.5;
+
+  /* 🔥 CRITICAL */
+  min-height: unset;
+  height: auto;
+
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
       .pdf-header {
         display: flex;
         justify-content: space-between;
@@ -902,9 +938,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
         height: 60px;
         width: auto;
       }
-      .pdf-section {
-        margin-bottom: 20px;
-      }
+     .pdf-section {
+  margin-bottom: 12px;
+  page-break-inside: avoid;
+}
+
       .pdf-section-title {
         background: #f8f9fa;
         padding: 6px 10px;
@@ -1080,33 +1118,80 @@ function ViewEntry({ isOpen, onClose, entry }) {
           <div className="pdf-section">
             <div className="pdf-section-title">Order Information</div>
             <div className="pdf-grid">
-              <div className="pdf-item"><strong>SO Date:</strong> {formatDateTime(entry.soDate) || "N/A"}</div>
-              <div className="pdf-item"><strong>Order Type:</strong> {entry.orderType || "N/A"}</div>
-              <div className="pdf-item"><strong>GEM Order No:</strong> {entry.gemOrderNumber || "N/A"}</div>
-              <div className="pdf-item"><strong>Sales Person:</strong> {entry.salesPerson || "N/A"}</div>
-              <div className="pdf-item"><strong>Reporting Person:</strong> {entry.report || "N/A"}</div>
-              <div className="pdf-item"><strong>Branch/Company:</strong> {entry.company || "N/A"}</div>
-              <div className="pdf-item"><strong>Created By:</strong> {createdByName || "N/A"}</div>
-              <div className="pdf-item"><strong>Stock Status:</strong> {entry.stockStatus || "N/A"}</div>
-              <div className="pdf-item"><strong>SO Status:</strong> {entry.sostatus || "N/A"}</div>
-              <div className="pdf-item"><strong>Dispatch Status:</strong> {entry.dispatchStatus || "N/A"}</div>
-              <div className="pdf-item"><strong>PI Number:</strong> {entry.piNumber || "N/A"}</div>
-              <div className="pdf-item"><strong>Bill Number:</strong> {entry.billNumber || "N/A"}</div>
+              <div className="pdf-item">
+                <strong>SO Date:</strong>{" "}
+                {formatDateTime(entry.soDate) || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Order Type:</strong> {entry.orderType || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>GEM Order No:</strong> {entry.gemOrderNumber || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Sales Person:</strong> {entry.salesPerson || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Reporting Person:</strong> {entry.report || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Branch/Company:</strong> {entry.company || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Created By:</strong> {createdByName || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Stock Status:</strong> {entry.stockStatus || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>SO Status:</strong> {entry.sostatus || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Dispatch Status:</strong>{" "}
+                {entry.dispatchStatus || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>PI Number:</strong> {entry.piNumber || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Bill Number:</strong> {entry.billNumber || "N/A"}
+              </div>
             </div>
           </div>
 
           <div className="pdf-section">
             <div className="pdf-section-title">Customer Details</div>
             <div className="pdf-grid">
-              <div className="pdf-item"><strong>Customer Name:</strong> {entry.customername || "N/A"}</div>
-              <div className="pdf-item"><strong>Contact Person:</strong> {entry.name || "N/A"}</div>
-              <div className="pdf-item"><strong>Contact No:</strong> {entry.contactNo || "N/A"}</div>
-              <div className="pdf-item"><strong>Alternate No:</strong> {entry.alterno || "N/A"}</div>
-              <div className="pdf-item"><strong>Email:</strong> {entry.customerEmail || "N/A"}</div>
-              <div className="pdf-item"><strong>GST No:</strong> {entry.gstno || "N/A"}</div>
-              <div className="pdf-item"><strong>City/State:</strong> {entry.city || "N/A"}, {entry.state || "N/A"} ({entry.pinCode || "N/A"})</div>
-              <div className="pdf-item" style={{ gridColumn: "span 2" }}><strong>Shipping Address:</strong> {entry.shippingAddress || "N/A"}</div>
-              <div className="pdf-item" style={{ gridColumn: "span 2" }}><strong>Billing Address:</strong> {entry.billingAddress || "N/A"}</div>
+              <div className="pdf-item">
+                <strong>Customer Name:</strong> {entry.customername || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Contact Person:</strong> {entry.name || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Contact No:</strong> {entry.contactNo || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Alternate No:</strong> {entry.alterno || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Email:</strong> {entry.customerEmail || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>GST No:</strong> {entry.gstno || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>City/State:</strong> {entry.city || "N/A"},{" "}
+                {entry.state || "N/A"} ({entry.pinCode || "N/A"})
+              </div>
+              <div className="pdf-item" style={{ gridColumn: "span 2" }}>
+                <strong>Shipping Address:</strong>{" "}
+                {entry.shippingAddress || "N/A"}
+              </div>
+              <div className="pdf-item" style={{ gridColumn: "span 2" }}>
+                <strong>Billing Address:</strong>{" "}
+                {entry.billingAddress || "N/A"}
+              </div>
             </div>
           </div>
 
@@ -1170,49 +1255,148 @@ function ViewEntry({ isOpen, onClose, entry }) {
           </div>
 
           <div className="pdf-section">
-            <div className="pdf-section-title">Financial & Payment Information</div>
+            <div className="pdf-section-title">
+              Financial & Payment Information
+            </div>
             <div className="pdf-grid">
-              <div className="pdf-item"><strong>Total Unit Value:</strong> ₹{totalUnitPrice?.toFixed(2) || "0.00"}</div>
-              <div className="pdf-item"><strong>Order Total:</strong> ₹{entry.total?.toFixed(2) || "0.00"}</div>
-              <div className="pdf-item"><strong>Payment Method:</strong> {entry.paymentMethod || "N/A"}</div>
-              <div className="pdf-item"><strong>Payment Terms:</strong> {entry.paymentTerms || "N/A"}</div>
-              <div className="pdf-item"><strong>Payment Collected:</strong> {entry.paymentCollected || "N/A"}</div>
-              <div className="pdf-item"><strong>Payment Due:</strong> {entry.paymentDue || "N/A"}</div>
-              <div className="pdf-item"><strong>NEFT/Trans ID:</strong> {entry.neftTransactionId || "N/A"}</div>
-              <div className="pdf-item"><strong>Cheque ID:</strong> {entry.chequeId || "N/A"}</div>
-              <div className="pdf-item"><strong>Credit Days:</strong> {entry.creditDays || "0"}</div>
-              <div className="pdf-item"><strong>Invoice No/Date:</strong> {entry.invoiceNo || "N/A"} ({formatDate(entry.invoiceDate) || "N/A"})</div>
-              <div className="pdf-item"><strong>Freight:</strong> ₹{entry.actualFreight?.toFixed(2) || "0.00"} ({entry.freightstatus || "N/A"})</div>
-              <div className="pdf-item"><strong>Installation Charges:</strong> {entry.installation || "N/A"} ({entry.installchargesstatus || "N/A"})</div>
+              <div className="pdf-item">
+                <strong>Total Unit Value:</strong> ₹
+                {totalUnitPrice?.toFixed(2) || "0.00"}
+              </div>
+              <div className="pdf-item">
+                <strong>Order Total:</strong> ₹
+                {entry.total?.toFixed(2) || "0.00"}
+              </div>
+              <div className="pdf-item">
+                <strong>Payment Method:</strong> {entry.paymentMethod || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Payment Terms:</strong> {entry.paymentTerms || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Payment Collected:</strong>{" "}
+                {entry.paymentCollected || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Payment Due:</strong> {entry.paymentDue || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>NEFT/Trans ID:</strong>{" "}
+                {entry.neftTransactionId || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Cheque ID:</strong> {entry.chequeId || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Credit Days:</strong> {entry.creditDays || "0"}
+              </div>
+              <div className="pdf-item">
+                <strong>Invoice No/Date:</strong> {entry.invoiceNo || "N/A"} (
+                {formatDate(entry.invoiceDate) || "N/A"})
+              </div>
+              <div className="pdf-item">
+                <strong>Freight:</strong> ₹
+                {entry.actualFreight?.toFixed(2) || "0.00"} (
+                {entry.freightstatus || "N/A"})
+              </div>
+              <div className="pdf-item">
+                <strong>Installation Charges:</strong>{" "}
+                {entry.installation || "N/A"} (
+                {entry.installchargesstatus || "N/A"})
+              </div>
             </div>
           </div>
 
           <div className="pdf-section">
-            <div className="pdf-section-title">Production, Logistics & Installation</div>
+            <div className="pdf-section-title">
+              Production, Logistics & Installation
+            </div>
             <div className="pdf-grid">
-              <div className="pdf-item"><strong>Production Status:</strong> {entry.fulfillingStatus || "N/A"}</div>
-              <div className="pdf-item"><strong>Fulfillment Date:</strong> {formatDate(entry.fulfillmentDate) || "N/A"}</div>
-              <div className="pdf-item"><strong>Dispatch From/Date:</strong> {entry.dispatchFrom || "N/A"} ({formatDate(entry.dispatchDate) || "N/A"})</div>
-              <div className="pdf-item"><strong>Transporter/Details:</strong> {entry.transporter || "N/A"} ({entry.transporterDetails || "N/A"})</div>
-              <div className="pdf-item"><strong>Docket No:</strong> {entry.docketNo || "N/A"}</div>
-              <div className="pdf-item"><strong>Delivery Date:</strong> {formatDate(entry.deliveryDate) || "N/A"}</div>
-              <div className="pdf-item"><strong>Installation Status:</strong> {entry.installationStatus || "N/A"}</div>
-              <div className="pdf-item"><strong>Engineer:</strong> {entry.installationeng || "N/A"}</div>
-              <div className="pdf-item"><strong>Receipt Date:</strong> {formatDate(entry.receiptDate) || "N/A"}</div>
-              <div className="pdf-item"><strong>Demo Date/Status:</strong> {formatDate(entry.demoDate) || "N/A"} ({entry.demostatus || "N/A"})</div>
+              <div className="pdf-item">
+                <strong>Production Status:</strong>{" "}
+                {entry.fulfillingStatus || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Fulfillment Date:</strong>{" "}
+                {formatDate(entry.fulfillmentDate) || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Dispatch From/Date:</strong>{" "}
+                {entry.dispatchFrom || "N/A"} (
+                {formatDate(entry.dispatchDate) || "N/A"})
+              </div>
+              <div className="pdf-item">
+                <strong>Transporter/Details:</strong>{" "}
+                {entry.transporter || "N/A"} (
+                {entry.transporterDetails || "N/A"})
+              </div>
+              <div className="pdf-item">
+                <strong>Docket No:</strong> {entry.docketNo || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Delivery Date:</strong>{" "}
+                {formatDate(entry.deliveryDate) || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Installation Status:</strong>{" "}
+                {entry.installationStatus || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Engineer:</strong> {entry.installationeng || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Receipt Date:</strong>{" "}
+                {formatDate(entry.receiptDate) || "N/A"}
+              </div>
+              <div className="pdf-item">
+                <strong>Demo Date/Status:</strong>{" "}
+                {formatDate(entry.demoDate) || "N/A"} (
+                {entry.demostatus || "N/A"})
+              </div>
             </div>
           </div>
 
-          {(entry.remarks || entry.remarksByProduction || entry.remarksByAccounts || entry.remarksByBilling || entry.remarksByInstallation || entry.verificationRemarks) && (
+          {(entry.remarks ||
+            entry.remarksByProduction ||
+            entry.remarksByAccounts ||
+            entry.remarksByBilling ||
+            entry.remarksByInstallation ||
+            entry.verificationRemarks) && (
             <div className="pdf-section">
               <div className="pdf-section-title">Official Remarks</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                {entry.remarks && <div className="pdf-item"><strong>General:</strong> {entry.remarks}</div>}
-                {entry.remarksByProduction && <div className="pdf-item"><strong>Production:</strong> {entry.remarksByProduction}</div>}
-                {entry.remarksByAccounts && <div className="pdf-item"><strong>Accounts:</strong> {entry.remarksByAccounts}</div>}
-                {entry.remarksByBilling && <div className="pdf-item"><strong>Billing:</strong> {entry.remarksByBilling}</div>}
-                {entry.remarksByInstallation && <div className="pdf-item"><strong>Installation:</strong> {entry.remarksByInstallation}</div>}
-                {entry.verificationRemarks && <div className="pdf-item"><strong>Verification:</strong> {entry.verificationRemarks}</div>}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "5px" }}
+              >
+                {entry.remarks && (
+                  <div className="pdf-item">
+                    <strong>General:</strong> {entry.remarks}
+                  </div>
+                )}
+                {entry.remarksByProduction && (
+                  <div className="pdf-item">
+                    <strong>Production:</strong> {entry.remarksByProduction}
+                  </div>
+                )}
+                {entry.remarksByAccounts && (
+                  <div className="pdf-item">
+                    <strong>Accounts:</strong> {entry.remarksByAccounts}
+                  </div>
+                )}
+                {entry.remarksByBilling && (
+                  <div className="pdf-item">
+                    <strong>Billing:</strong> {entry.remarksByBilling}
+                  </div>
+                )}
+                {entry.remarksByInstallation && (
+                  <div className="pdf-item">
+                    <strong>Installation:</strong> {entry.remarksByInstallation}
+                  </div>
+                )}
+                {entry.verificationRemarks && (
+                  <div className="pdf-item">
+                    <strong>Verification:</strong> {entry.verificationRemarks}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1329,8 +1513,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   formatter: (v) =>
                                     product.productType ===
                                       "Fujifilm-Printer" &&
-                                      isValidField(v) &&
-                                      v.length > 0
+                                    isValidField(v) &&
+                                    v.length > 0
                                       ? v.join(", ")
                                       : null,
                                 },
@@ -1339,8 +1523,8 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   isValidField(
                                     formatter
                                       ? formatter(product[key])
-                                      : product[key]
-                                  )
+                                      : product[key],
+                                  ),
                                 )
                                 .map(({ key, label, formatter }) => (
                                   <div key={key}>
@@ -1372,11 +1556,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
                               : renderer
                                 ? renderer()
                                 : isValidField(
-                                  value ||
-                                  (formatter
-                                    ? formatter(entry[key])
-                                    : entry[key])
-                                )
+                                    value ||
+                                      (formatter
+                                        ? formatter(entry[key])
+                                        : entry[key]),
+                                  ),
                         )
                         .map(({ key, label, value, formatter, renderer }) => {
                           const displayValue =
@@ -1402,35 +1586,36 @@ function ViewEntry({ isOpen, onClose, entry }) {
                                   <Badge
                                     bg={
                                       typeof badgeStyle[displayValue] ===
-                                        "string"
+                                      "string"
                                         ? badgeStyle[displayValue] ||
-                                        badgeStyle.default
+                                          badgeStyle.default
                                         : undefined
                                     }
                                     style={
                                       typeof badgeStyle[displayValue] ===
-                                        "object"
+                                      "object"
                                         ? {
-                                          background:
-                                            badgeStyle[displayValue].bg,
-                                          color:
-                                            badgeStyle[displayValue].color,
-                                          padding: "5px 10px",
-                                          borderRadius: "12px",
-                                          fontWeight: "500",
-                                        }
-                                        : key === "fulfillingStatus"
-                                          ? {
                                             background:
-                                              badgeStyle[displayValue]?.bg ||
-                                              badgeStyle.default.bg,
+                                              badgeStyle[displayValue].bg,
                                             color:
-                                              badgeStyle[displayValue]?.color ||
-                                              badgeStyle.default.color,
+                                              badgeStyle[displayValue].color,
                                             padding: "5px 10px",
                                             borderRadius: "12px",
                                             fontWeight: "500",
                                           }
+                                        : key === "fulfillingStatus"
+                                          ? {
+                                              background:
+                                                badgeStyle[displayValue]?.bg ||
+                                                badgeStyle.default.bg,
+                                              color:
+                                                badgeStyle[displayValue]
+                                                  ?.color ||
+                                                badgeStyle.default.color,
+                                              padding: "5px 10px",
+                                              borderRadius: "12px",
+                                              fontWeight: "500",
+                                            }
                                           : {}
                                     }
                                   >
