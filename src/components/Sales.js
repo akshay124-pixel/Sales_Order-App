@@ -523,12 +523,15 @@ const Row = React.memo(({ index, style, data }) => {
                     : order.sostatus === "Approved"
                       ? "success"
                       : order.sostatus === "On Hold Due to Low Price"
-                        ? "danger"
-                        : "secondary"
+                        ? "dark"
+                        : order.sostatus === "Order Cancelled"
+                          ? "danger"
+                          : "secondary"
               }
             >
               {order.sostatus || "-"}
             </Badge>
+
           ),
           title: order.sostatus || "-",
         },

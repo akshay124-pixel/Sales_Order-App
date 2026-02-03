@@ -3649,6 +3649,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             <option value="Order on Hold Due to Low Price">
               Order on Hold Due to Low Price
             </option>
+            <option value="Order Cancelled">Order Cancelled</option>
           </Form.Select>
         </Form.Group>
         {(userRole === "Admin" || userRole === "SuperAdmin") && (
