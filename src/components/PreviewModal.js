@@ -207,7 +207,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     <div class="mb-2">
                       <strong class="text-gray-700">Contact Person Name/Designation:</strong>
                       <span class="text-gray-900">${
-                        entry.contactPerson || entry.customername || "N/A"
+                        entry.name|| "N/A"
                       }</span>
                     </div>
                     <div class="mb-2">
