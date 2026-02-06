@@ -7,6 +7,42 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import PreviewModal from "./PreviewModal";
+import styled from "styled-components";
+import { AnimatePresence, motion } from "framer-motion";
+
+// Modern loader overlay styles
+const LoaderOverlay = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+`;
+
+const SpinnerWrap = styled.div`
+  display: grid;
+  place-items: center;
+  gap: 10px;
+`;
+
+const GradientSpinner = styled.div`
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: conic-gradient(#6a11cb, #2575fc, #6a11cb);
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+  mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+  animation: spin 0.9s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+`;
 const BillGeneration = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -15,8 +51,10 @@ const BillGeneration = () => {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchOrders = useCallback(async () => {
+    setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
@@ -49,6 +87,8 @@ const BillGeneration = () => {
 
       toast.error(errorMessage);
       setOrders([]);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -68,9 +108,9 @@ const BillGeneration = () => {
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
-              .map((p) => `${p.productType} (${p.qty})`)
-              .join(", ")
-              .toLowerCase()
+            .map((p) => `${p.productType} (${p.qty})`)
+            .join(", ")
+            .toLowerCase()
           : "";
         const total = order.total ? order.total.toFixed(2).toString() : "0.00";
         const soDate = order.soDate
@@ -172,6 +212,7 @@ const BillGeneration = () => {
             overflow-x: auto;
             scrollbar-width: thin;
             scrollbar-color: #2575fc #e6f0fa;
+            position: relative;
           }
           table thead {
             position: sticky;
@@ -342,6 +383,22 @@ const BillGeneration = () => {
               </tr>
             </thead>
             <tbody>
+              {isLoading && (
+                <AnimatePresence>
+                  <LoaderOverlay
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    key="loader-overlay"
+                  >
+                    <SpinnerWrap>
+                      <GradientSpinner />
+                      <span style={{ color: "#2575fc", fontWeight: "600" }}>Loading orders...</span>
+                    </SpinnerWrap>
+                  </LoaderOverlay>
+                </AnimatePresence>
+              )}
+
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order, index) => (
                   <tr
@@ -472,8 +529,8 @@ const BillGeneration = () => {
                     >
                       {order.invoiceDate
                         ? new Date(order.invoiceDate).toLocaleDateString(
-                            "en-GB"
-                          )
+                          "en-GB"
+                        )
                         : "-"}
                     </td>
                     <td
@@ -492,8 +549,8 @@ const BillGeneration = () => {
                           order.billStatus === "Pending"
                             ? "warning"
                             : order.billStatus === "Under Billing"
-                            ? "info"
-                            : "success"
+                              ? "info"
+                              : "success"
                         }
                         style={{ padding: "6px 12px", fontSize: "0.9rem" }}
                       >
@@ -594,8 +651,8 @@ const BillGeneration = () => {
                     >
                       {order.products
                         ? order.products
-                            .map((p) => `${p.productType} (${p.qty})`)
-                            .join(", ")
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
                         : "-"}
                     </td>
                     <td
@@ -613,19 +670,37 @@ const BillGeneration = () => {
                     </td>
                   </tr>
                 ))
-              ) : (
+              ) : !isLoading ? (
                 <tr>
                   <td
                     colSpan="13"
                     style={{
-                      padding: "20px",
+                      height: "300px",
                       textAlign: "center",
-                      fontStyle: "italic",
-                      color: "#6b7280",
+                      verticalAlign: "middle",
                     }}
                   >
-                    No orders found.
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <div style={{ fontSize: "3rem" }}>📋</div>
+                      <div style={{ fontSize: "1.2rem", fontWeight: "600", color: "#6b7280" }}>
+                        No orders found.
+                      </div>
+                      <div style={{ color: "#9ca3af" }}>
+                        Try adjusting your search or check back later.
+                      </div>
+                    </div>
                   </td>
+                </tr>
+              ) : (
+                <tr>
+                  <td colSpan="13" style={{ height: "300px" }}></td>
                 </tr>
               )}
             </tbody>
