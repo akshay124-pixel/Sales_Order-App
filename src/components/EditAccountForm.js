@@ -461,9 +461,6 @@ const EditAccountForm = ({ show, onHide, order, onOrderUpdated }) => {
                         error={errors.remarksByAccounts}
                         required={true}
                     />
-
-
-
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "15px" }}>
                         <Button
                             onClick={onHide}
