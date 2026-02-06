@@ -198,7 +198,6 @@ const EditAccountForm = ({ show, onHide, order, onOrderUpdated }) => {
         total: "",
         paymentReceived: "Not Received",
         remarksByAccounts: "",
-        installationStatus: "Pending",
         paymentCollected: "",
         paymentMethod: "",
         paymentDue: "",
@@ -215,7 +214,6 @@ const EditAccountForm = ({ show, onHide, order, onOrderUpdated }) => {
                 total: order.total || "",
                 paymentReceived: order.paymentReceived || "Not Received",
                 remarksByAccounts: order.remarksByAccounts || "",
-                installationStatus: order.installationStatus || "Pending",
                 paymentCollected:
                     order.paymentReceived === "Received"
                         ? Number(order.total || 0).toFixed(2)
@@ -298,7 +296,6 @@ const EditAccountForm = ({ show, onHide, order, onOrderUpdated }) => {
                     : undefined,
                 neftTransactionId: formData.neftTransactionId || undefined,
                 chequeId: formData.chequeId || undefined,
-                installationStatus: formData.installationStatus || undefined,
             };
 
             const dirtyValues = getDirtyValues(originalFormData, formData);
@@ -377,12 +374,6 @@ const EditAccountForm = ({ show, onHide, order, onOrderUpdated }) => {
         { value: "Received", label: "Received" },
     ];
 
-    const installationStatusOptions = [
-        { value: "Pending", label: "Pending" },
-        { value: "In Progress", label: "In Progress" },
-        { value: "Completed", label: "Completed" },
-        { value: "Failed", label: "Failed" },
-    ];
 
     return (
         <Modal show={show} onHide={onHide} centered backdrop="static">
@@ -471,14 +462,7 @@ const EditAccountForm = ({ show, onHide, order, onOrderUpdated }) => {
                         required={true}
                     />
 
-                    <MemoizedSelect
-                        label="Installation Status"
-                        name="installationStatus"
-                        value={formData.installationStatus}
-                        onChange={handleChange}
-                        options={installationStatusOptions}
-                        error={errors.installationStatus}
-                    />
+
 
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "15px" }}>
                         <Button
