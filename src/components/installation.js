@@ -1494,7 +1494,17 @@ function Installation() {
                             background: "linear-gradient(135deg, #2575fc, #6a11cb)",
                             color: "#fff",
                             border: "none",
-                            fontSize: "0.8rem"
+                            fontSize: "0.8rem",
+                            transition: "all 0.3s ease",
+                            boxShadow: "0 3px 8px rgba(0, 0, 0, 0.15)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-1px) scale(1.05)";
+                            e.currentTarget.style.boxShadow = "0 6px 12px rgba(0, 0, 0, 0.25)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0) scale(1)";
+                            e.currentTarget.style.boxShadow = "0 3px 8px rgba(0, 0, 0, 0.15)";
                           }}
                         >
                           <FaDownload size={10} /> Download

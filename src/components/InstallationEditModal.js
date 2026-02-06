@@ -89,6 +89,47 @@ const InstallationEditModal = ({ show, onHide, order, onUpdate }) => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const allowedTypes = [
+                "application/pdf",
+                "application/x-pdf",
+                "image/png",
+                "image/jpeg",
+                "image/jpg",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ];
+            const allowedExtensions = ["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx"];
+            const fileExt = file.name.split(".").pop().toLowerCase();
+
+            if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
+                toast.error("Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed.", {
+                    position: "top-right",
+                    autoClose: 5000,
+                });
+                e.target.value = null;
+                setFormData({ ...formData, installationFile: null });
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error("File size must be less than 5MB", {
+                    position: "top-right",
+                    autoClose: 5000,
+                });
+                e.target.value = null;
+                setFormData({ ...formData, installationFile: null });
+                return;
+            }
+            setFormData({ ...formData, installationFile: file });
+        } else {
+            setFormData({ ...formData, installationFile: null });
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -329,14 +370,8 @@ const InstallationEditModal = ({ show, onHide, order, onUpdate }) => {
                         >
                             <Form.Control
                                 type="file"
-                                accept=".pdf,.jpg,.png,.jpeg,.doc,.docx"
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        installationFile: e.target.files[0],
-                                    })
-                                }
-
+                                accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.xls"
+                                onChange={handleFileChange}
                                 style={{ display: "none" }}
                                 id="installationFileUpload"
                             />
@@ -345,10 +380,12 @@ const InstallationEditModal = ({ show, onHide, order, onUpdate }) => {
                                 <div style={{ fontSize: "0.95rem", color: "#333", fontWeight: "600" }}>
                                     {formData.installationFile
                                         ? `Selected: ${formData.installationFile.name}`
-                                        : "Click to upload Installation Report (PDF / Image / Doc)"}
+                                        : currentFile
+                                            ? "Replace existing report"
+                                            : "Click to upload Installation Report (PDF / Image / Doc / Excel)"}
                                 </div>
                                 <div style={{ fontSize: "0.8rem", color: "#666" }}>
-                                    Max size as per server limit
+                                    Supported: PDF, JPG, PNG, DOCX, XLSX (Max 5MB)
                                 </div>
                             </label>
                         </div>
