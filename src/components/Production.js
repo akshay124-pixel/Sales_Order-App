@@ -558,6 +558,7 @@ const Production = () => {
     const textToCopy = `
       Order ID: ${viewOrder.orderId || "N/A"}
       Customer Name: ${viewOrder.customername || "N/A"}
+      Sales Person: ${viewOrder.salesPerson || "N/A"}
       Products:\n${productsText}
       Fulfilling Status: ${viewOrder.fulfillingStatus || "Pending"}
       Remarks by Production: ${viewOrder.remarksByProduction || "N/A"}
@@ -1207,6 +1208,7 @@ const Production = () => {
                         "Order ID",
                         "So Date",
                         "Customer Name",
+                        "Sales Person",
                         "Shipping Address",
                         "Customer Email",
                         "Contact No",
@@ -1347,6 +1349,23 @@ const Production = () => {
                             title={order.customername || "N/A"}
                           >
                             {order.customername || "N/A"}
+                          </td>  <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                              color: "#2c3e50",
+                              fontSize: "1rem",
+                              borderBottom: "1px solid #eee",
+                              height: "40px",
+                              lineHeight: "40px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: "150px",
+                            }}
+                            title={order.salesPerson || "N/A"}
+                          >
+                            {order.salesPerson || "N/A"}
                           </td>
                           <td
                             style={{
@@ -2189,6 +2208,10 @@ const Production = () => {
                         {viewOrder.customername || "N/A"}
                       </div>
                       <div className="pdf-item">
+                        <strong>Sales Person:</strong>{" "}
+                        {viewOrder.salesPerson || "N/A"}
+                      </div>
+                      <div className="pdf-item">
                         <strong>Contact No:</strong>{" "}
                         {viewOrder.contactNo || "N/A"}
                       </div>
@@ -2357,6 +2380,10 @@ const Production = () => {
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Order Type:</strong>{" "}
                       {viewOrder.orderType || "N/A"}
+                    </span>
+                    <span style={{ fontSize: "1rem", color: "#555" }}>
+                      <strong>Sales Person:</strong>{" "}
+                      {viewOrder.salesPerson || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Sales Order Remarks:</strong>{" "}

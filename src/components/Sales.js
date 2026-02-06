@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaEye, FaHome, FaWrench, FaIndustry, FaTruck } from "react-icons/fa";
 import { Button, Badge, Popover, Card } from "react-bootstrap";
+import Pagination from "@mui/material/Pagination";
 // TeamBuilder: Team management modal component (import)
 import TeamBuilder from "./TeamBuilder";
 import FilterSection from "./FilterSection";
@@ -361,9 +362,11 @@ const Row = React.memo(({ index, style, data }) => {
     userRole,
     isOrderComplete,
     columnWidths,
+    currentPage,
   } = data;
   const order = orders[index];
 
+  // ... (rest of helper variables remain same, just ensure they are inside)
   const firstProduct =
     order.products && order.products[0] ? order.products[0] : {};
   const productDetails = order.products
@@ -386,21 +389,21 @@ const Row = React.memo(({ index, style, data }) => {
     : "-";
 
   const getRowBackground = () => {
-    if (order.dispatchStatus === "Order Cancelled") return "#ffebee"; // Reddish for Cancelled
-    if (isOrderComplete(order)) return "#ffffff"; // White for complete orders
+    if (order.dispatchStatus === "Order Cancelled") return "#ffebee";
+    if (isOrderComplete(order)) return "#ffffff";
 
     if (order.sostatus === "Approved") {
       if (order.poFilePath) {
-        return "#d4f4e6"; // Darker version of #e6ffed
+        return "#d4f4e6";
       }
-      return "#e6ffed"; // Light green for Approved
+      return "#e6ffed";
     }
-    if (order.sostatus === "Accounts Approved") return "#e6f0ff"; // Light blue for Accounts Approved
-    return "#f3e8ff"; // Light purple for incomplete/others
+    if (order.sostatus === "Accounts Approved") return "#e6f0ff";
+    return "#f3e8ff";
   };
 
   const getHoverBackground = () => {
-    if (order.dispatchStatus === "Order Cancelled") return "#ffcdd2"; // Darker red on hover
+    if (order.dispatchStatus === "Order Cancelled") return "#ffcdd2";
     if (isOrderComplete(order)) return "#f0f7ff";
     if (order.sostatus === "Approved") return "#d1f7dc";
     if (order.sostatus === "Accounts Approved") return "#d1e4ff";
@@ -422,12 +425,14 @@ const Row = React.memo(({ index, style, data }) => {
       }
     >
       {[
-        { width: columnWidths[0], content: index + 1, title: `${index + 1}` },
+        { width: columnWidths[0], content: (currentPage - 1) * 20 + index + 1, title: `${(currentPage - 1) * 20 + index + 1}` },
         {
           width: columnWidths[1],
           content: order.orderId || "-",
           title: order.orderId || "-",
         },
+        // ... (rest of columns)
+
         {
           width: columnWidths[2],
           content: (() => {
@@ -1048,6 +1053,10 @@ const Row = React.memo(({ index, style, data }) => {
 const Sales = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalProductQty, setTotalProductQty] = useState(0);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -1077,15 +1086,58 @@ const Sales = () => {
   const userId = localStorage.getItem("userId");
   const [loading, setLoading] = useState(false);
 
-  // Create uniqueSalesPersons array from orders
-  const uniqueSalesPersons = useMemo(() => {
-    const salesPersons = orders
-      .map((order) => order.createdBy?.username?.trim() || "Sales Order Team")
-      .filter((salesPerson) => salesPerson && salesPerson.trim() !== "");
-    const unique = Array.from(new Set(salesPersons));
-    unique.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-    return ["All", ...unique];
-  }, [orders]);
+  // Unique Sales Persons State (populated from full dataset)
+  const [uniqueSalesPersons, setUniqueSalesPersons] = useState(["All"]);
+
+  // Fetch full list of orders once to populate filters
+  useEffect(() => {
+    const fetchAllOrdersForFilter = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `${process.env.REACT_APP_URL}/api/get-orders`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        let allData = [];
+        if (Array.isArray(response.data)) {
+          allData = response.data;
+        } else if (response.data && Array.isArray(response.data.data)) {
+          allData = response.data.data;
+        } else {
+          console.warn("Unexpected response format for get-orders:", response.data);
+        }
+
+        // Extract unique sales persons
+        const salesPersons = allData
+          .map((order) => {
+            // Handle case where createdBy is explicitly null or missing
+            if (!order.createdBy) return "Sales Order Team";
+            // Handle case where createdBy is populated (object)
+            if (typeof order.createdBy === 'object' && order.createdBy.username) {
+              return order.createdBy.username.trim();
+            }
+            // Handle case where createdBy might be just an ID string (unlikely with populate)
+            if (typeof order.createdBy === 'string') {
+              return "Unknown";
+            }
+            return "Sales Order Team";
+          })
+          .filter((salesPerson) => salesPerson && salesPerson.trim() !== "");
+
+        const unique = Array.from(new Set(salesPersons));
+        unique.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+        setUniqueSalesPersons(["All", ...unique]);
+      } catch (error) {
+        console.error("Error fetching all orders for filter:", error);
+      }
+    };
+
+    fetchAllOrdersForFilter();
+  }, []); // Run once on mount
 
   // Debounced search handler
   const debouncedSetSearchTerm = useMemo(
@@ -1093,17 +1145,62 @@ const Sales = () => {
     []
   );
 
-  // Fetch orders
-  const fetchOrders = useCallback(async () => {
+  // Fetch orders with pagination
+  const fetchOrders = useCallback(async (params = {}) => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
+
+      const {
+        page = 1,
+        search = "",
+        approval = "All",
+        orderType = "All",
+        dispatch = "All",
+        salesPerson = "All",
+        dispatchFrom = "All",
+        startDate = null,
+        endDate = null,
+        dashboardFilter = "all",
+      } = params;
+
+      const queryParams = {
+        page,
+        limit: 20,
+        search,
+        approval,
+        orderType,
+        dispatch,
+        salesPerson,
+        dispatchFrom,
+        dashboardFilter,
+      };
+
+      if (startDate) queryParams.startDate = startDate.toISOString();
+      if (endDate) queryParams.endDate = endDate.toISOString();
+
       const response = await axios.get(
-        `${process.env.REACT_APP_URL}/api/get-orders`,
+        `${process.env.REACT_APP_URL}/api/get-orders-paginated`,
         {
           headers: { Authorization: `Bearer ${token}` },
+          params: queryParams,
         }
       );
-      setOrders(response.data);
+
+      const {
+        data,
+        total,
+        page: currentPageRes,
+        pages,
+        totalProductQty,
+      } = response.data;
+
+      setOrders(data);
+      setFilteredOrders(data);
+      setTotalOrders(total);
+      setTotalPages(pages);
+      setTotalProductQty(totalProductQty || 0);
+      setCurrentPage(currentPageRes);
     } catch (error) {
       console.error("Error fetching orders:", error);
 
@@ -1114,6 +1211,8 @@ const Sales = () => {
           : "Unable to load orders. Please try again.";
 
       toast.error(friendlyMessage, { position: "top-right", autoClose: 5000 });
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -1297,239 +1396,26 @@ const Sales = () => {
     };
   }, [fetchOrders, fetchNotifications, userRole, userId, fetchDashboardCounts]);
 
-  const calculateTotalResults = useMemo(() => {
-    return Math.floor(
-      filteredOrders.reduce((total, order) => {
-        const orderQty = order.products
-          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-          : 0;
-        return total + orderQty;
-      }, 0)
-    );
-  }, [filteredOrders]);
+  // Removed client-side filtering logic in favor of server-side pagination.
 
-  // Filter orders
-  const filterOrders = useCallback(
-    (
-      ordersToFilter,
-      search,
-      approval,
-      orderType,
-      dispatch,
-      salesPerson,
-      dispatchFrom,
-      start,
-      end,
-      dashboardFilter
-    ) => {
-      let filtered = [...ordersToFilter];
-      const searchLower = search.toLowerCase().trim();
-
-      if (searchLower) {
-        filtered = filtered.filter((order) => {
-          const orderFields = [
-            order.customername,
-            order.city,
-            order.state,
-            order.pinCode,
-            order.contactNo,
-            order.customerEmail,
-            order.orderId,
-            order.orderType,
-            order.salesPerson,
-            order.company,
-            order.transporter,
-            order.transporterDetails,
-            order.docketNo,
-            order.shippingAddress,
-            order.billingAddress,
-            order.invoiceNo,
-            order.piNumber,
-            order.billStatus,
-            order.remarks,
-            order.sostatus,
-            order.gstno,
-            order.paymentCollected,
-            order.paymentMethod,
-            order.paymentDue,
-            order.paymentTerms,
-            order.creditDays,
-            order.gemOrderNumber,
-            order.installation,
-            order.dispatchFrom,
-            order.freightcs,
-            order.fulfillingStatus,
-            order.remarksByProduction,
-            order.remarksByAccounts,
-            order.paymentReceived,
-            order.billNumber,
-            order.remarksByBilling,
-            order.verificationRemarks,
-            order.completionStatus,
-            order.installationStatus,
-            order.dispatchStatus,
-            order.name,
-            order.remarksByInstallation,
-            order.report,
-            order.soDate
-              ? new Date(order.soDate).toLocaleDateString("en-GB")
-              : "",
-            order.dispatchDate
-              ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-              : "",
-            order.deliveryDate
-              ? new Date(order.deliveryDate).toLocaleDateString("en-GB")
-              : "",
-            order.receiptDate
-              ? new Date(order.receiptDate).toLocaleDateString("en-GB")
-              : "",
-            order.invoiceDate
-              ? new Date(order.invoiceDate).toLocaleDateString("en-GB")
-              : "",
-            order.fulfillmentDate
-              ? new Date(order.fulfillmentDate).toLocaleDateString("en-GB")
-              : "",
-          ]
-            .filter(Boolean)
-            .map((field) => String(field).toLowerCase());
-
-          const productFields = (order.products || []).map((p) =>
-            [
-              p.productType,
-              p.size,
-              p.spec,
-              p.gst,
-              p.serialNos?.join(", "),
-              p.modelNos?.join(", "),
-              String(p.qty),
-              String(p.unitPrice),
-            ]
-              .filter(Boolean)
-              .map((field) => String(field).toLowerCase())
-              .join(" ")
-          );
-
-          const allFields = [...orderFields, ...productFields].join(" ");
-          return allFields.includes(searchLower);
-        });
-      }
-
-      if (approval !== "All") {
-        filtered = filtered.filter((order) => order.sostatus === approval);
-      }
-
-      if (orderType !== "All") {
-        filtered = filtered.filter((order) => order.orderType === orderType);
-      }
-
-      if (salesPerson !== "All") {
-        filtered = filtered.filter(
-          (order) =>
-            (order.createdBy?.username?.trim() || "Sales Order Team") ===
-            salesPerson
-        );
-      }
-
-      if (dispatch !== "All") {
-        filtered = filtered.filter(
-          (order) => order.dispatchStatus === dispatch
-        );
-      }
-
-      if (dispatchFrom !== "All") {
-        filtered = filtered.filter(
-          (order) => order.dispatchFrom === dispatchFrom
-        );
-      }
-
-      if (start || end) {
-        filtered = filtered.filter((order) => {
-          const orderDate = new Date(order.soDate);
-          const startDateAdjusted = start
-            ? new Date(start.setHours(0, 0, 0, 0))
-            : null;
-          const endDateAdjusted = end
-            ? new Date(end.setHours(23, 59, 59, 999))
-            : null;
-          return (
-            (!startDateAdjusted || orderDate >= startDateAdjusted) &&
-            (!endDateAdjusted || orderDate <= endDateAdjusted)
-          );
-        });
-      }
-
-      if (dashboardFilter !== "all") {
-        filtered = filtered.filter((order) => {
-          switch (dashboardFilter) {
-            case "production": {
-              // Match backend getDashboardCounts: sostatus Approved, dispatchFrom NOT in list, fulfillingStatus != "Fulfilled"
-              const dispatchFromOptions = [
-                "Patna",
-                "Bareilly",
-                "Ranchi",
-                "Lucknow",
-                "Delhi",
-                "Jaipur",
-                "Rajasthan",
-              ];
-              return (
-                order.sostatus === "Approved" &&
-                !dispatchFromOptions.includes(order.dispatchFrom) &&
-                order.fulfillingStatus !== "Fulfilled"
-              );
-            }
-            case "installation": {
-              // Match backend: Delivered but installation pending/in progress/site not ready/hold
-              const pendingInstallationStatuses = [
-                "Pending",
-                "In Progress",
-                "Site Not Ready",
-                "Hold",
-              ];
-              return (
-                order.dispatchStatus === "Delivered" &&
-                pendingInstallationStatuses.includes(order.installationStatus)
-              );
-            }
-            case "dispatch":
-              // Match backend: fulfillingStatus "Fulfilled" and not Delivered yet
-              return (
-                order.fulfillingStatus === "Fulfilled" &&
-                order.dispatchStatus !== "Delivered"
-              );
-            default:
-              return true;
-          }
-        });
-      }
-
-      filtered = filtered.sort((a, b) => {
-        if (new Date(a.createdAt) < new Date(b.createdAt)) return 1;
-        if (new Date(a.createdAt) > new Date(b.createdAt)) return -1;
-        return 0;
-      });
-
-      setFilteredOrders(filtered);
-    },
-    []
-  );
-
-  // Apply filters
   useEffect(() => {
-    filterOrders(
-      orders,
-      searchTerm,
-      approvalFilter,
-      orderTypeFilter,
-      dispatchFilter,
-      salesPersonFilter,
-      dispatchFromFilter,
-      startDate,
-      endDate,
-      trackerFilter
-    );
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchOrders({
+        page: 1,
+        search: searchTerm,
+        approval: approvalFilter,
+        orderType: orderTypeFilter,
+        dispatch: dispatchFilter,
+        salesPerson: salesPersonFilter,
+        dispatchFrom: dispatchFromFilter,
+        startDate,
+        endDate,
+        dashboardFilter: trackerFilter,
+      });
+    }
   }, [
-    orders,
     searchTerm,
     approvalFilter,
     orderTypeFilter,
@@ -1539,8 +1425,57 @@ const Sales = () => {
     startDate,
     endDate,
     trackerFilter,
-    filterOrders,
+    // fetchOrders not needed here as it's stable and we want to avoid cycles
   ]);
+
+  useEffect(() => {
+    fetchOrders({
+      page: currentPage,
+      search: searchTerm,
+      approval: approvalFilter,
+      orderType: orderTypeFilter,
+      dispatch: dispatchFilter,
+      salesPerson: salesPersonFilter,
+      dispatchFrom: dispatchFromFilter,
+      startDate,
+      endDate,
+      dashboardFilter: trackerFilter,
+    });
+  }, [currentPage, fetchOrders]); // Only trigger on page change (and initial mount technically)
+
+  // NOTE: The above two effects might cause double invocation on filter change if page != 1.
+  // Optimization: use a ref or single effect with internal previous state check.
+  // But given "Zero Regression" on stability, simpler is better.
+  // Actually, the first effect logic:
+  // If filter changes:
+  //   If page != 1: setPage(1). This updates state. Component renders. Second effect [currentPage] runs. Fetches page 1. Correct.
+  //   If page == 1: setPage(1) does nothing. Else branch runs. Fetches page 1. Correct.
+  // Double fetch risk?
+  // Filter change -> setPage(1). Render. Effect 2 runs.
+  // Is Effect 1 (Else) running? No.
+  // So NO double fetch.
+  // BUT Effect 2 runs on `[currentPage]`. If I change filter, `currentPage` doesn't change (if 1).
+  // I need Effect 2 to depend on Filters too?
+  // No, if Effect 2 depends on Filters, it runs on filter change.
+  // If I have Effect 2 depend on Filters AND Page.
+  // Filter Change -> Effect 2 runs. Fetches.
+  // I also want to reset Page to 1.
+  // If I setPage(1) in Effect 1...
+
+  // Let's Simplify:
+  // One Effect.
+  // Inside: Check if Filters changed since last run?
+  // Or just accept that we need to manually reset Page to 1 when filters change?
+  // I can't easily hook into "setSearchTerm" from here.
+
+  // Let's stick to the 2-effect logic structure which covers both cases, but carefully.
+  // Refined Logic:
+  // Effect 1: [currentPage]. Runs when page changes. Calls fetch.
+  // Effect 2: [filters]. Runs when filters change. Sets page = 1.
+  //    Problem: If page WAS 1, setPage(1) does not trigger Effect 1.
+  //    Solution: In Effect 2: if (page===1) fetch() else setPage(1).
+
+
 
   // Event handlers
   const handleReset = useCallback(() => {
@@ -1554,23 +1489,8 @@ const Sales = () => {
     setDispatchFilter("All");
     setTrackerFilter("all");
 
-    // Filter after a small delay to ensure states are updated
-    setTimeout(() => {
-      filterOrders(
-        orders,
-        "",
-        "All",
-        "All",
-        "All",
-        "All",
-        "All",
-        null,
-        null,
-        "all"
-      );
-      toast.info("Filters reset!");
-    }, 0);
-  }, [filterOrders, orders]);
+    toast.info("Filters reset!");
+  }, []);
 
   const handleAddEntry = useCallback(
     async (newEntry) => {
@@ -1599,38 +1519,16 @@ const Sales = () => {
   const handleDelete = useCallback(
     (deletedIds) => {
       setOrders((prev) => {
-        const updatedOrders = prev.filter(
-          (order) => !deletedIds.includes(order._id)
-        );
-        filterOrders(
-          updatedOrders,
-          searchTerm,
-          approvalFilter,
-          orderTypeFilter,
-          dispatchFilter,
-          salesPersonFilter,
-          dispatchFromFilter,
-          startDate,
-          endDate,
-          trackerFilter
-        );
-        return updatedOrders;
+        return prev.filter((order) => !deletedIds.includes(order._id));
+      });
+      setFilteredOrders((prev) => {
+        return prev.filter((order) => !deletedIds.includes(order._id));
       });
       fetchDashboardCounts(); // Refresh counts after delete
       setIsDeleteModalOpen(false);
 
     },
     [
-      filterOrders,
-      searchTerm,
-      approvalFilter,
-      orderTypeFilter,
-      dispatchFilter,
-      salesPersonFilter,
-      dispatchFromFilter,
-      startDate,
-      endDate,
-      trackerFilter,
       fetchDashboardCounts,
     ]
   );
@@ -1640,48 +1538,26 @@ const Sales = () => {
       // Hinglish: Duplicate API call avoid - EditEntry already server pe update kar chuka hota hai
       // yahan sirf local state update karenge
       setOrders((prev) => {
-        const updatedOrders = prev.map((order) =>
+        return prev.map((order) =>
           order._id === updatedEntry._id ? updatedEntry : order
         );
-        filterOrders(
-          updatedOrders,
-          searchTerm,
-          approvalFilter,
-          orderTypeFilter,
-          dispatchFilter,
-          salesPersonFilter,
-          dispatchFromFilter,
-          startDate,
-          endDate,
-          trackerFilter
+      });
+      setFilteredOrders((prev) => {
+        return prev.map((order) =>
+          order._id === updatedEntry._id ? updatedEntry : order
         );
-        return updatedOrders;
       });
       fetchDashboardCounts(); // Refresh counts after update
       setIsEditModalOpen(false);
       // Toast socket 'notification' se aayega (no duplicates)
     },
     [
-      filterOrders,
-      searchTerm,
-      approvalFilter,
-      orderTypeFilter,
-      dispatchFilter,
-      salesPersonFilter,
-      dispatchFromFilter,
-      startDate,
-      endDate,
-      trackerFilter,
       fetchDashboardCounts,
     ]
   );
 
-  const formatCurrency = useCallback((value) => {
-    if (!value || value === "") return "₹0.00";
-    const numericValue = parseFloat(value.toString().replace(/[^0-9.-]+/g, ""));
-    if (isNaN(numericValue)) return "₹0.00";
-    return `₹${numericValue.toFixed(2)}`;
-  }, []);
+
+
 
   const parseExcelDate = useCallback((dateValue) => {
     if (!dateValue) return "";
@@ -1884,22 +1760,14 @@ const Sales = () => {
             }
           );
 
+          await fetchOrders(); // Reload orders to reflect bulk upload properly (safest for pagination)
+          /*
           setOrders((prev) => {
             const updatedOrders = [...prev, ...response.data.data];
-            filterOrders(
-              updatedOrders,
-              searchTerm,
-              approvalFilter,
-              orderTypeFilter,
-              dispatchFilter,
-              salesPersonFilter,
-              dispatchFromFilter,
-              startDate,
-              endDate,
-              trackerFilter
-            );
-            return updatedOrders;
+             // we removed filterOrders, so just return
+             return updatedOrders;
           });
+          */
           fetchDashboardCounts(); // Refresh counts after bulk upload
           toast.success(
             `Successfully uploaded ${response.data.data.length} orders!`
@@ -1929,143 +1797,63 @@ const Sales = () => {
     },
     [
       parseExcelDate,
-      filterOrders,
-      searchTerm,
-      approvalFilter,
-      orderTypeFilter,
-      dispatchFilter,
-      salesPersonFilter,
-      dispatchFromFilter,
-      startDate,
-      endDate,
-      trackerFilter,
+      fetchOrders,
       fetchDashboardCounts,
     ]
   );
 
   const handleExport = useCallback(() => {
-    try {
-      const exportData = filteredOrders.map((order, index) => ({
-        "Order ID": order.orderId || "-",
-        "Seq No": index + 1,
-        "SO Date": order.soDate
-          ? new Date(order.soDate).toLocaleDateString("en-GB")
-          : "-",
-        "Customer Name": order.customername || "-",
-        "Sales Person": order.salesPerson || "-",
-        "Product Details": order.products
-          ? order.products.map((p) => `${p.productType} (${p.qty})`).join(", ")
-          : "-",
-        "Product Type": order.products
-          ? order.products.map((p) => p.productType).join(", ")
-          : "-",
-
-        Size: order.products
-          ? order.products.map((p) => p.size || "N/A").join(", ")
-          : "-",
-        Spec: order.products
-          ? order.products.map((p) => p.spec || "N/A").join(", ")
-          : "-",
-        Qty: order.products
-          ? order.products.reduce((sum, p) => sum + (p.qty || 0), 0)
-          : "-",
-        "Total Price Without GST": order.products
-          ? order.products
-            .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
-            .toFixed(2)
-          : "0.00",
-        "Total With GST": order.total?.toFixed(2) || "0.00",
-        "Payment Due": formatCurrency(order.paymentDue) || "-",
-        "Payment Terms": order.paymentTerms || "-",
-        "Credit Days": order.creditDays || "-",
-        "Actual Freight": order.actualFreight?.toFixed(2) || "-",
-        Installation: order.installation || "-",
-        "Dispatch Status": order.dispatchStatus || "-",
-        "Contact Person Name": order.name || "-",
-        "Contact No": order.contactNo || "-",
-        "Customer Email": order.customerEmail || "-",
-        "SO Status": order.sostatus || "-",
-        "Alternate No": order.alterno || "-",
-        City: order.city || "-",
-        State: order.state || "-",
-        "Pin Code": order.pinCode || "-",
-        "GST No": order.gstno || "-",
-        "Shipping Address": order.shippingAddress || "-",
-        "Billing Address": order.billingAddress || "-",
-        "Unit Price": order.products
-          ? order.products
-            .reduce((sum, p) => sum + (p.unitPrice || 0) * (p.qty || 0), 0)
-            .toFixed(2)
-          : "0.00",
-        GST: order.products
-          ? order.products
-            .map((p) => p.gst || "N/A")
-            .filter(Boolean)
-            .join(", ")
-          : "-",
-        Brand: order.products
-          ? order.products.map((p) => p.brand || "N/A").join(", ")
-          : "-",
-        Warranty: order.products
-          ? order.products.map((p) => p.warranty || "N/A").join(", ")
-          : "-",
-        Total: order.total?.toFixed(2) || "0.00",
-        "Payment Collected": formatCurrency(order.paymentCollected) || "-",
-        "Payment Method": order.paymentMethod || "-",
-        "Payment Received": order.paymentReceived || "-",
-        "Freight Charges": order.freightcs || "-",
-        "Freight Status": order.freightstatus || "-",
-        "Install Charges Status": order.installchargesstatus || "-",
-        "Installation Report": order.installationReport || "-",
-        "Installation Status": order.installationStatus || "-",
-        Transporter: order.transporter || "-",
-        "Transporter Details": order.transporterDetails || "-",
-        "Dispatch From": order.dispatchFrom || "-",
-        "Dispatch Date": order.dispatchDate
-          ? new Date(order.dispatchDate).toLocaleDateString("en-GB")
-          : "-",
-        "Stamp Signed": order.stamp || "-",
-        "Order Type": order.orderType || "-",
-        Report: order.report || "-",
-        "Stock Status": order.stockStatus || "-",
-        "Bill Status": order.billStatus || "-",
-        "Production Status": order.fulfillingStatus || "-",
-        "Bill Number": order.billNumber || order.invoiceNo || "-",
-        "PI Number": order.piNumber || "-",
-
-        Company: order.company || "-",
-        "Created By":
-          order.createdBy && typeof order.createdBy === "object"
-            ? order.createdBy.username || "Unknown"
-            : typeof order.createdBy === "string"
-              ? order.createdBy
-              : "-",
-        Remarks: order.remarks || "-",
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-
-      const colWidths = Object.keys(exportData[0] || {}).map((key, i) => {
-        const maxLength = Math.max(
-          key.length,
-          ...exportData.map((row) => String(row[key] || "").length)
+    const downloadFile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `${process.env.REACT_APP_URL}/api/export`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: {
+              search: searchTerm,
+              approval: approvalFilter,
+              orderType: orderTypeFilter,
+              dispatch: dispatchFilter,
+              salesPerson: salesPersonFilter,
+              dispatchFrom: dispatchFromFilter,
+              startDate: startDate ? startDate.toISOString() : undefined,
+              endDate: endDate ? endDate.toISOString() : undefined,
+              dashboardFilter: trackerFilter,
+            },
+            responseType: "blob",
+          }
         );
-        return { wch: Math.min(maxLength + 2, 50) };
-      });
-      worksheet["!cols"] = colWidths;
 
-      XLSX.writeFile(
-        workbook,
-        `orders_${new Date().toISOString().slice(0, 10)}.xlsx`
-      );
-      toast.success("Orders exported successfully!");
-    } catch (error) {
-      console.error("Error exporting orders:", error);
-      toast.error("Failed to export orders!");
-    }
-  }, [filteredOrders, formatCurrency]);
+        // Create blob link to download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+          "download",
+          `orders_${new Date().toISOString().slice(0, 10)}.xlsx`
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        toast.success("Orders exported successfully!");
+      } catch (error) {
+        console.error("Error downloading export:", error);
+        toast.error("Failed to export orders.");
+      }
+    };
+    downloadFile();
+  }, [
+    searchTerm,
+    approvalFilter,
+    orderTypeFilter,
+    dispatchFilter,
+    salesPersonFilter,
+    dispatchFromFilter,
+    startDate,
+    endDate,
+    trackerFilter,
+  ]);
 
   const isOrderComplete = useCallback((order) => {
     // Helper to check if a value is "empty"
@@ -2378,6 +2166,13 @@ const Sales = () => {
               "linear-gradient(135deg, #b5ccff 0%, #c8b8ff 100%)", // Soft blue-purple blend
               "production",
               trackerFilter === "production"
+            )} {renderTrackerCard(
+              "Dispatch Orders",
+              dashboardCounts.dispatch,
+              <FaTruck />,
+              "linear-gradient(135deg, #c8d9ff 0%, #dbc8ff 100%)", // Frosty blue-violet gradient
+              "dispatch",
+              trackerFilter === "dispatch"
             )}
 
             {renderTrackerCard(
@@ -2389,14 +2184,7 @@ const Sales = () => {
               trackerFilter === "installation"
             )}
 
-            {renderTrackerCard(
-              "Dispatch Orders",
-              dashboardCounts.dispatch,
-              <FaTruck />,
-              "linear-gradient(135deg, #c8d9ff 0%, #dbc8ff 100%)", // Frosty blue-violet gradient
-              "dispatch",
-              trackerFilter === "dispatch"
-            )}
+
           </TrackerGrid>
         )}
         <div
@@ -2421,7 +2209,7 @@ const Sales = () => {
             }}
             title="Total number of entries"
           >
-            Total Results: {filteredOrders.length}
+            Total Results: {totalOrders}
           </h4>
         </div>
         <div
@@ -2446,7 +2234,7 @@ const Sales = () => {
             }}
             title="Total quantity of products"
           >
-            Total Product Qty: {calculateTotalResults}
+            Total Product Qty: {Math.floor(totalProductQty)}
           </h4>
         </div>
         <div
@@ -2723,29 +2511,53 @@ const Sales = () => {
                     colSpan={tableHeaders.length}
                     style={{ padding: 0, border: "none" }}
                   >
-                    <AutoSizer disableHeight>
-                      {({ width }) => (
-                        <List
-                          className="list-container"
-                          height={600}
-                          itemCount={filteredOrders.length}
-                          itemSize={50}
-                          width={Math.max(width, totalTableWidth)}
-                          itemData={{
-                            orders: filteredOrders,
-                            handleViewClick,
-                            handleEditClick,
-                            handleDeleteClick,
-                            userRole,
-                            userId,
-                            isOrderComplete,
-                            columnWidths,
-                          }}
-                        >
-                          {Row}
-                        </List>
-                      )}
-                    </AutoSizer>
+                    <div style={{ position: "relative", height: "600px", width: "100%" }}>
+                      <AnimatePresence>
+                        {loading ? (
+                          <LoaderOverlay
+                            key="loader"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            style={{
+                              background: "rgba(255,255,255,0.8)",
+                              position: "absolute",
+                              zIndex: 10
+                            }}
+                          >
+                            <SpinnerWrap>
+                              <GradientSpinner />
+                            </SpinnerWrap>
+                          </LoaderOverlay>
+                        ) : (
+                          <AutoSizer disableHeight>
+                            {({ width }) => (
+                              <List
+                                className="list-container"
+                                height={600}
+                                itemCount={filteredOrders.length}
+                                itemSize={50}
+                                width={Math.max(width, totalTableWidth)}
+                                itemData={{
+                                  orders: filteredOrders,
+                                  handleViewClick,
+                                  handleEditClick,
+                                  handleDeleteClick,
+                                  userRole,
+                                  userId,
+                                  isOrderComplete,
+                                  columnWidths,
+                                  currentPage,
+                                }}
+                              >
+                                {Row}
+                              </List>
+                            )}
+                          </AutoSizer>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -2765,6 +2577,32 @@ const Sales = () => {
               </LoaderOverlay>
             )}
           </AnimatePresence>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px", marginBottom: "20px" }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(event, value) => setCurrentPage(value)}
+            color="primary"
+            size="large"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                color: "#6a11cb",
+                borderColor: "#e0e0e0",
+                "&:hover": {
+                  backgroundColor: "rgba(106, 17, 203, 0.1)",
+                },
+              },
+              "& .MuiPaginationItem-root.Mui-selected": {
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                color: "#fff",
+                border: "none",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                }
+              }
+            }}
+          />
         </div>
       </div>
       <footer

@@ -214,11 +214,17 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       sostatus: "Pending for Approval",
       productno: "",
       remarks: "",
+      poFilePath: "",
+      installationFile: "",
     }),
     [],
   );
 
   const [, setFormData] = useState(initialFormData);
+  const [poFile, setPoFile] = useState(null);
+  const [installationFile, setInstallationFile] = useState(null);
+  const [fileError, setFileError] = useState("");
+  const [installationFileError, setInstallationFileError] = useState("");
   const [originalFormData, setOriginalFormData] = useState(initialFormData); // Store original state for diffing
   const [updateData, setUpdateData] = useState(initialUpdateData);
   const [view, setView] = useState("options");
@@ -272,43 +278,43 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         products:
           entryToEdit.products && entryToEdit.products.length > 0
             ? entryToEdit.products.map((p) => {
-                const isCustom = !Object.keys(productOptions).includes(
-                  p.productType,
-                );
-                return {
-                  productType: isCustom ? "Others" : p.productType || "",
-                  customProductType: isCustom ? p.productType : "",
-                  size: p.size || "N/A",
-                  spec: p.spec || "N/A",
-                  qty: p.qty !== undefined ? String(p.qty) : "",
-                  unitPrice:
-                    p.unitPrice !== undefined ? String(p.unitPrice) : "",
-                  serialNos:
-                    p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
-                  modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
-                  productCode:
-                    p.productCode?.length > 0 ? p.productCode.join(", ") : "",
-                  gst: p.gst || "18",
-                  brand: p.brand || "",
-                  warranty: p.warranty || "",
-                };
-              })
+              const isCustom = !Object.keys(productOptions).includes(
+                p.productType,
+              );
+              return {
+                productType: isCustom ? "Others" : p.productType || "",
+                customProductType: isCustom ? p.productType : "",
+                size: p.size || "N/A",
+                spec: p.spec || "N/A",
+                qty: p.qty !== undefined ? String(p.qty) : "",
+                unitPrice:
+                  p.unitPrice !== undefined ? String(p.unitPrice) : "",
+                serialNos:
+                  p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
+                modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+                productCode:
+                  p.productCode?.length > 0 ? p.productCode.join(", ") : "",
+                gst: p.gst || "18",
+                brand: p.brand || "",
+                warranty: p.warranty || "",
+              };
+            })
             : [
-                {
-                  productType: "",
-                  customProductType: "",
-                  size: "N/A",
-                  spec: "N/A",
-                  qty: "",
-                  unitPrice: "",
-                  serialNos: "",
-                  modelNos: "",
-                  productCode: "",
-                  gst: "18",
-                  brand: "",
-                  warranty: "",
-                },
-              ],
+              {
+                productType: "",
+                customProductType: "",
+                size: "N/A",
+                spec: "N/A",
+                qty: "",
+                unitPrice: "",
+                serialNos: "",
+                modelNos: "",
+                productCode: "",
+                gst: "18",
+                brand: "",
+                warranty: "",
+              },
+            ],
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
         paymentCollected: entryToEdit.paymentCollected || "",
         paymentMethod: entryToEdit.paymentMethod || "",
@@ -380,8 +386,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
         productsEditTimestamp: entryToEdit.productsEditTimestamp
           ? new Date(entryToEdit.productsEditTimestamp)
-              .toISOString()
-              .split("T")[0]
+            .toISOString()
+            .split("T")[0]
           : null,
       };
       setFormData(newFormData);
@@ -389,9 +395,16 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       setUpdateData({
         sostatus: entryToEdit.sostatus || "Pending for Approval",
         productno: entryToEdit.productno || "",
+        productno: entryToEdit.productno || "",
         remarks: entryToEdit.remarks || "",
+        poFilePath: entryToEdit.poFilePath || "",
+        installationFile: entryToEdit.installationFile || "",
       });
       reset(newFormData);
+      setPoFile(null);
+      setInstallationFile(null);
+      setFileError("");
+      setInstallationFileError("");
     }
     setView("options");
     setError(null);
@@ -428,6 +441,92 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
     setUpdateData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = [
+        "application/pdf",
+        "application/x-pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+      const allowedExtensions = ["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx"];
+      const fileExt = file.name.split(".").pop().toLowerCase();
+
+      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
+        setFileError(
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+        );
+        toast.error(
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+        );
+        e.target.value = null;
+        setPoFile(null);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setFileError("File size must be less than 5MB");
+        toast.error("File size must be less than 5MB");
+        e.target.value = null;
+        setPoFile(null);
+        return;
+      }
+      setPoFile(file);
+      setFileError("");
+    } else {
+      setPoFile(null);
+      setFileError("");
+    }
+  };
+
+  const handleInstallationFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = [
+        "application/pdf",
+        "application/x-pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+      const allowedExtensions = ["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx"];
+      const fileExt = file.name.split(".").pop().toLowerCase();
+
+      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
+        setInstallationFileError(
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+        );
+        toast.error(
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+        );
+        e.target.value = null;
+        setInstallationFile(null);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setInstallationFileError("File size must be less than 5MB");
+        toast.error("File size must be less than 5MB");
+        e.target.value = null;
+        setInstallationFile(null);
+        return;
+      }
+      setInstallationFile(file);
+      setInstallationFileError("");
+    } else {
+      setInstallationFile(null);
+      setInstallationFileError("");
+    }
+  };
+
   const onEditSubmit = async (data) => {
     if (!showConfirm) {
       setShowConfirm(true);
@@ -462,15 +561,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               : undefined,
           serialNos: p.serialNos
             ? p.serialNos
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             : [],
           modelNos: p.modelNos
             ? p.modelNos
-                .split(",")
-                .map((m) => m.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((m) => m.trim())
+              .filter(Boolean)
             : [],
           productCode: p.productCode,
           gst: p.gst || "18",
@@ -540,34 +639,68 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       const dirtyFieldsMap = getDirtyValues(originalFormData, data); // Calculate changed fields
       const dirtyKeys = Object.keys(dirtyFieldsMap);
 
-      if (dirtyKeys.length === 0) {
+      if (dirtyKeys.length === 0 && !poFile && !installationFile) {
         toast.info("No changes detected.");
         setLoading(false);
         setShowConfirm(false);
         return;
       }
 
-      // Construct final payload by picking only dirty keys from the processed submissionData
-      const finalPayload = {};
-      dirtyKeys.forEach((key) => {
-        // If the key exists in submissionData, add it.
-        // We use submissionData because it has the correct type conversions (Dates, Numbers, mapped Arrays)
-        if (Object.prototype.hasOwnProperty.call(submissionData, key)) {
-          finalPayload[key] = submissionData[key];
-        }
-      });
-
       const token = localStorage.getItem("token");
-      const response = await axios.patch(
-        `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
-        finalPayload, // Send filtered payload
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+      let response;
+
+      if (poFile || installationFile) {
+        // Use FormData if file is present
+        const formDataPayload = new FormData();
+        dirtyKeys.forEach((key) => {
+          if (Object.prototype.hasOwnProperty.call(submissionData, key)) {
+            if (key === "products") {
+              formDataPayload.append(key, JSON.stringify(submissionData[key]));
+            } else {
+              formDataPayload.append(key, submissionData[key]);
+            }
+          }
+        });
+        if (poFile) {
+          formDataPayload.append("poFile", poFile);
+        }
+        if (installationFile) {
+          formDataPayload.append("installationFile", installationFile);
+        }
+
+        response = await axios.patch(
+          `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
+          formDataPayload,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } else {
+        // Use JSON if no file (existing logic)
+        // Construct final payload by picking only dirty keys from the processed submissionData
+        const finalPayload = {};
+        dirtyKeys.forEach((key) => {
+          // If the key exists in submissionData, add it.
+          // We use submissionData because it has the correct type conversions (Dates, Numbers, mapped Arrays)
+          if (Object.prototype.hasOwnProperty.call(submissionData, key)) {
+            finalPayload[key] = submissionData[key];
+          }
+        });
+
+        response = await axios.patch(
+          `${process.env.REACT_APP_URL}/api/edit/${entryToEdit._id}`,
+          finalPayload, // Send filtered payload
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           },
-        },
-      );
+        );
+      }
 
       const updatedEntry = response.data.data;
       // Hinglish: Local toast hata diya; socket 'notification' se single toast aayega (no duplicate)
@@ -697,6 +830,28 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       newProducts.length > 0
         ? newProducts
         : [
+          {
+            productType: "",
+            customProductType: "",
+            size: "N/A",
+            spec: "N/A",
+            qty: "",
+            unitPrice: "",
+            serialNos: "",
+            modelNos: "",
+            productCode: "",
+            gst: "18",
+            brand: "",
+            warranty: "",
+          },
+        ],
+    );
+    setFormData((prev) => ({
+      ...prev,
+      products:
+        newProducts.length > 0
+          ? newProducts
+          : [
             {
               productType: "",
               customProductType: "",
@@ -706,33 +861,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               unitPrice: "",
               serialNos: "",
               modelNos: "",
-              productCode: "",
               gst: "18",
               brand: "",
               warranty: "",
             },
           ],
-    );
-    setFormData((prev) => ({
-      ...prev,
-      products:
-        newProducts.length > 0
-          ? newProducts
-          : [
-              {
-                productType: "",
-                customProductType: "",
-                size: "N/A",
-                spec: "N/A",
-                qty: "",
-                unitPrice: "",
-                serialNos: "",
-                modelNos: "",
-                gst: "18",
-                brand: "",
-                warranty: "",
-              },
-            ],
     }));
   };
 
@@ -2041,6 +2174,186 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             placeholder="e.g., GEMC-511687-123456"
           />
         </Form.Group>
+        <div style={{ marginTop: "1.5rem", marginBottom: "2rem" }}>
+          <Form.Label
+            style={{
+              fontWeight: "600",
+              color: "#374151",
+              marginBottom: "0.5rem",
+              display: "block",
+            }}
+          >
+            📎 Attachment
+          </Form.Label>
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              overflow: "hidden",
+              boxSizing: "border-box",
+              border: "2px dashed",
+              borderColor: poFile ? "#22c55e" : "#cbd5e1",
+              borderRadius: "1rem",
+              padding: "0.75rem",
+              backgroundColor: poFile ? "#f0fdf4" : "#f8fafc",
+              transition: "all 0.2s ease-in-out",
+            }}
+          >
+            <label
+              htmlFor="poFileEdit"
+              title={poFile ? poFile.name : "Click to upload"}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "auto minmax(0, 1fr)",
+                alignItems: "center",
+                gap: "0.75rem",
+                width: "100%",
+                minHeight: "44px",
+                padding: "0.6rem 0.75rem",
+                borderRadius: "0.75rem",
+                background: "linear-gradient(to right, #ffffff, #f1f5f9)",
+                border: "1px solid #e2e8f0",
+                cursor: "pointer",
+                overflow: "hidden",
+                boxSizing: "border-box",
+                transition: "background 0.2s ease",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = "#e2e8f0")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "linear-gradient(to right, #ffffff, #f1f5f9)")}
+            >
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "1.4rem",
+                  height: "1.4rem",
+                }}
+              >
+                <svg
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "#4f46e5",
+                  }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 16V8m0 0l-4 4m4-4l4 4"
+                  />
+                </svg>
+              </div>
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  color: "#1e293b",
+                  fontSize: "0.9rem",
+                  fontWeight: "500",
+                  display: "block",
+                }}
+              >
+                {poFile
+                  ? poFile.name
+                  : updateData.poFilePath
+                    ? "Replace existing attachment"
+                    : "Click to upload attachment"}
+              </span>
+            </label>
+
+            {/* HIDDEN INPUT */}
+            <input
+              id="poFileEdit"
+              type="file"
+              name="poFile"
+              accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.xls"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+
+            {/* FILE TYPES INFO */}
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "#64748b",
+                marginTop: "0.5rem",
+                textAlign: "center",
+                fontWeight: "500",
+              }}
+            >
+              Supported: PDF, JPG, PNG, DOCX, XLSX
+            </div>
+
+            {/* REMOVE BUTTON */}
+            {poFile && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent label trigger
+                  setPoFile(null);
+                  setFileError("");
+                  const input = document.getElementById("poFileEdit");
+                  if (input) input.value = "";
+                }}
+                style={{
+                  marginTop: "0.75rem",
+                  width: "100%",
+                  padding: "0.5rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #fecaca",
+                  background: "#fee2e2",
+                  color: "#b91c1c",
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.35rem",
+                  transition: "background 0.2s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = "#fca5a5")}
+                onMouseOut={(e) => (e.currentTarget.style.background = "#fee2e2")}
+              >
+                <span>✖</span> Remove Attachment
+              </button>
+            )}
+          </div>
+
+          {/* ERROR MESSAGE */}
+          {fileError && (
+            <div style={{ color: "#ef4444", fontSize: "0.85rem", marginTop: "0.5rem", fontWeight: "500" }}>
+              {fileError}
+            </div>
+          )}
+
+          {/* EXISTING FILE LINK */}
+          {updateData.poFilePath && !poFile && (
+            <div style={{ marginTop: "0.75rem", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ color: "#64748b" }}>Current file:</span>
+              <a
+                href={`${process.env.REACT_APP_URL}${updateData.poFilePath}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#2563eb",
+                  fontWeight: "600",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "2px",
+                }}
+              >
+                View Attachment
+              </a>
+            </div>
+          )}
+        </div>
         {/* Products Section */}
         <div>
           <Form.Label
@@ -2121,7 +2434,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             {...field}
                             value={
                               field.value &&
-                              !Object.keys(productOptions).includes(field.value)
+                                !Object.keys(productOptions).includes(field.value)
                                 ? "Others"
                                 : field.value
                             }
@@ -3234,7 +3547,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="remarksByInstallation">
-          <Form.Label>✏️ Remarks by Installation</Form.Label>
+          <Form.Label>💬 Remarks by Installation</Form.Label>
           <Form.Control
             as="textarea"
             rows={2}
@@ -3249,6 +3562,186 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             placeholder="e.g., Installation completed successfully, customer trained"
           />
         </Form.Group>
+
+        <div style={{ marginTop: "1.5rem", marginBottom: "2rem" }}>
+          <Form.Label
+            style={{
+              fontWeight: "600",
+              color: "#374151",
+              marginBottom: "0.5rem",
+              display: "block",
+            }}
+          >
+            📎 Installation Report
+          </Form.Label>
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              overflow: "hidden",
+              boxSizing: "border-box",
+              border: "2px dashed",
+              borderColor: installationFile ? "#22c55e" : "#cbd5e1",
+              borderRadius: "1rem",
+              padding: "0.75rem",
+              backgroundColor: installationFile ? "#f0fdf4" : "#f8fafc",
+              transition: "all 0.2s ease-in-out",
+            }}
+          >
+            <label
+              htmlFor="installationFileEdit"
+              title={installationFile ? installationFile.name : "Click to upload"}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "auto minmax(0, 1fr)",
+                alignItems: "center",
+                gap: "0.75rem",
+                width: "100%",
+                minHeight: "44px",
+                padding: "0.6rem 0.75rem",
+                borderRadius: "0.75rem",
+                background: "linear-gradient(to right, #ffffff, #f1f5f9)",
+                border: "1px solid #e2e8f0",
+                cursor: "pointer",
+                overflow: "hidden",
+                boxSizing: "border-box",
+                transition: "background 0.2s ease",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = "#e2e8f0")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "linear-gradient(to right, #ffffff, #f1f5f9)")}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "1.4rem",
+                  height: "1.4rem",
+                }}
+              >
+                <svg
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "#4f46e5",
+                  }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 16V8m0 0l-4 4m4-4l4 4"
+                  />
+                </svg>
+              </div>
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  color: "#1e293b",
+                  fontSize: "0.9rem",
+                  fontWeight: "500",
+                  display: "block",
+                }}
+              >
+                {installationFile
+                  ? installationFile.name
+                  : updateData.installationFile
+                    ? "Replace existing report"
+                    : "Click to upload report"}
+              </span>
+            </label>
+
+            {/* HIDDEN INPUT */}
+            <input
+              id="installationFileEdit"
+              type="file"
+              name="installationFile"
+              accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.xls"
+              onChange={handleInstallationFileChange}
+              style={{ display: "none" }}
+            />
+
+            {/* FILE TYPES INFO */}
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "#64748b",
+                marginTop: "0.5rem",
+                textAlign: "center",
+                fontWeight: "500",
+              }}
+            >
+              Supported: PDF, JPG, PNG, DOCX, XLSX
+            </div>
+
+            {/* REMOVE BUTTON */}
+            {installationFile && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent label trigger
+                  setInstallationFile(null);
+                  setInstallationFileError("");
+                  const input = document.getElementById("installationFileEdit");
+                  if (input) input.value = "";
+                }}
+                style={{
+                  marginTop: "0.75rem",
+                  width: "100%",
+                  padding: "0.5rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #fecaca",
+                  background: "#fee2e2",
+                  color: "#b91c1c",
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.35rem",
+                  transition: "background 0.2s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = "#fca5a5")}
+                onMouseOut={(e) => (e.currentTarget.style.background = "#fee2e2")}
+              >
+                <span>✖</span> Remove Report
+              </button>
+            )}
+          </div>
+
+          {/* ERROR MESSAGE */}
+          {installationFileError && (
+            <div style={{ color: "#ef4444", fontSize: "0.85rem", marginTop: "0.5rem", fontWeight: "500" }}>
+              {installationFileError}
+            </div>
+          )}
+
+          {/* EXISTING FILE LINK */}
+          {updateData.installationFile && !installationFile && (
+            <div style={{ marginTop: "0.75rem", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ color: "#64748b" }}>Current file:</span>
+              <a
+                href={`${process.env.REACT_APP_URL}${updateData.installationFile}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#2563eb",
+                  fontWeight: "600",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "2px",
+                }}
+              >
+                View Report
+              </a>
+            </div>
+          )}
+        </div>
         <Form.Group controlId="dispatchStatus">
           <Form.Label>🚚 Dispatch Status</Form.Label>
           <Controller

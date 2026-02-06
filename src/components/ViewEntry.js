@@ -664,7 +664,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
             style={{
               background: "linear-gradient(135deg, #2575fc, #6a11cb)",
               padding: "6px 12px",
-              borderRadius: "8px",
+              borderRadius: "20px",
               display: "flex",
               alignItems: "center",
               gap: "6px",
