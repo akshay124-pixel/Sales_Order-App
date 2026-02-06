@@ -426,6 +426,7 @@ const FilterSection = ({
               "Approved",
               "Accounts Approved",
               "Pending for Approval",
+              "Order Cancelled",
               "Order on Hold Due to Low Price",
             ].map((option) => (
               <StyledDropdownItem
@@ -468,6 +469,7 @@ const FilterSection = ({
             {[
               "All",
               "Not Dispatched",
+              "Order Cancelled",
               "Docket Awaited Dispatched",
               "Dispatched",
               "Delivered",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import styled from "styled-components";
 import { Button, Form } from "react-bootstrap";
 import { X, Download, Calendar } from "lucide-react";
@@ -475,9 +475,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   const uniqueSalesPersons = useMemo(() => {
     const persons = [
       ...new Set(
-        orders.map(
-          (order) => order.createdBy?.username?.trim() || "Sales Order Team"
-        )
+        orders.map((order) => order.personName || "Sales Order Team")
       ),
     ];
     return ["All", ...persons.sort()];
@@ -533,7 +531,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     [userRole, currentUser, userId, teamMemberIds, salesScope]
   );
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
@@ -543,47 +541,45 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         return;
       }
 
+      // Pass date filters to backend
+      const params = {};
+      if (startDate) params.startDate = startDate.toISOString();
+      if (endDate) params.endDate = endDate.toISOString();
+      // Remove salesPerson from backend param - we'll filter locally for better performance/UX
+
       const response = await axios.get(
-        `${process.env.REACT_APP_URL}/api/get-orders`,
+        `${process.env.REACT_APP_URL}/api/get-analytics`,
         {
+          params,
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      console.log("Fetched orders:", response.data);
+      console.log("Fetched analytics summary:", response.data);
       setOrders(response.data || []);
     } catch (error) {
-      console.error("Error fetching orders:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
-
-      let errorMessage = "Something went wrong while loading orders.";
-
-      if (error.response) {
-        if (error.response.status === 401) {
-          errorMessage = "Your session has expired. Please log in again.";
-        } else if (error.response.status === 404) {
-          errorMessage = "No orders found.";
-        } else if (error.response.status === 500) {
-          errorMessage = "Server is not responding. Please try again later.";
-        } else {
-          errorMessage = error.response.data?.error || errorMessage;
-        }
-      } else if (error.request) {
-        errorMessage =
-          "Unable to connect. Please check your internet connection.";
-      }
-
-      toast.error(errorMessage);
+      console.error("Error fetching analytics:", error);
+      toast.error("Failed to load analytics summary.");
       setOrders([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
+
+  // Stable ref for Socket.IO listener to avoid closure issues
+  const fetchOrdersRef = useRef(fetchOrders);
+  useEffect(() => {
+    fetchOrdersRef.current = fetchOrders;
+  }, [fetchOrders]);
+
+  // Re-fetch when date filters change
+  useEffect(() => {
+    if (isOpen) {
+      fetchOrders();
+    }
+  }, [startDate, endDate, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -640,9 +636,13 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
       });
 
       socket.on("orderUpdate", (data) => {
-        console.log("Order update received:", data);
-        // Hinglish: Single fetch enough; duplicates bachane ke liye yahin pe limited action rakha hai
-        fetchOrders();
+        console.log("Order update received in analytics:", data);
+        fetchOrdersRef.current();
+      });
+
+      socket.on("deleteOrder", (data) => {
+        console.log("Order deleted in analytics:", data);
+        fetchOrdersRef.current();
       });
 
       socket.on("connect_error", (error) => {
@@ -677,201 +677,55 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const filteredOrders = useMemo(() => {
-    return filterOrders(orders, startDate, endDate, selectedSalesPerson);
-  }, [orders, startDate, endDate, selectedSalesPerson, filterOrders]);
+    // With backend optimization, 'orders' already holds the filtered/grouped results 
+    // we don't need to filter order records anymore. 
+    return orders;
+  }, [orders]);
 
-  const salesAnalytics = useMemo(() => {
-    console.log("Computing sales analytics for orders:", filteredOrders);
-    return filteredOrders.reduce((acc, order) => {
-      const personName =
-        order.createdBy?.username?.trim() || "Sales Order Team";
-      const leaderName =
-        order.createdBy?.assignedToLeader?.username || `${personName} (Leader)`;
+  const analyticsData = useMemo(() => {
+    // 'orders' now contains the pre-aggregated summary from backend
+    let data = (orders || []).map((data) => ({
+      ...data,
+      createdBy: data.personName || "Sales Order Team",
+      totalOrders: data.totalOrders,
+      totalAmount: Number(data.totalAmount.toFixed(2)),
+      totalPaymentCollected: Number(data.totalPaymentCollected.toFixed(2)),
+      totalPaymentDue: Number(data.totalPaymentDue.toFixed(2)),
+      dueOver30Days: Number(data.dueOver30Days.toFixed(2)),
+      totalUnitPrice: Number(data.totalUnitPrice.toFixed(2)),
+      isTeamMember: data.leaderId && data.leaderId !== userId,
+      collectionRate: data.totalAmount > 0 ? Number(((data.totalPaymentCollected / data.totalAmount) * 100).toFixed(2)) : 0,
+      dueRate: data.totalAmount > 0 ? Number(((data.totalPaymentDue / data.totalAmount) * 100).toFixed(2)) : 0,
+      avgOrderValue: data.totalOrders > 0 ? Number((data.totalAmount / data.totalOrders).toFixed(2)) : 0,
+    }));
 
-      let groupKey;
-      let showTeamBadge = false;
-      if ((userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam) {
-        groupKey = `${leaderName}:::${personName}`;
-      } else {
-        groupKey = personName;
-        showTeamBadge = isTeamMemberOrder(order);
-      }
-
-      if (!acc[groupKey]) {
-        acc[groupKey] = {
-          teamName:
-            (userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam
-              ? leaderName
-              : undefined,
-          personName: personName,
-          totalOrders: 0,
-          totalAmount: 0,
-          totalPaymentCollected: 0,
-          totalPaymentDue: 0,
-          dueOver30Days: 0,
-          totalUnitPrice: 0,
-          isTeamMember: showTeamBadge,
-        };
-      }
-
-      const total = Number(order.total) || 0;
-      const paymentCollected = parseFloat(order.paymentCollected) || 0;
-      const paymentDue = parseFloat(order.paymentDue) || 0;
-
-      const unitPriceTotal =
-        order.products?.reduce((sum, product) => {
-          const unitPrice = Number(product.unitPrice) || 0;
-          const qty = Number(product.qty) || 0;
-          return sum + unitPrice * qty;
-        }, 0) || 0;
-
-      if (isFinite(total)) {
-        acc[groupKey].totalOrders += 1;
-        acc[groupKey].totalAmount += total;
-      }
-      if (isFinite(paymentCollected)) {
-        acc[groupKey].totalPaymentCollected += paymentCollected;
-      }
-      if (isFinite(paymentDue)) {
-        acc[groupKey].totalPaymentDue += paymentDue;
-      }
-      if (isFinite(unitPriceTotal)) {
-        acc[groupKey].totalUnitPrice += unitPriceTotal;
-      }
-
-      const soDate = order.soDate ? new Date(order.soDate) : null;
-      const currentDate = new Date();
-      if (
-        soDate &&
-        !isNaN(soDate.getTime()) &&
-        isFinite(paymentDue) &&
-        paymentDue > 0
-      ) {
-        const daysSinceOrder = Math.floor(
-          (currentDate - soDate) / (1000 * 60 * 60 * 24)
-        );
-        if (daysSinceOrder > 30) {
-          acc[groupKey].dueOver30Days += paymentDue;
-        }
-      }
-
-      return acc;
-    }, {});
-  }, [filteredOrders, userRole, groupByTeam]);
-
-  const overallTotals = Object.values(salesAnalytics).reduce(
-    (acc, data) => ({
-      totalOrders: acc.totalOrders + data.totalOrders,
-      totalAmount: acc.totalAmount + data.totalAmount,
-      totalPaymentCollected:
-        acc.totalPaymentCollected + data.totalPaymentCollected,
-      totalPaymentDue: acc.totalPaymentDue + data.totalPaymentDue,
-      dueOver30Days: acc.dueOver30Days + data.dueOver30Days,
-      totalUnitPrice: acc.totalUnitPrice + data.totalUnitPrice,
-    }),
-    {
-      totalOrders: 0,
-      totalAmount: 0,
-      totalPaymentCollected: 0,
-      totalPaymentDue: 0,
-      dueOver30Days: 0,
-      totalUnitPrice: 0,
-    }
-  );
-
-  const analyticsData = Object.entries(salesAnalytics).map(([key, data]) => ({
-    teamName: data.teamName,
-    createdBy: data.personName || key,
-    totalOrders: data.totalOrders,
-    totalAmount: Number(data.totalAmount.toFixed(2)),
-    totalPaymentCollected: Number(data.totalPaymentCollected.toFixed(2)),
-    totalPaymentDue: Number(data.totalPaymentDue.toFixed(2)),
-    dueOver30Days: Number(data.dueOver30Days.toFixed(2)),
-    totalUnitPrice: Number(data.totalUnitPrice.toFixed(2)),
-    isTeamMember: data.isTeamMember,
-    collectionRate:
-      data.totalAmount > 0
-        ? Number(
-            ((data.totalPaymentCollected / data.totalAmount) * 100).toFixed(2)
-          )
-        : 0,
-    dueRate:
-      data.totalAmount > 0
-        ? Number(((data.totalPaymentDue / data.totalAmount) * 100).toFixed(2))
-        : 0,
-    avgOrderValue:
-      data.totalOrders > 0
-        ? Number((data.totalAmount / data.totalOrders).toFixed(2))
-        : 0,
-  }));
-
-  const groupedAnalytics = useMemo(() => {
-    if (!((userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam))
-      return null;
-
-    const groups = new Map();
-    for (const row of analyticsData) {
-      const team = row.teamName || "Unassigned";
-      if (!groups.has(team)) groups.set(team, []);
-      groups.get(team).push(row);
+    if (selectedSalesPerson && selectedSalesPerson !== "All") {
+      data = data.filter(item => item.createdBy === selectedSalesPerson);
     }
 
-    for (const [team, rows] of groups) {
-      rows.sort((a, b) => {
-        if (b.totalAmount !== a.totalAmount)
-          return b.totalAmount - a.totalAmount;
-        return a.createdBy.localeCompare(b.createdBy);
-      });
-    }
+    return data;
+  }, [orders, userId, selectedSalesPerson]);
 
-    const sorted = Array.from(groups.entries()).sort(([a], [b]) =>
-      a.localeCompare(b)
+  const overallTotals = useMemo(() => {
+    return analyticsData.reduce(
+      (acc, data) => ({
+        totalOrders: acc.totalOrders + data.totalOrders,
+        totalAmount: acc.totalAmount + data.totalAmount,
+        totalPaymentCollected: acc.totalPaymentCollected + data.totalPaymentCollected,
+        totalPaymentDue: acc.totalPaymentDue + data.totalPaymentDue,
+        dueOver30Days: acc.dueOver30Days + data.dueOver30Days,
+        totalUnitPrice: acc.totalUnitPrice + data.totalUnitPrice,
+      }),
+      {
+        totalOrders: 0,
+        totalAmount: 0,
+        totalPaymentCollected: 0,
+        totalPaymentDue: 0,
+        dueOver30Days: 0,
+        totalUnitPrice: 0,
+      }
     );
-
-    const withTotals = sorted.map(([team, rows]) => {
-      const totals = rows.reduce(
-        (acc, r) => ({
-          totalOrders: acc.totalOrders + r.totalOrders,
-          totalAmount: acc.totalAmount + r.totalAmount,
-          totalPaymentCollected:
-            acc.totalPaymentCollected + r.totalPaymentCollected,
-          totalPaymentDue: acc.totalPaymentDue + r.totalPaymentDue,
-          dueOver30Days: acc.dueOver30Days + r.dueOver30Days,
-          totalUnitPrice: acc.totalUnitPrice + r.totalUnitPrice,
-        }),
-        {
-          totalOrders: 0,
-          totalAmount: 0,
-          totalPaymentCollected: 0,
-          totalPaymentDue: 0,
-          dueOver30Days: 0,
-          totalUnitPrice: 0,
-        }
-      );
-      const teamCollectionRate =
-        totals.totalAmount > 0
-          ? Number(
-              (
-                (totals.totalPaymentCollected / totals.totalAmount) *
-                100
-              ).toFixed(2)
-            )
-          : 0;
-      const teamDueRate =
-        totals.totalAmount > 0
-          ? Number(
-              ((totals.totalPaymentDue / totals.totalAmount) * 100).toFixed(2)
-            )
-          : 0;
-      const teamAOV =
-        totals.totalOrders > 0
-          ? Number((totals.totalAmount / totals.totalOrders).toFixed(2))
-          : 0;
-      return { team, rows, totals, teamCollectionRate, teamDueRate, teamAOV };
-    });
-
-    return withTotals;
-  }, [analyticsData, userRole, groupByTeam]);
+  }, [analyticsData]);
 
   const [expandedTeams, setExpandedTeams] = useState({});
   const toggleTeam = useCallback((team) => {
@@ -882,131 +736,48 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
     if (!((userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam))
       return null;
 
-    const personAggByLeader = new Map();
-    const leaderNameById = new Map();
-    const personNameById = new Map();
+    const leaderGroups = new Map();
 
-    for (const order of filteredOrders) {
-      const createdById = order.createdBy?._id || "unknown";
-      const createdByName =
-        order.createdBy?.username?.trim() || "Sales Order Team";
-      const leaderId = order.createdBy?.assignedToLeader?._id || createdById;
-      const leaderName =
-        order.createdBy?.assignedToLeader?.username || createdByName;
+    for (const item of analyticsData) {
+      const leaderId = item.leaderId || item._id;
+      const leaderName = item.leaderName || item.personName || "Independent";
 
-      leaderNameById.set(leaderId, leaderName);
-      personNameById.set(createdById, createdByName);
-
-      if (!personAggByLeader.has(leaderId)) {
-        personAggByLeader.set(leaderId, new Map());
-      }
-      const perPerson = personAggByLeader.get(leaderId);
-
-      if (!perPerson.has(createdById)) {
-        perPerson.set(createdById, {
-          personId: createdById,
-          personName: createdByName,
-          totalOrders: 0,
-          totalAmount: 0,
-          totalPaymentCollected: 0,
-          totalPaymentDue: 0,
-          dueOver30Days: 0,
-          totalUnitPrice: 0,
+      if (!leaderGroups.has(leaderId)) {
+        leaderGroups.set(leaderId, {
+          teamId: leaderId,
+          teamName: String(leaderName),
+          rows: [],
+          totals: {
+            totalOrders: 0,
+            totalAmount: 0,
+            totalPaymentCollected: 0,
+            totalPaymentDue: 0,
+            dueOver30Days: 0,
+            totalUnitPrice: 0,
+          }
         });
       }
-      const agg = perPerson.get(createdById);
 
-      const total = Number(order.total) || 0;
-      const paymentCollected = parseFloat(order.paymentCollected) || 0;
-      const paymentDue = parseFloat(order.paymentDue) || 0;
-      const unitPriceTotal =
-        order.products?.reduce((sum, product) => {
-          const unitPrice = Number(product.unitPrice) || 0;
-          const qty = Number(product.qty) || 0;
-          return sum + unitPrice * qty;
-        }, 0) || 0;
-
-      if (isFinite(total)) {
-        agg.totalOrders += 1;
-        agg.totalAmount += total;
-      }
-      if (isFinite(paymentCollected))
-        agg.totalPaymentCollected += paymentCollected;
-      if (isFinite(paymentDue)) agg.totalPaymentDue += paymentDue;
-      if (isFinite(unitPriceTotal)) agg.totalUnitPrice += unitPriceTotal;
-
-      const soDate = order.soDate ? new Date(order.soDate) : null;
-      const currentDate = new Date();
-      if (
-        soDate &&
-        !isNaN(soDate.getTime()) &&
-        isFinite(paymentDue) &&
-        paymentDue > 0
-      ) {
-        const daysSinceOrder = Math.floor(
-          (currentDate - soDate) / (1000 * 60 * 60 * 24)
-        );
-        if (daysSinceOrder > 30) agg.dueOver30Days += paymentDue;
-      }
+      const group = leaderGroups.get(leaderId);
+      group.rows.push(item);
+      group.totals.totalOrders += item.totalOrders;
+      group.totals.totalAmount += item.totalAmount;
+      group.totals.totalPaymentCollected += item.totalPaymentCollected;
+      group.totals.totalPaymentDue += item.totalPaymentDue;
+      group.totals.dueOver30Days += item.dueOver30Days;
+      group.totals.totalUnitPrice += item.totalUnitPrice;
     }
 
-    const sections = [];
-    for (const [leaderId, perPerson] of personAggByLeader.entries()) {
-      const leaderName = leaderNameById.get(leaderId) || "Unknown";
-      const rows = Array.from(perPerson.values()).map((agg) => ({
-        personId: agg.personId,
-        createdBy: agg.personName,
-        totalOrders: agg.totalOrders,
-        totalAmount: Number(agg.totalAmount.toFixed(2)),
-        totalPaymentCollected: Number(agg.totalPaymentCollected.toFixed(2)),
-        totalPaymentDue: Number(agg.totalPaymentDue.toFixed(2)),
-        dueOver30Days: Number(agg.dueOver30Days.toFixed(2)),
-        totalUnitPrice: Number(agg.totalUnitPrice.toFixed(2)),
-      }));
+    const sections = Array.from(leaderGroups.values()).map(g => ({
+      ...g,
+      memberCount: g.rows.filter(r => r._id !== g.teamId).length
+    }));
 
-      const memberCount = rows.filter((r) => r.personId !== leaderId).length;
-      if (memberCount === 0) continue;
-
-      const totals = rows.reduce(
-        (acc, r) => ({
-          totalOrders: acc.totalOrders + r.totalOrders,
-          totalAmount: acc.totalAmount + r.totalAmount,
-          totalPaymentCollected:
-            acc.totalPaymentCollected + r.totalPaymentCollected,
-          totalPaymentDue: acc.totalPaymentDue + r.totalPaymentDue,
-          dueOver30Days: acc.dueOver30Days + r.dueOver30Days,
-          totalUnitPrice: acc.totalUnitPrice + r.totalUnitPrice,
-        }),
-        {
-          totalOrders: 0,
-          totalAmount: 0,
-          totalPaymentCollected: 0,
-          totalPaymentDue: 0,
-          dueOver30Days: 0,
-          totalUnitPrice: 0,
-        }
-      );
-
-      rows.sort((a, b) => {
-        if (a.personId === leaderId && b.personId !== leaderId) return -1;
-        if (b.personId === leaderId && a.personId !== leaderId) return 1;
-        if (b.totalAmount !== a.totalAmount)
-          return b.totalAmount - a.totalAmount;
-        return a.createdBy.localeCompare(b.createdBy);
-      });
-
-      sections.push({
-        teamId: leaderId,
-        teamName: leaderName,
-        memberCount,
-        totals,
-        rows,
-      });
-    }
-
-    sections.sort((a, b) => a.teamName.localeCompare(b.teamName));
+    sections.sort((a, b) =>
+      String(a.teamName || "").localeCompare(String(b.teamName || ""))
+    );
     return sections;
-  }, [filteredOrders, userRole, groupByTeam]);
+  }, [analyticsData, userRole, groupByTeam]);
 
   const handleExportToExcel = () => {
     try {
@@ -1025,24 +796,24 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
         ...analyticsData.map((data) =>
           (userRole === "Admin" || userRole === "SuperAdmin") && groupByTeam
             ? {
-                Team: data.teamName || "",
-                "Sales Person": data.createdBy,
-                "Total Orders": data.totalOrders,
-                "Total Amount (₹)": data.totalAmount.toFixed(2),
-                "Payment Collected (₹)": data.totalPaymentCollected.toFixed(2),
-                "Payment Due (₹)": data.totalPaymentDue.toFixed(2),
-                "Due Over 30 Days (₹)": data.dueOver30Days.toFixed(2),
-                "Total Unit Price (₹)": data.totalUnitPrice.toFixed(2),
-              }
+              Team: data.teamName || "",
+              "Sales Person": data.createdBy,
+              "Total Orders": data.totalOrders,
+              "Total Amount (₹)": data.totalAmount.toFixed(2),
+              "Payment Collected (₹)": data.totalPaymentCollected.toFixed(2),
+              "Payment Due (₹)": data.totalPaymentDue.toFixed(2),
+              "Due Over 30 Days (₹)": data.dueOver30Days.toFixed(2),
+              "Total Unit Price (₹)": data.totalUnitPrice.toFixed(2),
+            }
             : {
-                "Created By": data.createdBy,
-                "Total Orders": data.totalOrders,
-                "Total Amount (₹)": data.totalAmount.toFixed(2),
-                "Payment Collected (₹)": data.totalPaymentCollected.toFixed(2),
-                "Payment Due (₹)": data.totalPaymentDue.toFixed(2),
-                "Due Over 30 Days (₹)": data.dueOver30Days.toFixed(2),
-                "Total Unit Price (₹)": data.totalUnitPrice.toFixed(2),
-              }
+              "Created By": data.createdBy,
+              "Total Orders": data.totalOrders,
+              "Total Amount (₹)": data.totalAmount.toFixed(2),
+              "Payment Collected (₹)": data.totalPaymentCollected.toFixed(2),
+              "Payment Due (₹)": data.totalPaymentDue.toFixed(2),
+              "Due Over 30 Days (₹)": data.dueOver30Days.toFixed(2),
+              "Total Unit Price (₹)": data.totalUnitPrice.toFixed(2),
+            }
         ),
       ];
 
@@ -1219,7 +990,7 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
                   </TotalHeader>
                 </TotalHeaderRow>
                 {(userRole !== "Admin" && userRole !== "SuperAdmin") ||
-                !groupByTeam ? (
+                  !groupByTeam ? (
                   <TableHeaderRow>
                     <TableHeader>Sales Persons</TableHeader>
                     <TableHeader>Total Orders</TableHeader>
@@ -1238,8 +1009,8 @@ const SalesDashboardDrawer = ({ isOpen, onClose }) => {
               <tbody>
                 {analyticsData.length > 0 ? (
                   (userRole === "Admin" || userRole === "SuperAdmin") &&
-                  groupByTeam &&
-                  adminTeamSections ? (
+                    groupByTeam &&
+                    adminTeamSections ? (
                     adminTeamSections.map(
                       ({ teamId, teamName, rows, totals, memberCount }) => (
                         <React.Fragment key={teamId}>

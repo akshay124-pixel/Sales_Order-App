@@ -1073,7 +1073,7 @@ const Sales = () => {
   const [endDate, setEndDate] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [dashboardCounts, setDashboardCounts] = useState({
-    all: 0,
+    totalOrders: 0,
     installation: 0,
     production: 0,
     dispatch: 0,
@@ -1227,7 +1227,7 @@ const Sales = () => {
         }
       );
       setDashboardCounts(
-        response.data || { all: 0, installation: 0, production: 0, dispatch: 0 }
+        response.data || { totalOrders: 0, installation: 0, production: 0, dispatch: 0 }
       );
     } catch (error) {
       console.error("Error fetching dashboard counts:", error);
@@ -1338,8 +1338,11 @@ const Sales = () => {
       "orderUpdate",
       ({ operationType, documentId, fullDocument, createdBy, assignedTo }) => {
         const currentUserId = userId;
+        const isAdmin = userRole === "Admin" || userRole === "SuperAdmin";
         const owners = [createdBy, assignedTo].filter(Boolean);
-        if (!owners.includes(currentUserId)) return;
+
+        // Admins see everything, others see only owned/assigned
+        if (!isAdmin && !owners.includes(currentUserId)) return;
 
         // Normalize createdBy when backend sends only an id (change stream)
         try {
@@ -2152,7 +2155,7 @@ const Sales = () => {
           <TrackerGrid>
             {renderTrackerCard(
               "All Orders",
-              dashboardCounts.all,
+              dashboardCounts.totalOrders,
               <FaHome />,
               "linear-gradient(135deg, #bcd3ff 0%, #d1c4ff 100%)", // Slightly deeper blue-lavender
               "all",
