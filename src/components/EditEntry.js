@@ -3926,20 +3926,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           <Form.Label>📄 PI Number</Form.Label>
           <Form.Control
             type="tel"
-            {...register("piNumber", {
-              pattern: {
-                value: /^\d+$/,
-                message: "PI Number must contain only numbers",
-              },
-            })}
+            {...register("piNumber")}
             onChange={(e) => {
-              // Only allow numbers
-              const value = e.target.value.replace(/[^0-9]/g, "");
-              e.target.value = value;
-              debouncedHandleInputChange("piNumber", value);
+              debouncedHandleInputChange("piNumber", e.target.value);
             }}
             isInvalid={!!errors.piNumber}
-            placeholder="Enter numbers only"
+            placeholder="Enter PI number"
           />
           <Form.Control.Feedback type="invalid">
             {errors.piNumber?.message}
