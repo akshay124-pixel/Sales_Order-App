@@ -2671,7 +2671,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                                 color: "#1e293b",
                               }}
                             >
-                              <option value="N/A">N/A</option>
                               {availableSpecs.map((spec) => (
                                 <option key={spec} value={spec}>
                                   {spec}
