@@ -2648,6 +2648,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           control={control}
                           render={({ field }) => (
                             <Form.Select
+                              key={`${index}-${selectedProductType}`}
                               {...field}
                               onChange={(e) => {
                                 field.onChange(e);
@@ -2670,7 +2671,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                                 fontSize: "1rem",
                                 color: "#1e293b",
                               }}
-                            >
+                            ><option value="N/A">N/A</option>
                               {availableSpecs.map((spec) => (
                                 <option key={spec} value={spec}>
                                   {spec}
