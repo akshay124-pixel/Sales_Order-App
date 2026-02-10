@@ -1491,7 +1491,7 @@ const Sales = () => {
     setOrderTypeFilter("All");
     setDispatchFilter("All");
     setTrackerFilter("all");
-
+    setCurrentPage(1);
     toast.info("Filters reset!");
   }, []);
 
