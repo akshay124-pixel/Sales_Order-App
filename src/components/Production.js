@@ -696,6 +696,7 @@ const Production = () => {
           ? new Date(order.soDate).toLocaleDateString("en-IN")
           : "N/A",
         "Customer Name": order.customername || "N/A",
+        "Sales Person": order.salesPerson || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
         "Customer Email": order.customerEmail || "N/A",
         "Contact No": order.contactNo || "N/A",
