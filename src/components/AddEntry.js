@@ -227,9 +227,6 @@ function AddEntry({ onSubmit, onClose }) {
         ...(name === "paymentTerms" && value !== "Credit"
           ? { creditDays: "" }
           : {}),
-        ...(name === "dispatchFrom"
-          ? { fulfillingStatus: value === "Morinda" ? "Pending" : "Fulfilled" }
-          : {}),
       }));
     }
   };
@@ -262,9 +259,9 @@ function AddEntry({ onSubmit, onClose }) {
         setPoFile(null);
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        setFileError("File size must be less than 10MB");
-        toast.error("File size must be less than 10MB");
+      if (file.size > 5 * 1024 * 1024) {
+        setFileError("File size must be less than 5MB");
+        toast.error("File size must be less than 5MB");
         e.target.value = null;
         setPoFile(null);
         return;
