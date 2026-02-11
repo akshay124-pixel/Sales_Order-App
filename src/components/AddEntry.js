@@ -556,18 +556,33 @@ function AddEntry({ onSubmit, onClose }) {
       onClose();
     } catch (error) {
       console.error("Error:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        "Failed to create order. Please try again.";
-      toast.error(errorMessage);
-      if (error.response?.status === 403) {
+
+      // Handle validation errors with user-friendly messages
+      if (error.response?.status === 400) {
+        const errorData = error.response?.data;
+
+        // Display the main error message
+        if (errorData?.error) {
+          toast.error(errorData.error);
+        }
+
+        // If there are multiple field errors, show them individually
+        if (errorData?.details && Array.isArray(errorData.details)) {
+          errorData.details.forEach((detail, index) => {
+            // Only show first 3 detailed errors to avoid overwhelming the user
+            if (index < 3) {
+              setTimeout(() => toast.error(detail), index * 100);
+            }
+          });
+        }
+      } else if (error.response?.status === 403) {
         toast.error("Unauthorized: Insufficient permissions or invalid token");
-      } else if (error.response?.status === 400) {
-        console.error("Validation Error Details:", error.response?.data);
-        toast.error(
-          `Validation Error: ${JSON.stringify(error.response?.data)}`
-        );
+      } else {
+        const errorMessage =
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          "Failed to create order. Please try again.";
+        toast.error(errorMessage);
       }
     } finally {
       setLoading(false);
