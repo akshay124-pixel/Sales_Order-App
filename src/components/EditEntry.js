@@ -469,9 +469,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         setPoFile(null);
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setFileError("File size must be less than 5MB");
-        toast.error("File size must be less than 5MB");
+      if (file.size > 10 * 1024 * 1024) {
+        setFileError("File size must be less than 10MB");
+        toast.error("File size must be less than 10MB");
         e.target.value = null;
         setPoFile(null);
         return;
@@ -512,9 +512,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         setInstallationFile(null);
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setInstallationFileError("File size must be less than 5MB");
-        toast.error("File size must be less than 5MB");
+      if (file.size > 10 * 1024 * 1024) {
+        setInstallationFileError("File size must be less than 10MB");
+        toast.error("File size must be less than 10MB");
         e.target.value = null;
         setInstallationFile(null);
         return;

@@ -65,6 +65,8 @@ axios.interceptors.response.use(
 
     if (isNetwork) {
       displayMessage = "Connection lost. Please check your internet.";
+    } else if (status === 413) {
+      displayMessage = "File too large. Please upload a smaller file (max 10MB).";
     } else if (status === 403) {
       displayMessage = "You do not have permission to perform this action.";
     } else if (status >= 500) {

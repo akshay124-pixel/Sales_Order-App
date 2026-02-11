@@ -115,8 +115,8 @@ const InstallationEditModal = ({ show, onHide, order, onUpdate }) => {
                 setFormData({ ...formData, installationFile: null });
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("File size must be less than 5MB", {
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error("File size must be less than 10MB", {
                     position: "top-right",
                     autoClose: 5000,
                 });
@@ -385,7 +385,7 @@ const InstallationEditModal = ({ show, onHide, order, onUpdate }) => {
                                             : "Click to upload Installation Report (PDF / Image / Doc / Excel)"}
                                 </div>
                                 <div style={{ fontSize: "0.8rem", color: "#666" }}>
-                                    Supported: PDF, JPG, PNG, DOCX, XLSX (Max 5MB)
+                                    Supported: PDF, JPG, PNG, DOCX, XLSX (Max 10MB)
                                 </div>
                             </label>
                         </div>
