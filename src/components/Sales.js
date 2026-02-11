@@ -1491,7 +1491,7 @@ const Sales = () => {
     setOrderTypeFilter("All");
     setDispatchFilter("All");
     setTrackerFilter("all");
-    setCurrentPage(1);
+
     toast.info("Filters reset!");
   }, []);
 
@@ -2151,45 +2151,45 @@ const Sales = () => {
           fontFamily: "'Poppins', sans-serif",
         }}
       >
-        {(userRole === "SuperAdmin" || userRole === "Admin") && (
-          <TrackerGrid>
-            {renderTrackerCard(
-              "All Orders",
-              dashboardCounts.totalOrders,
-              <FaHome />,
-              "linear-gradient(135deg, #bcd3ff 0%, #d1c4ff 100%)", // Slightly deeper blue-lavender
-              "all",
-              trackerFilter === "all"
-            )}
+        {/* {(userRole === "SuperAdmin" || userRole === "Admin") && ( */}
+        <TrackerGrid>
+          {renderTrackerCard(
+            "All Orders",
+            dashboardCounts.totalOrders,
+            <FaHome />,
+            "linear-gradient(135deg, #bcd3ff 0%, #d1c4ff 100%)", // Slightly deeper blue-lavender
+            "all",
+            trackerFilter === "all"
+          )}
 
-            {renderTrackerCard(
-              "Production Orders",
-              dashboardCounts.production,
-              <FaIndustry />,
-              "linear-gradient(135deg, #b5ccff 0%, #c8b8ff 100%)", // Soft blue-purple blend
-              "production",
-              trackerFilter === "production"
-            )} {renderTrackerCard(
-              "Dispatch Orders",
-              dashboardCounts.dispatch,
-              <FaTruck />,
-              "linear-gradient(135deg, #c8d9ff 0%, #dbc8ff 100%)", // Frosty blue-violet gradient
-              "dispatch",
-              trackerFilter === "dispatch"
-            )}
+          {renderTrackerCard(
+            "Production Orders",
+            dashboardCounts.production,
+            <FaIndustry />,
+            "linear-gradient(135deg, #b5ccff 0%, #c8b8ff 100%)", // Soft blue-purple blend
+            "production",
+            trackerFilter === "production"
+          )} {renderTrackerCard(
+            "Dispatch Orders",
+            dashboardCounts.dispatch,
+            <FaTruck />,
+            "linear-gradient(135deg, #c8d9ff 0%, #dbc8ff 100%)", // Frosty blue-violet gradient
+            "dispatch",
+            trackerFilter === "dispatch"
+          )}
 
-            {renderTrackerCard(
-              "Installation Orders",
-              dashboardCounts.installation,
-              <FaWrench />,
-              "linear-gradient(135deg, #c0d6ff 0%, #d4c2ff 100%)", // Clean and calm tone
-              "installation",
-              trackerFilter === "installation"
-            )}
+          {renderTrackerCard(
+            "Installation Orders",
+            dashboardCounts.installation,
+            <FaWrench />,
+            "linear-gradient(135deg, #c0d6ff 0%, #d4c2ff 100%)",
+            "installation",
+            trackerFilter === "installation"
+          )}
 
 
-          </TrackerGrid>
-        )}
+        </TrackerGrid>
+        {/* )} */}
         <div
           className="my-4"
           style={{
