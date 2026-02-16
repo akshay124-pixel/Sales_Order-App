@@ -1425,6 +1425,7 @@ export const salesPersonlist = [
   { label: "Jai Srivastava", value: "Jai Srivastava" },
   { label: "Kulwinder Singh", value: "Kulwinder Singh" },
   { label: "Manish CS Lange", value: "Manish CS Lange" },
+  { label: "Madeeha Hasan", value: "Madeeha Hasan" },
   { label: "Manjit Singh Chowhan", value: "Manjit Singh Chowhan" },
   { label: "Mayank Goutam", value: "Mayank Goutam" },
   { label: "Mayank Prasad", value: "Mayank Prasad" },
