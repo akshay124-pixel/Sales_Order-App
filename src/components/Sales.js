@@ -1338,7 +1338,7 @@ const Sales = () => {
       "orderUpdate",
       ({ operationType, documentId, fullDocument, createdBy, assignedTo }) => {
         const currentUserId = userId;
-        const isAdmin = userRole === "Admin" || userRole === "SuperAdmin";
+        const isAdmin = userRole === "Admin" || userRole === "SuperAdmin" || userRole === "Watch";
         const owners = [createdBy, assignedTo].filter(Boolean);
 
         // Admins see everything, others see only owned/assigned
@@ -2250,34 +2250,36 @@ const Sales = () => {
           }}
         >
           {" "}
-          <Button
-            onClick={() => setIsTeamBuilderOpen(true)}
-            style={{
-              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-              border: "none",
-              padding: "12px 24px",
-              borderRadius: "30px",
-              color: "white",
-              fontWeight: "600",
-              fontSize: "1rem",
-              boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              transition: "all 0.4s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
-            }}
-          >
-            <span style={{ fontSize: "1.2rem" }}>👥</span>
-            Manage Team
-          </Button>
+          {(userRole === "SuperAdmin" || userRole === "Admin" || userRole === "Sales") && (
+            <Button
+              onClick={() => setIsTeamBuilderOpen(true)}
+              style={{
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "30px",
+                color: "white",
+                fontWeight: "600",
+                fontSize: "1rem",
+                boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "all 0.4s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+                e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+                e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>👥</span>
+              Manage Team
+            </Button>
+          )}
           {(userRole === "Admin" || userRole === "SuperAdmin") && (
             <label
               style={{
@@ -2313,34 +2315,36 @@ const Sales = () => {
               />
             </label>
           )}
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            style={{
-              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-              border: "none",
-              padding: "12px 24px",
-              borderRadius: "30px",
-              color: "white",
-              fontWeight: "600",
-              fontSize: "1rem",
-              boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              transition: "all 0.4s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
-            }}
-          >
-            <span style={{ fontSize: "1.2rem" }}>+</span>
-            Add Order
-          </Button>
+          {(userRole === "SuperAdmin" || userRole === "Admin" || userRole === "Sales") && (
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              style={{
+                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "30px",
+                color: "white",
+                fontWeight: "600",
+                fontSize: "1rem",
+                boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "all 0.4s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "scale(1.05)";
+                e.target.style.boxShadow = "0 10px 24px rgba(0,0,0,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "scale(1)";
+                e.target.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)";
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>+</span>
+              Add Order
+            </Button>
+          )}
           {userRole === "SuperAdmin" && (
             <Button
               onClick={handleExport}

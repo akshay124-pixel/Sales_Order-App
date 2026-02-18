@@ -53,7 +53,7 @@ const roleRedirect = (role) => {
   if (role === "Verification") return "/verification";
   if (role === "Bill") return "/bill";
   if (role === "ProductionApproval") return "/production-approval";
-  if (role === "Sales" || role === "Admin" || role === "SuperAdmin")
+  if (role === "Sales" || role === "Admin" || role === "SuperAdmin" || role === "Watch")
     return "/sales";
   return "/login";
 };
@@ -150,7 +150,7 @@ const AppContent = () => {
             <PrivateRoute
               element={<Sales />}
               isAuthenticated={isAuthenticated}
-              allowedRoles={["Sales", "Admin", "SuperAdmin"]}
+              allowedRoles={["Sales", "Admin", "SuperAdmin", "Watch"]}
             />
           }
         />
