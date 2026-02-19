@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import axios from "axios";
 import { Button, Modal, Badge, Form, Spinner } from "react-bootstrap";
 import { FaEye, FaTimes, FaDownload } from "react-icons/fa";
@@ -44,20 +50,19 @@ function Installation() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       if (response.data.success) {
         const filteredData = response.data.data.filter(
           (doc) =>
             doc.dispatchStatus === "Delivered" &&
-            doc.installchargesstatus !== "Not in Scope"
+            doc.installchargesstatus !== "Not in Scope",
         );
 
         setOrders(filteredData);
-      }
-      else {
+      } else {
         throw new Error(
-          response.data.message || "Could not load installation orders"
+          response.data.message || "Could not load installation orders",
         );
       }
     } catch (error) {
@@ -98,7 +103,7 @@ function Installation() {
     const baseOrigin = (() => {
       try {
         const url = new URL(
-          process.env.REACT_APP_URL || window.location.origin
+          process.env.REACT_APP_URL || window.location.origin,
         );
         return `${url.protocol}//${url.host}`;
       } catch (_) {
@@ -117,7 +122,7 @@ function Installation() {
 
     const meetsInstallation = (doc) =>
       doc?.dispatchStatus === "Delivered" &&
-      doc?.installchargesstatus !== "Not in Scope"
+      doc?.installchargesstatus !== "Not in Scope";
 
     socket.on("connect", () => {
       socket.emit("join", { userId, role: userRole });
@@ -136,7 +141,10 @@ function Installation() {
         ) {
           fullDocument = {
             ...fullDocument,
-            createdBy: { _id: currentUserId, username: currentUser.username || currentUser.name || "You" },
+            createdBy: {
+              _id: currentUserId,
+              username: currentUser.username || currentUser.name || "You",
+            },
           };
         }
       } catch (e) {
@@ -211,7 +219,7 @@ function Installation() {
         pageCanvas.width = canvasWidth;
         pageCanvas.height = Math.min(
           pageContentHeightPx,
-          canvasHeight - sourceY
+          canvasHeight - sourceY,
         );
 
         ctx.drawImage(
@@ -223,35 +231,23 @@ function Installation() {
           0,
           0,
           canvasWidth,
-          pageCanvas.height
+          pageCanvas.height,
         );
 
         const imgData = pageCanvas.toDataURL("image/jpeg", 0.98);
 
         if (pageIndex > 0) pdf.addPage();
 
-        const renderedHeightMm =
-          (pageCanvas.height * imgWidth) / canvasWidth;
+        const renderedHeightMm = (pageCanvas.height * imgWidth) / canvasWidth;
 
         const yPosition = pageIndex === 0 ? 0 : MARGIN_TOP;
 
-        pdf.addImage(
-          imgData,
-          "JPEG",
-          0,
-          yPosition,
-          imgWidth,
-          renderedHeightMm
-        );
+        pdf.addImage(imgData, "JPEG", 0, yPosition, imgWidth, renderedHeightMm);
 
         // Footer
         pdf.setFontSize(9);
         pdf.setTextColor(150);
-        pdf.text(
-          `Page ${pageIndex + 1}`,
-          PAGE_WIDTH - 25,
-          PAGE_HEIGHT - 8
-        );
+        pdf.text(`Page ${pageIndex + 1}`, PAGE_WIDTH - 25, PAGE_HEIGHT - 8);
 
         sourceY += pageCanvas.height;
         pageIndex++;
@@ -267,12 +263,10 @@ function Installation() {
     }
   };
 
-
-
   // Optimization: Debounced search updater
   const updateSearchQuery = useMemo(
     () => debounce((val) => setSearchQuery(val), 300),
-    []
+    [],
   );
 
   const handleSearchChange = (e) => {
@@ -281,10 +275,13 @@ function Installation() {
     updateSearchQuery(val);
   };
 
-  const uniqueSalesPersons = useMemo(() => [
-    "All",
-    ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
-  ], [orders]);
+  const uniqueSalesPersons = useMemo(
+    () => [
+      "All",
+      ...new Set(orders.map((order) => order.salesPerson).filter(Boolean)),
+    ],
+    [orders],
+  );
 
   // Optimization: Pre-calculate sorting and searching fields
   const processedOrders = useMemo(() => {
@@ -300,12 +297,13 @@ function Installation() {
         order.installationStatus || "",
         Array.isArray(order.products)
           ? order.products
-            .map(
-              (p) =>
-                `${p.productType || ""} ${p.qty || ""} ${p.size || ""} ${p.spec || ""
-                } ${p.serialNos?.join("") || ""} ${p.modelNos?.join("") || ""}`
-            )
-            .join(" ")
+              .map(
+                (p) =>
+                  `${p.productType || ""} ${p.qty || ""} ${p.size || ""} ${
+                    p.spec || ""
+                  } ${p.serialNos?.join("") || ""} ${p.modelNos?.join("") || ""}`,
+              )
+              .join(" ")
           : "",
       ]
         .join(" ")
@@ -331,12 +329,12 @@ function Installation() {
     }
     if (statusFilter !== "All") {
       filtered = filtered.filter(
-        (order) => order.installationStatus === statusFilter
+        (order) => order.installationStatus === statusFilter,
       );
     }
     if (orderTypeFilter) {
       filtered = filtered.filter(
-        (order) => order.orderType === orderTypeFilter
+        (order) => order.orderType === orderTypeFilter,
       );
     }
 
@@ -358,7 +356,7 @@ function Installation() {
 
     if (salesPersonFilter !== "All") {
       filtered = filtered.filter(
-        (order) => order.salesPerson === salesPersonFilter
+        (order) => order.salesPerson === salesPersonFilter,
       );
     }
     if (startDate) {
@@ -410,24 +408,31 @@ function Installation() {
   }, []);
 
   // Calculate total pending orders (billStatus === "Pending")
-  const totalPending = useMemo(() => filteredOrders.filter(
-    (order) => order.installationStatus === "Pending"
-  ).length, [filteredOrders]);
+  const totalPending = useMemo(
+    () =>
+      filteredOrders.filter((order) => order.installationStatus === "Pending")
+        .length,
+    [filteredOrders],
+  );
 
   // Get unique statuses for filter dropdown
-  const uniqueStatuses = useMemo(() => [
-    "All",
-    "Pending",
-    "In Progress",
-    "Completed",
-    ...new Set(
-      orders
-        .map((order) => order.installationStatus || "Pending")
-        .filter(
-          (status) => !["Pending", "In Progress", "Completed"].includes(status)
-        )
-    ),
-  ], [orders]);
+  const uniqueStatuses = useMemo(
+    () => [
+      "All",
+      "Pending",
+      "In Progress",
+      "Completed",
+      ...new Set(
+        orders
+          .map((order) => order.installationStatus || "Pending")
+          .filter(
+            (status) =>
+              !["Pending", "In Progress", "Completed"].includes(status),
+          ),
+      ),
+    ],
+    [orders],
+  );
 
   const handleOrderUpdate = useCallback((updatedOrder) => {
     setOrders((prevOrders) => {
@@ -438,11 +443,10 @@ function Installation() {
 
       // Warna normal update
       return prevOrders.map((o) =>
-        o._id === updatedOrder._id ? updatedOrder : o
+        o._id === updatedOrder._id ? updatedOrder : o,
       );
     });
   }, []);
-
 
   const handleView = useCallback((order) => {
     setViewOrder(order);
@@ -457,8 +461,9 @@ function Installation() {
     }
 
     try {
-      const fileUrl = `${process.env.REACT_APP_URL}${filePath.startsWith("/") ? "" : "/"
-        }${filePath}`;
+      const fileUrl = `${process.env.REACT_APP_URL}${
+        filePath.startsWith("/") ? "" : "/"
+      }${filePath}`;
 
       const response = await fetch(fileUrl, {
         method: "GET",
@@ -473,7 +478,8 @@ function Installation() {
       }
 
       const blob = await response.blob();
-      const contentType = response.headers.get("content-type") || "application/octet-stream";
+      const contentType =
+        response.headers.get("content-type") || "application/octet-stream";
       const extension = contentType.split("/")[1] || "file";
       const fileName = filePath.split("/").pop() || `download.${extension}`;
 
@@ -500,18 +506,19 @@ function Installation() {
     if (!viewOrder) return;
     const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
-        .map(
-          (p, i) =>
-            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
-            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
-            }, Brand: ${p.brand || "N/A"
-            }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"
-            }, Model Nos: ${p.modelNos?.join(", ") || "N/A"
-            }, Product Code: ${p.productCode?.join(", ") || "N/A"
-            }, Warranty: ${p.warranty || "N/A"
-            })`
-        )
-        .join("\n")
+          .map(
+            (p, i) =>
+              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
+                p.qty || "N/A"
+              }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"}, Brand: ${
+                p.brand || "N/A"
+              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
+                p.modelNos?.join(", ") || "N/A"
+              }, Product Code: ${
+                p.productCode?.join(", ") || "N/A"
+              }, Warranty: ${p.warranty || "N/A"})`,
+          )
+          .join("\n")
       : "N/A";
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
@@ -553,7 +560,7 @@ function Installation() {
         { orderId: order._id },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
+        },
       );
 
       if (response.data.success) {
@@ -584,8 +591,8 @@ function Installation() {
     const exportData = filteredOrders.map((order) => {
       const productDetails = Array.isArray(order.products)
         ? order.products
-          .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
-          .join(", ")
+            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+            .join(", ")
         : "N/A";
 
       // 👇 Calculate total quantity from products array
@@ -618,86 +625,96 @@ function Installation() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Installation Orders");
     XLSX.writeFile(
       workbook,
-      `Installation_Orders_${new Date().toISOString().split("T")[0]}.xlsx`
+      `Installation_Orders_${new Date().toISOString().split("T")[0]}.xlsx`,
     );
   };
 
   // Optimization: Memoize the table to prevent re-renders on typing
-  const tableContent = useMemo(() => (
-    <div
-      style={{
-        overflowX: "auto",
-        maxHeight: "550px",
-        border: "1px solid rgba(0, 0, 0, 0.1)",
-        borderRadius: "8px",
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      <table
+  const tableContent = useMemo(
+    () => (
+      <div
         style={{
-          width: "100%",
-          borderCollapse: "separate",
-          borderSpacing: "0",
+          overflowX: "auto",
+          maxHeight: "550px",
+          border: "1px solid rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          backdropFilter: "blur(10px)",
         }}
       >
-        <thead
+        <table
           style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-            color: "#fff",
-            position: "sticky",
-            top: 0,
-            zIndex: 2,
+            width: "100%",
+            borderCollapse: "separate",
+            borderSpacing: "0",
           }}
         >
-          <tr>
-            {[
-              "Order ID",
-              "SO Date",
-              "Dispatch Date",
-              "Product Details",
-              "Contact Person",
-              "Contact No",
-              "Shipping Address",
-              "Charges Status",
-              "Installation Status",
-              "Sales Person",
-              "Actions",
-            ].map((header, index) => (
-              <th
-                key={index}
-                style={{
-                  padding: "15px",
-                  textAlign: "center",
-                  fontWeight: "700",
-                  letterSpacing: "1px",
-                  textTransform: "uppercase",
-                  borderBottom: "2px solid rgba(255, 255, 255, 0.2)",
-                }}
-              >
-                {header}
-              </th>
+          <thead
+            style={{
+              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+              color: "#fff",
+              position: "sticky",
+              top: 0,
+              zIndex: 2,
+            }}
+          >
+            <tr>
+              {[
+                "Order ID",
+                "SO Date",
+                "Dispatch Date",
+                "Product Details",
+                "Contact Person",
+                "Contact No",
+                "Shipping Address",
+                "Charges Status",
+                "Installation Status",
+                "Sales Person",
+                "Actions",
+              ].map((header, index) => (
+                <th
+                  key={index}
+                  style={{
+                    padding: "15px",
+                    textAlign: "center",
+                    fontWeight: "700",
+                    letterSpacing: "1px",
+                    textTransform: "uppercase",
+                    borderBottom: "2px solid rgba(255, 255, 255, 0.2)",
+                  }}
+                >
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sortedOrders.map((order, index) => (
+              <InstallationRow
+                key={order._id}
+                order={order}
+                index={index}
+                isDispatchOverdue={isDispatchOverdue}
+                handleView={handleView}
+                handleEdit={handleEdit}
+                handleSendMail={handleSendMail}
+                mailingInProgress={mailingInProgress}
+              />
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sortedOrders.map((order, index) => (
-            <InstallationRow
-              key={order._id}
-              order={order}
-              index={index}
-              isDispatchOverdue={isDispatchOverdue}
-              handleView={handleView}
-              handleEdit={handleEdit}
-              handleSendMail={handleSendMail}
-              mailingInProgress={mailingInProgress}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  ), [sortedOrders, isDispatchOverdue, handleView, handleEdit, handleSendMail, mailingInProgress]);
+          </tbody>
+        </table>
+      </div>
+    ),
+    [
+      sortedOrders,
+      isDispatchOverdue,
+      handleView,
+      handleEdit,
+      handleSendMail,
+      mailingInProgress,
+    ],
+  );
 
   if (loading) {
     return (
@@ -770,7 +787,6 @@ function Installation() {
         </header>{" "}
         <div
           style={{
-
             padding: "15px",
             borderRadius: "15px",
 
@@ -824,7 +840,9 @@ function Installation() {
                       cursor: "pointer",
                       color: "#adb5bd",
                     }}
-                    onClick={() => handleSearchChange({ target: { value: "" } })}
+                    onClick={() =>
+                      handleSearchChange({ target: { value: "" } })
+                    }
                   />
                 )}
               </div>
@@ -1070,7 +1088,9 @@ function Installation() {
                 onMouseEnter={(e) =>
                   (e.target.style.transform = "translateY(-2px)")
                 }
-                onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+                onMouseLeave={(e) =>
+                  (e.target.style.transform = "translateY(0)")
+                }
               >
                 Export Excel
               </Button>
@@ -1111,7 +1131,9 @@ function Installation() {
                   transition: "all 0.3s ease",
                 }}
                 onMouseEnter={(e) => (e.target.style.background = "#ffffff30")}
-                onMouseLeave={(e) => (e.target.style.background = "transparent")}
+                onMouseLeave={(e) =>
+                  (e.target.style.background = "transparent")
+                }
               >
                 Retry
               </Button>
@@ -1134,11 +1156,9 @@ function Installation() {
               No installation orders available at this time.
             </div>
           ) : (
-
             tableContent
           )}
         </div>
-
         {/* View Modal */}
         <Modal
           show={showViewModal}
@@ -1286,7 +1306,9 @@ function Installation() {
             >
               {/* LEFT – Title */}
               <div style={{ display: "flex", alignItems: "center" }}>
-                <span style={{ marginRight: "10px", fontSize: "1.3rem" }}>📋</span>
+                <span style={{ marginRight: "10px", fontSize: "1.3rem" }}>
+                  📋
+                </span>
                 <span
                   style={{
                     fontWeight: "700",
@@ -1301,7 +1323,9 @@ function Installation() {
               </div>
 
               {/* RIGHT – Export + Close */}
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+              >
                 <Button
                   onClick={handleExportPDF}
                   disabled={isGeneratingPDF}
@@ -1321,10 +1345,12 @@ function Installation() {
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)")
+                    (e.currentTarget.style.background =
+                      "rgba(255, 255, 255, 0.3)")
                   }
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)")
+                    (e.currentTarget.style.background =
+                      "rgba(255, 255, 255, 0.2)")
                   }
                 >
                   {isGeneratingPDF ? (
@@ -1372,13 +1398,30 @@ function Installation() {
                   <div className="pdf-header">
                     <div>
                       <h1 className="pdf-title">Installation Order</h1>
-                      <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          color: "#666",
+                          marginTop: "5px",
+                        }}
+                      >
                         Official Installation Record
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <img src="/logo.png" alt="Company Logo" className="pdf-logo" onError={(e) => e.target.style.display = 'none'} />
-                      <div style={{ marginTop: "10px", fontWeight: "bold", fontSize: "16px" }}>
+                      <img
+                        src="/logo.png"
+                        alt="Company Logo"
+                        className="pdf-logo"
+                        onError={(e) => (e.target.style.display = "none")}
+                      />
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          fontWeight: "bold",
+                          fontSize: "16px",
+                        }}
+                      >
                         Order ID: {viewOrder.orderId || "N/A"}
                       </div>
                     </div>
@@ -1387,15 +1430,45 @@ function Installation() {
                   <div className="pdf-section">
                     <div className="pdf-section-title">Installation Info</div>
                     <div className="pdf-grid">
-                      <div className="pdf-item"><strong>Contact Person:</strong> {viewOrder.name || "N/A"}</div>
-                      <div className="pdf-item"><strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}</div>
-                      <div className="pdf-item"><strong>Customer Email:</strong> {viewOrder.customerEmail || "N/A"}</div>
-                      <div className="pdf-item"><strong>Sales Person:</strong> {viewOrder.salesPerson || "N/A"}</div>
-                      <div className="pdf-item" style={{ gridColumn: "span 2" }}><strong>Shipping Address:</strong> {viewOrder.shippingAddress || "N/A"}</div>
-                      <div className="pdf-item"><strong>Installation Status:</strong> {viewOrder.installationStatus || "Pending"}</div>
-                      <div className="pdf-item"><strong>Engineer Name:</strong> {viewOrder.installationeng || "N/A"}</div>
-                      <div className="pdf-item"><strong>Charges Status:</strong> {viewOrder.installchargesstatus || "N/A"}</div>
-                      <div className="pdf-item"><strong>Dispatch Status:</strong> {viewOrder.dispatchStatus || "N/A"}</div>
+                      <div className="pdf-item">
+                        <strong>Contact Person:</strong>{" "}
+                        {viewOrder.name || "N/A"}
+                      </div>
+                      <div className="pdf-item">
+                        <strong>Contact No:</strong>{" "}
+                        {viewOrder.contactNo || "N/A"}
+                      </div>
+                      <div className="pdf-item">
+                        <strong>Customer Email:</strong>{" "}
+                        {viewOrder.customerEmail || "N/A"}
+                      </div>
+                      <div className="pdf-item">
+                        <strong>Sales Person:</strong>{" "}
+                        {viewOrder.salesPerson || "N/A"}
+                      </div>
+                      <div
+                        className="pdf-item"
+                        style={{ gridColumn: "span 2" }}
+                      >
+                        <strong>Shipping Address:</strong>{" "}
+                        {viewOrder.shippingAddress || "N/A"}
+                      </div>
+                      <div className="pdf-item">
+                        <strong>Installation Status:</strong>{" "}
+                        {viewOrder.installationStatus || "Pending"}
+                      </div>
+                      <div className="pdf-item">
+                        <strong>Engineer Name:</strong>{" "}
+                        {viewOrder.installationeng || "N/A"}
+                      </div>
+                      <div className="pdf-item">
+                        <strong>Charges Status:</strong>{" "}
+                        {viewOrder.installchargesstatus || "N/A"}
+                      </div>
+                      <div className="pdf-item">
+                        <strong>Dispatch Status:</strong>{" "}
+                        {viewOrder.dispatchStatus || "N/A"}
+                      </div>
                     </div>
                   </div>
 
@@ -1412,7 +1485,8 @@ function Installation() {
                         </tr>
                       </thead>
                       <tbody>
-                        {Array.isArray(viewOrder.products) && viewOrder.products.length > 0 ? (
+                        {Array.isArray(viewOrder.products) &&
+                        viewOrder.products.length > 0 ? (
                           viewOrder.products.map((p, idx) => (
                             <tr key={idx}>
                               <td>{idx + 1}</td>
@@ -1421,7 +1495,9 @@ function Installation() {
                                   ? p.productType
                                   : ""}
                                 {p.brand && p.brand !== "N/A" && (
-                                  <div style={{ fontSize: "12px", color: "#666" }}>
+                                  <div
+                                    style={{ fontSize: "12px", color: "#666" }}
+                                  >
                                     {p.brand}
                                   </div>
                                 )}
@@ -1430,9 +1506,9 @@ function Installation() {
                               <td>
                                 {p.size && p.size !== "N/A" ? p.size : ""}
                                 {p.size &&
-                                  p.size !== "N/A" &&
-                                  p.spec &&
-                                  p.spec !== "N/A"
+                                p.size !== "N/A" &&
+                                p.spec &&
+                                p.spec !== "N/A"
                                   ? " / "
                                   : ""}
                                 {p.spec && p.spec !== "N/A" ? p.spec : ""}
@@ -1465,7 +1541,11 @@ function Installation() {
                             </tr>
                           ))
                         ) : (
-                          <tr><td colSpan="5" style={{ textAlign: "center" }}>No products found</td></tr>
+                          <tr>
+                            <td colSpan="5" style={{ textAlign: "center" }}>
+                              No products found
+                            </td>
+                          </tr>
                         )}
                       </tbody>
                     </table>
@@ -1474,7 +1554,14 @@ function Installation() {
                   {viewOrder.remarksByInstallation && (
                     <div className="pdf-section">
                       <div className="pdf-section-title">Remarks</div>
-                      <div className="pdf-item" style={{ padding: "10px", background: "#f8f9fa", borderRadius: "5px" }}>
+                      <div
+                        className="pdf-item"
+                        style={{
+                          padding: "10px",
+                          background: "#f8f9fa",
+                          borderRadius: "5px",
+                        }}
+                      >
                         {viewOrder.remarksByInstallation}
                       </div>
                     </div>
@@ -1505,7 +1592,8 @@ function Installation() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(200px, 1fr))",
                       gap: "15px",
                     }}
                   >
@@ -1516,14 +1604,17 @@ function Installation() {
                       <strong>Contact Person:</strong> {viewOrder.name || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Customer Email:</strong> {viewOrder.customerEmail || "N/A"}
+                      <strong>Customer Email:</strong>{" "}
+                      {viewOrder.customerEmail || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Installation Report:</strong>{" "}
                       {viewOrder.installationFile ? (
                         <Button
                           size="sm"
-                          onClick={() => handleDownload(viewOrder.installationFile)}
+                          onClick={() =>
+                            handleDownload(viewOrder.installationFile)
+                          }
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -1531,7 +1622,8 @@ function Installation() {
                             padding: "4px 12px",
                             marginLeft: "10px",
                             borderRadius: "20px",
-                            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                            background:
+                              "linear-gradient(135deg, #2575fc, #6a11cb)",
                             color: "#fff",
                             border: "none",
                             fontSize: "0.8rem",
@@ -1539,12 +1631,16 @@ function Installation() {
                             boxShadow: "0 3px 8px rgba(0, 0, 0, 0.15)",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "translateY(-1px) scale(1.05)";
-                            e.currentTarget.style.boxShadow = "0 6px 12px rgba(0, 0, 0, 0.25)";
+                            e.currentTarget.style.transform =
+                              "translateY(-1px) scale(1.05)";
+                            e.currentTarget.style.boxShadow =
+                              "0 6px 12px rgba(0, 0, 0, 0.25)";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "translateY(0) scale(1)";
-                            e.currentTarget.style.boxShadow = "0 3px 8px rgba(0, 0, 0, 0.15)";
+                            e.currentTarget.style.transform =
+                              "translateY(0) scale(1)";
+                            e.currentTarget.style.boxShadow =
+                              "0 3px 8px rgba(0, 0, 0, 0.15)";
                           }}
                         >
                           <FaDownload size={10} /> Download
@@ -1554,13 +1650,16 @@ function Installation() {
                       )}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Contact No:</strong> {viewOrder.contactNo || "N/A"}
+                      <strong>Contact No:</strong>{" "}
+                      {viewOrder.contactNo || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Shipping Address:</strong> {viewOrder.shippingAddress || "N/A"}
+                      <strong>Shipping Address:</strong>{" "}
+                      {viewOrder.shippingAddress || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Installation Charges:</strong> {viewOrder.installation || "N/A"}
+                      <strong>Installation Charges:</strong>{" "}
+                      {viewOrder.installation || "N/A"}
                     </span>
                     <span style={{ fontSize: "1rem", color: "#555" }}>
                       <strong>Installation Status:</strong>{" "}
@@ -1604,38 +1703,96 @@ function Installation() {
                   >
                     Product Info
                   </h3>
-                  {Array.isArray(viewOrder.products) && viewOrder.products.length > 0 ? (
+                  {Array.isArray(viewOrder.products) &&
+                  viewOrder.products.length > 0 ? (
                     viewOrder.products.map((product, index) => (
                       <div
                         key={index}
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(200px, 1fr))",
                           gap: "10px",
                           padding: "10px 0",
-                          borderBottom: index < viewOrder.products.length - 1 ? "1px solid #eee" : "none",
+                          borderBottom:
+                            index < viewOrder.products.length - 1
+                              ? "1px solid #eee"
+                              : "none",
                         }}
                       >
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Product {index + 1}:</strong> {product.productType || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Qty:</strong> {product.qty || "N/A"}
-                        </span>
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Serial Nos:</strong>
-                          <div className="serial-nos-container">
-                            {product.serialNos && product.serialNos.length > 0 ? (
-                              <ul>
-                                {product.serialNos.map((serial, idx) => <li key={idx}>{serial}</li>)}
-                              </ul>
-                            ) : "N/A"}
-                          </div>
-                        </span>
+                        {product.productType && (
+                          <span>
+                            <strong>Product {index + 1}:</strong>{" "}
+                            {product.productType}
+                          </span>
+                        )}
+
+                        {product.spec && product.spec !== "N/A" && (
+                          <span>
+                            <strong>Spec:</strong> {product.spec}
+                          </span>
+                        )}
+
+                        {product.size && product.size !== "N/A" && (
+                          <span>
+                            <strong>Size:</strong> {product.size}
+                          </span>
+                        )}
+
+                        {product.qty && (
+                          <span>
+                            <strong>Qty:</strong> {product.qty}
+                          </span>
+                        )}
+
+                        {product.brand && (
+                          <span>
+                            <strong>Brand:</strong> {product.brand}
+                          </span>
+                        )}
+
+                        {product.warranty && (
+                          <span>
+                            <strong>Warranty:</strong> {product.warranty}
+                          </span>
+                        )}
+
+                        {product.modelNos?.length > 0 && (
+                          <span>
+                            <strong>Model Nos:</strong>
+                            <ul>
+                              {product.modelNos.map((m, i) => (
+                                <li key={i}>{m}</li>
+                              ))}
+                            </ul>
+                          </span>
+                        )}
+
+                        {product.serialNos?.length > 0 && (
+                          <span>
+                            <strong>Serial Nos:</strong>
+                            <ul>
+                              {product.serialNos.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </span>
+                        )}
+
+                        {product.productCode?.length > 0 && (
+                          <span>
+                            <strong>Product Codes:</strong>
+                            <ul>
+                              {product.productCode.map((c, i) => (
+                                <li key={i}>{c}</li>
+                              ))}
+                            </ul>
+                          </span>
+                        )}
                       </div>
                     ))
                   ) : (
-                    <span style={{ fontSize: "1rem", color: "#555" }}>N/A</span>
+                    <span>N/A</span>
                   )}
                 </div>
 
@@ -1653,12 +1810,18 @@ function Installation() {
                       textTransform: "uppercase",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                       width: "100%",
-                      transition: "all 0.3s ease"
+                      transition: "all 0.3s ease",
                     }}
-                    onMouseEnter={(e) => e.target.style.transform = "translateY(-2px)"}
-                    onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
+                    onMouseEnter={(e) =>
+                      (e.target.style.transform = "translateY(-2px)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.target.style.transform = "translateY(0)")
+                    }
                   >
-                    {copied ? "✅ Details Copied to Clipboard!" : "📑 Copy Details to Clipboard"}
+                    {copied
+                      ? "✅ Details Copied to Clipboard!"
+                      : "📑 Copy Details to Clipboard"}
                   </Button>
                 </div>
               </>
@@ -1672,7 +1835,8 @@ function Installation() {
           order={editOrder}
           onUpdate={handleOrderUpdate}
         />
-      </div> <footer
+      </div>{" "}
+      <footer
         style={{
           padding: "15px",
           textAlign: "center",
@@ -1685,7 +1849,8 @@ function Installation() {
         <p style={{ margin: 0, fontSize: "0.9rem" }}>
           © 2025 Sales Order Management. All rights reserved.
         </p>
-      </footer></>
+      </footer>
+    </>
   );
 }
 
