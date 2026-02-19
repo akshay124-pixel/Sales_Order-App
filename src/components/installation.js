@@ -1768,16 +1768,24 @@ function Installation() {
                           </span>
                         )}
 
-                        {product.serialNos?.length > 0 && (
-                          <span>
-                            <strong>Serial Nos:</strong>
-                            <ul>
-                              {product.serialNos.map((s, i) => (
-                                <li key={i}>{s}</li>
-                              ))}
-                            </ul>
-                          </span>
-                        )}
+                        <span style={{ fontSize: "1rem", color: "#555" }}>
+                          {" "}
+                          <strong>Serial Nos:</strong>{" "}
+                          <div className="serial-nos-container">
+                            {" "}
+                            {product.serialNos &&
+                            product.serialNos.length > 0 ? (
+                              <ul>
+                                {" "}
+                                {product.serialNos.map((serial, idx) => (
+                                  <li key={idx}>{serial}</li>
+                                ))}{" "}
+                              </ul>
+                            ) : (
+                              "N/A"
+                            )}{" "}
+                          </div>{" "}
+                        </span>
 
                         {product.productCode?.length > 0 && (
                           <span>
