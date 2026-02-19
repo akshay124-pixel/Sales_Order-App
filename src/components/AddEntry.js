@@ -2008,7 +2008,6 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentCollected"
                     value={formData.paymentCollected}
                     onChange={handleChange}
-                    disabled={formData.orderType === "Demo"}
                     // ✅ Block characters while typing
                     onKeyDown={(e) => {
                       if (
@@ -2037,8 +2036,7 @@ function AddEntry({ onSubmit, onClose }) {
                       padding: "0.75rem",
                       border: "1px solid #e2e8f0",
                       borderRadius: "0.75rem",
-                      backgroundColor:
-                        formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                      backgroundColor: "#f8fafc",
                       fontSize: "1rem",
                       color: "#1e293b",
                     }}
@@ -2061,7 +2059,6 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentDue"
                     value={formData.paymentDue}
                     readOnly
-                    disabled={formData.orderType === "Demo"}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
@@ -2096,14 +2093,12 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentMethod"
                     value={formData.paymentMethod}
                     onChange={handleChange}
-                    disabled={formData.orderType === "Demo"}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
                       border: "1px solid #e2e8f0",
                       borderRadius: "0.75rem",
-                      backgroundColor:
-                        formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                      backgroundColor: "#f8fafc",
                       fontSize: "1rem",
                       color: "#1e293b",
                       appearance: "auto",
@@ -2135,15 +2130,13 @@ function AddEntry({ onSubmit, onClose }) {
                     name="paymentTerms"
                     value={formData.paymentTerms}
                     onChange={handleChange}
-                    disabled={formData.orderType === "Demo"}
                     required={formData.orderType !== "Demo"}
                     style={{
                       width: "100%",
                       padding: "0.75rem",
                       border: "1px solid #e2e8f0",
                       borderRadius: "0.75rem",
-                      backgroundColor:
-                        formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                      backgroundColor: "#f8fafc",
                       fontSize: "1rem",
                       color: "#1e293b",
                       appearance: "auto",
@@ -2177,14 +2170,12 @@ function AddEntry({ onSubmit, onClose }) {
                       value={formData.neftTransactionId}
                       onChange={handleChange}
                       placeholder="Enter NEFT Transaction ID"
-                      disabled={formData.orderType === "Demo"}
                       style={{
                         width: "100%",
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
                         borderRadius: "0.75rem",
-                        backgroundColor:
-                          formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                        backgroundColor: "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
                       }}
@@ -2209,14 +2200,12 @@ function AddEntry({ onSubmit, onClose }) {
                       value={formData.chequeId}
                       onChange={handleChange}
                       placeholder="Enter Cheque ID"
-                      disabled={formData.orderType === "Demo"}
                       style={{
                         width: "100%",
                         padding: "0.75rem",
                         border: "1px solid #e2e8f0",
                         borderRadius: "0.75rem",
-                        backgroundColor:
-                          formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                        backgroundColor: "#f8fafc",
                         fontSize: "1rem",
                         color: "#1e293b",
                       }}
@@ -2241,15 +2230,13 @@ function AddEntry({ onSubmit, onClose }) {
                         name="creditDays"
                         value={formData.creditDays}
                         onChange={handleChange}
-                        disabled={formData.orderType === "Demo"}
                         required
                         style={{
                           width: "100%",
                           padding: "0.75rem",
                           border: "1px solid #e2e8f0",
                           borderRadius: "0.75rem",
-                          backgroundColor:
-                            formData.orderType === "Demo" ? "#e5e7eb" : "#f8fafc",
+                          backgroundColor: "#f8fafc",
                           fontSize: "1rem",
                           color: "#1e293b",
                           appearance: "auto",
