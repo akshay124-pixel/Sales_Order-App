@@ -2372,18 +2372,10 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         <Form.Group controlId="chequeId">
           <Form.Label>📄 Cheque ID</Form.Label>
           <Form.Control
-            type="tel"
-            {...register("chequeId", {
-              pattern: {
-                value: /^\d+$/,
-                message: "Cheque ID must contain only numbers",
-              },
-            })}
+            type="text"
+            {...register("chequeId")}
             onChange={(e) => {
-              // Only allow numbers
-              const value = e.target.value.replace(/[^0-9]/g, "");
-              e.target.value = value;
-              debouncedHandleInputChange("chequeId", value);
+              debouncedHandleInputChange("chequeId",  e.target.value);
             }}
             isInvalid={!!errors.chequeId}
             disabled={paymentMethod !== "Cheque"}
