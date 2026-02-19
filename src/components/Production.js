@@ -2161,19 +2161,18 @@ const Production = () => {
           </Modal.Header>
           <Modal.Body
             style={{
-              padding: "30px",
-              background: "#fff",
+              padding: "0",
+              background: "#f4f7f6",
               borderRadius: "0 0 15px 15px",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
               display: "flex",
               flexDirection: "column",
-              gap: "20px",
-              animation: "fadeIn 0.5s ease-in-out",
+              height: "calc(100vh - 100px)",
+              overflow: "hidden"
             }}
           >
             {viewOrder && (
               <>
-                {/* Printable Template (Off-screen) */}
+                {/* --- KEEP PDF TEMPLATE EXACTLY AS IS --- */}
                 <div ref={pdfRef} className="pdf-print-container">
                   <div className="pdf-header">
                     <div>
@@ -2344,384 +2343,237 @@ const Production = () => {
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    background: "#f8f9fa",
-                    borderRadius: "10px",
-                    padding: "20px",
-                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                      color: "#333",
-                      marginBottom: "15px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Order Information
-                  </h3>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(200px, 1fr))",
-                      gap: "15px",
-                    }}
-                  >
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>SO Date:</strong>{" "}
-                      {viewOrder.soDate
-                        ? new Date(viewOrder.soDate).toLocaleDateString(
-                          "en-IN",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }
-                        )
-                        : "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Customer Name:</strong>{" "}
-                      {viewOrder.customername || "N/A"}
-                    </span><span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>City:</strong>{" "}
-                      {viewOrder.city || "N/A"}
-                    </span><span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>State:</strong>{" "}
-                      {viewOrder.state || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Shipping Address:</strong>{" "}
-                      {viewOrder.shippingAddress || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Customer Email:</strong>{" "}
-                      {viewOrder.customerEmail || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Contact No:</strong>{" "}
-                      {viewOrder.contactNo || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Order Type:</strong>{" "}
-                      {viewOrder.orderType || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Sales Person:</strong>{" "}
-                      {viewOrder.salesPerson || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Sales Order Remarks:</strong>{" "}
-                      {viewOrder.remarks || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Dispatch From:</strong>{" "}
-                      {viewOrder.dispatchFrom || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Approval Timestamp:</strong>{" "}
-                      {viewOrder.approvalTimestamp
-                        ? new Date(viewOrder.approvalTimestamp).toLocaleString(
-                          "en-IN",
-                          {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          }
-                        )
-                        : "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Products Edit Timestamp:</strong>{" "}
-                      {viewOrder.productsEditTimestamp
-                        ? new Date(
-                          viewOrder.productsEditTimestamp
-                        ).toLocaleString("en-IN", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })
-                        : "N/A"}
-                    </span>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        fontSize: "1rem",
-                        color: "#555",
-                        gap: "10px",
-                      }}
-                    >
-                      <strong style={{ whiteSpace: "nowrap" }}>
-                        Attachment:
-                      </strong>
+                {/* --- VISIBLE MODAL CONTENT (NEW UI) --- */}
+                <div className="modal-dashboard">
+                  <style>{`
+                    .modal-dashboard {
+                      padding: 24px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 24px;
+                      overflow-y: auto;
+                      height: 100%;
+                    }
+                    .info-card {
+                      background: #fff;
+                      border-radius: 12px;
+                      padding: 20px;
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                      border: 1px solid #eaeaea;
+                    }
+                    .section-header {
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      margin-bottom: 20px;
+                      border-bottom: 1px solid #eee;
+                      padding-bottom: 12px;
+                    }
+                    .section-title {
+                      font-size: 1.1rem;
+                      font-weight: 700;
+                      color: #2c3e50;
+                      margin: 0;
+                      text-transform: uppercase;
+                      letter-spacing: 0.5px;
+                    }
+                    .section-icon {
+                      font-size: 1.2rem;
+                      color: #2575fc;
+                    }
+                    .info-grid {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                      gap: 20px;
+                    }
+                    .info-item {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 4px;
+                    }
+                    .info-label {
+                      font-size: 0.75rem;
+                      text-transform: uppercase;
+                      letter-spacing: 0.5px;
+                      color: #8898aa;
+                      font-weight: 600;
+                    }
+                    .info-value {
+                      font-size: 0.95rem;
+                      color: #32325d;
+                      font-weight: 600;
+                      word-break: break-word;
+                    }
+                    .product-card {
+                      background: #fff;
+                      border: 1px solid #e9ecef;
+                      border-radius: 10px;
+                      padding: 20px;
+                      margin-bottom: 15px;
+                      transition: transform 0.2s, box-shadow 0.2s;
+                    }
+                    .product-card:hover {
+                      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                      border-color: #dee2e6;
+                    }
+                    .chip-container {
+                      display: flex;
+                      flex-wrap: wrap;
+                      gap: 6px;
+                    }
+                    .chip {
+                      background: #e9ecef;
+                      color: #495057;
+                      padding: 4px 10px;
+                      border-radius: 12px;
+                      font-size: 0.8rem;
+                      font-weight: 600;
+                    }
+                    .status-badge-unified {
+                      color: #fff;
+                      padding: 6px 14px;
+                      border-radius: 20px;
+                      font-weight: 600;
+                      font-size: 0.85rem;
+                      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                      display: inline-block;
+                    }
+                  `}</style>
 
+                  {/* Section 1: Order Overview */}
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">📌</span>
+                      <h4 className="section-title">Order Overview</h4>
+                    </div>
+                    <div className="info-grid">
+                      <InfoItem label="Order ID" value={viewOrder.orderId || "N/A"} copyable />
+                      <InfoItem label="Order Type" value={viewOrder.orderType || "N/A"} />
+                      <InfoItem label="SO Date" value={viewOrder.soDate ? new Date(viewOrder.soDate).toLocaleDateString() : "N/A"} />
+                      <div className="info-item">
+                        <span className="info-label">Production Status</span>
+                        <div className="info-value">
+                          <InstallStatusBadge status={viewOrder.fulfillingStatus || "Pending"} />
+                        </div>
+                      </div>
+                      {viewOrder.startDate && <InfoItem label="Start Date" value={new Date(viewOrder.startDate).toLocaleDateString()} />}
+                      {viewOrder.endDate && <InfoItem label="End Date" value={new Date(viewOrder.endDate).toLocaleDateString()} />}
+                      <InfoItem label="Sales Person" value={viewOrder.salesPerson || "N/A"} />
+                    </div>
+                  </div>
+
+                  {/* Section 2: Customer Details */}
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">👤</span>
+                      <h4 className="section-title">Customer Details</h4>
+                    </div>
+                    <div className="info-grid">
+                      <InfoItem label="Customer Name" value={viewOrder.customername || "N/A"} />
+                      <InfoItem label="Contact No" value={viewOrder.contactNo || "N/A"} />
+                      <InfoItem label="Shipping Address" value={viewOrder.shippingAddress || "N/A"} />
+                      {viewOrder.customerEmail && <InfoItem label="Email" value={viewOrder.customerEmail} />}
+                    </div>
+                  </div>
+
+                  {/* Section 3: Product Details */}
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">📦</span>
+                      <h4 className="section-title">Product Specifications</h4>
+                      <span style={{ marginLeft: "auto", fontSize: "0.9rem", color: "#6c757d" }}>
+                        Total Items: {viewOrder.products?.length || 0}
+                      </span>
+                    </div>
+                    {viewOrder.products && viewOrder.products.length > 0 ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                        {viewOrder.products.map((product, index) => (
+                          <ProductCard key={index} product={product} index={index} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ padding: "20px", textAlign: "center", color: "#aaa" }}>
+                        No products found.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Section 4: Remarks & Attachment */}
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">📝</span>
+                      <h4 className="section-title">Remarks & Attachments</h4>
+                    </div>
+                    <div className="info-grid">
+                      <InfoItem label="Production Remarks" value={viewOrder.remarksByProduction} />
+                      <InfoItem label="Order Remarks" value={viewOrder.remarks} />
                       {viewOrder.poFilePath ? (
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          onClick={handleDownload}
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #2575fc, #6a11cb)",
-                            padding: "4px 10px",
-                            borderRadius: "8px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            fontSize: "0.85rem",
-                            fontWeight: "600",
-                            color: "#ffffff",
-                            border: "none",
-                            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-                            transition:
-                              "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
-                            cursor: "pointer",
-                            lineHeight: "1",
-                            height: "30px", // 🔥 Perfectly aligns with text baseline
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "scale(1.05)";
-                            e.currentTarget.style.boxShadow =
-                              "0 4px 12px rgba(106, 17, 203, 0.4)";
-                            e.currentTarget.style.background =
-                              "linear-gradient(135deg, #3b82f6, #7e22ce)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "scale(1)";
-                            e.currentTarget.style.boxShadow =
-                              "0 2px 6px rgba(0, 0, 0, 0.15)";
-                            e.currentTarget.style.background =
-                              "linear-gradient(135deg, #2575fc, #6a11cb)";
-                          }}
-                          onMouseDown={(e) => {
-                            e.currentTarget.style.transform = "scale(0.95)";
-                          }}
-                          onMouseUp={(e) => {
-                            e.currentTarget.style.transform = "scale(1.05)";
-                          }}
-                        >
-                          <Download size={14} />
-                          Download
-                        </Button>
+                        <div className="info-item">
+                          <span className="info-label">PO File</span>
+                          <div className="info-value">
+                            <Button
+                              size="sm"
+                              onClick={handleDownload}
+                              style={{
+                                background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                                padding: "4px 10px",
+                                borderRadius: "8px",
+                                display: "flex", alignItems: "center", gap: "6px",
+                                fontSize: "0.85rem", fontWeight: "600",
+                                color: "#ffffff", border: "none", cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "scale(1.05)";
+                                e.currentTarget.style.boxShadow = "0 4px 12px rgba(106, 17, 203, 0.4)";
+                                e.currentTarget.style.background = "linear-gradient(135deg, #3b82f6, #7e22ce)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "scale(1)";
+                                e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+                                e.currentTarget.style.background = "linear-gradient(135deg, #2575fc, #6a11cb)";
+                              }}
+                              onMouseDown={(e) => {
+                                e.currentTarget.style.transform = "scale(0.95)";
+                              }}
+                              onMouseUp={(e) => {
+                                e.currentTarget.style.transform = "scale(1.05)";
+                              }}
+                            >
+                              ⬇ Download
+                            </Button>
+                          </div>
+                        </div>
                       ) : (
-                        <span style={{ color: "#999" }}>No Attachment</span>
+                        <InfoItem label="PO File" value="No Attachment" />
                       )}
                     </div>
                   </div>
-                </div>
-                <div
-                  style={{
-                    background: "#f8f9fa",
-                    borderRadius: "10px",
-                    padding: "20px",
-                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                      color: "#333",
-                      marginBottom: "20px",
-                      textTransform: "uppercase",
-                      borderBottom: "2px solid #e0e0e0",
-                      paddingBottom: "10px",
-                    }}
-                  >
-                    Product Information
-                  </h3>
-                  {Array.isArray(viewOrder.products) &&
-                    viewOrder.products.length > 0 ? (
-                    <div
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+                    <Button
+                      onClick={handleCopy}
                       style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "20px",
-                      }}
-                    >
-                      {viewOrder.products.map((product, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            background: "#ffffff",
-                            borderRadius: "8px",
-                            padding: "15px",
-                            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
-                            transition: "transform 0.2s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform =
-                              "translateY(-2px)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "translateY(0)";
-                          }}
-                        >
-                          <h4
-                            style={{
-                              fontSize: "1.1rem",
-                              fontWeight: "600",
-                              color: "#2575fc",
-                              marginBottom: "15px",
-                            }}
-                          >
-                            Product {index + 1}
-                          </h4>
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns:
-                                "repeat(auto-fit, minmax(180px, 1fr))",
-                              gap: "12px",
-                              fontSize: "1rem",
-                              color: "#555",
-                            }}
-                          >
-                            <div>
-                              <strong>Type:</strong>{" "}
-                              {product.productType || "N/A"}
-                            </div>
-                            <div>
-                              <strong>Quantity:</strong> {product.qty || "N/A"}
-                            </div>
-                            <div>
-                              <strong>Size:</strong> {product.size || "N/A"}
-                            </div>
-                            <div>
-                              <strong>Spec:</strong> {product.spec || "N/A"}
-                            </div>
-                            <div>
-                              <strong>Unit Price:</strong>{" "}
-                              {product.unitPrice
-                                ? `₹${parseFloat(product.unitPrice).toFixed(2)}`
-                                : "N/A"}
-                            </div>
-                            <div>
-                              <strong>GST:</strong> {product.gst || "N/A"}
-                            </div>
-                            <div>
-                              <strong>Serial Nos:</strong>{" "}
-                              {product.serialNos?.length > 0
-                                ? product.serialNos.join(", ")
-                                : "N/A"}
-                            </div>
-                            <div>
-                              <strong>Model Nos:</strong>{" "}
-                              {product.modelNos?.length > 0
-                                ? product.modelNos.join(", ")
-                                : "N/A"}
-                            </div>
-                            {product.productCode &&
-                              product.productCode.length > 0 && (
-                                <div>
-                                  <strong>Product Code:</strong>{" "}
-                                  {product.productCode.join(", ")}
-                                </div>
-                              )}
-                            {product.brand && product.brand.trim() !== "" && (
-                              <div>
-                                <strong>Brand:</strong> {product.brand}
-                              </div>
-                            )}
-                            <div>
-                              <strong>Warranty:</strong>{" "}
-                              {product.warranty || "N/A"}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div
-                      style={{
+                        background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                        border: "none",
+                        padding: "10px 24px",
+                        borderRadius: "25px",
+                        color: "#fff",
+                        fontWeight: "600",
                         fontSize: "1rem",
-                        color: "#555",
-                        textAlign: "center",
-                        padding: "20px",
-                        background: "#fff",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)",
+                        textTransform: "uppercase",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 4px 12px rgba(37, 117, 252, 0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px"
                       }}
                     >
-                      <strong>No Products Available</strong>
-                    </div>
-                  )}
-                </div>
-                <div
-                  style={{
-                    background: "#f8f9fa",
-                    borderRadius: "10px",
-                    padding: "20px",
-                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                      color: "#333",
-                      marginBottom: "15px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Production Information
-                  </h3>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(200px, 1fr))",
-                      gap: "15px",
-                    }}
-                  >
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Production Status:</strong>{" "}
-                      {viewOrder.fulfillingStatus || "Pending"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Remarks:</strong>{" "}
-                      {viewOrder.remarksByProduction || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Total Quantity:</strong>{" "}
-                      {Array.isArray(viewOrder.products)
-                        ? viewOrder.products.reduce(
-                          (sum, p) => sum + (p.qty || 0),
-                          0
-                        )
-                        : "N/A"}
-                    </span>
+                      {copied ? "✅ Copied" : "📑 Copy Details"}
+                    </Button>
                   </div>
                 </div>
-                <Button
-                  onClick={handleCopy}
-                  style={{
-                    background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                    border: "none",
-                    padding: "12px",
-                    borderRadius: "25px",
-                    color: "#fff",
-                    fontWeight: "600",
-                    fontSize: "1.1rem",
-                    textTransform: "uppercase",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "translateY(-3px)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.target.style.transform = "translateY(0)")
-                  }
-                >
-                  {copied ? "✅ Copied!" : "📑 Copy Details"}
-                </Button>
               </>
             )}
           </Modal.Body>
@@ -2746,3 +2598,113 @@ const Production = () => {
 };
 
 export default Production;
+
+// --- REUSABLE UI COMPONENTS ---
+
+const InfoItem = ({ label, value, copyable }) => {
+  if (!value || value === "N/A" || value === "null") return null;
+  return (
+    <div className="info-item">
+      <span className="info-label">{label}</span>
+      <div
+        className="info-value"
+        onClick={() => {
+          if (copyable) {
+            navigator.clipboard.writeText(value);
+            toast.info("Copied!", { autoClose: 1000, position: "bottom-center", hideProgressBar: true });
+          }
+        }}
+        style={copyable ? { cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" } : {}}
+        title={copyable ? "Click to copy" : ""}
+      >
+        {value}
+        {copyable && <span style={{ opacity: 0.4, fontSize: "0.7em" }}>📋</span>}
+      </div>
+    </div>
+  );
+};
+
+const InstallStatusBadge = ({ status }) => {
+  const getStyle = (s) => {
+    switch (s) {
+      case "Pending":
+      case "Not Dispatched":
+      case "Docket Awaited Dispatched":
+        return { background: "linear-gradient(135deg, #ff6b6b, #ff8787)" };
+      case "In Progress":
+      case "Under Process":
+        return { background: "linear-gradient(135deg, #f39c12, #f7c200)" };
+      case "Partial Dispatch":
+        return { background: "linear-gradient(135deg, #00c6ff, #0072ff)" }; // Blue for Partial
+      case "Completed":
+      case "Fulfilled":
+      case "Dispatched":
+        return { background: "linear-gradient(135deg, #28a745, #4cd964)" };
+      default:
+        return { background: "linear-gradient(135deg, #6c757d, #a9a9a9)" };
+    }
+  };
+  return (
+    <span className="status-badge-unified" style={getStyle(status)}>
+      {status}
+    </span>
+  );
+};
+
+const ProductCard = ({ product, index }) => {
+  return (
+    <div className="product-card">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+        <div>
+          <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
+            {product.productType || "Unknown Product"}
+          </div>
+          {product.brand && <div style={{ color: '#6c757d', fontSize: '0.9rem', fontWeight: '500' }}>{product.brand}</div>}
+        </div>
+        <span style={{
+          background: '#e9ecef', color: '#495057',
+          padding: '2px 8px', borderRadius: '4px',
+          fontWeight: 'bold', fontSize: '0.8rem'
+        }}>
+          #{index + 1}
+        </span>
+      </div>
+
+      <div className="info-grid" style={{ gap: '12px 20px', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+        <InfoItem label="Quantity" value={product.qty} />
+        <InfoItem label="Size" value={product.size} />
+        <InfoItem label="Spec" value={product.spec} />
+      </div>
+
+      {/* Chips Section */}
+      <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {product.modelNos?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Model Numbers</span>
+            <div className="chip-container">
+              {product.modelNos.map((m, i) => <span key={i} className="chip">{m}</span>)}
+            </div>
+          </div>
+        )}
+
+        {product.serialNos?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Serial Numbers</span>
+            <div className="chip-container">
+              {product.serialNos.map((s, i) => <span key={i} className="chip">{s}</span>)}
+            </div>
+          </div>
+        )}
+
+        {product.productCode?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Product Codes</span>
+            <div className="chip-container">
+              {product.productCode.map((c, i) => <span key={i} className="chip">{c}</span>)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

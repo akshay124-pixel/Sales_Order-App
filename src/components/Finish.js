@@ -1459,19 +1459,18 @@ function Finish() {
         </Modal.Header>
         <Modal.Body
           style={{
-            padding: "30px",
-            background: "#fff",
+            padding: "0",
+            background: "#f4f7f6",
             borderRadius: "0 0 15px 15px",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
             display: "flex",
             flexDirection: "column",
-            gap: "20px",
-            animation: "fadeIn 0.5s ease-in-out",
+            height: "calc(100vh - 100px)",
+            overflow: "hidden"
           }}
         >
           {viewOrder && (
             <>
-              {/* Printable Template (Off-screen) */}
+              {/* --- KEEP PDF TEMPLATE EXACTLY AS IS --- */}
               <div ref={pdfRef} className="pdf-print-container">
                 <div className="pdf-header">
                   <div>
@@ -1548,7 +1547,7 @@ function Finish() {
                                   {p.serialNos.join(", ")}
                                 </div>
                               )}
-                              {p.modelNos && p.modelNos.length > 0 && (
+                              {p.modelNos && (
                                 <div style={{ marginTop: "4px" }}>
                                   <strong>M/N:</strong>{" "}
                                   {p.modelNos.join(", ")}
@@ -1585,194 +1584,201 @@ function Finish() {
                 )}
               </div>
 
-              {/* Product Info Section */}
-              <div
-                style={{
-                  background: "#f8f9fa",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  animation: "fadeIn 0.5s ease-in-out",
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: "1.3rem",
-                    fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "15px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Product Info
-                </h3>
-                {viewOrder.products && viewOrder.products.length > 0 ? (
-                  viewOrder.products.map((product, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: "10px",
-                        padding: "10px 0",
-                        borderBottom:
-                          index < viewOrder.products.length - 1
-                            ? "1px solid #eee"
-                            : "none",
-                        alignItems: "start",
-                      }}
-                    >
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Product {index + 1}:</strong>{" "}
-                        {product.productType || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Qty:</strong> {product.qty || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Size:</strong> {product.size || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Spec:</strong> {product.spec || "N/A"}
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Serial Nos:</strong>
-                        <div className="serial-nos-container">
-                          {product.serialNos && product.serialNos.length > 0 ? (
-                            <ul>
-                              {product.serialNos.map((serial, idx) => (
-                                <li key={idx}>{serial}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            "N/A"
-                          )}
-                        </div>
-                      </span>
-                      <span style={{ fontSize: "1rem", color: "#555" }}>
-                        <strong>Model Nos:</strong>{" "}
-                        {product.modelNos?.[0] || "N/A"}
-                      </span>
-                      {product.productCode && (
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          <strong>Product Code:</strong>{" "}
-                          {product.productCode?.[0] || "N/A"}
-                        </span>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Products:</strong> N/A
-                  </span>
-                )}
-              </div>
+              {/* --- VISIBLE MODAL CONTENT (NEW UI) --- */}
+              <div className="modal-dashboard">
+                <style>{`
+                  .modal-dashboard {
+                    padding: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                    overflow-y: auto;
+                    height: 100%;
+                  }
+                  .info-card {
+                    background: #fff;
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                    border: 1px solid #eaeaea;
+                  }
+                  .section-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                    border-bottom: 1px solid #eee;
+                    padding-bottom: 12px;
+                  }
+                  .section-title {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #2c3e50;
+                    margin: 0;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  }
+                  .section-icon {
+                    font-size: 1.2rem;
+                    color: #2575fc;
+                  }
+                  .info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                    gap: 20px;
+                  }
+                  .info-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                  }
+                  .info-label {
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: #8898aa;
+                    font-weight: 600;
+                  }
+                  .info-value {
+                    font-size: 0.95rem;
+                    color: #32325d;
+                    font-weight: 600;
+                    word-break: break-word;
+                  }
+                  .product-card {
+                    background: #fff;
+                    border: 1px solid #e9ecef;
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin-bottom: 15px;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                  }
+                  .product-card:hover {
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                    border-color: #dee2e6;
+                  }
+                  .chip-container {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                  }
+                  .chip {
+                    background: #e9ecef;
+                    color: #495057;
+                    padding: 4px 10px;
+                    border-radius: 12px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                  }
+                  .status-badge-unified {
+                    color: #fff;
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    display: inline-block;
+                  }
+                `}</style>
 
-              {/* Order Details Section */}
-              <div
-                style={{
-                  background: "#f8f9fa",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  animation: "fadeIn 0.5s ease-in-out",
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: "1.3rem",
-                    fontWeight: "600",
-                    color: "#333",
-                    marginBottom: "15px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Order Info
-                </h3>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                    gap: "15px",
-                  }}
-                >
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>SO Date:</strong>{" "}
-                    {viewOrder.soDate
-                      ? new Date(viewOrder.soDate).toLocaleDateString()
-                      : "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Dispatch Date:</strong>{" "}
-                    {viewOrder.dispatchDate
-                      ? new Date(viewOrder.dispatchDate).toLocaleDateString()
-                      : "N/A"}
-                  </span>
-                  {viewOrder.deliveredDate && (
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Delivered Date:</strong>{" "}
-                      {new Date(viewOrder.deliveredDate).toLocaleDateString(
-                        "en-GB"
-                      ) || "N/A"}
+                {/* Section 1: Order Highlights */}
+                <div className="info-card">
+                  <div className="section-header">
+                    <span className="section-icon">📌</span>
+                    <h4 className="section-title">Order Overview</h4>
+                  </div>
+                  <div className="info-grid">
+                    <InfoItem label="Order ID" value={viewOrder.orderId || "N/A"} copyable />
+                    <InfoItem label="SO Date" value={viewOrder.soDate ? new Date(viewOrder.soDate).toLocaleDateString() : "N/A"} />
+                    <InfoItem label="Dispatch Date" value={viewOrder.dispatchDate ? new Date(viewOrder.dispatchDate).toLocaleDateString() : "N/A"} />
+                    <div className="info-item">
+                      <span className="info-label">Dispatch Status</span>
+                      <div className="info-value">
+                        <InstallStatusBadge status={viewOrder.dispatchStatus || "Not Dispatched"} />
+                      </div>
+                    </div>
+                    <InfoItem label="Dispatch From" value={viewOrder.dispatchFrom || "N/A"} />
+                    <InfoItem label="Sales Person" value={viewOrder.salesPerson || "N/A"} />
+                  </div>
+                </div>
+
+                {/* Section 2: Customer & Shipping */}
+                <div className="info-card">
+                  <div className="section-header">
+                    <span className="section-icon">🚚</span>
+                    <h4 className="section-title">Customer & Shipping</h4>
+                  </div>
+                  <div className="info-grid">
+                    <InfoItem label="Customer Name" value={viewOrder.customername || "N/A"} />
+                    <InfoItem label="Contact No" value={viewOrder.contactNo || "N/A"} />
+                    <InfoItem label="Shipping Address" value={viewOrder.shippingAddress || "N/A"} />
+                    <InfoItem label="Transporter" value={viewOrder.transporter || "N/A"} />
+                    <InfoItem label="Docket No" value={viewOrder.docketNo || "N/A"} />
+                    {viewOrder.deliveredDate && (
+                      <InfoItem label="Delivered Date" value={new Date(viewOrder.deliveredDate).toLocaleDateString("en-GB")} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Section 3: Product Details */}
+                <div className="info-card">
+                  <div className="section-header">
+                    <span className="section-icon">📦</span>
+                    <h4 className="section-title">Product Details</h4>
+                    <span style={{ marginLeft: "auto", fontSize: "0.9rem", color: "#6c757d" }}>
+                      Total Items: {viewOrder.products?.length || 0}
                     </span>
+                  </div>
+                  {viewOrder.products && viewOrder.products.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                      {viewOrder.products.map((product, index) => (
+                        <ProductCard key={index} product={product} index={index} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ padding: "20px", textAlign: "center", color: "#aaa" }}>
+                      No product details available.
+                    </div>
                   )}
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Dispatch From:</strong>{" "}
-                    {viewOrder.dispatchFrom || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Customer:</strong> {viewOrder.customername || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Address:</strong>{" "}
-                    {viewOrder.shippingAddress || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Dispatch Status:</strong>{" "}
-                    {viewOrder.dispatchStatus || "Not Dispatched"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Transporter:</strong>{" "}
-                    {viewOrder.transporter || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Docket No:</strong> {viewOrder.docketNo || "N/A"}
-                  </span>
-                  <span style={{ fontSize: "1rem", color: "#555" }}>
-                    <strong>Sales Person:</strong>{" "}
-                    {viewOrder.salesPerson || "N/A"}
-                  </span>
+                </div>
+
+                {/* Section 4: Remarks */}
+                {(viewOrder.remarksByProduction || viewOrder.remarks) && (
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">📝</span>
+                      <h4 className="section-title">Remarks</h4>
+                    </div>
+                    <div className="info-grid">
+                      <InfoItem label="Production Remarks" value={viewOrder.remarksByProduction} />
+                      <InfoItem label="Order Remarks" value={viewOrder.remarks} />
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+                  <Button
+                    onClick={handleCopy}
+                    style={{
+                      background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                      border: "none",
+                      padding: "10px 24px",
+                      borderRadius: "25px",
+                      color: "#fff",
+                      fontWeight: "600",
+                      fontSize: "1rem",
+                      textTransform: "uppercase",
+                      transition: "all 0.3s ease",
+                      boxShadow: "0 4px 12px rgba(37, 117, 252, 0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px"
+                    }}
+                  >
+                    {copied ? "✅ Copied" : "📑 Copy Details"}
+                  </Button>
                 </div>
               </div>
-
-              <Button
-                onClick={handleCopy}
-                style={{
-                  background: "linear-gradient(135deg, #2575fc, #6a11cb)",
-                  border: "none",
-                  padding: "12px",
-                  borderRadius: "25px",
-                  color: "#fff",
-                  fontWeight: "600",
-                  fontSize: "1.1rem",
-                  textTransform: "uppercase",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 6px 15px rgba(0, 0, 0, 0.2)",
-                  alignSelf: "flex-end",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.transform = "translateY(-3px)")
-                }
-                onMouseLeave={(e) =>
-                  (e.target.style.transform = "translateY(0)")
-                }
-              >
-                {copied ? "✅ Copied!" : "📑 Copy Details"}
-              </Button>
             </>
           )}
         </Modal.Body>
@@ -1794,3 +1800,111 @@ function Finish() {
 }
 
 export default Finish;
+
+// --- REUSABLE UI COMPONENTS ---
+
+const InfoItem = ({ label, value, copyable }) => {
+  if (!value || value === "N/A" || value === "null") return null;
+  return (
+    <div className="info-item">
+      <span className="info-label">{label}</span>
+      <div
+        className="info-value"
+        onClick={() => {
+          if (copyable) {
+            navigator.clipboard.writeText(value);
+            toast.info("Copied!", { autoClose: 1000, position: "bottom-center", hideProgressBar: true });
+          }
+        }}
+        style={copyable ? { cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" } : {}}
+        title={copyable ? "Click to copy" : ""}
+      >
+        {value}
+        {copyable && <span style={{ opacity: 0.4, fontSize: "0.7em" }}>📋</span>}
+      </div>
+    </div>
+  );
+};
+
+const InstallStatusBadge = ({ status }) => {
+  const getStyle = (s) => {
+    switch (s) {
+      case "Pending":
+        return { background: "linear-gradient(135deg, #ff6b6b, #ff8787)" };
+      case "In Progress":
+      case "Under Process":
+      case "Partial Dispatch":
+        return { background: "linear-gradient(135deg, #f39c12, #f7c200)" };
+      case "Completed":
+      case "Fulfilled":
+      case "Dispatched":
+        return { background: "linear-gradient(135deg, #28a745, #4cd964)" };
+      default:
+        return { background: "linear-gradient(135deg, #6c757d, #a9a9a9)" };
+    }
+  };
+  return (
+    <span className="status-badge-unified" style={getStyle(status)}>
+      {status}
+    </span>
+  );
+};
+
+const ProductCard = ({ product, index }) => {
+  return (
+    <div className="product-card">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+        <div>
+          <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
+            {product.productType || "Unknown Product"}
+          </div>
+          {product.brand && <div style={{ color: '#6c757d', fontSize: '0.9rem', fontWeight: '500' }}>{product.brand}</div>}
+        </div>
+        <span style={{
+          background: '#e9ecef', color: '#495057',
+          padding: '2px 8px', borderRadius: '4px',
+          fontWeight: 'bold', fontSize: '0.8rem'
+        }}>
+          #{index + 1}
+        </span>
+      </div>
+
+      <div className="info-grid" style={{ gap: '12px 20px', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+        <InfoItem label="Quantity" value={product.qty} />
+        <InfoItem label="Size" value={product.size} />
+        <InfoItem label="Spec" value={product.spec} />
+        <InfoItem label="Warranty" value={product.warranty} />
+      </div>
+
+      {/* Chips Section */}
+      <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {product.modelNos?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Model Numbers</span>
+            <div className="chip-container">
+              {product.modelNos.map((m, i) => <span key={i} className="chip">{m}</span>)}
+            </div>
+          </div>
+        )}
+
+        {product.serialNos?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Serial Numbers</span>
+            <div className="chip-container">
+              {product.serialNos.map((s, i) => <span key={i} className="chip">{s}</span>)}
+            </div>
+          </div>
+        )}
+
+        {product.productCode?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Product Codes</span>
+            <div className="chip-container">
+              {product.productCode.map((c, i) => <span key={i} className="chip">{c}</span>)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

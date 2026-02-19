@@ -297,13 +297,12 @@ function Installation() {
         order.installationStatus || "",
         Array.isArray(order.products)
           ? order.products
-              .map(
-                (p) =>
-                  `${p.productType || ""} ${p.qty || ""} ${p.size || ""} ${
-                    p.spec || ""
-                  } ${p.serialNos?.join("") || ""} ${p.modelNos?.join("") || ""}`,
-              )
-              .join(" ")
+            .map(
+              (p) =>
+                `${p.productType || ""} ${p.qty || ""} ${p.size || ""} ${p.spec || ""
+                } ${p.serialNos?.join("") || ""} ${p.modelNos?.join("") || ""}`,
+            )
+            .join(" ")
           : "",
       ]
         .join(" ")
@@ -461,9 +460,8 @@ function Installation() {
     }
 
     try {
-      const fileUrl = `${process.env.REACT_APP_URL}${
-        filePath.startsWith("/") ? "" : "/"
-      }${filePath}`;
+      const fileUrl = `${process.env.REACT_APP_URL}${filePath.startsWith("/") ? "" : "/"
+        }${filePath}`;
 
       const response = await fetch(fileUrl, {
         method: "GET",
@@ -506,19 +504,15 @@ function Installation() {
     if (!viewOrder) return;
     const productsText = Array.isArray(viewOrder.products)
       ? viewOrder.products
-          .map(
-            (p, i) =>
-              `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${
-                p.qty || "N/A"
-              }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"}, Brand: ${
-                p.brand || "N/A"
-              }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${
-                p.modelNos?.join(", ") || "N/A"
-              }, Product Code: ${
-                p.productCode?.join(", ") || "N/A"
-              }, Warranty: ${p.warranty || "N/A"})`,
-          )
-          .join("\n")
+        .map(
+          (p, i) =>
+            `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
+            }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"}, Brand: ${p.brand || "N/A"
+            }, Serial Nos: ${p.serialNos?.join(", ") || "N/A"}, Model Nos: ${p.modelNos?.join(", ") || "N/A"
+            }, Product Code: ${p.productCode?.join(", ") || "N/A"
+            }, Warranty: ${p.warranty || "N/A"})`,
+        )
+        .join("\n")
       : "N/A";
     const orderText = `
       Order ID: ${viewOrder.orderId || "N/A"}
@@ -591,8 +585,8 @@ function Installation() {
     const exportData = filteredOrders.map((order) => {
       const productDetails = Array.isArray(order.products)
         ? order.products
-            .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
-            .join(", ")
+          .map((p) => `${p.productType || "N/A"} (${p.qty || "N/A"})`)
+          .join(", ")
         : "N/A";
 
       // 👇 Calculate total quantity from products array
@@ -1173,38 +1167,153 @@ function Installation() {
         0% { opacity: 0; transform: translateY(10px); }
         100% { opacity: 1; transform: translateY(0); }
       }
-      .serial-nos-container {
-        max-height: 100px;
-        overflow-y: auto;
-        padding: 5px 10px;
+      
+      /* Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #ccc; 
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #aaa; 
+      }
+
+      /* Modal & Layout */
+      .modal-dashboard {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        color: #333;
+      }
+      .info-card {
         background: #fff;
-        border-radius: 5px;
-        border: 1px solid #eee;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid rgba(0,0,0,0.04);
+        margin-bottom: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
-      .serial-nos-container ul {
+      .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+      }
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f2f5;
+      }
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         margin: 0;
-        padding-left: 20px;
       }
-      .serial-nos-container li {
+      .section-icon {
+        color: #2575fc;
+        font-size: 1.2rem;
+      }
+
+      /* Grid & Typography */
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px 24px;
+      }
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #8898aa;
+        font-weight: 600;
+      }
+      .info-value {
         font-size: 0.95rem;
-        color: #555;
+        font-weight: 600;
+        color: #2d3748;
         line-height: 1.4;
+        word-break: break-word;
       }
-      /* Print Styles */
+
+      /* Product Cards */
+      .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .product-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      .product-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, #2575fc, #6a11cb);
+      }
+      
+      /* Chips & Badges */
+      .chip-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+      .chip {
+        background: #e9ecef;
+        color: #495057;
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 500;
+        border: 1px solid #dee2e6;
+        display: inline-flex;
+        align-items: center;
+      }
+      .status-badge-unified {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      }
+
+      /* Print Styles (Unchanged) */
       .pdf-print-container {
         width: 210mm;
         min-height: 297mm;
-        
-  /* Printable padding */
-  padding: 15mm 15mm 12mm 15mm;
+        padding: 15mm 15mm 12mm 15mm;
         background: #fff;
         color: #333;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         line-height: 1.5;
         position: absolute;
-          /* 🔥 CRITICAL */
-  min-height: unset;
-  height: auto;
+        min-height: unset;
+        height: auto;
         left: -9999px;
         top: -9999px;
       }
@@ -1257,7 +1366,7 @@ function Installation() {
         margin-top: 10px;
       }
       .pdf-table th {
-        background: #f1f3f5;
+        background: #f1f1f1;
         text-align: left;
         padding: 10px;
         border: 1px solid #dee2e6;
@@ -1268,22 +1377,6 @@ function Installation() {
         border: 1px solid #dee2e6;
         font-size: 13px;
         vertical-align: top;
-      }
-      .pdf-badge {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: bold;
-        color: #fff;
-      }
-      .serial-list {
-        margin: 0;
-        padding-left: 15px;
-        list-style-type: disc;
-      }
-      .serial-list li {
-        font-size: 12px;
       }
     `}
           </style>
@@ -1345,12 +1438,12 @@ function Installation() {
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background =
-                      "rgba(255, 255, 255, 0.3)")
+                  (e.currentTarget.style.background =
+                    "rgba(255, 255, 255, 0.3)")
                   }
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.background =
-                      "rgba(255, 255, 255, 0.2)")
+                  (e.currentTarget.style.background =
+                    "rgba(255, 255, 255, 0.2)")
                   }
                 >
                   {isGeneratingPDF ? (
@@ -1486,7 +1579,7 @@ function Installation() {
                       </thead>
                       <tbody>
                         {Array.isArray(viewOrder.products) &&
-                        viewOrder.products.length > 0 ? (
+                          viewOrder.products.length > 0 ? (
                           viewOrder.products.map((p, idx) => (
                             <tr key={idx}>
                               <td>{idx + 1}</td>
@@ -1506,9 +1599,9 @@ function Installation() {
                               <td>
                                 {p.size && p.size !== "N/A" ? p.size : ""}
                                 {p.size &&
-                                p.size !== "N/A" &&
-                                p.spec &&
-                                p.spec !== "N/A"
+                                  p.size !== "N/A" &&
+                                  p.spec &&
+                                  p.spec !== "N/A"
                                   ? " / "
                                   : ""}
                                 {p.spec && p.spec !== "N/A" ? p.spec : ""}
@@ -1568,240 +1661,126 @@ function Installation() {
                   )}
                 </div>
 
-                {/* Visible Content in Modal */}
+                {/* Visible Content in Modal - Refactored UI */}
+                <div className="modal-dashboard">
 
-                <div
-                  style={{
-                    background: "#f8f9fa",
-                    borderRadius: "10px",
-                    padding: "20px",
-                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                      color: "#333",
-                      marginBottom: "15px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Installation Info
-                  </h3>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(200px, 1fr))",
-                      gap: "15px",
-                    }}
-                  >
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Order ID:</strong> {viewOrder.orderId || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Contact Person:</strong> {viewOrder.name || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Customer Email:</strong>{" "}
-                      {viewOrder.customerEmail || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Installation Report:</strong>{" "}
-                      {viewOrder.installationFile ? (
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            handleDownload(viewOrder.installationFile)
-                          }
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            padding: "4px 12px",
-                            marginLeft: "10px",
-                            borderRadius: "20px",
-                            background:
-                              "linear-gradient(135deg, #2575fc, #6a11cb)",
-                            color: "#fff",
-                            border: "none",
-                            fontSize: "0.8rem",
-                            transition: "all 0.3s ease",
-                            boxShadow: "0 3px 8px rgba(0, 0, 0, 0.15)",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform =
-                              "translateY(-1px) scale(1.05)";
-                            e.currentTarget.style.boxShadow =
-                              "0 6px 12px rgba(0, 0, 0, 0.25)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform =
-                              "translateY(0) scale(1)";
-                            e.currentTarget.style.boxShadow =
-                              "0 3px 8px rgba(0, 0, 0, 0.15)";
-                          }}
-                        >
-                          <FaDownload size={10} /> Download
-                        </Button>
-                      ) : (
-                        "N/A"
-                      )}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Contact No:</strong>{" "}
-                      {viewOrder.contactNo || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Shipping Address:</strong>{" "}
-                      {viewOrder.shippingAddress || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Installation Charges:</strong>{" "}
-                      {viewOrder.installation || "N/A"}
-                    </span>
-                    <span style={{ fontSize: "1rem", color: "#555" }}>
-                      <strong>Installation Status:</strong>{" "}
-                      <Badge
-                        style={{
-                          background:
-                            viewOrder.installationStatus === "Pending"
-                              ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-                              : viewOrder.installationStatus === "In Progress"
-                                ? "linear-gradient(135deg, #f39c12, #f7c200)"
-                                : viewOrder.installationStatus === "Completed"
-                                  ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                  : "linear-gradient(135deg, #6c757d, #a9a9a9)",
-                          color: "#fff",
-                          padding: "5px 10px",
-                          borderRadius: "12px",
-                        }}
-                      >
-                        {viewOrder.installationStatus || "Pending"}
-                      </Badge>
-                    </span>
+                  {/* Section 1: Installation Overview */}
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">📌</span>
+                      <h4 className="section-title">Installation Overview</h4>
+                    </div>
+                    <div className="info-grid">
+                      <InfoItem label="Order ID" value={viewOrder.orderId || "N/A"} copyable />
+                      <InfoItem
+                        label="Installation Date"
+                        value={viewOrder.deliveredDate
+                          ? new Date(viewOrder.deliveredDate).toLocaleDateString("en-GB")
+                          : "Pending Schedule"}
+                      />
+                      <InfoItem
+                        label="Installation Status"
+                        value={
+                          <InstallStatusBadge status={viewOrder.installationStatus || "Pending"} />
+                        }
+                      />
+                      <InfoItem
+                        label="Charges Status"
+                        value={
+                          <span style={{
+                            color: viewOrder.installchargesstatus === "To Pay" ? "#dc3545" : "#28a745",
+                            fontWeight: "700"
+                          }}>
+                            {viewOrder.installchargesstatus || "N/A"}
+                          </span>
+                        }
+                      />
+                      <InfoItem
+                        label="Charges Amount"
+                        value={viewOrder.installation || "N/A"}
+                      />
+                      <InfoItem
+                        label="Engineer Assigned"
+                        value={viewOrder.installationeng || "Not Assigned"}
+                      />
+                      <InfoItem
+                        label="Installation Report"
+                        value={viewOrder.installationFile ? (
+                          <Button
+                            size="sm"
+                            onClick={() => handleDownload(viewOrder.installationFile)}
+                            style={{
+                              padding: "4px 12px",
+                              borderRadius: "20px",
+                              background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+                              color: "#fff",
+                              border: "none",
+                              fontSize: "0.8rem",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}
+                          >
+                            <FaDownload size={10} /> Download Report
+                          </Button>
+                        ) : (
+                          <span className="text-muted" style={{ fontSize: '0.85rem' }}>No Report</span>
+                        )}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div
-                  style={{
-                    background: "#f8f9fa",
-                    borderRadius: "10px",
-                    padding: "20px",
-                    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.05)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                      color: "#333",
-                      marginBottom: "15px",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Product Info
-                  </h3>
-                  {Array.isArray(viewOrder.products) &&
-                  viewOrder.products.length > 0 ? (
-                    viewOrder.products.map((product, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fit, minmax(200px, 1fr))",
-                          gap: "10px",
-                          padding: "10px 0",
-                          borderBottom:
-                            index < viewOrder.products.length - 1
-                              ? "1px solid #eee"
-                              : "none",
-                        }}
-                      >
-                        {product.productType && (
-                          <span>
-                            <strong>Product {index + 1}:</strong>{" "}
-                            {product.productType}
-                          </span>
-                        )}
-
-                        {product.spec && product.spec !== "N/A" && (
-                          <span>
-                            <strong>Spec:</strong> {product.spec}
-                          </span>
-                        )}
-
-                        {product.size && product.size !== "N/A" && (
-                          <span>
-                            <strong>Size:</strong> {product.size}
-                          </span>
-                        )}
-
-                        {product.qty && (
-                          <span>
-                            <strong>Qty:</strong> {product.qty}
-                          </span>
-                        )}
-
-                        {product.brand && (
-                          <span>
-                            <strong>Brand:</strong> {product.brand}
-                          </span>
-                        )}
-
-                        {product.warranty && (
-                          <span>
-                            <strong>Warranty:</strong> {product.warranty}
-                          </span>
-                        )}
-
-                        {product.modelNos?.length > 0 && (
-                          <span>
-                            <strong>Model Nos:</strong>
-                            <ul>
-                              {product.modelNos.map((m, i) => (
-                                <li key={i}>{m}</li>
-                              ))}
-                            </ul>
-                          </span>
-                        )}
-
-                        <span style={{ fontSize: "1rem", color: "#555" }}>
-                          {" "}
-                          <strong>Serial Nos:</strong>{" "}
-                          <div className="serial-nos-container">
-                            {" "}
-                            {product.serialNos &&
-                            product.serialNos.length > 0 ? (
-                              <ul>
-                                {" "}
-                                {product.serialNos.map((serial, idx) => (
-                                  <li key={idx}>{serial}</li>
-                                ))}{" "}
-                              </ul>
-                            ) : (
-                              "N/A"
-                            )}{" "}
-                          </div>{" "}
-                        </span>
-
-                        {product.productCode?.length > 0 && (
-                          <span>
-                            <strong>Product Codes:</strong>
-                            <ul>
-                              {product.productCode.map((c, i) => (
-                                <li key={i}>{c}</li>
-                              ))}
-                            </ul>
-                          </span>
-                        )}
+                  {/* Section 2: Contact & Shipping */}
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">📍</span>
+                      <h4 className="section-title">Customer & Dispatch</h4>
+                    </div>
+                    <div className="info-grid">
+                      <InfoItem label="Contact Person" value={viewOrder.name || "N/A"} />
+                      <InfoItem label="Contact Number" value={viewOrder.contactNo || "N/A"} copyable />
+                      <InfoItem label="Email Address" value={viewOrder.customerEmail || "N/A"} />
+                      <InfoItem label="Sales Person" value={viewOrder.salesPerson || "N/A"} />
+                      <InfoItem label="Dispatch Status" value={viewOrder.dispatchStatus || "N/A"} />
+                      <div className="info-item" style={{ gridColumn: "1 / -1" }}>
+                        <span className="info-label">Shipping Address</span>
+                        <div className="info-value">
+                          {viewOrder.shippingAddress || "N/A"}
+                        </div>
                       </div>
-                    ))
-                  ) : (
-                    <span>N/A</span>
+                    </div>
+                  </div>
+
+                  {/* Section 3: Products */}
+                  <div className="info-card">
+                    <div className="section-header">
+                      <span className="section-icon">📦</span>
+                      <h4 className="section-title">Product Details</h4>
+                    </div>
+                    <div className="product-list">
+                      {Array.isArray(viewOrder.products) && viewOrder.products.length > 0 ? (
+                        viewOrder.products.map((product, index) => (
+                          <ProductCard key={index} product={product} index={index} />
+                        ))
+                      ) : (
+                        <div className="text-center text-muted p-4">No products found</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Section 4: Remarks */}
+                  {viewOrder.remarksByInstallation && (
+                    <div className="info-card">
+                      <div className="section-header">
+                        <span className="section-icon">📝</span>
+                        <h4 className="section-title">Installation Remarks</h4>
+                      </div>
+                      <p style={{ margin: 0, color: "#555", lineHeight: 1.6 }}>
+                        {viewOrder.remarksByInstallation}
+                      </p>
+                    </div>
                   )}
+
                 </div>
 
                 <div style={{ marginTop: "20px" }}>
@@ -1861,6 +1840,110 @@ function Installation() {
     </>
   );
 }
+
+// --- REUSABLE UI COMPONENTS ---
+
+const InfoItem = ({ label, value, copyable }) => {
+  if (!value || value === "N/A" || value === "null") return null;
+  return (
+    <div className="info-item">
+      <span className="info-label">{label}</span>
+      <div
+        className="info-value"
+        onClick={() => {
+          if (copyable) {
+            navigator.clipboard.writeText(value);
+            toast.info("Copied!", { autoClose: 1000, position: "bottom-center", hideProgressBar: true });
+          }
+        }}
+        style={copyable ? { cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" } : {}}
+        title={copyable ? "Click to copy" : ""}
+      >
+        {value}
+        {copyable && <span style={{ opacity: 0.4, fontSize: "0.7em" }}>📋</span>}
+      </div>
+    </div>
+  );
+};
+
+const InstallStatusBadge = ({ status }) => {
+  const getStyle = (s) => {
+    switch (s) {
+      case "Pending":
+        return { background: "linear-gradient(135deg, #ff6b6b, #ff8787)" };
+      case "In Progress":
+        return { background: "linear-gradient(135deg, #f39c12, #f7c200)" };
+      case "Completed":
+        return { background: "linear-gradient(135deg, #28a745, #4cd964)" };
+      default:
+        return { background: "linear-gradient(135deg, #6c757d, #a9a9a9)" };
+    }
+  };
+  return (
+    <span className="status-badge-unified" style={getStyle(status)}>
+      {status}
+    </span>
+  );
+};
+
+const ProductCard = ({ product, index }) => {
+  return (
+    <div className="product-card">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+        <div>
+          <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>
+            {product.productType || "Unknown Product"}
+          </div>
+          {product.brand && <div style={{ color: '#6c757d', fontSize: '0.9rem', fontWeight: '500' }}>{product.brand}</div>}
+        </div>
+        <span style={{
+          background: '#e9ecef', color: '#495057',
+          padding: '2px 8px', borderRadius: '4px',
+          fontWeight: 'bold', fontSize: '0.8rem'
+        }}>
+          #{index + 1}
+        </span>
+      </div>
+
+      <div className="info-grid" style={{ gap: '12px 20px', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+        <InfoItem label="Quantity" value={product.qty} />
+        <InfoItem label="Size" value={product.size} />
+        <InfoItem label="Spec" value={product.spec} />
+        <InfoItem label="Warranty" value={product.warranty} />
+      </div>
+
+      {/* Chips Section */}
+      <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {product.modelNos?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Model Numbers</span>
+            <div className="chip-container">
+              {product.modelNos.map((m, i) => <span key={i} className="chip">{m}</span>)}
+            </div>
+          </div>
+        )}
+
+        {product.serialNos?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Serial Numbers</span>
+            <div className="chip-container">
+              {product.serialNos.map((s, i) => <span key={i} className="chip">{s}</span>)}
+            </div>
+          </div>
+        )}
+
+        {product.productCode?.length > 0 && (
+          <div>
+            <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Product Codes</span>
+            <div className="chip-container">
+              {product.productCode.map((c, i) => <span key={i} className="chip">{c}</span>)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const keyframes = `
   @keyframes spin {
