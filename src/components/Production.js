@@ -549,9 +549,16 @@ const Production = () => {
           (p, i) =>
             `Product ${i + 1}: ${p.productType || "N/A"} (Qty: ${p.qty || "N/A"
             }, Size: ${p.size || "N/A"}, Spec: ${p.spec || "N/A"
-            }, Serial Nos: ${p.serialNos.length > 0 ? p.serialNos.join(", ") : "N/A"
-            }, Model Nos: ${p.modelNos.length > 0 ? p.modelNos.join(", ") : "N/A"
-            })`
+            }, Serial Nos: ${p.serialNos && p.serialNos.length > 0
+              ? p.serialNos.join(", ")
+              : "N/A"
+            }, Model Nos: ${p.modelNos && p.modelNos.length > 0
+              ? p.modelNos.join(", ")
+              : "N/A"
+            }, Product Code: ${p.productCode && p.productCode.length > 0
+              ? p.productCode.join(", ")
+              : "N/A"
+            }, Warranty: ${p.warranty || "N/A"})`
         )
         .join("\n")
       : "N/A";
@@ -696,7 +703,6 @@ const Production = () => {
           ? new Date(order.soDate).toLocaleDateString("en-IN")
           : "N/A",
         "Customer Name": order.customername || "N/A",
-        "Sales Person": order.salesPerson || "N/A",
         "Shipping Address": order.shippingAddress || "N/A",
         "Customer Email": order.customerEmail || "N/A",
         "Contact No": order.contactNo || "N/A",
@@ -2257,24 +2263,49 @@ const Production = () => {
                           viewOrder.products.map((p, idx) => (
                             <tr key={idx}>
                               <td>{idx + 1}</td>
-                              <td>{p.productType || "N/A"}</td>
-                              <td>{p.qty || "N/A"}</td>
                               <td>
-                                {p.size || "N/A"} / {p.spec || "N/A"}
+                                {p.productType && p.productType !== "N/A"
+                                  ? p.productType
+                                  : ""}
+                                {p.brand && p.brand !== "N/A" && (
+                                  <div style={{ fontSize: "12px", color: "#666" }}>
+                                    {p.brand}
+                                  </div>
+                                )}
+                              </td>
+                              <td>{p.qty && p.qty !== "N/A" ? p.qty : ""}</td>
+                              <td>
+                                {p.size && p.size !== "N/A" ? p.size : ""}
+                                {p.size &&
+                                  p.size !== "N/A" &&
+                                  p.spec &&
+                                  p.spec !== "N/A"
+                                  ? " / "
+                                  : ""}
+                                {p.spec && p.spec !== "N/A" ? p.spec : ""}
                               </td>
                               <td>
-                                <div>
-                                  <strong>S/N:</strong>{" "}
-                                  {p.serialNos && p.serialNos.length > 0
-                                    ? p.serialNos.join(", ")
-                                    : "N/A"}
-                                </div>
-                                <div style={{ marginTop: "4px" }}>
-                                  <strong>M/N:</strong>{" "}
-                                  {p.modelNos && p.modelNos.length > 0
-                                    ? p.modelNos.join(", ")
-                                    : "N/A"}
-                                </div>
+                                {p.serialNos && p.serialNos.length > 0 && (
+                                  <div>
+                                    <strong>S/N:</strong> {p.serialNos.join(", ")}
+                                  </div>
+                                )}
+                                {p.modelNos && p.modelNos.length > 0 && (
+                                  <div style={{ marginTop: "4px" }}>
+                                    <strong>M/N:</strong> {p.modelNos.join(", ")}
+                                  </div>
+                                )}
+                                {p.productCode && p.productCode.length > 0 && (
+                                  <div style={{ marginTop: "4px" }}>
+                                    <strong>Code:</strong>{" "}
+                                    {p.productCode.join(", ")}
+                                  </div>
+                                )}
+                                {p.warranty && p.warranty !== "N/A" && (
+                                  <div style={{ marginTop: "4px" }}>
+                                    <strong>Warranty:</strong> {p.warranty}
+                                  </div>
+                                )}
                               </td>
                             </tr>
                           ))

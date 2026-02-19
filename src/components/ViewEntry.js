@@ -220,7 +220,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
             }, Model Nos: ${isValidField(p.modelNos) && p.modelNos.length > 0
               ? p.modelNos.join(", ")
               : "N/A"
-            }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"})`,
+            }, Brand: ${p.brand || "N/A"}, Warranty: ${p.warranty || "N/A"
+            }, Product Code: ${isValidField(p.productCode) && p.productCode.length > 0
+              ? p.productCode.join(", ")
+              : "N/A"
+            })`,
         )
         .join("\n")
       : "N/A";
@@ -1211,12 +1215,24 @@ function ViewEntry({ isOpen, onClose, entry }) {
                     <tr key={idx}>
                       <td>{idx + 1}</td>
                       <td>
-                        <strong>{p.productType || "N/A"}</strong>
-                        <br />
-                        <small>{p.brand || "N/A"}</small>
+                        {isValidField(p.productType) && (
+                          <strong>{p.productType}</strong>
+                        )}
+                        {isValidField(p.brand) && (
+                          <>
+                            <br />
+                            <small>{p.brand}</small>
+                          </>
+                        )}
                       </td>
                       <td>{p.qty || 0}</td>
-                      <td>{p.size || p.spec || "N/A"}</td>
+                      <td>
+                        {isValidField(p.size) ? p.size : ""}
+                        {isValidField(p.size) && isValidField(p.spec)
+                          ? " / "
+                          : ""}
+                        {isValidField(p.spec) ? p.spec : ""}
+                      </td>
                       <td>₹{p.unitPrice?.toFixed(2) || "0.00"}</td>
                       <td>{p.gst || 0}%</td>
                       <td>
@@ -1230,12 +1246,16 @@ function ViewEntry({ isOpen, onClose, entry }) {
                             <strong>MN:</strong> {p.modelNos.join(", ")}
                           </div>
                         )}
-                        {p.productType === "Fujifilm-Printer" &&
-                          isValidField(p.productCode) && (
-                            <div style={{ fontSize: "10px" }}>
-                              <strong>Code:</strong> {p.productCode.join(", ")}
-                            </div>
-                          )}
+                        {isValidField(p.productCode) && (
+                          <div style={{ fontSize: "10px" }}>
+                            <strong>Code:</strong> {p.productCode.join(", ")}
+                          </div>
+                        )}
+                        {isValidField(p.warranty) && (
+                          <div style={{ fontSize: "10px" }}>
+                            <strong>Warranty:</strong> {p.warranty}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
