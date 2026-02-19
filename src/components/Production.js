@@ -2682,7 +2682,7 @@ const ProductCard = ({ product, index }) => {
           <div>
             <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Model Numbers</span>
             <div className="chip-container">
-              {product.modelNos.map((m, i) => <span key={i} className="chip">{m}</span>)}
+              {[...new Set(product.modelNos)].map((m, i) => <span key={i} className="chip">{m}</span>)}
             </div>
           </div>
         )}
@@ -2700,7 +2700,7 @@ const ProductCard = ({ product, index }) => {
           <div>
             <span className="info-label" style={{ display: 'block', marginBottom: '4px' }}>Product Codes</span>
             <div className="chip-container">
-              {product.productCode.map((c, i) => <span key={i} className="chip">{c}</span>)}
+              {[...new Set(product.productCode)].map((c, i) => <span key={i} className="chip">{c}</span>)}
             </div>
           </div>
         )}
