@@ -279,43 +279,43 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         products:
           entryToEdit.products && entryToEdit.products.length > 0
             ? entryToEdit.products.map((p) => {
-              const isCustom = !Object.keys(productOptions).includes(
-                p.productType,
-              );
-              return {
-                productType: isCustom ? "Others" : p.productType || "",
-                customProductType: isCustom ? p.productType : "",
-                size: p.size || "N/A",
-                spec: p.spec || "N/A",
-                qty: p.qty !== undefined ? String(p.qty) : "",
-                unitPrice:
-                  p.unitPrice !== undefined ? String(p.unitPrice) : "",
-                serialNos:
-                  p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
-                modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
-                productCode:
-                  p.productCode?.length > 0 ? p.productCode.join(", ") : "",
-                gst: p.gst || "18",
-                brand: p.brand || "",
-                warranty: p.warranty || "",
-              };
-            })
+                const isCustom = !Object.keys(productOptions).includes(
+                  p.productType,
+                );
+                return {
+                  productType: isCustom ? "Others" : p.productType || "",
+                  customProductType: isCustom ? p.productType : "",
+                  size: p.size || "N/A",
+                  spec: p.spec || "N/A",
+                  qty: p.qty !== undefined ? String(p.qty) : "",
+                  unitPrice:
+                    p.unitPrice !== undefined ? String(p.unitPrice) : "",
+                  serialNos:
+                    p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
+                  modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+                  productCode:
+                    p.productCode?.length > 0 ? p.productCode.join(", ") : "",
+                  gst: p.gst || "18",
+                  brand: p.brand || "",
+                  warranty: p.warranty || "",
+                };
+              })
             : [
-              {
-                productType: "",
-                customProductType: "",
-                size: "N/A",
-                spec: "N/A",
-                qty: "",
-                unitPrice: "",
-                serialNos: "",
-                modelNos: "",
-                productCode: "",
-                gst: "18",
-                brand: "",
-                warranty: "",
-              },
-            ],
+                {
+                  productType: "",
+                  customProductType: "",
+                  size: "N/A",
+                  spec: "N/A",
+                  qty: "",
+                  unitPrice: "",
+                  serialNos: "",
+                  modelNos: "",
+                  productCode: "",
+                  gst: "18",
+                  brand: "",
+                  warranty: "",
+                },
+              ],
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
         paymentCollected: entryToEdit.paymentCollected || "",
         paymentMethod: entryToEdit.paymentMethod || "",
@@ -387,8 +387,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
         productsEditTimestamp: entryToEdit.productsEditTimestamp
           ? new Date(entryToEdit.productsEditTimestamp)
-            .toISOString()
-            .split("T")[0]
+              .toISOString()
+              .split("T")[0]
           : null,
       };
       setFormData(newFormData);
@@ -456,15 +456,27 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         "application/vnd.ms-excel",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       ];
-      const allowedExtensions = ["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx"];
+      const allowedExtensions = [
+        "pdf",
+        "png",
+        "jpg",
+        "jpeg",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+      ];
       const fileExt = file.name.split(".").pop().toLowerCase();
 
-      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
+      if (
+        !allowedTypes.includes(file.type) &&
+        !allowedExtensions.includes(fileExt)
+      ) {
         setFileError(
-          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed.",
         );
         toast.error(
-          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed.",
         );
         e.target.value = null;
         setPoFile(null);
@@ -499,15 +511,27 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         "application/vnd.ms-excel",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       ];
-      const allowedExtensions = ["pdf", "png", "jpg", "jpeg", "doc", "docx", "xls", "xlsx"];
+      const allowedExtensions = [
+        "pdf",
+        "png",
+        "jpg",
+        "jpeg",
+        "doc",
+        "docx",
+        "xls",
+        "xlsx",
+      ];
       const fileExt = file.name.split(".").pop().toLowerCase();
 
-      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
+      if (
+        !allowedTypes.includes(file.type) &&
+        !allowedExtensions.includes(fileExt)
+      ) {
         setInstallationFileError(
-          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed.",
         );
         toast.error(
-          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed."
+          "Invalid file type. Only PDF, PNG, JPG, DOCX, XLS, XLSX are allowed.",
         );
         e.target.value = null;
         setInstallationFile(null);
@@ -562,15 +586,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               : undefined,
           serialNos: p.serialNos
             ? p.serialNos
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
             : [],
           modelNos: p.modelNos
             ? p.modelNos
-              .split(",")
-              .map((m) => m.trim())
-              .filter(Boolean)
+                .split(",")
+                .map((m) => m.trim())
+                .filter(Boolean)
             : [],
           productCode: p.productCode,
           gst: p.gst || "18",
@@ -677,7 +701,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               "Content-Type": "multipart/form-data",
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
       } else {
         // Use JSON if no file (existing logic)
@@ -714,18 +738,25 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       let errorMessage = "Failed to update entry.";
 
       if (error.response) {
-        if (error.response.status === 400) {
-          errorMessage = "Some required details are missing or incorrect.";
-        } else if (error.response.status === 401) {
-          errorMessage = "Your session has expired. Please log in again.";
-        } else if (error.response.status === 403) {
-          errorMessage = "You don’t have permission to update this entry.";
-        } else if (error.response.status === 404) {
-          errorMessage = "The entry you are trying to update was not found.";
-        } else if (error.response.status === 500) {
-          errorMessage = "Server error. Please try again later.";
-        } else {
-          errorMessage = error.response.data?.message || errorMessage;
+        // Prioritize server-sent error message
+        errorMessage =
+          error.response.data?.error ||
+          error.response.data?.message ||
+          errorMessage;
+
+        // Fallback to status-based messages only if no specific message is returned
+        if (!error.response.data?.error && !error.response.data?.message) {
+          if (error.response.status === 400) {
+            errorMessage = "Some required details are missing or incorrect.";
+          } else if (error.response.status === 401) {
+            errorMessage = "Your session has expired. Please log in again.";
+          } else if (error.response.status === 403) {
+            errorMessage = "You don’t have permission to update this entry.";
+          } else if (error.response.status === 404) {
+            errorMessage = "The entry you are trying to update was not found.";
+          } else if (error.response.status === 500) {
+            errorMessage = "Server error. Please try again later.";
+          }
         }
       } else if (error.request) {
         errorMessage =
@@ -831,28 +862,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       newProducts.length > 0
         ? newProducts
         : [
-          {
-            productType: "",
-            customProductType: "",
-            size: "N/A",
-            spec: "N/A",
-            qty: "",
-            unitPrice: "",
-            serialNos: "",
-            modelNos: "",
-            productCode: "",
-            gst: "18",
-            brand: "",
-            warranty: "",
-          },
-        ],
-    );
-    setFormData((prev) => ({
-      ...prev,
-      products:
-        newProducts.length > 0
-          ? newProducts
-          : [
             {
               productType: "",
               customProductType: "",
@@ -862,15 +871,37 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               unitPrice: "",
               serialNos: "",
               modelNos: "",
+              productCode: "",
               gst: "18",
               brand: "",
               warranty: "",
             },
           ],
+    );
+    setFormData((prev) => ({
+      ...prev,
+      products:
+        newProducts.length > 0
+          ? newProducts
+          : [
+              {
+                productType: "",
+                customProductType: "",
+                size: "N/A",
+                spec: "N/A",
+                qty: "",
+                unitPrice: "",
+                serialNos: "",
+                modelNos: "",
+                gst: "18",
+                brand: "",
+                warranty: "",
+              },
+            ],
     }));
   };
 
- const renderOptions = () => (
+  const renderOptions = () => (
     <div
       style={{
         display: "flex",
@@ -1045,8 +1076,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               const paste = (e.clipboardData || window.clipboardData).getData(
                 "text",
               );
-              // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+              setValue("contactNo", value, { shouldValidate: true });
               debouncedHandleInputChange("contactNo", value);
             }}
             // Hinglish: Keypress event se non-numeric characters ko block karte hain
@@ -1094,8 +1125,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               const paste = (e.clipboardData || window.clipboardData).getData(
                 "text",
               );
-              // Hinglish: Paste karte waqt bhi sirf numbers allow karte hain
               const value = paste.replace(/[^0-9]/g, "").slice(0, 10);
+              setValue("alterno", value, { shouldValidate: true });
               debouncedHandleInputChange("alterno", value);
             }}
             // Hinglish: Keypress event se non-numeric characters ko block karte hain
@@ -1150,7 +1181,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 isInvalid={!!errors.state}
               >
                 <option value="">-- Select State --</option>
-               {Object.keys(statesAndCities).map((state) => (
+                {Object.keys(statesAndCities).map((state) => (
                   <option key={state} value={state}>
                     {state}
                   </option>
@@ -1176,7 +1207,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               >
                 <option value="">-- Select City --</option>
                 {selectedState &&
-                 statesAndCities[selectedState]?.map((city) => (
+                  statesAndCities[selectedState]?.map((city) => (
                     <option key={city} value={city}>
                       {city}
                     </option>
@@ -1339,10 +1370,14 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 boxSizing: "border-box",
                 transition: "background 0.2s ease",
               }}
-              onMouseOver={(e) => (e.currentTarget.style.background = "#e2e8f0")}
-              onMouseOut={(e) => (e.currentTarget.style.background = "linear-gradient(to right, #ffffff, #f1f5f9)")}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.background = "#e2e8f0")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.background =
+                  "linear-gradient(to right, #ffffff, #f1f5f9)")
+              }
             >
-
               <div
                 style={{
                   display: "flex",
@@ -1440,8 +1475,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   gap: "0.35rem",
                   transition: "background 0.2s",
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = "#fca5a5")}
-                onMouseOut={(e) => (e.currentTarget.style.background = "#fee2e2")}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#fca5a5")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#fee2e2")
+                }
               >
                 <span>✖</span> Remove Attachment
               </button>
@@ -1450,14 +1489,29 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
           {/* ERROR MESSAGE */}
           {fileError && (
-            <div style={{ color: "#ef4444", fontSize: "0.85rem", marginTop: "0.5rem", fontWeight: "500" }}>
+            <div
+              style={{
+                color: "#ef4444",
+                fontSize: "0.85rem",
+                marginTop: "0.5rem",
+                fontWeight: "500",
+              }}
+            >
               {fileError}
             </div>
           )}
 
           {/* EXISTING FILE LINK */}
           {updateData.poFilePath && !poFile && (
-            <div style={{ marginTop: "0.75rem", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div
+              style={{
+                marginTop: "0.75rem",
+                fontSize: "0.85rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
               <span style={{ color: "#64748b" }}>Current file:</span>
               <a
                 href={`${process.env.REACT_APP_URL}${updateData.poFilePath}`}
@@ -1555,7 +1609,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             {...field}
                             value={
                               field.value &&
-                                !Object.keys(productOptions).includes(field.value)
+                              !Object.keys(productOptions).includes(field.value)
                                 ? "Others"
                                 : field.value
                             }
@@ -1792,7 +1846,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                                 fontSize: "1rem",
                                 color: "#1e293b",
                               }}
-                            ><option value="N/A">N/A</option>
+                            >
+                              <option value="N/A">N/A</option>
                               {availableSpecs.map((spec) => (
                                 <option key={spec} value={spec}>
                                   {spec}
@@ -2375,7 +2430,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             type="text"
             {...register("chequeId")}
             onChange={(e) => {
-              debouncedHandleInputChange("chequeId",  e.target.value);
+              debouncedHandleInputChange("chequeId", e.target.value);
             }}
             isInvalid={!!errors.chequeId}
             disabled={paymentMethod !== "Cheque"}
@@ -2675,7 +2730,6 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
             placeholder="e.g., Installation completed successfully, customer trained"
           />
         </Form.Group>
-
         <div style={{ marginTop: "1.5rem", marginBottom: "2rem" }}>
           <Form.Label
             style={{
@@ -2703,7 +2757,9 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           >
             <label
               htmlFor="installationFileEdit"
-              title={installationFile ? installationFile.name : "Click to upload"}
+              title={
+                installationFile ? installationFile.name : "Click to upload"
+              }
               style={{
                 display: "grid",
                 gridTemplateColumns: "auto minmax(0, 1fr)",
@@ -2720,8 +2776,13 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 boxSizing: "border-box",
                 transition: "background 0.2s ease",
               }}
-              onMouseOver={(e) => (e.currentTarget.style.background = "#e2e8f0")}
-              onMouseOut={(e) => (e.currentTarget.style.background = "linear-gradient(to right, #ffffff, #f1f5f9)")}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.background = "#e2e8f0")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.background =
+                  "linear-gradient(to right, #ffffff, #f1f5f9)")
+              }
             >
               <div
                 style={{
@@ -2820,8 +2881,12 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                   gap: "0.35rem",
                   transition: "background 0.2s",
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = "#fca5a5")}
-                onMouseOut={(e) => (e.currentTarget.style.background = "#fee2e2")}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#fca5a5")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#fee2e2")
+                }
               >
                 <span>✖</span> Remove Report
               </button>
@@ -2830,14 +2895,29 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
 
           {/* ERROR MESSAGE */}
           {installationFileError && (
-            <div style={{ color: "#ef4444", fontSize: "0.85rem", marginTop: "0.5rem", fontWeight: "500" }}>
+            <div
+              style={{
+                color: "#ef4444",
+                fontSize: "0.85rem",
+                marginTop: "0.5rem",
+                fontWeight: "500",
+              }}
+            >
               {installationFileError}
             </div>
           )}
 
           {/* EXISTING FILE LINK */}
           {updateData.installationFile && !installationFile && (
-            <div style={{ marginTop: "0.75rem", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div
+              style={{
+                marginTop: "0.75rem",
+                fontSize: "0.85rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
               <span style={{ color: "#64748b" }}>Current file:</span>
               <a
                 href={`${process.env.REACT_APP_URL}${updateData.installationFile}`}
