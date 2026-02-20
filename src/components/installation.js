@@ -1673,7 +1673,7 @@ function Installation() {
                     <div className="info-grid">
                       <InfoItem label="Order ID" value={viewOrder.orderId || "N/A"} copyable />
                       <InfoItem
-                        label="Installation Date"
+                        label="Installation Date & Time"
                         value={viewOrder.deliveredDate
                           ? new Date(viewOrder.deliveredDate).toLocaleDateString("en-GB", {
                             day: "2-digit",
