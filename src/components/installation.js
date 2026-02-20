@@ -1675,7 +1675,14 @@ function Installation() {
                       <InfoItem
                         label="Installation Date"
                         value={viewOrder.deliveredDate
-                          ? new Date(viewOrder.deliveredDate).toLocaleDateString("en-GB")
+                          ? new Date(viewOrder.deliveredDate).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          }).replace(",", "")
                           : "Pending Schedule"}
                       />
                       <InfoItem
