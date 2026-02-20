@@ -115,12 +115,20 @@ function ViewEntry({ isOpen, onClose, entry }) {
   // Utility function to format timestamps (date + time)
   const formatTimestamp = (dateStr) => {
     if (!isValidField(dateStr)) return null;
+
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return null;
-    return date.toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
+
+    const formatted = date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
+
+    return formatted.replace(",", "");
   };
   const isValidPoFilePath = (filePath) => {
     return (

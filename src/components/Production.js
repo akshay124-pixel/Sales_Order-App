@@ -2449,7 +2449,52 @@ const Production = () => {
                     <div className="info-grid">
                       <InfoItem label="Order ID" value={viewOrder.orderId || "N/A"} copyable />
                       <InfoItem label="Order Type" value={viewOrder.orderType || "N/A"} />
-                      <InfoItem label="SO Date" value={viewOrder.soDate ? new Date(viewOrder.soDate).toLocaleDateString() : "N/A"} />
+                      <InfoItem
+                        label="SO Date"
+                        value={
+                          viewOrder.soDate
+                            ? new Date(viewOrder.soDate).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                            : "N/A"
+                        }
+                      />
+                      <InfoItem
+                        label="So Approval Time & Date"
+                        value={
+                          viewOrder.approvalTimestamp
+                            ? new Date(viewOrder.approvalTimestamp).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                            : "N/A"
+                        }
+                      />
+
+                      <InfoItem
+                        label="Products Edit Time & Date"
+                        value={
+                          viewOrder.productsEditTimestamp
+                            ? new Date(viewOrder.productsEditTimestamp).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                            : "N/A"
+                        }
+                      />
                       <div className="info-item">
                         <span className="info-label">Production Status</span>
                         <div className="info-value">

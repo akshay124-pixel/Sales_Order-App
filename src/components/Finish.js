@@ -1689,8 +1689,37 @@ function Finish() {
                   </div>
                   <div className="info-grid">
                     <InfoItem label="Order ID" value={viewOrder.orderId || "N/A"} copyable />
-                    <InfoItem label="SO Date" value={viewOrder.soDate ? new Date(viewOrder.soDate).toLocaleDateString() : "N/A"} />
-                    <InfoItem label="Dispatch Date" value={viewOrder.dispatchDate ? new Date(viewOrder.dispatchDate).toLocaleDateString() : "N/A"} />
+                    <InfoItem
+                      label="SO Date"
+                      value={
+                        viewOrder.soDate
+                          ? new Date(viewOrder.soDate).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                          : "N/A"
+                      }
+                    />
+
+                    <InfoItem
+                      label="Dispatch Date"
+                      value={
+                        viewOrder.dispatchDate
+                          ? new Date(viewOrder.dispatchDate).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                          : "N/A"
+                      }
+                    />
                     <div className="info-item">
                       <span className="info-label">Dispatch Status</span>
                       <div className="info-value">
