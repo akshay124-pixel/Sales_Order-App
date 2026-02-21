@@ -279,43 +279,43 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         products:
           entryToEdit.products && entryToEdit.products.length > 0
             ? entryToEdit.products.map((p) => {
-                const isCustom = !Object.keys(productOptions).includes(
-                  p.productType,
-                );
-                return {
-                  productType: isCustom ? "Others" : p.productType || "",
-                  customProductType: isCustom ? p.productType : "",
-                  size: p.size || "N/A",
-                  spec: p.spec || "N/A",
-                  qty: p.qty !== undefined ? String(p.qty) : "",
-                  unitPrice:
-                    p.unitPrice !== undefined ? String(p.unitPrice) : "",
-                  serialNos:
-                    p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
-                  modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
-                  productCode:
-                    p.productCode?.length > 0 ? p.productCode.join(", ") : "",
-                  gst: p.gst || "18",
-                  brand: p.brand || "",
-                  warranty: p.warranty || "",
-                };
-              })
+              const isCustom = !Object.keys(productOptions).includes(
+                p.productType,
+              );
+              return {
+                productType: isCustom ? "Others" : p.productType || "",
+                customProductType: isCustom ? p.productType : "",
+                size: p.size || "N/A",
+                spec: p.spec || "N/A",
+                qty: p.qty !== undefined ? String(p.qty) : "",
+                unitPrice:
+                  p.unitPrice !== undefined ? String(p.unitPrice) : "",
+                serialNos:
+                  p.serialNos?.length > 0 ? p.serialNos.join(", ") : "",
+                modelNos: p.modelNos?.length > 0 ? p.modelNos.join(", ") : "",
+                productCode:
+                  p.productCode?.length > 0 ? p.productCode.join(", ") : "",
+                gst: p.gst || "18",
+                brand: p.brand || "",
+                warranty: p.warranty || "",
+              };
+            })
             : [
-                {
-                  productType: "",
-                  customProductType: "",
-                  size: "N/A",
-                  spec: "N/A",
-                  qty: "",
-                  unitPrice: "",
-                  serialNos: "",
-                  modelNos: "",
-                  productCode: "",
-                  gst: "18",
-                  brand: "",
-                  warranty: "",
-                },
-              ],
+              {
+                productType: "",
+                customProductType: "",
+                size: "N/A",
+                spec: "N/A",
+                qty: "",
+                unitPrice: "",
+                serialNos: "",
+                modelNos: "",
+                productCode: "",
+                gst: "18",
+                brand: "",
+                warranty: "",
+              },
+            ],
         total: entryToEdit.total !== undefined ? String(entryToEdit.total) : "",
         paymentCollected: entryToEdit.paymentCollected || "",
         paymentMethod: entryToEdit.paymentMethod || "",
@@ -387,8 +387,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
           : null,
         productsEditTimestamp: entryToEdit.productsEditTimestamp
           ? new Date(entryToEdit.productsEditTimestamp)
-              .toISOString()
-              .split("T")[0]
+            .toISOString()
+            .split("T")[0]
           : null,
       };
       setFormData(newFormData);
@@ -586,15 +586,15 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               : undefined,
           serialNos: p.serialNos
             ? p.serialNos
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
             : [],
           modelNos: p.modelNos
             ? p.modelNos
-                .split(",")
-                .map((m) => m.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((m) => m.trim())
+              .filter(Boolean)
             : [],
           productCode: p.productCode,
           gst: p.gst || "18",
@@ -636,10 +636,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
         billingAddress: data.billingAddress || null,
         invoiceNo: data.invoiceNo || null,
         invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : null,
-        fulfillingStatus:
-          entryToEdit.fulfillingStatus === "Fulfilled"
-            ? undefined
-            : data.fulfillingStatus || "Pending",
+        fulfillingStatus: data.fulfillingStatus || "Pending",
         remarksByProduction: data.remarksByProduction || null,
         remarksByAccounts: data.remarksByAccounts || null,
         paymentReceived: data.paymentReceived || "Not Received",
@@ -862,6 +859,28 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
       newProducts.length > 0
         ? newProducts
         : [
+          {
+            productType: "",
+            customProductType: "",
+            size: "N/A",
+            spec: "N/A",
+            qty: "",
+            unitPrice: "",
+            serialNos: "",
+            modelNos: "",
+            productCode: "",
+            gst: "18",
+            brand: "",
+            warranty: "",
+          },
+        ],
+    );
+    setFormData((prev) => ({
+      ...prev,
+      products:
+        newProducts.length > 0
+          ? newProducts
+          : [
             {
               productType: "",
               customProductType: "",
@@ -871,33 +890,11 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
               unitPrice: "",
               serialNos: "",
               modelNos: "",
-              productCode: "",
               gst: "18",
               brand: "",
               warranty: "",
             },
           ],
-    );
-    setFormData((prev) => ({
-      ...prev,
-      products:
-        newProducts.length > 0
-          ? newProducts
-          : [
-              {
-                productType: "",
-                customProductType: "",
-                size: "N/A",
-                spec: "N/A",
-                qty: "",
-                unitPrice: "",
-                serialNos: "",
-                modelNos: "",
-                gst: "18",
-                brand: "",
-                warranty: "",
-              },
-            ],
     }));
   };
 
@@ -1374,8 +1371,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 (e.currentTarget.style.background = "#e2e8f0")
               }
               onMouseOut={(e) =>
-                (e.currentTarget.style.background =
-                  "linear-gradient(to right, #ffffff, #f1f5f9)")
+              (e.currentTarget.style.background =
+                "linear-gradient(to right, #ffffff, #f1f5f9)")
               }
             >
               <div
@@ -1609,7 +1606,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                             {...field}
                             value={
                               field.value &&
-                              !Object.keys(productOptions).includes(field.value)
+                                !Object.keys(productOptions).includes(field.value)
                                 ? "Others"
                                 : field.value
                             }
@@ -2780,8 +2777,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 (e.currentTarget.style.background = "#e2e8f0")
               }
               onMouseOut={(e) =>
-                (e.currentTarget.style.background =
-                  "linear-gradient(to right, #ffffff, #f1f5f9)")
+              (e.currentTarget.style.background =
+                "linear-gradient(to right, #ffffff, #f1f5f9)")
               }
             >
               <div
@@ -2956,6 +2953,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                 <option value="Hold by Salesperson">Hold by Salesperson</option>
                 <option value="Hold by Customer">Hold by Customer</option>
                 <option value="Order Cancelled">Order Cancelled</option>
+                <option value="Partially Shipped">Partially Shipped</option>
                 <option value="Dispatched">Dispatched</option>
                 <option value="Delivered">Delivered</option>
               </Form.Select>

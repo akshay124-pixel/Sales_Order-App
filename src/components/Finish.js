@@ -979,6 +979,7 @@ function Finish() {
               >
                 <option value="">All</option>
                 <option value="Not Dispatched">Not Dispatched</option>
+                <option value="Partially Shipped">Partially Shipped</option>
                 <option value="Dispatched">Dispatched</option>
                 <option value="Docket Awaited Dispatched">
                   Docket Awaited Dispatched

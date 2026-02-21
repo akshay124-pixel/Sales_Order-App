@@ -470,6 +470,7 @@ const FilterSection = ({
               "All",
               "Not Dispatched",
               "Order Cancelled",
+              "Partially Shipped",
               "Docket Awaited Dispatched",
               "Dispatched",
               "Delivered",

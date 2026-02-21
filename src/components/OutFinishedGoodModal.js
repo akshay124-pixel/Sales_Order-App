@@ -294,8 +294,10 @@ const OutFinishedGoodModal = ({
             <Option value="Hold by Salesperson">Hold by Salesperson</Option>
             <Option value="Hold by Customer">Hold by Customer</Option>
             <Option value="Order Cancelled">Order Cancelled</Option>
+
             {isBillingComplete && (
               <>
+                <Option value="Partially Shipped">Partially Shipped</Option>
                 <Option value="Dispatched">Dispatched</Option>
                 <Option value="Delivered">Delivered</Option>
               </>

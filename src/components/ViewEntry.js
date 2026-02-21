@@ -518,6 +518,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     },
     dispatchStatus: {
       "Not Dispatched": "warning",
+      "Partially Shipped": "info",
       Dispatched: "info",
       Delivered: "success",
       "Docket Awaited Dispatched": "primary",

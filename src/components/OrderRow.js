@@ -411,15 +411,17 @@ const OrderRow = React.memo(({
                                     ? "linear-gradient(135deg, #f39c12, #f7c200)"
                                     : order.dispatchStatus === "Dispatched"
                                         ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                                        : order.dispatchStatus === "Delivered"
-                                            ? "linear-gradient(135deg, #28a745, #4cd964)"
-                                            : order.dispatchStatus === "Hold by Salesperson"
-                                                ? "linear-gradient(135deg, #007bff, #4dabf7)"
-                                                : order.dispatchStatus === "Hold by Customer"
-                                                    ? "linear-gradient(135deg, #8e44ad, #be94e6)"
-                                                    : order.dispatchStatus === "Order Cancelled"
-                                                        ? "linear-gradient(135deg, #6c757d, #5a6268)"
-                                                        : "linear-gradient(135deg, #6c757d, #a9a9a9)",
+                                        : order.dispatchStatus === "Partially Shipped"
+                                            ? "linear-gradient(135deg, #ff9800, #f44336)"
+                                            : order.dispatchStatus === "Delivered"
+                                                ? "linear-gradient(135deg, #28a745, #4cd964)"
+                                                : order.dispatchStatus === "Hold by Salesperson"
+                                                    ? "linear-gradient(135deg, #007bff, #4dabf7)"
+                                                    : order.dispatchStatus === "Hold by Customer"
+                                                        ? "linear-gradient(135deg, #8e44ad, #be94e6)"
+                                                        : order.dispatchStatus === "Order Cancelled"
+                                                            ? "linear-gradient(135deg, #6c757d, #5a6268)"
+                                                            : "linear-gradient(135deg, #6c757d, #a9a9a9)",
                         color: "#fff",
                         padding: "5px 10px",
                         borderRadius: "12px",
