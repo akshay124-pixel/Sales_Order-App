@@ -1,5 +1,6 @@
-import React from "react";
 import { Modal, Table, Badge, Button } from "react-bootstrap";
+import { toast } from "react-toastify";
+import { Download } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const PreviewModal = ({ isOpen, onClose, entry }) => {
@@ -15,6 +16,88 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
           month: "short",
           year: "numeric",
         });
+  };
+  const isValidPoFilePath = (filePath) => {
+    return (
+      filePath &&
+      typeof filePath === "string" &&
+      filePath.trim() !== "" &&
+      filePath !== "N/A" &&
+      filePath !== "/" &&
+      filePath.includes("/Uploads/")
+    );
+  };
+  const handleDownload = async (filePath) => {
+    // Determine path to use: passed arg or default to poFilePath if it's the specific PO check
+    const targetPath = filePath || entry?.poFilePath;
+
+    if (!isValidPoFilePath(targetPath)) {
+      toast.error("No valid file available to download!");
+      return;
+    }
+
+    try {
+      const fileUrl = `${process.env.REACT_APP_URL}${
+        targetPath.startsWith("/") ? "" : "/"
+      }${targetPath}`;
+
+      // Validate file URL
+      if (!fileUrl || fileUrl === process.env.REACT_APP_URL + "/") {
+        toast.error("Invalid file path provided!");
+        return;
+      }
+
+      const response = await fetch(fileUrl, {
+        method: "GET",
+        headers: {
+          Accept:
+            "application/pdf,image/png,image/jpeg,image/jpg,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const contentType = response.headers.get("content-type");
+      const validTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+
+      if (!contentType || !validTypes.includes(contentType)) {
+        throw new Error("Invalid file type returned from server!");
+      }
+
+      const blob = await response.blob();
+
+      // ✅ FileName fix
+      const extension = contentType.split("/")[1] || "file";
+      const fileName =
+        targetPath.split("/").pop() ||
+        `order_${entry.orderId || "unknown"}.${extension}`;
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+
+      toast.success("File download started!");
+    } catch (err) {
+      toast.error("Failed to download file! Check server or file path.");
+      console.error("Download error:", err);
+    }
   };
 
   const calculateTotals = () => {
@@ -206,9 +289,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     </div>
                     <div class="mb-2">
                       <strong class="text-gray-700">Contact Person Name/Designation:</strong>
-                      <span class="text-gray-900">${
-                        entry.name|| "N/A"
-                      }</span>
+                      <span class="text-gray-900">${entry.name || "N/A"}</span>
                     </div>
                     <div class="mb-2">
                       <strong class="text-gray-700">Contact No:</strong>
@@ -283,7 +364,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     <div class="mb-2">
                       <strong class="text-gray-700">Invoice Date:</strong>
                       <span class="text-gray-900">${formatDate(
-                        entry.invoiceDate
+                        entry.invoiceDate,
                       )}</span>
                     </div>
                     <div class="mb-2">
@@ -306,10 +387,10 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                         entry.paymentTerms === "100% Advance"
                           ? "#2196f3"
                           : entry.paymentTerms === "Partial Advance"
-                          ? "#3b82f6"
-                          : entry.paymentTerms === "Credit"
-                          ? "#eab308"
-                          : "#6b7280"
+                            ? "#3b82f6"
+                            : entry.paymentTerms === "Credit"
+                              ? "#eab308"
+                              : "#6b7280"
                       };">${entry.paymentTerms || "N/A"}</span>
                     </div>
                     <div class="mb-2">
@@ -318,12 +399,12 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                         entry.paymentMethod === "Cash"
                           ? "#2196f3"
                           : entry.paymentMethod === "NEFT"
-                          ? "#3b82f6"
-                          : entry.paymentMethod === "RTGS"
-                          ? "#9333ea"
-                          : entry.paymentMethod === "Cheque"
-                          ? "#eab308"
-                          : "#6b7280"
+                            ? "#3b82f6"
+                            : entry.paymentMethod === "RTGS"
+                              ? "#9333ea"
+                              : entry.paymentMethod === "Cheque"
+                                ? "#eab308"
+                                : "#6b7280"
                       };">${entry.paymentMethod || "N/A"}</span>
                     </div>
                     <div class="mb-2">
@@ -384,18 +465,18 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                           <td><strong>${
                             product.productType || "N/A"
                           }</strong><br /><small>Size: ${
-                                product.size || "N/A"
-                              }, Spec: ${product.spec || "N/A"}, Brand: ${
-                                product.brand || "N/A"
-                              }, Warranty: ${product.warranty || "N/A"}${
-                                product.serialNos?.length > 0
-                                  ? `, Serial: ${product.serialNos.join(", ")}`
-                                  : ""
-                              }${
-                                product.modelNos?.length > 0
-                                  ? `, Model: ${product.modelNos.join(", ")}`
-                                  : ""
-                              }</small></td>
+                            product.size || "N/A"
+                          }, Spec: ${product.spec || "N/A"}, Brand: ${
+                            product.brand || "N/A"
+                          }, Warranty: ${product.warranty || "N/A"}${
+                            product.serialNos?.length > 0
+                              ? `, Serial: ${product.serialNos.join(", ")}`
+                              : ""
+                          }${
+                            product.modelNos?.length > 0
+                              ? `, Model: ${product.modelNos.join(", ")}`
+                              : ""
+                          }</small></td>
                           <td>${qty}</td>
                           <td>₹${unitPrice.toFixed(2)}</td>
                           <td>${gstRate.toFixed(2)}%</td>
@@ -650,9 +731,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                   <strong className="text-gray-700">
                     Contact Person Name/Designation:
                   </strong>{" "}
-                  <span className="text-gray-900">
-                    {entry.name || "N/A"}
-                  </span>
+                  <span className="text-gray-900">{entry.name || "N/A"}</span>
                 </div>
                 <div className="mb-2">
                   <strong className="text-gray-700">Contact No:</strong>{" "}
@@ -668,6 +747,66 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     {entry.customerEmail || "N/A"}
                   </span>
                 </div>
+                {entry.poFilePath && isValidPoFilePath(entry.poFilePath) && (
+                  <div
+                    className="mb-2"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <strong className="text-gray-700">Attachment:</strong>
+
+                    {entry.poFilePath && (
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => handleDownload(entry.poFilePath)}
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #2575fc, #6a11cb)",
+                          padding: "6px 12px",
+                          borderRadius: "20px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          fontSize: "0.85rem",
+                          fontWeight: "600",
+                          color: "#ffffff",
+                          border: "1px solid #ffffff22",
+                          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+                          transition:
+                            "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = "scale(1.05)";
+                          e.target.style.boxShadow =
+                            "0 4px 12px rgba(106, 17, 203, 0.4)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #3b82f6, #7e22ce)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = "scale(1)";
+                          e.target.style.boxShadow =
+                            "0 2px 6px rgba(0, 0, 0, 0.15)";
+                          e.target.style.background =
+                            "linear-gradient(135deg, #2575fc, #6a11cb)";
+                        }}
+                        onMouseDown={(e) => {
+                          e.target.style.transform = "scale(0.95)";
+                        }}
+                        onMouseUp={(e) => {
+                          e.target.style.transform = "scale(1.05)";
+                        }}
+                      >
+                        <Download size={14} />
+                        Download
+                      </Button>
+                    )}
+                  </div>
+                )}
                 {entry.gemOrderNumber && (
                   <div className="mb-2">
                     <strong className="text-gray-700">Gem Order Number:</strong>{" "}
@@ -733,10 +872,8 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                     {entry.remarks || "N/A"}
                   </span>
                 </div>
-                 <div className="mb-2">
-                  <strong className="text-gray-700">
-                    Product Code:
-                  </strong>{" "}
+                <div className="mb-2">
+                  <strong className="text-gray-700">Product Code:</strong>{" "}
                   <span className="text-gray-900">
                     {entry.productno || "N/A"}
                   </span>
@@ -777,10 +914,10 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                         entry.paymentTerms === "100% Advance"
                           ? "#2196f3"
                           : entry.paymentTerms === "Partial Advance"
-                          ? "#3b82f6"
-                          : entry.paymentTerms === "Credit"
-                          ? "#eab308"
-                          : "#6b7280",
+                            ? "#3b82f6"
+                            : entry.paymentTerms === "Credit"
+                              ? "#eab308"
+                              : "#6b7280",
                     }}
                   >
                     {entry.paymentTerms || "N/A"}
@@ -795,12 +932,12 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                         entry.paymentMethod === "Cash"
                           ? "#2196f3"
                           : entry.paymentMethod === "NEFT"
-                          ? "#3b82f6"
-                          : entry.paymentMethod === "RTGS"
-                          ? "#9333ea"
-                          : entry.paymentMethod === "Cheque"
-                          ? "#eab308"
-                          : "#6b7280",
+                            ? "#3b82f6"
+                            : entry.paymentMethod === "RTGS"
+                              ? "#9333ea"
+                              : entry.paymentMethod === "Cheque"
+                                ? "#eab308"
+                                : "#6b7280",
                     }}
                   >
                     {entry.paymentMethod || "N/A"}
@@ -857,16 +994,34 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                         <td>
                           <strong>{product.productType || "N/A"}</strong>
                           <br />
+
+                          {/* First line details */}
                           <small className="text-gray-600">
                             Size: {product.size || "N/A"}, Spec:{" "}
                             {product.spec || "N/A"}, Brand:{" "}
                             {product.brand || "N/A"}, Warranty:{" "}
                             {product.warranty || "N/A"}
-                            {product.serialNos?.length > 0 &&
-                              `, Serial: ${product.serialNos.join(", ")}`}
-                            {product.modelNos?.length > 0 &&
-                              `, Model: ${product.modelNos.join(", ")}`}
                           </small>
+
+                          {/* Serial line (no break inside) */}
+                          {product.serialNos?.length > 0 && (
+                            <div
+                              className="text-gray-600"
+                              style={{ whiteSpace: "nowrap" }}
+                            >
+                              Serial: {product.serialNos.join(", ")}
+                            </div>
+                          )}
+
+                          {/* Model line */}
+                          {product.modelNos?.length > 0 && (
+                            <div
+                              className="text-gray-600"
+                              style={{ whiteSpace: "nowrap" }}
+                            >
+                              Model: {product.modelNos.join(", ")}
+                            </div>
+                          )}
                         </td>
                         <td>{qty}</td>
                         <td>₹{unitPrice.toFixed(2)}</td>

@@ -61,7 +61,7 @@ const BillGeneration = () => {
         `${process.env.REACT_APP_URL}/api/get-bill-orders`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       setOrders(response.data.data);
       toast.success("Bill orders fetched successfully!");
@@ -108,9 +108,9 @@ const BillGeneration = () => {
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
-            .map((p) => `${p.productType} (${p.qty})`)
-            .join(", ")
-            .toLowerCase()
+              .map((p) => `${p.productType} (${p.qty})`)
+              .join(", ")
+              .toLowerCase()
           : "";
         const total = order.total ? order.total.toFixed(2).toString() : "0.00";
         const soDate = order.soDate
@@ -158,12 +158,15 @@ const BillGeneration = () => {
     setSelectedOrder(order);
     setIsEditModalOpen(true);
   };
-
+  const getRowBackground = (order) => {
+  if (order.poFilePath) return "#d4f4e6"; // PO uploaded highlight
+  return "#ffffff"; // normal
+};
   const handleEntryUpdated = (updatedOrder) => {
     setOrders((prevOrders) =>
       prevOrders
         .map((order) => (order._id === updatedOrder._id ? updatedOrder : order))
-        .filter((order) => order.billStatus !== "Billing Complete")
+        .filter((order) => order.billStatus !== "Billing Complete"),
     );
     setIsEditModalOpen(false);
     toast.success("Order updated successfully!");
@@ -199,7 +202,7 @@ const BillGeneration = () => {
 
   // Calculate total pending orders (billStatus === "Pending")
   const totalPending = filteredOrders.filter(
-    (order) => order.billStatus === "Pending"
+    (order) => order.billStatus === "Pending",
   ).length;
 
   return (
@@ -344,7 +347,7 @@ const BillGeneration = () => {
                 {[
                   { header: "Seq No", width: "80px" },
                   { header: "Order ID", width: "120px" },
-                  { header: "Customer Name", width: "150px" },
+                  { header: "Customer Name", width: "250px" },
                   { header: "Contact No", width: "120px" },
                   { header: "SO Date", width: "100px" },
                   { header: "Total", width: "100px" },
@@ -393,7 +396,9 @@ const BillGeneration = () => {
                   >
                     <SpinnerWrap>
                       <GradientSpinner />
-                      <span style={{ color: "#2575fc", fontWeight: "600" }}>Loading orders...</span>
+                      <span style={{ color: "#2575fc", fontWeight: "600" }}>
+                        Loading orders...
+                      </span>
                     </SpinnerWrap>
                   </LoaderOverlay>
                 </AnimatePresence>
@@ -404,7 +409,8 @@ const BillGeneration = () => {
                   <tr
                     key={order._id || index}
                     style={{
-                      backgroundColor: "#ffffff",
+                      
+                       backgroundColor: getRowBackground(order),
                       transition: "all 0.3s ease",
                       borderBottom: "1px solid #e6f0fa",
                     }}
@@ -529,8 +535,8 @@ const BillGeneration = () => {
                     >
                       {order.invoiceDate
                         ? new Date(order.invoiceDate).toLocaleDateString(
-                          "en-GB"
-                        )
+                            "en-GB",
+                          )
                         : "-"}
                     </td>
                     <td
@@ -651,8 +657,8 @@ const BillGeneration = () => {
                     >
                       {order.products
                         ? order.products
-                          .map((p) => `${p.productType} (${p.qty})`)
-                          .join(", ")
+                            .map((p) => `${p.productType} (${p.qty})`)
+                            .join(", ")
                         : "-"}
                     </td>
                     <td
@@ -689,7 +695,13 @@ const BillGeneration = () => {
                       }}
                     >
                       <div style={{ fontSize: "3rem" }}>📋</div>
-                      <div style={{ fontSize: "1.2rem", fontWeight: "600", color: "#6b7280" }}>
+                      <div
+                        style={{
+                          fontSize: "1.2rem",
+                          fontWeight: "600",
+                          color: "#6b7280",
+                        }}
+                      >
                         No orders found.
                       </div>
                       <div style={{ color: "#9ca3af" }}>
