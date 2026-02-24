@@ -159,9 +159,9 @@ const BillGeneration = () => {
     setIsEditModalOpen(true);
   };
   const getRowBackground = (order) => {
-  if (order.poFilePath) return "#d4f4e6"; // PO uploaded highlight
-  return "#ffffff"; // normal
-};
+    if (order.poFilePath) return "#d4f4e6"; // PO uploaded highlight
+    return "#ffffff"; // normal
+  };
   const handleEntryUpdated = (updatedOrder) => {
     setOrders((prevOrders) =>
       prevOrders
@@ -347,20 +347,20 @@ const BillGeneration = () => {
                 {[
                   { header: "Seq No", width: "80px" },
                   { header: "Order ID", width: "120px" },
-                  { header: "Customer Name", width: "250px" },
-                  { header: "Contact No", width: "120px" },
-                  { header: "SO Date", width: "100px" },
-                  { header: "Total", width: "100px" },
+                  { header: "Customer Name", width: "400px" },
+
+                  { header: "SO Date", width: "110px" },
+                  { header: "Total", width: "120px" },
                   { header: "Bill Number", width: "120px" },
                   { header: "PI Number", width: "120px" },
-                  { header: "Invoice Date", width: "100px" },
+                  { header: "Invoice Date", width: "110px" },
                   { header: "Bill Status", width: "120px" },
                   {
                     header: "Actions",
                     width: "170px",
                   },
                   { header: "Product Details", width: "200px" },
-                  { header: "Remarks by Billing", width: "150px" },
+                  { header: "Remarks by Billing", width: "100px" },
                 ].map(({ header, width }) => (
                   <th
                     key={header}
@@ -409,8 +409,7 @@ const BillGeneration = () => {
                   <tr
                     key={order._id || index}
                     style={{
-                      
-                       backgroundColor: getRowBackground(order),
+                      backgroundColor: getRowBackground(order),
                       transition: "all 0.3s ease",
                       borderBottom: "1px solid #e6f0fa",
                     }}
@@ -443,6 +442,7 @@ const BillGeneration = () => {
                       {order.orderId || "-"}
                     </td>
                     <td
+                      title={order.customername}
                       style={{
                         padding: "15px",
                         width: "150px",
@@ -455,19 +455,7 @@ const BillGeneration = () => {
                     >
                       {order.customername || "-"}
                     </td>
-                    <td
-                      style={{
-                        padding: "15px",
-                        width: "120px",
-                        minWidth: "120px",
-                        maxWidth: "120px",
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {order.contactNo || "-"}
-                    </td>
+
                     <td
                       style={{
                         padding: "15px",
@@ -540,6 +528,7 @@ const BillGeneration = () => {
                         : "-"}
                     </td>
                     <td
+                      title={order.billStatus}
                       style={{
                         padding: "15px",
                         width: "120px",
@@ -645,6 +634,13 @@ const BillGeneration = () => {
                       </div>
                     </td>
                     <td
+                      title={
+                        order.products
+                          ? order.products
+                              .map((p) => `${p.productType} (${p.qty})`)
+                              .join(", ")
+                          : "-"
+                      }
                       style={{
                         padding: "15px",
                         width: "200px",
@@ -662,6 +658,7 @@ const BillGeneration = () => {
                         : "-"}
                     </td>
                     <td
+                      title={order.remarksByBilling}
                       style={{
                         padding: "15px",
                         width: "150px",
