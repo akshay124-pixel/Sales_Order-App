@@ -214,6 +214,7 @@ export const productOptions = {
       "Windows 10 OS 16/256/i5",
     ],
   },
+  Adapter: { sizes: ["N/A"], specs: ["N/A"] },
   "PTZ Camera": {
     sizes: ["N/A"],
     specs: [
