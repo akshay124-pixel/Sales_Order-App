@@ -669,6 +669,7 @@ export const statesAndCities = {
     "Sirsa",
     "Dabwali",
     "Narwana",
+    "Mahendragarh",
   ],
   "Himachal Pradesh": [
     "Bilaspur",
