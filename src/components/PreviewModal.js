@@ -1006,9 +1006,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                           {/* Serial line (no break inside) */}
                           {product.serialNos?.length > 0 && (
                             <div
-                              className="text-gray-600"
-                              style={{ whiteSpace: "nowrap" }}
-                            >
+                              className="text-gray-600">
                               Serial: {product.serialNos.join(", ")}
                             </div>
                           )}
@@ -1016,9 +1014,7 @@ const PreviewModal = ({ isOpen, onClose, entry }) => {
                           {/* Model line */}
                           {product.modelNos?.length > 0 && (
                             <div
-                              className="text-gray-600"
-                              style={{ whiteSpace: "nowrap" }}
-                            >
+                              className="text-gray-600">
                               Model: {product.modelNos.join(", ")}
                             </div>
                           )}
