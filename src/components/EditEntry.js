@@ -1985,8 +1985,8 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                         {...register(`products.${index}.unitPrice`, {
                           required: "Unit Price is required",
                           validate: (value) =>
-                            /^\d+(\.\d{1,2})?$/.test(value) ||
-                            "Only numbers with up to 2 decimals allowed",
+                            /^\d+(\.\d{1,4})?$/.test(value) ||
+                            "Only numbers with up to 4 decimals allowed",
                         })}
                         style={{
                           width: "100%",
@@ -2001,7 +2001,7 @@ function EditEntry({ isOpen, onClose, onEntryUpdated, entryToEdit }) {
                           let value = e.target.value;
 
                           // allow only 2 decimal places
-                          if (!/^\d*\.?\d{0,2}$/.test(value)) return;
+                          if (!/^\d*\.?\d{0,4}$/.test(value)) return;
 
                           e.target.value = value;
                           debouncedHandleInputChange(
