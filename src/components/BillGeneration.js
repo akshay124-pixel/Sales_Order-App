@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Button, Form, Badge } from "react-bootstrap";
-import { FaEye } from "react-icons/fa";
+import { Button, Form, Badge, InputGroup } from "react-bootstrap";
+import { FaEye, FaSearch, FaFilter, FaTimes, FaFileExcel } from "react-icons/fa";
 import ViewEntry from "./ViewEntry";
 import EditBill from "./EditBill";
 import axios from "axios";
@@ -51,6 +51,7 @@ const BillGeneration = () => {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [billStatusFilter, setBillStatusFilter] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchOrders = useCallback(async () => {
@@ -98,7 +99,7 @@ const BillGeneration = () => {
 
   useEffect(() => {
     filterOrders();
-  }, [orders, searchTerm]);
+  }, [orders, searchTerm, billStatusFilter]);
 
   const filterOrders = () => {
     let filtered = [...orders];
@@ -108,9 +109,9 @@ const BillGeneration = () => {
       filtered = filtered.filter((order) => {
         const productDetails = order.products
           ? order.products
-              .map((p) => `${p.productType} (${p.qty})`)
-              .join(", ")
-              .toLowerCase()
+            .map((p) => `${p.productType} (${p.qty})`)
+            .join(", ")
+            .toLowerCase()
           : "";
         const total = order.total ? order.total.toFixed(2).toString() : "0.00";
         const soDate = order.soDate
@@ -119,6 +120,7 @@ const BillGeneration = () => {
         const invoiceDate = order.invoiceDate
           ? new Date(order.invoiceDate).toLocaleDateString().toLowerCase()
           : "";
+
         return (
           (order.orderId || "").toLowerCase().includes(lowerSearch) ||
           (order.customername || "").toLowerCase().includes(lowerSearch) ||
@@ -135,6 +137,9 @@ const BillGeneration = () => {
       });
     }
 
+    if (billStatusFilter !== "All") {
+      filtered = filtered.filter((order) => order.billStatus === billStatusFilter)
+    }
     // Sort in descending order by soDate to show newest orders first
     filtered.sort((a, b) => {
       const dateA = a.soDate ? new Date(a.soDate) : new Date(0);
@@ -142,8 +147,14 @@ const BillGeneration = () => {
       return dateB - dateA; // Descending: newer dates first
     });
 
+
     setFilteredOrders(filtered);
   };
+
+  const handleClearFilter = () => {
+    setSearchTerm("")
+    setBillStatusFilter("All")
+  }
 
   const handleViewClick = (order) => {
     setSelectedOrder(order);
@@ -276,43 +287,105 @@ const BillGeneration = () => {
           background: "linear-gradient(135deg, #2575fc, #6a11cb)",
           padding: "25px 40px",
           display: "flex",
+          justifyContent: "space-between",
           flexWrap: "wrap",
           gap: "20px",
           alignItems: "center",
-          justifyContent: "space-between",
         }}
       >
-        <Form.Control
-          type="text"
-          placeholder="Search Orders (ID, Customer, Products, etc.)..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            maxWidth: "450px",
-            padding: "14px 25px",
-            borderRadius: "30px",
-            border: "none",
-            background: "rgba(255,255,255,0.95)",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
-            fontSize: "1.1rem",
-            fontWeight: "500",
-            transition: "all 0.4s ease",
-          }}
-        />
-        <Button
-          onClick={handleExportToXLSX}
-          style={{
-            background: "linear-gradient(135deg, #28a745, #4cd964)",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "5px",
-            color: "#fff",
-            fontWeight: "600",
-            textTransform: "uppercase",
-          }}
-        >
-          Export to XLSX
-        </Button>
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap", alignItems: "center", flex: "1 1 auto" }}>
+          <InputGroup style={{ maxWidth: "450px", boxShadow: "0 5px 15px rgba(0,0,0,0.2)", borderRadius: "30px", overflow: "hidden" }}>
+            <InputGroup.Text style={{ background: "rgba(255,255,255,0.95)", border: "none", paddingLeft: "20px", color: "#6b7280" }}>
+              <FaSearch />
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              placeholder="Search Orders (ID, Customer, Products, etc.)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                padding: "14px 20px 14px 10px",
+                border: "none",
+                background: "rgba(255,255,255,0.95)",
+                fontSize: "1.1rem",
+                fontWeight: "500",
+                boxShadow: "none",
+                outline: "none",
+              }}
+            />
+          </InputGroup>
+
+          <div style={{ position: "relative" }}>
+            <FaFilter style={{ position: "absolute", top: "50%", left: "15px", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+            <select
+              value={billStatusFilter}
+              onChange={(e) => setBillStatusFilter(e.target.value)}
+              style={{
+                padding: "12px 22px 12px 40px",
+                borderRadius: "30px",
+                border: "none",
+                backgroundColor: "#fff",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                fontSize: "15px",
+                fontWeight: "500",
+                cursor: "pointer",
+                outline: "none",
+                appearance: "none",
+                minWidth: "180px",
+              }}
+            >
+              <option value="All">All Bill Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Under Billing">Under Billing</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap", alignItems: "center" }}>
+          <Button
+            onClick={handleClearFilter}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              border: "1px solid rgba(255,255,255,0.4)",
+              backdropFilter: "blur(4px)",
+              padding: "10px 20px",
+              borderRadius: "30px",
+              color: "#fff",
+              fontWeight: "600",
+              textTransform: "uppercase",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.3)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.2)"; e.currentTarget.style.transform = "translateY(0)"; }}
+          >
+            <FaTimes /> Clear Filters
+          </Button>
+
+          <Button
+            onClick={handleExportToXLSX}
+            style={{
+              background: "linear-gradient(135deg, #28a745, #218838)",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "30px",
+              color: "#fff",
+              fontWeight: "600",
+              textTransform: "uppercase",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 4px 15px rgba(40, 167, 69, 0.4)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(40, 167, 69, 0.6)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(40, 167, 69, 0.4)"; }}
+          >
+            <FaFileExcel /> Export to XLSX
+          </Button>
+        </div>
       </div>
       <div
         style={{
@@ -523,8 +596,8 @@ const BillGeneration = () => {
                     >
                       {order.invoiceDate
                         ? new Date(order.invoiceDate).toLocaleDateString(
-                            "en-GB",
-                          )
+                          "en-GB",
+                        )
                         : "-"}
                     </td>
                     <td
@@ -637,8 +710,8 @@ const BillGeneration = () => {
                       title={
                         order.products
                           ? order.products
-                              .map((p) => `${p.productType} (${p.qty})`)
-                              .join(", ")
+                            .map((p) => `${p.productType} (${p.qty})`)
+                            .join(", ")
                           : "-"
                       }
                       style={{
@@ -653,8 +726,8 @@ const BillGeneration = () => {
                     >
                       {order.products
                         ? order.products
-                            .map((p) => `${p.productType} (${p.qty})`)
-                            .join(", ")
+                          .map((p) => `${p.productType} (${p.qty})`)
+                          .join(", ")
                         : "-"}
                     </td>
                     <td
