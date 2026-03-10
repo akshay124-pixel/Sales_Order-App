@@ -1145,6 +1145,12 @@ const Sales = () => {
     []
   );
 
+  // Debounced page change handler to fix pagination glitch
+  const handlePageChange = useMemo(
+    () => debounce((event, value) => setCurrentPage(value), 300),
+    []
+  );
+
   // Fetch orders with pagination
   const fetchOrders = useCallback(async (params = {}) => {
     try {
@@ -2589,7 +2595,7 @@ const Sales = () => {
           <Pagination
             count={totalPages}
             page={currentPage}
-            onChange={(event, value) => setCurrentPage(value)}
+            onChange={handlePageChange}
             color="primary"
             size="large"
             sx={{

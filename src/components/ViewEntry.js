@@ -315,7 +315,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
       { key: "billingAddress", label: "Billing Address" },
       { key: "dispatchFrom", label: "Dispatch From" },
       { key: "dispatchDate", label: "Dispatch Date", formatter: formatDate },
-      { key: "docketNo", label: "Docket No" },
+      { key: "docketNo", label: "Docket No", condition: isValidField(entry.docketNo) },
       { key: "deliveryDate", label: "Delivery Date", formatter: formatDate },
       { key: "receiptDate", label: "Receipt Date", formatter: formatDate },
       { key: "invoiceNo", label: "Invoice No" },
@@ -629,7 +629,6 @@ function ViewEntry({ isOpen, onClose, entry }) {
     { key: "dispatchDate", label: "Dispatch Date", formatter: formatDate },
     { key: "deliveryDate", label: "Delivery Date", formatter: formatDate },
     { key: "receiptDate", label: "Receipt Date", formatter: formatDate },
-    { key: "docketNo", label: "Docket No" },
     { key: "sostatus", label: "SO Status" },
     { key: "dispatchStatus", label: "Dispatch Status" },
     // { key: "completionStatus", label: "Completion Status" },
@@ -798,7 +797,7 @@ function ViewEntry({ isOpen, onClose, entry }) {
     { key: "dispatchFrom", label: "Dispatch From" },
     { key: "transporter", label: "Transporter" },
     { key: "transporterDetails", label: "Transporter Details" },
-    { key: "docketNo", label: "Docket Number" },
+    { key: "docketNo", label: "Docket Number", condition: isValidField(entry.docketNo) },
     { key: "stamp", label: "Stamp Signed Received" },
     { key: "installationReport", label: "Installation Report" },
     {
@@ -1355,9 +1354,11 @@ function ViewEntry({ isOpen, onClose, entry }) {
                 {entry.transporter || "N/A"} (
                 {entry.transporterDetails || "N/A"})
               </div>
-              <div className="pdf-item">
-                <strong>Docket No:</strong> {entry.docketNo || "N/A"}
-              </div>
+              {isValidField(entry.docketNo) && (
+                <div className="pdf-item">
+                  <strong>Docket No:</strong> {entry.docketNo}
+                </div>
+              )}
               <div className="pdf-item">
                 <strong>Delivery Date:</strong>{" "}
                 {formatDate(entry.deliveryDate) || "N/A"}
