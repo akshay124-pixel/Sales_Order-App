@@ -390,6 +390,7 @@ const Row = React.memo(({ index, style, data }) => {
 
   const getRowBackground = () => {
     if (order.dispatchStatus === "Order Cancelled") return "#ffebee";
+
     if (isOrderComplete(order)) return "#ffffff";
 
     if (order.sostatus === "Approved") {
@@ -398,7 +399,17 @@ const Row = React.memo(({ index, style, data }) => {
       }
       return "#e6ffed";
     }
+
     if (order.sostatus === "Accounts Approved") return "#e6f0ff";
+
+    // Pending for Approval
+    if (order.sostatus === "Pending for Approval") {
+      if (order.poFilePath) {
+        return "#e4d1ff"; // darker purple when PO attached
+      }
+      return "#f3e8ff"; // normal pending
+    }
+
     return "#f3e8ff";
   };
 
