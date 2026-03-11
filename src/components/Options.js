@@ -963,6 +963,7 @@ export const statesAndCities = {
     "Amritsar",
     "Bathinda",
     "Barnala",
+    "Derabassi",
     "Faridkot",
     "Fatehgarh Sahib",
     "Fazilka",
