@@ -203,31 +203,67 @@ function AddEntry({ onSubmit, onClose }) {
         shippingAddress: checked ? prev.billingAddress : prev.shippingAddress,
       }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        ...(name === "billingAddress" && prev.sameAddress
-          ? { shippingAddress: value }
-          : {}),
-        ...(name === "paymentCollected"
-          ? { paymentDue: calculatePaymentDue(Number(value) || 0) }
-          : {}),
-        ...(name === "paymentMethod"
-          ? { neftTransactionId: "", chequeId: "" }
-          : {}),
-        ...(name === "freightstatus" && value !== "Extra"
-          ? { freightcs: "" }
-          : {}),
-        ...(name === "installchargesstatus" && value !== "Extra"
-          ? { installation: "" }
-          : {}),
-        ...(name === "orderType" && value !== "B2G"
-          ? { gemOrderNumber: "", deliveryDate: "" }
-          : {}),
-        ...(name === "paymentTerms" && value !== "Credit"
-          ? { creditDays: "" }
-          : {}),
-      }));
+      setFormData((prev) => {
+        const updated = {
+          ...prev,
+          [name]: value,
+          ...(name === "billingAddress" && prev.sameAddress
+            ? { shippingAddress: value }
+            : {}),
+          ...(name === "paymentMethod"
+            ? { neftTransactionId: "", chequeId: "" }
+            : {}),
+          ...(name === "freightstatus" && value !== "Extra"
+            ? { freightcs: "" }
+            : {}),
+          ...(name === "installchargesstatus" && value !== "Extra"
+            ? { installation: "" }
+            : {}),
+          ...(name === "orderType" && value !== "B2G"
+            ? { gemOrderNumber: "", deliveryDate: "" }
+            : {}),
+          ...(name === "paymentTerms" && value !== "Credit"
+            ? { creditDays: "" }
+            : {}),
+        };
+
+        // Recalculate total and paymentDue whenever pricing-related fields change
+        if (
+          name === "paymentCollected" ||
+          name === "freightcs" ||
+          name === "installation" ||
+          (name === "freightstatus" && value !== "Extra") ||
+          (name === "installchargesstatus" && value !== "Extra")
+        ) {
+          const freight =
+            name === "freightcs"
+              ? Number(value) || 0
+              : name === "freightstatus" && value !== "Extra"
+              ? 0
+              : Number(updated.freightcs) || 0;
+          const installation =
+            name === "installation"
+              ? Number(value) || 0
+              : name === "installchargesstatus" && value !== "Extra"
+              ? 0
+              : Number(updated.installation) || 0;
+          const subtotalWithGST = products.reduce((sum, product) => {
+            const qty = Number(product.qty) || 0;
+            const unitPrice = Number(product.unitPrice) || 0;
+            const gstRate =
+              product.gst === "including" ? 0 : Number(product.gst) || 0;
+            return sum + qty * unitPrice * (1 + gstRate / 100);
+          }, 0);
+          const newTotal = Math.round(subtotalWithGST + freight + installation);
+          const collected =
+            name === "paymentCollected"
+              ? Number(value) || 0
+              : Number(updated.paymentCollected) || 0;
+          updated.paymentDue = Number((newTotal - collected).toFixed(2));
+        }
+
+        return updated;
+      });
     }
   };
 
@@ -469,7 +505,7 @@ function AddEntry({ onSubmit, onClose }) {
       ...prev,
       paymentDue: calculatePaymentDue(Number(prev.paymentCollected) || 0),
     }));
-  }, [products]);
+  }, [products, formData.freightcs, formData.installation]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
