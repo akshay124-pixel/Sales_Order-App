@@ -49,6 +49,14 @@ export const productOptions = {
       "i5 8th Gen, 16GB RAM, 512GB ROM",
       "i5 8th Gen, 16GB RAM, 1TB ROM",
 
+      // i5 10th Gen
+      "i5 10th Gen, 8GB RAM, 256GB ROM",
+      "i5 10th Gen, 8GB RAM, 512GB ROM",
+      "i5 10th Gen, 8GB RAM, 1TB ROM",
+      "i5 10th Gen, 16GB RAM, 256GB ROM",
+      "i5 10th Gen, 16GB RAM, 512GB ROM",
+      "i5 10th Gen, 16GB RAM, 1TB ROM",
+
       // i5 11th Gen
       "i5 11th Gen, 8GB RAM, 256GB ROM",
       "i5 11th Gen, 8GB RAM, 512GB ROM",
