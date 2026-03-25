@@ -415,6 +415,10 @@ export const productOptions = {
     sizes: ["65 inch", "75 inch", "86 inch", "98  inch"],
     specs: ["Plain", "White Boards", "Green Boards"],
   },
+   "K-12 Content": {
+    sizes: ["Standard"],
+    specs: ["Standard"],
+  },
   Aicharya: {
     sizes: ["N/A"],
     specs: ["Standard"],
