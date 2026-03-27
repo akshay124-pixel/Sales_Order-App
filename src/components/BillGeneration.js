@@ -261,6 +261,11 @@ const BillGeneration = () => {
   XLSX.writeFile(wb, "Bill_Orders.xlsx");
 };
 
+  // Calculate total pending orders (billStatus === "Pending")
+  const totalPending = filteredOrders.filter(
+    (order) => order.billStatus === "Pending",
+  ).length;
+
   return (
     <>
       <style>
